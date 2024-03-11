@@ -13,6 +13,10 @@ module.exports = {
       },
     },
     extend: {
+      width: {
+        70: "70%",
+        30: "30%",
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

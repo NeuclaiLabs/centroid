@@ -1,31 +1,38 @@
 "use client"
 
 import React, { ChangeEvent, useState } from "react"
+import { useRouter } from "next/navigation"
 
 import { Icons } from "@/components/icons"
 
-const Button = ({ text }: { text: string }) => {
-  return (
-    <button className=" focus:shadow-outline rounded-lg px-4 py-2 shadow-md transition duration-300 ease-in-out hover:scale-105 focus:outline-none">
-      {text}
-    </button>
-  )
-}
-
-const ButtonContainer = () => {
-  return (
-    <div className="flex w-3/5 flex-wrap items-center justify-center gap-4 overflow-hidden truncate p-4 text-sm">
-      <Button text="What's new in NextJS 14?" />
-      <Button text="Where to download Mistral model ?" />
-      <Button text="How to get user agent from Vercel Edge Function?" />
-      <Button text="How can I know if my website was scraped?" />
-    </div>
-  )
-}
-
 export function Search() {
+  const router = useRouter()
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [addSearchToContext, setaddSearchToContext] = useState<boolean>(false)
+  const onButtonClick = () => {
+    router.push("/search?q=" + searchQuery.trim())
+  }
+  const Button = ({ text }: { text: string }) => {
+    return (
+      <button
+        onClick={onButtonClick}
+        className=" focus:shadow-outline rounded-lg px-4 py-2 shadow-md transition"
+      >
+        {text}
+      </button>
+    )
+  }
+
+  const ButtonContainer = () => {
+    return (
+      <div className="flex w-3/5 flex-wrap items-center justify-center gap-4 overflow-hidden truncate p-4 text-sm">
+        <Button text="What's new in NextJS 14?" />
+        <Button text="Where to download Mistral model ?" />
+        <Button text="How to get user agent from Vercel Edge Function?" />
+        <Button text="How can I know if my website was scraped?" />
+      </div>
+    )
+  }
 
   const handleSearchChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setSearchQuery(e.target.value)
