@@ -3,6 +3,7 @@
 import React, { ChangeEvent, useState } from "react"
 import { useRouter } from "next/navigation"
 
+import { AutosizeTextarea } from "@/components/ui/autosize-textarea"
 import { Icons } from "@/components/icons"
 
 export function Search() {
@@ -29,7 +30,7 @@ export function Search() {
         <Button text="What's new in NextJS 14?" />
         <Button text="Where to download Mistral model ?" />
         <Button text="How to get user agent from Vercel Edge Function?" />
-        <Button text="How can I know if my website was scraped?" />
+        {/* <Button text="How can I know if my website was scraped?" /> */}
       </div>
     )
   }
@@ -44,16 +45,17 @@ export function Search() {
 
   return (
     <div className="flex size-full flex-col items-center justify-center space-y-4">
-      <h4 className="text-3xl font-extrabold leading-tight tracking-tighter md:text-4xl">
+      <h4 className="text-center text-3xl font-extrabold leading-tight tracking-tighter md:text-4xl">
         Get answers to your coding questions
       </h4>
       <div className="flex w-full flex-col items-center justify-center">
         <div className="group flex w-full max-w-[800px] flex-col space-y-2 rounded-lg border-2 border-gray-200 px-3 py-2">
-          <textarea
-            className="h-8 max-h-48 w-full resize-none appearance-none overflow-auto  bg-transparent px-2 py-1 text-sm"
+          <AutosizeTextarea
+            className="h-12 w-full border-0 px-2 py-1 focus-visible:ring-0 focus-visible:outline-none"
             placeholder="What do you want to ask?"
             value={searchQuery}
             onChange={handleSearchChange}
+            maxHeight={200}
           />
           <div className="flex w-full items-center justify-between">
             <div className="flex flex-wrap items-center">

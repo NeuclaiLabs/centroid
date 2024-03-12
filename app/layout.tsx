@@ -42,7 +42,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           )}
         >
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <div className="container mx-auto flex min-h-screen flex-col">
+            <div className="container mx-auto flex min-h-screen flex-col p-1">
               <SiteHeader />
               <main className="flex w-full flex-1">{children}</main>
               <SiteFooter />
