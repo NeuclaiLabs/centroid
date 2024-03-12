@@ -51,7 +51,7 @@ export function Search() {
       <div className="flex w-full flex-col items-center justify-center">
         <div className="group flex w-full max-w-[800px] flex-col space-y-2 rounded-lg border-2 border-gray-200 px-3 py-2">
           <AutosizeTextarea
-            className="h-12 w-full border-0 px-2 py-1 focus-visible:ring-0 focus-visible:outline-none"
+            className="h-12 w-full border-0 px-2 py-1 focus-visible:outline-none focus-visible:ring-0"
             placeholder="What do you want to ask?"
             value={searchQuery}
             onChange={handleSearchChange}

@@ -34,8 +34,7 @@ export function AIProviderSelection() {
         <DialogHeader>
           <DialogTitle>Configure Provider</DialogTitle>
           <DialogDescription>
-            Pick your provider and provide related details. Click save when
-            you're done.
+            Pick your provider and provide related details. Click save when you are done.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
