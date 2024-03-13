@@ -4,6 +4,14 @@ import React, { ChangeEvent, useState } from "react"
 import { useRouter } from "next/navigation"
 
 import { AutosizeTextarea } from "@/components/ui/autosize-textarea"
+import { Button } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Icons } from "@/components/icons"
 
 export function Search() {
@@ -12,27 +20,6 @@ export function Search() {
   const [addSearchToContext, setaddSearchToContext] = useState<boolean>(false)
   const onButtonClick = () => {
     router.push("/search?q=" + searchQuery.trim())
-  }
-  const Button = ({ text }: { text: string }) => {
-    return (
-      <button
-        onClick={onButtonClick}
-        className=" focus:shadow-outline rounded-lg px-4 py-2 shadow-md transition"
-      >
-        {text}
-      </button>
-    )
-  }
-
-  const ButtonContainer = () => {
-    return (
-      <div className="flex w-3/5 flex-wrap items-center justify-center gap-4 overflow-hidden truncate p-4 text-sm">
-        <Button text="What's new in NextJS 14?" />
-        <Button text="Where to download Mistral model ?" />
-        <Button text="How to get user agent from Vercel Edge Function?" />
-        {/* <Button text="How can I know if my website was scraped?" /> */}
-      </div>
-    )
   }
 
   const handleSearchChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -59,27 +46,40 @@ export function Search() {
           />
           <div className="flex w-full items-center justify-between">
             <div className="flex flex-wrap items-center">
-              <div>
-                <div
-                  className="flex items-center"
-                  aria-haspopup="menu"
-                  aria-expanded="false"
-                  data-state="closed"
-                >
-                  <button
-                    className="text-default-500 flex h-9 items-center justify-center space-x-1 rounded-full p-2 text-sm"
-                    data-state="closed"
-                  >
-                    <Icons.chevron />
-                    <span>Default</span>
-                  </button>
-                </div>
+              <div
+                className="flex items-center"
+                aria-haspopup="menu"
+                aria-expanded="false"
+              >
+                <Select defaultValue="2">
+                  <SelectTrigger className="line-clamp-1 w-[280px] truncate border-none bg-transparent text-xs shadow-none outline-none focus:ring-0 focus-visible:ring-0">
+                    <SelectValue placeholder="Select level" />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    <SelectItem value="1">Severity 1 (Highest)</SelectItem>
+                    <SelectItem value="2">Severity 2</SelectItem>
+                    <SelectItem value="3">Severity 3</SelectItem>
+                    <SelectItem value="4">Severity 4 (Lowest)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <div></div>
             </div>
           </div>
         </div>
-        <ButtonContainer />
+        <div className="mt-8 flex w-full max-w-[800px] flex-col items-center gap-4">
+          <div className="flex w-full flex-col gap-2  md:flex-row md:flex-wrap md:justify-center">
+            <Button className="text-xs" variant="secondary">
+              What new in NextJS 14?
+            </Button>
+            <Button className="text-xs" variant="secondary">
+              How to get useragent new in NextJS 14??
+            </Button>
+            <Button className="text-xs" variant="secondary">
+              How to get useragent new in NextJS 14?
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   )
