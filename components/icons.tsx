@@ -3,9 +3,15 @@ import {
   ChevronDown,
   ChevronUp,
   ChevronsLeftRight,
+  Circle,
+  Copy,
   LucideProps,
   Moon,
+  Pencil,
+  RefreshCw,
   SunMedium,
+  ThumbsDown,
+  ThumbsUp,
   Twitter,
   type Icon as LucideIcon,
 } from "lucide-react"
@@ -20,6 +26,11 @@ export const Icons = {
   chevronDown: ChevronDown,
   chevronsLeftRight: ChevronsLeftRight,
   check: Check,
+  circle: Circle,
+  refresh: RefreshCw,
+  thumbsDown: ThumbsDown,
+  thumbsUp: ThumbsUp,
+  copy: Copy,
   caretSort: (props: LucideProps) => (
     <svg
       width="15"
