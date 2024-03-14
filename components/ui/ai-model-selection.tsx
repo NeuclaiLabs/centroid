@@ -2,7 +2,6 @@
 
 import * as React from "react"
 
-import { useLocalStorage } from "@/lib/hooks/use-local-storage"
 import {
   Select,
   SelectContent,
@@ -12,14 +11,7 @@ import {
 } from "@/components/ui/select"
 
 export function AiModelSelection() {
-  const [selectedModel, setStoredValue] = useLocalStorage(
-    "model",
-    "mistral:7b-instruct"
-  )
-
-  const handleModelChange = (selectedValue: string) => {
-    setStoredValue(selectedValue)
-  }
+  const selectedModel = "mistral:7b-instruct"
 
   const modelOptions = [
     { value: "openchat/openchat-7b:free", label: "OpenChat 3.5" },
@@ -32,7 +24,7 @@ export function AiModelSelection() {
   ]
 
   return (
-    <Select value={selectedModel} onValueChange={handleModelChange}>
+    <Select value={selectedModel}>
       <SelectTrigger className="w-[180px]">
         <SelectValue placeholder="Model" />
       </SelectTrigger>

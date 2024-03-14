@@ -27,7 +27,10 @@ const defaultConfig = {
 export function useApiConfig() {
   // Attempt to retrieve data from localStorage and use the default if not found
   const [storedData, setStoredData] = useState(() => {
-    const storedDataRaw = localStorage.getItem("apiConfigData")
+    const storedDataRaw =
+      typeof window !== "undefined"
+        ? window!.localStorage!.getItem("apiConfigData")
+        : null
     return storedDataRaw ? JSON.parse(storedDataRaw) : defaultConfig
   })
 
@@ -39,11 +42,13 @@ export function useApiConfig() {
 
   // Persist form data to localStorage on form submit
   const onSubmit = form.handleSubmit((data) => {
-    localStorage.setItem("apiConfigData", JSON.stringify(data))
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("apiConfigData", JSON.stringify(data))
+    }
     setStoredData(data) // Update the local state with the new data
     // Optionally, you can add more actions here, like showing a notification
     toast({
-      title: "Configuration Saved"
+      title: "Configuration Saved",
     })
   })
 
