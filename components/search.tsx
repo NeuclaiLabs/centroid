@@ -3,6 +3,7 @@
 import React, { ChangeEvent, useState } from "react"
 import { useRouter } from "next/navigation"
 
+import { useAvailableModels } from "@/lib/hooks/use-available-models"
 import { AutosizeTextarea } from "@/components/ui/autosize-textarea"
 import { Button } from "@/components/ui/button"
 import {
@@ -12,12 +13,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Icons } from "@/components/icons"
 
 export function Search() {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [addSearchToContext, setaddSearchToContext] = useState<boolean>(false)
+  const availableModels = useAvailableModels()
   const onButtonClick = () => {
     router.push("/search?q=" + searchQuery.trim())
   }
@@ -53,14 +54,15 @@ export function Search() {
               >
                 <Select defaultValue="2">
                   <SelectTrigger className="line-clamp-1 w-[280px] truncate border-none bg-transparent text-xs shadow-none outline-none focus:ring-0 focus-visible:ring-0">
-                    <SelectValue placeholder="Select level" />
+                    <SelectValue placeholder="Select Model" />
                   </SelectTrigger>
 
                   <SelectContent>
-                    <SelectItem value="1">Severity 1 (Highest)</SelectItem>
-                    <SelectItem value="2">Severity 2</SelectItem>
-                    <SelectItem value="3">Severity 3</SelectItem>
-                    <SelectItem value="4">Severity 4 (Lowest)</SelectItem>
+                    {availableModels.map((model, index) => (
+                      <SelectItem key={index} value={model}>
+                        {model}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
