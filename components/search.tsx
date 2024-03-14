@@ -69,16 +69,35 @@ export function Search() {
         </div>
         <div className="mt-8 flex w-full max-w-[800px] flex-col items-center gap-4">
           <div className="flex w-full flex-col gap-2  md:flex-row md:flex-wrap md:justify-center">
-            <Button className="text-xs h-8" variant="secondary">
+            <Button
+              className="h-8 text-xs"
+              variant="secondary"
+              onClick={onButtonClick}
+            >
               What new in NextJS 14?
             </Button>
-            <Button className="text-xs h-8" variant="secondary">
+            <Button
+              className="text-xs"
+              size="sm"
+              variant="secondary"
+              onClick={onButtonClick}
+            >
               How to get useragent new in NextJS 14??
             </Button>
-            <Button className="text-xs h-8" variant="secondary">
+            <Button
+              className="text-xs"
+              size="sm"
+              variant="secondary"
+              onClick={onButtonClick}
+            >
               How to get useragent new in NextJS 14?
             </Button>
-            <Button className="text-xs h-8" variant="secondary">
+            <Button
+              className="text-xs"
+              size="sm"
+              variant="secondary"
+              onClick={onButtonClick}
+            >
               What new in NextJS 14?
             </Button>
           </div>

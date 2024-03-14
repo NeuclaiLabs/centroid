@@ -30,20 +30,21 @@ export function AIProviderSelection() {
           <Settings className="size-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="overflow-y-auto sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Configure Provider</DialogTitle>
           <DialogDescription>
-            Pick your provider and provide related details. Click save when you are done.
+            Pick your provider and provide related details. Click save when you
+            are done.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
+        <div className="grid gap-4 py-4 ">
+          <div className="grid grid-cols-4 items-center gap-4 ">
             <Label htmlFor="name" className="text-right">
               Provider
             </Label>
             <Select>
-              <SelectTrigger className="col-span-3">
+              <SelectTrigger className="col-span-3 ">
                 <SelectValue placeholder="Select Provider" />
               </SelectTrigger>
               <SelectContent>

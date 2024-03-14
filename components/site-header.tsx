@@ -14,8 +14,17 @@ export function SiteHeader() {
         <MainNav />
         <div className="flex flex-1 items-center justify-end space-x-4">
           <nav className="flex items-center space-x-1">
-            <AIProviderSelection />
-
+            <Link href="/settings" rel="noreferrer" replace>
+              <div
+                className={buttonVariants({
+                  size: "icon",
+                  variant: "ghost",
+                })}
+              >
+                <Icons.settings className="size-5" />
+                <span className="sr-only">Settings</span>
+              </div>
+            </Link>
             <Link
               href={siteConfig.links.github}
               target="_blank"

@@ -13,6 +13,7 @@ import {
   ThumbsDown,
   ThumbsUp,
   Twitter,
+  Settings,
   type Icon as LucideIcon,
 } from "lucide-react"
 
@@ -31,6 +32,7 @@ export const Icons = {
   thumbsDown: ThumbsDown,
   thumbsUp: ThumbsUp,
   copy: Copy,
+  settings: Settings,
   caretSort: (props: LucideProps) => (
     <svg
       width="15"
