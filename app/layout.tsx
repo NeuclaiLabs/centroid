@@ -4,6 +4,7 @@ import { Metadata } from "next"
 import { siteConfig } from "@/config/site"
 import { fontSans } from "@/lib/fonts"
 import { cn } from "@/lib/utils"
+import { Toaster } from "@/components/ui/toaster"
 import { SiteFooter } from "@/components/site-footer"
 import { SiteHeader } from "@/components/site-header"
 import { TailwindIndicator } from "@/components/tailwind-indicator"
@@ -49,6 +50,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
               <main className="flex w-full flex-1">{children}</main>
               <SiteFooter />
             </div>
+            <Toaster />
+
             <TailwindIndicator />
           </ThemeProvider>
         </body>
