@@ -4,57 +4,60 @@ import { z } from "zod"
 import { apiConfigSchema, useApiConfig } from "@/lib/hooks/use-api-config"
 
 type ApiConfig = z.infer<typeof apiConfigSchema>
-const modelsByProvider = {
-  OpenAI: ["GPT-3.5", "GPT-4"],
-  Anthropic: ["Claude"],
+
+export type Model = { id: string; name: string; context?: number }
+type ModelsByProvider = {
+  [provider: string]: Model[]
+}
+const modelsByProvider: ModelsByProvider = {
+  OpenAI: [
+    { id: "gpt-3.5", name: "GPT-3.5", context: 100 },
+    { id: "gpt-4", name: "GPT-4.0", context: 100 },
+  ],
+  Anthropic: [
+    { id: "claude-sonnet", name: "Sonnet", context: 100 },
+    { id: "Opus", name: "Opus", context: 100 },
+  ],
   Groq: [],
-} as const
+}
 
 const dynamicModelProviders = ["Ollama", "LMStudio"]
 
-// Type for the modelsByProvider object
-type ModelsByProvider = typeof modelsByProvider
-
 // Type for the function return value
-type AvailableModels = string[]
-
 export function useAvailableModels() {
   const { storedConfig } = useApiConfig()
-  const [availableModels, setAvailableModels] = useState<AvailableModels>([])
+  const [availableModels, setAvailableModels] = useState<Model[]>()
 
   useEffect(() => {
     const fetchAvailableModels = async () => {
       try {
-        const models: Set<string> = new Set()
+        let models: Model[] = []
 
         // Fetch dynamic models
         const dynamicModelsPromises = storedConfig.providers.map(
           async (providerConfig: ApiConfig["providers"][number]) => {
             if (dynamicModelProviders.includes(providerConfig.provider)) {
               const response = await fetch(`${providerConfig.url}/api/tags`)
-              const providerModels = (await response.json()).models.map(
-                (record: { name: any }) => record.name
-              )
-              providerModels.forEach((model: string) => models.add(model))
+              const providerModels = (await response.json()).models
+              for (const model of providerModels) {
+                models.push({
+                  id: model.name,
+                  name: model.name,
+                })
+              }
             }
           }
         )
 
         await Promise.all(dynamicModelsPromises)
-
-        // Add static models
-        storedConfig.providers.forEach(
-          (providerConfig: ApiConfig["providers"][number]) => {
-            const providerModels =
-              modelsByProvider[
-                providerConfig.provider as keyof ModelsByProvider
-              ] || []
-            providerModels.forEach((model) => models.add(model))
+        storedConfig.providers.map((providerConfig: { provider: string }) => {
+          if (providerConfig.provider in modelsByProvider) {
+            models.push(...modelsByProvider[providerConfig.provider])
           }
-        )
+        })
 
         // Update available models
-        setAvailableModels(Array.from(models))
+        setAvailableModels(models)
       } catch (error) {
         console.error("Error fetching available models:", error)
       }

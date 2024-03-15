@@ -4,6 +4,7 @@ import React, { ChangeEvent, useState } from "react"
 import { useRouter } from "next/navigation"
 
 import { useAvailableModels } from "@/lib/hooks/use-available-models"
+import { useSelectedModel } from "@/lib/hooks/use-selected-model"
 import { AutosizeTextarea } from "@/components/ui/autosize-textarea"
 import { Button } from "@/components/ui/button"
 import {
@@ -19,7 +20,8 @@ export function Search() {
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [addSearchToContext, setaddSearchToContext] = useState<boolean>(false)
   const availableModels = useAvailableModels()
-  console.log(availableModels)
+  const [selectedModel, updateSelectedModel] = useSelectedModel()
+
   const onButtonClick = () => {
     router.push("/search?q=" + searchQuery.trim())
   }
@@ -53,17 +55,21 @@ export function Search() {
                 aria-haspopup="menu"
                 aria-expanded="false"
               >
-                <Select defaultValue="2">
+                <Select
+                  defaultValue={selectedModel ? selectedModel.id : "undefined"}
+                  onValueChange={updateSelectedModel}
+                >
                   <SelectTrigger className="line-clamp-1 w-[280px] truncate border-none bg-transparent text-xs shadow-none outline-none focus:ring-0 focus-visible:ring-0">
                     <SelectValue placeholder="Select Model" />
                   </SelectTrigger>
 
                   <SelectContent>
-                    {availableModels.map((model, index) => (
-                      <SelectItem key={index} value={model}>
-                        {model}
-                      </SelectItem>
-                    ))}
+                    {availableModels &&
+                      availableModels.map((model) => (
+                        <SelectItem key={model.id} value={model.name}>
+                          {model.name}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
