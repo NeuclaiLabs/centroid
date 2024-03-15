@@ -26,17 +26,17 @@ const defaultConfig = {
 
 export function useApiConfig() {
   // Attempt to retrieve data from localStorage and use the default if not found
-  const [storedData, setStoredData] = useState(() => {
-    const storedDataRaw =
+  const [storedConfig, setStoredConfig] = useState(() => {
+    const storedConfigRaw =
       typeof window !== "undefined"
         ? window!.localStorage!.getItem("apiConfigData")
         : null
-    return storedDataRaw ? JSON.parse(storedDataRaw) : defaultConfig
+    return storedConfigRaw ? JSON.parse(storedConfigRaw) : defaultConfig
   })
 
   const form = useForm({
     resolver: zodResolver(apiConfigSchema),
-    defaultValues: storedData,
+    defaultValues: storedConfig,
     mode: "onChange",
   })
 
@@ -45,17 +45,17 @@ export function useApiConfig() {
     if (typeof window !== "undefined") {
       window.localStorage.setItem("apiConfigData", JSON.stringify(data))
     }
-    setStoredData(data) // Update the local state with the new data
+    setStoredConfig(data) // Update the local state with the new data
     // Optionally, you can add more actions here, like showing a notification
     toast({
       title: "Configuration Saved",
     })
   })
 
-  // Automatically update form defaultValues if storedData changes
+  // Automatically update form defaultValues if storedConfig changes
   useEffect(() => {
-    form.reset(storedData)
-  }, [storedData, form])
+    form.reset(storedConfig)
+  }, [storedConfig, form])
 
-  return { ...form, form, storedData, onSubmit }
+  return { ...form, form, storedConfig, onSubmit }
 }

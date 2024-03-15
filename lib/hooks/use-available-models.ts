@@ -19,7 +19,7 @@ type ModelsByProvider = typeof modelsByProvider
 type AvailableModels = string[]
 
 export function useAvailableModels() {
-  const { storedData } = useApiConfig()
+  const { storedConfig } = useApiConfig()
   const [availableModels, setAvailableModels] = useState<AvailableModels>([])
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export function useAvailableModels() {
         const models: Set<string> = new Set()
 
         // Fetch dynamic models
-        const dynamicModelsPromises = storedData.providers.map(
+        const dynamicModelsPromises = storedConfig.providers.map(
           async (providerConfig: ApiConfig["providers"][number]) => {
             if (dynamicModelProviders.includes(providerConfig.provider)) {
               const response = await fetch(`${providerConfig.url}/api/tags`)
@@ -43,7 +43,7 @@ export function useAvailableModels() {
         await Promise.all(dynamicModelsPromises)
 
         // Add static models
-        storedData.providers.forEach(
+        storedConfig.providers.forEach(
           (providerConfig: ApiConfig["providers"][number]) => {
             const providerModels =
               modelsByProvider[
@@ -61,7 +61,7 @@ export function useAvailableModels() {
     }
 
     fetchAvailableModels()
-  }, [storedData])
+  }, [storedConfig])
 
   return availableModels
 }

@@ -2,7 +2,7 @@
 
 import { useFieldArray } from "react-hook-form"
 
-import { apiConfigSchema, useApiConfig } from "@/lib/hooks/use-api-config"
+import { useApiConfig } from "@/lib/hooks/use-api-config"
 import { Button } from "@/components/ui/button"
 import {
   Form,
