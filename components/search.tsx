@@ -19,6 +19,7 @@ export function Search() {
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [addSearchToContext, setaddSearchToContext] = useState<boolean>(false)
   const availableModels = useAvailableModels()
+  console.log(availableModels)
   const onButtonClick = () => {
     router.push("/search?q=" + searchQuery.trim())
   }
