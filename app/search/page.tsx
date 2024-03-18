@@ -1,12 +1,28 @@
 "use client"
 
+import { useEffect, useRef } from "react"
 import { useChat } from "ai/react"
 
 import { Conversation } from "@/components/conversation"
 
 export default function IndexPage() {
-  const { messages, input, handleInputChange, handleSubmit } = useChat()
+  const { messages, reload, append, input, handleInputChange, handleSubmit } =
+    useChat({
+      onFinish(message) {
+        console.log("calling reload", message)
+      },
+    })
 
+  const effectRanOnce = useRef(false)
+
+  useEffect(() => {
+    if (!effectRanOnce.current) {
+      effectRanOnce.current = true
+      append({ role: "user", content: "def hellow_world():" })
+    }
+  }, [])
+
+  // append({ role: "user", content: "hi" })
   return (
     // Ensuring the main container allows for full height alignment
     <section className="container mx-auto flex min-h-full flex-col  p-4 pb-10">
