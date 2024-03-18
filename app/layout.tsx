@@ -48,7 +48,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
             <div className="container mx-auto flex min-h-screen flex-col p-1">
               <SiteHeader />
               <main className="flex w-full flex-1">{children}</main>
-              <SiteFooter />
+              {/* <SiteFooter /> */}
             </div>
             <Toaster />
 
