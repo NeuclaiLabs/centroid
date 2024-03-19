@@ -1,6 +1,6 @@
 "use client"
 
-import React, { ChangeEvent, useState } from "react"
+import React, { ChangeEvent, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Textarea from "react-textarea-autosize"
 
@@ -19,19 +19,25 @@ import {
 export function Search() {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState<string>("")
-  const [addSearchToContext, setaddSearchToContext] = useState<boolean>(false)
   const availableModels = useAvailableModels()
   const [selectedModel, updateSelectedModel] = useSelectedModel()
   const { formRef, onKeyDown } = useEnterSubmit()
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
-  React.useEffect(() => {
+  useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus()
     }
   }, [])
+
   const onButtonClick = () => {
-    console.log(searchQuery)
-    router.push("/search?q=" + encodeURIComponent(searchQuery.trim() || "test"))
+    const query = searchQuery.trim()
+    const encodedQuery = encodeURIComponent(query)
+    console.log(query, encodedQuery)
+    router.push(`/search?q=${encodedQuery}`)
+  }
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setSearchQuery(event.target.value)
   }
 
   return (
@@ -43,9 +49,8 @@ export function Search() {
         <div className="group flex w-full max-w-[800px] flex-col space-y-2 rounded-lg border-2 border-gray-200 px-3 py-2">
           <form
             ref={formRef}
-            onSubmit={async (e) => {
+            onSubmit={(e) => {
               e.preventDefault()
-              setSearchQuery(inputRef.current?.value ?? "")
               onButtonClick()
             }}
           >
@@ -56,6 +61,8 @@ export function Search() {
               tabIndex={0}
               onKeyDown={onKeyDown}
               minRows={2}
+              value={searchQuery}
+              onChange={handleInputChange}
             />
             <div className="flex w-full items-center justify-between">
               <div className="flex flex-wrap items-center">
@@ -93,7 +100,10 @@ export function Search() {
             <Button
               className="h-8 text-xs"
               variant="secondary"
-              onClick={onButtonClick}
+              onClick={() => {
+                setSearchQuery("What new in NextJS 14?")
+                onButtonClick()
+              }}
             >
               What new in NextJS 14?
             </Button>
@@ -101,7 +111,10 @@ export function Search() {
               className="text-xs"
               size="sm"
               variant="secondary"
-              onClick={onButtonClick}
+              onClick={() => {
+                setSearchQuery("How to get useragent new in NextJS 14?")
+                onButtonClick()
+              }}
             >
               How to get useragent new in NextJS 14??
             </Button>
@@ -109,7 +122,10 @@ export function Search() {
               className="text-xs"
               size="sm"
               variant="secondary"
-              onClick={onButtonClick}
+              onClick={() => {
+                setSearchQuery("How to get useragent new in NextJS 14?")
+                onButtonClick()
+              }}
             >
               How to get useragent new in NextJS 14?
             </Button>
@@ -117,7 +133,10 @@ export function Search() {
               className="text-xs"
               size="sm"
               variant="secondary"
-              onClick={onButtonClick}
+              onClick={() => {
+                setSearchQuery("What new in NextJS 14?")
+                onButtonClick()
+              }}
             >
               What new in NextJS 14?
             </Button>
