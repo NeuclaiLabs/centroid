@@ -84,7 +84,7 @@ export function Search() {
                     <SelectContent>
                       {availableModels &&
                         availableModels.map((model) => (
-                          <SelectItem key={model.id} value={model.name}>
+                          <SelectItem key={model.id} value={model.id}>
                             {model.name}
                           </SelectItem>
                         ))}

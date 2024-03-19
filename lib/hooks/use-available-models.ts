@@ -18,7 +18,7 @@ const modelsByProvider: ModelsByProvider = {
     { id: "claude-sonnet", name: "Sonnet", context: 100 },
     { id: "Opus", name: "Opus", context: 100 },
   ],
-  Groq: [],
+  Groq: [{ id: "Mixtral-8x7b-Instruct-v0.1", name: "Mixtral", context: 100 }],
 }
 
 const dynamicModelProviders = ["Ollama", "LMStudio"]
