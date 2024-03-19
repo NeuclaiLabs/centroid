@@ -71,13 +71,13 @@ export function Conversation() {
               <Skeleton className="mb-2 h-4 w-full" />
               <Skeleton className="h-4 w-2/3" />
             </div>
-            <div className="col-span-1  p-4">
+            {/* <div className="col-span-1  p-4">
               <div className="rounded-md ">
                 <Skeleton className="mb-2 h-5 w-full" />
                 <Skeleton className="mb-2 h-6 w-full" />
                 <Skeleton className="mb-2 h-6 w-full" />
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       )}
