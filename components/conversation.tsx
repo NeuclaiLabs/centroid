@@ -61,7 +61,7 @@ export function Conversation() {
 
   return (
     <div>
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid-auto-flow grid gap-4 lg:grid-cols-3">
         {messages.map((message, index) => (
           <React.Fragment key={index}>
             {index % 2 === 0 ? (
@@ -78,7 +78,7 @@ export function Conversation() {
                 <div className="col-span-1 p-4 lg:col-span-2">
                   <Answer message={message} isLoading={isLoading} />
                 </div>
-                <div className="col-span-1 p-4">
+                <div className="col-span-1 p-4 lg:col-span-1 ">
                   {!isSearchLoading && sources.length && (
                     <References sources={sources} />
                   )}

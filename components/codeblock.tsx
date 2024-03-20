@@ -116,6 +116,7 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
           width: "100%",
           background: "transparent",
           padding: "1.5rem 1rem",
+          overflowX: "auto", // Add this line to enable horizontal scrolling for long lines
         }}
         lineNumberStyle={{
           userSelect: "none",
@@ -124,8 +125,10 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
           style: {
             fontSize: "0.9rem",
             fontFamily: "var(--font-mono)",
+            whiteSpace: "pre-wrap", // Add this line to wrap long lines
           },
         }}
+        wrapLongLines={true} // Enable wrapping of long lines
       >
         {value}
       </SyntaxHighlighter>

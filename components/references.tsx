@@ -10,7 +10,7 @@ interface Source {
 
 export function References({ sources }: { sources?: Source[] }) {
   return (
-    <div className="rounded-md">
+    <div className="break-words rounded-md">
       <h2 className="mb-2 text-lg font-bold">SOURCES</h2>
       {sources!.map((source, index) => (
         <div key={index} className="mb-4 pb-2">
@@ -22,7 +22,7 @@ export function References({ sources }: { sources?: Source[] }) {
               <span className="text-xs">{index + 1}</span>
             </a>
             {"\u00A0"}
-            <p className="truncate text-sm">
+            <p className="overflow-wrap text-sm">
               {source.url.replace("https://", "").replaceAll("/", " > ")}
             </p>
           </div>

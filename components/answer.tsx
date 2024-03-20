@@ -22,7 +22,7 @@ export function Answer({
 }) {
   return (
     <>
-      <div className="rounded-md">
+      <div className="break-words rounded-md">
         {/* <ButtonScrollToBottom /> */}
         <h2 className="pb-2 font-bold uppercase">Answer</h2>
         <ReactMarkdown
