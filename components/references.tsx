@@ -21,27 +21,22 @@ export function References({
         <h2 className="mb-2 text-lg font-bold">SOURCES</h2>
         {isLoading ? (
           <>
-            <Skeleton className="mb-2  h-6 w-2/3 " />
-            <Skeleton className="mb-2  h-6 w-full " />
-            <Skeleton className="mb-2  h-6 w-2/3 " />
-            <Skeleton className="mb-2  h-6 w-2/3 " />
-            <Skeleton className="mb-2  h-6 w-full " />
-            <Skeleton className="mb-2  h-6 w-2/3 " />
-            <Skeleton className="mb-2  h-6 w-2/3 " />
-            <Skeleton className="mb-2  h-6 w-full " />
-            <Skeleton className="mb-2  h-6 w-2/3 " />
-            <Skeleton className="mb-2  h-6 w-2/3 " />
-            <Skeleton className="mb-2  h-6 w-full " />
-            <Skeleton className="mb-2  h-6 w-2/3 " />
-            <Skeleton className="mb-2  h-6 w-2/3 " />
-            <Skeleton className="mb-2  h-6 w-full " />
-            <Skeleton className="mb-2  h-6 w-2/3 " />
-            <Skeleton className="mb-2  h-6 w-2/3 " />
-            <Skeleton className="mb-2  h-6 w-full " />
-            <Skeleton className="mb-2  h-6 w-2/3 " />
-            <Skeleton className="mb-2  h-6 w-2/3 " />
-            <Skeleton className="mb-2  h-6 w-full " />
-            <Skeleton className="mb-2  h-6 w-2/3 " />
+            <div className="p-4 lg:grid-cols-1">
+                <Skeleton className="mb-2  h-4 w-2/3 " />
+                <Skeleton className="mb-2  h-4 w-full" />
+                <Skeleton className="mb-2  h-4 w-2/3 " />
+                <br />
+
+                <Skeleton className="mb-2  h-4 w-2/3 pb-2" />
+                <Skeleton className="mb-2  h-4 w-full pb-2" />
+                <Skeleton className="mb-2  h-4 w-2/3 pb-2" />
+                <br />
+
+                <Skeleton className="mb-2  h-4 w-2/3 pb-2" />
+                <Skeleton className="mb-2  h-4 w-full pb-2" />
+                <Skeleton className="mb-2  h-4 w-2/3 pb-2" />
+                <br />
+              </div>
           </>
         ) : (
           sources!.map((source, index) => (

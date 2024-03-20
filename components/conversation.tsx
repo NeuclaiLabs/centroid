@@ -78,7 +78,7 @@ export function Conversation() {
                 <div className="col-span-1 p-4 lg:col-span-2">
                   <Answer message={message} isLoading={isLoading} />
                 </div>
-                <div className="col-span-1">
+                <div className="col-span-1 p-4">
                   <References sources={sources} isLoading={isSearchLoading} />
                 </div>
               </>
@@ -96,57 +96,37 @@ export function Conversation() {
         <div>
           <div className="grid gap-4 lg:grid-cols-3">
             <div className="col-span-1 rounded-md p-4 lg:col-span-2">
-              <Skeleton className="h-4 w-2/3" />
-              <Skeleton className="mb-2 h-6 w-full" />
-              <Skeleton className="mb-2 h-4 w-full" />
-              <Skeleton className="h-4 w-2/3" />
-              <Skeleton className="mb-2 h-6 w-full" />
-              <Skeleton className="mb-2 h-4 w-full" />
-              <Skeleton className="h-4 w-2/3" />
-              <Skeleton className="mb-2 h-6 w-full" />
-              <Skeleton className="mb-2 h-4 w-full" />
-              <Skeleton className="h-4 w-2/3" />
-              <Skeleton className="mb-2 h-6 w-full" />
-              <Skeleton className="mb-2 h-4 w-full" />
-              <Skeleton className="h-4 w-2/3" />
-              <Skeleton className="mb-2 h-6 w-full" />
-              <Skeleton className="mb-2 h-4 w-full" />
-              <Skeleton className="h-4 w-2/3" />
-              <Skeleton className="mb-2 h-6 w-full" />
-              <Skeleton className="mb-2 h-4 w-full" />
-              <Skeleton className="h-4 w-2/3" />
-              <Skeleton className="h-4 w-2/3" />
-              <Skeleton className="mb-2 h-6 w-full" />
-              <Skeleton className="mb-2 h-4 w-full" />
-              <Skeleton className="h-4 w-2/3" />
-              <Skeleton className="h-4 w-2/3" />
-              <Skeleton className="mb-2 h-6 w-full" />
-              <Skeleton className="mb-2 h-4 w-full" />
-              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="mb-2 h-4 w-full pb-2" />
+              <Skeleton className="mb-2 h-4 w-full pb-2" />
+              <Skeleton className="mb-2 h-4 w-2/3 pb-2" />
+              <br />
+
+              <Skeleton className="mb-2 h-4 w-full pb-2" />
+              <Skeleton className="mb-2 h-4 w-full pb-2" />
+              <Skeleton className="mb-2 h-4 w-2/3 pb-2" />
+              <br />
+
+              <Skeleton className="mb-2 h-4 w-full pb-2" />
+              <Skeleton className="mb-2 h-4 w-full pb-2" />
+              <Skeleton className="mb-2 h-4 w-2/3 pb-2" />
+              <br />
             </div>
             {isSearchLoading && (
-              <div className="grid gap-4 lg:grid-cols-1">
-                <Skeleton className="mb-2  h-6 w-2/3 " />
-                <Skeleton className="mb-2  h-6 w-full " />
-                <Skeleton className="mb-2  h-6 w-2/3 " />
-                <Skeleton className="mb-2  h-6 w-2/3 " />
-                <Skeleton className="mb-2  h-6 w-full " />
-                <Skeleton className="mb-2  h-6 w-2/3 " />
-                <Skeleton className="mb-2  h-6 w-2/3 " />
-                <Skeleton className="mb-2  h-6 w-full " />
-                <Skeleton className="mb-2  h-6 w-2/3 " />
-                <Skeleton className="mb-2  h-6 w-2/3 " />
-                <Skeleton className="mb-2  h-6 w-full " />
-                <Skeleton className="mb-2  h-6 w-2/3 " />
-                <Skeleton className="mb-2  h-6 w-2/3 " />
-                <Skeleton className="mb-2  h-6 w-full " />
-                <Skeleton className="mb-2  h-6 w-2/3 " />
-                <Skeleton className="mb-2  h-6 w-2/3 " />
-                <Skeleton className="mb-2  h-6 w-full " />
-                <Skeleton className="mb-2  h-6 w-2/3 " />
-                <Skeleton className="mb-2  h-6 w-2/3 " />
-                <Skeleton className="mb-2  h-6 w-full " />
-                <Skeleton className="mb-2  h-6 w-2/3 " />
+              <div className="p-4 lg:grid-cols-1">
+                <Skeleton className="mb-2  h-4 w-2/3 " />
+                <Skeleton className="mb-2  h-4 w-full" />
+                <Skeleton className="mb-2  h-4 w-2/3 " />
+                <br />
+
+                <Skeleton className="mb-2  h-4 w-2/3 pb-2" />
+                <Skeleton className="mb-2  h-4 w-full pb-2" />
+                <Skeleton className="mb-2  h-4 w-2/3 pb-2" />
+                <br />
+
+                <Skeleton className="mb-2  h-4 w-2/3 pb-2" />
+                <Skeleton className="mb-2  h-4 w-full pb-2" />
+                <Skeleton className="mb-2  h-4 w-2/3 pb-2" />
+                <br />
               </div>
             )}
           </div>
