@@ -36,5 +36,7 @@ export async function GET(request: Request) {
     })
 
     return Response.json({ sources })
-  } catch (err) {}
+  } catch (err) {
+    console.log("error")
+  }
 }

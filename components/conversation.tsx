@@ -79,7 +79,9 @@ export function Conversation() {
                   <Answer message={message} isLoading={isLoading} />
                 </div>
                 <div className="col-span-1 p-4">
-                  <References sources={sources} isLoading={isSearchLoading} />
+                  {!isSearchLoading && sources.length && (
+                    <References sources={sources} />
+                  )}
                 </div>
               </>
             )}
@@ -92,9 +94,9 @@ export function Conversation() {
           </React.Fragment>
         ))}
       </div>
-      {messages.length % 2 !== 0 && isLoading && (
-        <div>
-          <div className="grid gap-4 lg:grid-cols-3">
+      <div>
+        <div className="grid gap-4 lg:grid-cols-3">
+          {messages.length % 2 !== 0 && isLoading && (
             <div className="col-span-1 rounded-md p-4 lg:col-span-2">
               <Skeleton className="mb-2 h-4 w-full pb-2" />
               <Skeleton className="mb-2 h-4 w-full pb-2" />
@@ -111,27 +113,28 @@ export function Conversation() {
               <Skeleton className="mb-2 h-4 w-2/3 pb-2" />
               <br />
             </div>
-            {isSearchLoading && (
-              <div className="p-4 lg:grid-cols-1">
-                <Skeleton className="mb-2  h-4 w-2/3 " />
-                <Skeleton className="mb-2  h-4 w-full" />
-                <Skeleton className="mb-2  h-4 w-2/3 " />
-                <br />
+          )}
+          {isSearchLoading && (
+            <div className="p-4 lg:grid-cols-1">
+              <Skeleton className="mb-2  h-4 w-2/3 " />
+              <Skeleton className="mb-2  h-4 w-full" />
+              <Skeleton className="mb-2  h-4 w-2/3 " />
+              <br />
 
-                <Skeleton className="mb-2  h-4 w-2/3 pb-2" />
-                <Skeleton className="mb-2  h-4 w-full pb-2" />
-                <Skeleton className="mb-2  h-4 w-2/3 pb-2" />
-                <br />
+              <Skeleton className="mb-2  h-4 w-2/3 pb-2" />
+              <Skeleton className="mb-2  h-4 w-full pb-2" />
+              <Skeleton className="mb-2  h-4 w-2/3 pb-2" />
+              <br />
 
-                <Skeleton className="mb-2  h-4 w-2/3 pb-2" />
-                <Skeleton className="mb-2  h-4 w-full pb-2" />
-                <Skeleton className="mb-2  h-4 w-2/3 pb-2" />
-                <br />
-              </div>
-            )}
-          </div>
+              <Skeleton className="mb-2  h-4 w-2/3 pb-2" />
+              <Skeleton className="mb-2  h-4 w-full pb-2" />
+              <Skeleton className="mb-2  h-4 w-2/3 pb-2" />
+              <br />
+            </div>
+          )}
         </div>
-      )}
+      </div>
+
       <div className="container fixed bottom-5 left-[50%] flex max-w-lg translate-x-[-50%] gap-12 px-6 md:left-auto md:max-w-6xl md:translate-x-0 md:px-0">
         <div className="group mx-2 flex w-full flex-col rounded-2xl">
           <div className="flex items-center rounded-lg border-2 transition-all duration-300 ">

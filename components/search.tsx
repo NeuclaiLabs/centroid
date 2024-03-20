@@ -53,7 +53,7 @@ export function Search() {
         Get answers to your coding questions
       </h4>
       <div className="flex w-full flex-col items-center justify-center pb-20">
-        <div className="group flex w-full max-w-[800px] flex-col space-y-2 rounded-lg border-2  px-2 py-3">
+        <div className="group flex w-full max-w-[800px] flex-col space-y-2 rounded-lg border-2 px-2 py-3  dark:border-none dark:bg-secondary">
           <form
             ref={formRef}
             onSubmit={(e) => {
@@ -62,7 +62,7 @@ export function Search() {
             }}
           >
             <Textarea
-              className="h-12 w-full resize-none border-0 border-none  bg-popover px-2 py-1 focus-visible:outline-none focus-visible:ring-0"
+              className="h-12 w-full resize-none border-0 border-none bg-popover  px-2 py-1 focus-visible:outline-none focus-visible:ring-0 dark:bg-secondary"
               placeholder="What do you want to ask?"
               ref={inputRef}
               tabIndex={0}
