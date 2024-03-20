@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { useCallback, useEffect, useRef, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { useChat } from "ai/react"
 
@@ -12,6 +12,8 @@ import { References } from "@/components/references"
 export function Conversation() {
   const searchParams = useSearchParams()
   const searchQuery = decodeURIComponent(searchParams.get("q") || "")
+  const lastSeparatorRef: React.MutableRefObject<HTMLElement | null> =
+    useRef(null)
 
   const {
     messages,
@@ -28,6 +30,11 @@ export function Conversation() {
     },
   })
 
+  const setSeparatorRef = useCallback((node: HTMLElement | null) => {
+    if (node !== null) {
+      lastSeparatorRef.current = node
+    }
+  }, [])
   const effectRanOnce = useRef(false)
 
   useEffect(() => {
@@ -38,9 +45,12 @@ export function Conversation() {
   }, [searchQuery, append])
 
   useEffect(() => {
-    // Scroll to the top of the page when a question is displayed
+    // Scroll to the top of the page when a new question is displayed
     if (messages.length > 0 && messages[messages.length - 1].role === "user") {
-      window.scrollTo({ top: 0, behavior: "smooth" })
+      lastSeparatorRef?.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      })
     }
   }, [messages])
 
@@ -57,7 +67,10 @@ export function Conversation() {
               <>
                 <Answer message={message} isLoading={isLoading} />
                 <References />
-                <Separator className="col-span-3" />
+                <Separator
+                  className="col-span-3"
+                  ref={index === messages.length - 1 ? setSeparatorRef : null}
+                />
               </>
             )}
           </div>
@@ -67,6 +80,30 @@ export function Conversation() {
         <div>
           <div className="grid gap-4 lg:grid-cols-3">
             <div className="col-span-1 rounded-md p-4 lg:col-span-2">
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="mb-2 h-6 w-full" />
+              <Skeleton className="mb-2 h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="mb-2 h-6 w-full" />
+              <Skeleton className="mb-2 h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="mb-2 h-6 w-full" />
+              <Skeleton className="mb-2 h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="mb-2 h-6 w-full" />
+              <Skeleton className="mb-2 h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="mb-2 h-6 w-full" />
+              <Skeleton className="mb-2 h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="mb-2 h-6 w-full" />
+              <Skeleton className="mb-2 h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="mb-2 h-6 w-full" />
+              <Skeleton className="mb-2 h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="h-4 w-2/3" />
               <Skeleton className="mb-2 h-6 w-full" />
               <Skeleton className="mb-2 h-4 w-full" />
               <Skeleton className="h-4 w-2/3" />
