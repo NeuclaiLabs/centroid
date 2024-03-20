@@ -18,6 +18,7 @@ export async function GET(request: Request) {
       searchQuery
     )}`
     const response = await fetch(searchUrl)
+    console.log("Response received: ", response)
     const html = await response.text()
 
     const $ = cheerio.load(html)

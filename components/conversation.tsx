@@ -112,6 +112,20 @@ export function Conversation() {
               <Skeleton className="mb-2 h-4 w-full pb-2" />
               <Skeleton className="mb-2 h-4 w-2/3 pb-2" />
               <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
             </div>
           )}
           {isSearchLoading && (
