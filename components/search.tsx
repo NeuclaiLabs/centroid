@@ -46,7 +46,7 @@ export function Search() {
         Get answers to your coding questions
       </h4>
       <div className="flex w-full flex-col items-center justify-center">
-        <div className="group flex w-full max-w-[800px] flex-col space-y-2 rounded-lg border-2 border-gray-600 px-2 py-3">
+        <div className="group flex w-full max-w-[800px] flex-col space-y-2 rounded-lg border-2  px-2 py-3">
           <form
             ref={formRef}
             onSubmit={(e) => {

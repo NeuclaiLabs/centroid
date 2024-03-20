@@ -20,7 +20,7 @@ export function Suggestions() {
       className="w-[350px] space-y-2"
     >
       <div className="flex space-x-4 pt-8">
-        <CollapsibleTrigger asChild>
+        <CollapsibleTrigger asChild className="bg-none hover:bg-transparent">
           <Button variant="ghost" className="w-100 p-0 text-xl font-bold">
             Suggestions {"\u00A0"} <ChevronsUpDown className="size-4" />
             <span className="sr-only">Toggle</span>

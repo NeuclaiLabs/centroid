@@ -56,26 +56,37 @@ export function Conversation() {
 
   return (
     <div>
-      {messages.map((message, index) => (
-        <React.Fragment key={index}>
-          <div className="grid gap-4 lg:grid-cols-3" key={index}>
+      <div className="grid gap-4 lg:grid-cols-3">
+        {messages.map((message, index) => (
+          <React.Fragment key={index}>
             {index % 2 === 0 ? (
-              <div>
-                <Question message={message} />
-              </div>
+              <>
+                <div className="col-span-1 p-4 lg:col-span-2">
+                  <Question message={message} />
+                </div>
+                <div className="col-span-1">
+                  <div className="rounded-md "></div>
+                </div>
+              </>
             ) : (
               <>
-                <Answer message={message} isLoading={isLoading} />
-                <References />
-                <Separator
-                  className="col-span-3"
-                  ref={index === messages.length - 1 ? setSeparatorRef : null}
-                />
+                <div className="col-span-1 p-4 lg:col-span-2">
+                  <Answer message={message} isLoading={isLoading} />
+                </div>
+                <div className="col-span-1">
+                  <References />
+                </div>
               </>
             )}
-          </div>
-        </React.Fragment>
-      ))}
+            {index % 2 == 1 && (
+              <Separator
+                className="col-span-1  lg:col-span-3"
+                ref={index === messages.length - 1 ? setSeparatorRef : null}
+              />
+            )}
+          </React.Fragment>
+        ))}
+      </div>
       {messages.length % 2 !== 0 && isLoading && (
         <div>
           <div className="grid gap-4 lg:grid-cols-3">
@@ -108,13 +119,6 @@ export function Conversation() {
               <Skeleton className="mb-2 h-4 w-full" />
               <Skeleton className="h-4 w-2/3" />
             </div>
-            {/* <div className="col-span-1  p-4">
-              <div className="rounded-md ">
-                <Skeleton className="mb-2 h-5 w-full" />
-                <Skeleton className="mb-2 h-6 w-full" />
-                <Skeleton className="mb-2 h-6 w-full" />
-              </div>
-            </div> */}
           </div>
         </div>
       )}

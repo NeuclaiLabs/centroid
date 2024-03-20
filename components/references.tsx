@@ -14,7 +14,7 @@ export function References() {
   const { sources, isLoading, error } = useSearchResults(searchQuery)
 
   return (
-    <div className="col-span-1 flex flex-col p-4">
+    <>
       <div className="rounded-md">
         <h2 className="mb-2 text-lg font-bold">SOURCES</h2>
         {isLoading ? (
@@ -47,7 +47,7 @@ export function References() {
               <div className="flex items-center">
                 <a
                   href={source.url}
-                  className="inline-flex size-4 items-center justify-center rounded-full bg-gray-600"
+                  className="inline-flex size-4 items-center justify-center rounded-full bg-secondary"
                 >
                   <span className="text-xs">{index + 1}</span>
                 </a>
@@ -69,6 +69,6 @@ export function References() {
           ))
         )}
       </div>
-    </div>
+    </>
   )
 }
