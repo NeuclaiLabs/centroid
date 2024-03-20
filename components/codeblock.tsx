@@ -4,8 +4,9 @@
 "use client"
 
 import { FC, memo } from "react"
+import { nanoid } from "ai"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
-import { coldarkDark } from "react-syntax-highlighter/dist/cjs/styles/prism"
+import { dracula } from "react-syntax-highlighter/dist/cjs/styles/prism"
 
 import { useCopyToClipboard } from "@/lib/hooks/use-copy-to-clipboard"
 import { Button } from "@/components/ui/button"
@@ -47,15 +48,6 @@ export const programmingLanguages: languageMap = {
   // add more file extensions here, make sure the key is same as language prop in CodeBlock.tsx component
 }
 
-export const generateRandomString = (length: number, lowercase = false) => {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXY3456789" // excluding similar looking characters like Z, 2, I, 1, O, 0
-  let result = ""
-  for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  return lowercase ? result.toLowerCase() : result
-}
-
 const CodeBlock: FC<Props> = memo(({ language, value }) => {
   const { copiedText, isCopied, copyToClipboard } = useCopyToClipboard()
 
@@ -64,10 +56,7 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
       return
     }
     const fileExtension = programmingLanguages[language] || ".file"
-    const suggestedFileName = `file-${generateRandomString(
-      3,
-      true
-    )}${fileExtension}`
+    const suggestedFileName = `file-${nanoid()}${fileExtension}`
     const fileName = window.prompt("Enter file name" || "", suggestedFileName)
 
     if (!fileName) {
@@ -121,7 +110,7 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
         language={language}
         PreTag="div"
         showLineNumbers
-        style={coldarkDark}
+        style={dracula}
         customStyle={{
           margin: 0,
           width: "100%",

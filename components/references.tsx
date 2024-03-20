@@ -1,6 +1,5 @@
 import React from "react"
 
-import useSearchResults from "@/lib/hooks/use-search-results"
 import { Skeleton } from "@/components/ui/skeleton"
 
 interface Source {
@@ -9,10 +8,13 @@ interface Source {
   description: string
 }
 
-export function References() {
-  const searchQuery = "nodejs"
-  const { sources, isLoading, error } = useSearchResults(searchQuery)
-
+export function References({
+  isLoading,
+  sources,
+}: {
+  isLoading: boolean
+  sources?: Source[]
+}) {
   return (
     <>
       <div className="rounded-md">
@@ -42,7 +44,7 @@ export function References() {
             <Skeleton className="mb-2  h-6 w-2/3 " />
           </>
         ) : (
-          sources.map((source, index) => (
+          sources!.map((source, index) => (
             <div key={index} className="mb-4 pb-2">
               <div className="flex items-center">
                 <a

@@ -25,12 +25,14 @@ export async function GET(request: Request) {
     const sources: Source[] = []
 
     searchResults.each((index, element) => {
-      const $result = $(element)
-      const title = $result.find("h2 a").text()
-      const url = $result.find("h2 a").attr("href") || ""
-      const description = $result.find(".b_caption p").text()
+      if (index < 10) {
+        const $result = $(element)
+        const title = $result.find("h2 a").text()
+        const url = $result.find("h2 a").attr("href") || ""
+        const description = $result.find(".b_caption p").text()
 
-      sources.push({ title, url, description })
+        sources.push({ title, url, description })
+      }
     })
 
     return Response.json({ sources })

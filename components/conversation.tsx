@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { useChat } from "ai/react"
 
+import useSearchResults from "@/lib/hooks/use-search-results"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Answer } from "@/components/answer"
@@ -14,7 +15,11 @@ export function Conversation() {
   const searchQuery = decodeURIComponent(searchParams.get("q") || "")
   const lastSeparatorRef: React.MutableRefObject<HTMLElement | null> =
     useRef(null)
-
+  const {
+    sources,
+    isLoading: isSearchLoading,
+    error,
+  } = useSearchResults(searchQuery)
   const {
     messages,
     reload,
@@ -74,7 +79,7 @@ export function Conversation() {
                   <Answer message={message} isLoading={isLoading} />
                 </div>
                 <div className="col-span-1">
-                  <References />
+                  <References sources={sources} isLoading={isSearchLoading} />
                 </div>
               </>
             )}
@@ -119,6 +124,31 @@ export function Conversation() {
               <Skeleton className="mb-2 h-4 w-full" />
               <Skeleton className="h-4 w-2/3" />
             </div>
+            {isSearchLoading && (
+              <div className="grid gap-4 lg:grid-cols-1">
+                <Skeleton className="mb-2  h-6 w-2/3 " />
+                <Skeleton className="mb-2  h-6 w-full " />
+                <Skeleton className="mb-2  h-6 w-2/3 " />
+                <Skeleton className="mb-2  h-6 w-2/3 " />
+                <Skeleton className="mb-2  h-6 w-full " />
+                <Skeleton className="mb-2  h-6 w-2/3 " />
+                <Skeleton className="mb-2  h-6 w-2/3 " />
+                <Skeleton className="mb-2  h-6 w-full " />
+                <Skeleton className="mb-2  h-6 w-2/3 " />
+                <Skeleton className="mb-2  h-6 w-2/3 " />
+                <Skeleton className="mb-2  h-6 w-full " />
+                <Skeleton className="mb-2  h-6 w-2/3 " />
+                <Skeleton className="mb-2  h-6 w-2/3 " />
+                <Skeleton className="mb-2  h-6 w-full " />
+                <Skeleton className="mb-2  h-6 w-2/3 " />
+                <Skeleton className="mb-2  h-6 w-2/3 " />
+                <Skeleton className="mb-2  h-6 w-full " />
+                <Skeleton className="mb-2  h-6 w-2/3 " />
+                <Skeleton className="mb-2  h-6 w-2/3 " />
+                <Skeleton className="mb-2  h-6 w-full " />
+                <Skeleton className="mb-2  h-6 w-2/3 " />
+              </div>
+            )}
           </div>
         </div>
       )}

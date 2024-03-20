@@ -3,8 +3,6 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import remarkMath from "remark-math"
 
-import { Skeleton } from "@/components/ui/skeleton"
-import { ButtonScrollToBottom } from "@/components/button-scroll-to-bottom"
 import { CodeBlock } from "@/components/codeblock"
 import { ButtonGroup } from "@/components/conversation-actions"
 import { Suggestions } from "@/components/suggestions"
@@ -46,25 +44,27 @@ export function Answer({
               }
 
               const match = /language-(\w+)/.exec(className || "")
-              const codeText = Array.isArray(node.properties.children)
-                ? node.properties.children.join("")
-                : ""
-              const numLines = codeText.split("\n").length
+              const codeText = String(children).trim()
 
-              if (!match && numLines < 3) {
+              if (!match && codeText.length < 50) {
                 return (
-                  <code {...props}>
-                    <b>{children}</b>
+                  <code
+                    {...props}
+                    className="text-bold inline-code bg-secondary"
+                  >
+                    {children}
                   </code>
                 )
               }
               return (
-                <CodeBlock
-                  key={Math.random()}
-                  language={(match && match[1]) || "auto"}
-                  value={String(children).replace(/\n$/, "")}
-                  {...props}
-                />
+                <>
+                  <CodeBlock
+                    key={Math.random()}
+                    language={(match && match[1]) || "auto"}
+                    value={String(children).replace(/\n$/, "")}
+                    {...props}
+                  />
+                </>
               )
             },
           }}

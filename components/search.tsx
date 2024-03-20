@@ -36,6 +36,13 @@ export function Search() {
     router.push(`/search?q=${encodedQuery}`)
   }
 
+  const onSuggestionClick = (query: string) => {
+    setSearchQuery(query)
+    const encodedQuery = encodeURIComponent(query.trim())
+    console.log(query, encodedQuery)
+    router.push(`/search?q=${encodedQuery}`)
+  }
+
   const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setSearchQuery(event.target.value)
   }
@@ -45,7 +52,7 @@ export function Search() {
       <h4 className="text-center text-3xl font-extrabold leading-tight tracking-tighter md:text-4xl">
         Get answers to your coding questions
       </h4>
-      <div className="flex w-full flex-col items-center justify-center">
+      <div className="flex w-full flex-col items-center justify-center pb-20">
         <div className="group flex w-full max-w-[800px] flex-col space-y-2 rounded-lg border-2  px-2 py-3">
           <form
             ref={formRef}
@@ -101,30 +108,27 @@ export function Search() {
               className="h-8 text-xs"
               variant="secondary"
               onClick={() => {
-                setSearchQuery("What new in NextJS 14?")
-                onButtonClick()
+                onSuggestionClick("How does RLHF work?")
               }}
             >
-              What new in NextJS 14?
+              How does RLHF work?
             </Button>
             <Button
               className="text-xs"
               size="sm"
               variant="secondary"
               onClick={() => {
-                setSearchQuery("How to get useragent new in NextJS 14?")
-                onButtonClick()
+                onSuggestionClick("Quicksort explained with code examples?")
               }}
             >
-              How to get useragent new in NextJS 14??
+              Quicksort explained with code examples?
             </Button>
             <Button
               className="text-xs"
               size="sm"
               variant="secondary"
               onClick={() => {
-                setSearchQuery("How to get useragent new in NextJS 14?")
-                onButtonClick()
+                onSuggestionClick("How to get useragent new in NextJS 14?")
               }}
             >
               How to get useragent new in NextJS 14?
@@ -134,11 +138,10 @@ export function Search() {
               size="sm"
               variant="secondary"
               onClick={() => {
-                setSearchQuery("What new in NextJS 14?")
-                onButtonClick()
+                onSuggestionClick("How to deploy React using Docker?")
               }}
             >
-              What new in NextJS 14?
+              How to deploy React using Docker?
             </Button>
           </div>
         </div>
