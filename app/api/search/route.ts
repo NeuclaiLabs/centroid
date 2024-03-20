@@ -34,7 +34,7 @@ export async function GET(request: Request) {
         sources.push({ title, url, description })
       }
     })
-
+    console.log(sources)
     return Response.json({ sources })
   } catch (err) {
     console.log("error")
