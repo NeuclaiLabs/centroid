@@ -33,14 +33,14 @@ export function Search() {
     const query = searchQuery.trim()
     const encodedQuery = encodeURIComponent(query)
     console.log(query, encodedQuery)
-    router.push(`/search?q=${encodedQuery}`)
+    router.push(`/search?q=${encodedQuery}`, { scroll: false })
   }
 
   const onSuggestionClick = (query: string) => {
     setSearchQuery(query)
     const encodedQuery = encodeURIComponent(query.trim())
     console.log(query, encodedQuery)
-    router.push(`/search?q=${encodedQuery}`)
+    router.push(`/search?q=${encodedQuery}`, { scroll: false })
   }
 
   const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
