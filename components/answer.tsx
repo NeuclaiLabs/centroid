@@ -71,7 +71,8 @@ export function Answer({
         >
           {message.content}
         </ReactMarkdown>
-        <ButtonGroup /> <Suggestions />
+        <ButtonGroup />
+        {/* <Suggestions /> */}
       </div>
     </>
   )
