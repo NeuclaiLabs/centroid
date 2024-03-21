@@ -69,13 +69,17 @@ export function Conversation() {
                 <div className="col-span-1 overflow-x-auto p-4 lg:col-span-2">
                   <Question message={message} />
                 </div>
-                <div className="col-span-1 overflow-x-auto">
+                <div className="col-span-1 ">
                   <div className="rounded-md "></div>
                 </div>
               </>
             ) : (
               <>
-                <div className="col-span-1 overflow-x-auto p-4 lg:col-span-2">
+                <div
+                  className={`col-span-1 p-4 lg:col-span-2 ${
+                    isLoading ? "overflow-y-hidden" : "overflow-y-auto"
+                  }`}
+                >
                   <Answer message={message} isLoading={isLoading} />
                 </div>
                 <div className="col-span-1 overflow-x-auto  p-4 lg:col-span-1 ">
