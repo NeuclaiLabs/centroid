@@ -61,24 +61,24 @@ export function Conversation() {
 
   return (
     <div>
-      <div className="grid-auto-flow grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 overflow-x-auto lg:grid-cols-3">
         {messages.map((message, index) => (
           <React.Fragment key={index}>
             {index % 2 === 0 ? (
               <>
-                <div className="col-span-1 p-4 lg:col-span-2">
+                <div className="col-span-1 overflow-x-auto p-4 lg:col-span-2">
                   <Question message={message} />
                 </div>
-                <div className="col-span-1">
+                <div className="col-span-1 overflow-x-auto">
                   <div className="rounded-md "></div>
                 </div>
               </>
             ) : (
               <>
-                <div className="col-span-1 p-4 lg:col-span-2">
+                <div className="col-span-1 overflow-x-auto p-4 lg:col-span-2">
                   <Answer message={message} isLoading={isLoading} />
                 </div>
-                <div className="col-span-1 p-4 lg:col-span-1 ">
+                <div className="col-span-1 overflow-x-auto  p-4 lg:col-span-1 ">
                   {!isSearchLoading && sources.length && (
                     <References sources={sources} />
                   )}
