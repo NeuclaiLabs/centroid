@@ -3,9 +3,11 @@ import { useSearchParams } from "next/navigation"
 import { useChat } from "ai/react"
 
 import useSearchResults from "@/lib/hooks/use-search-results"
+import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Answer } from "@/components/answer"
+import { IconStop } from "@/components/icons"
 import { PromptForm } from "@/components/prompt-form"
 import { Question } from "@/components/question"
 import { References } from "@/components/references"
@@ -31,7 +33,7 @@ export function Conversation() {
     handleSubmit,
   } = useChat({
     onFinish(message) {
-      console.log("calling reload", message)
+      // console.log("calling reload", message)
     },
   })
 
@@ -75,12 +77,12 @@ export function Conversation() {
               </>
             ) : (
               <>
-                <div
-                  className={`col-span-1 p-4 lg:col-span-2 ${
-                    isLoading ? "overflow-y-hidden" : "overflow-y-auto"
-                  }`}
-                >
-                  <Answer message={message} isLoading={isLoading} />
+                <div className={"col-span-1 p-4 lg:col-span-2"}>
+                  <Answer
+                    message={message}
+                    isLoading={isLoading}
+                    reload={reload}
+                  />
                 </div>
                 <div className="col-span-1 overflow-x-auto  p-4 lg:col-span-1 ">
                   {!isSearchLoading && sources.length && (
@@ -155,7 +157,20 @@ export function Conversation() {
 
       <div className="container fixed bottom-5 left-[50%] flex max-w-lg translate-x-[-50%] gap-12 px-6 md:left-auto md:max-w-6xl md:translate-x-0 md:px-0">
         <div className="group mx-2 flex w-full flex-col rounded-2xl">
-          <div className="flex items-center rounded-lg border-2 transition-all duration-300 ">
+          <div className="flex items-center justify-center space-x-4 pb-4">
+            {isLoading && (
+              <Button
+                variant="outline"
+                onClick={() => stop()}
+                size="sm"
+                className="bg-background"
+              >
+                <IconStop className="mr-2" />
+                Stop generating
+              </Button>
+            )}
+          </div>
+          <div className="flex items-center rounded-lg border-2 bg-white p-2  dark:bg-secondary ">
             <PromptForm
               onSubmit={async (value) => {
                 await append({

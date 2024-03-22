@@ -4,7 +4,7 @@ import remarkGfm from "remark-gfm"
 import remarkMath from "remark-math"
 
 import { CodeBlock } from "@/components/codeblock"
-import { ButtonGroup } from "@/components/conversation-actions"
+import { ConversationActions } from "@/components/conversation-actions"
 import { Suggestions } from "@/components/suggestions"
 
 interface CodeProps {
@@ -16,9 +16,11 @@ interface CodeProps {
 export function Answer({
   message,
   isLoading,
+  reload,
 }: {
   message: Message
   isLoading: boolean
+  reload: () => void
 }) {
   return (
     <>
@@ -46,7 +48,7 @@ export function Answer({
               const match = /language-(\w+)/.exec(className || "")
               const codeText = String(children).trim()
 
-              if (!match && codeText.length < 50) {
+              if (!match && codeText.length < 100) {
                 return (
                   <code
                     {...props}
@@ -71,7 +73,7 @@ export function Answer({
         >
           {message.content}
         </ReactMarkdown>
-        <ButtonGroup />
+        <ConversationActions reload={reload} />
         {/* <Suggestions /> */}
       </div>
     </>
