@@ -77,7 +77,7 @@ export function Conversation() {
               </>
             ) : (
               <>
-                <div className="col-span-1 p-4 lg:col-span-2 min-h-screen">
+                <div className="col-span-1 min-h-screen overflow-x-auto p-4 lg:col-span-2">
                   <Answer
                     message={message}
                     isLoading={isLoading}
