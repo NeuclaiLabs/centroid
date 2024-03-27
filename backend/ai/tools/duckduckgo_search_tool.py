@@ -1,13 +1,23 @@
+from langchain.pydantic_v1 import BaseModel, Field
+from langchain.tools import StructuredTool
 from langchain_community.tools import DuckDuckGoSearchResults
-from langchain_core.tools import ToolException
+
+from ai.utils import handle_error
 
 
-def _handle_error(error: ToolException) -> str:
-    return (
-        "The following errors occurred during tool execution:"
-        + error.args[0]
-        + "Please try another tool."
-    )
+class DuckDuckGoSearchInput(BaseModel):
+    query: str = Field(description="Content of search query.")
 
 
-DuckDuckGoSearchTool = DuckDuckGoSearchResults()
+def search(query: str):
+    return DuckDuckGoSearchResults().run(query)
+
+
+DuckDuckGoSearchTool = StructuredTool.from_function(
+    func=search,
+    name="Search Results",
+    description="Search for results on DuckDuckgo",
+    args_schema=DuckDuckGoSearchInput,
+    return_direct=True,
+    handle_tool_error=handle_error,
+)

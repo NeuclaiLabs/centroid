@@ -2,8 +2,9 @@ from enum import Enum
 
 from langchain.pydantic_v1 import BaseModel, Field
 from langchain.tools import StructuredTool
-from langchain_core.tools import ToolException
 from testcontainers.core.container import DockerContainer
+
+from ai.utils import handle_error
 
 
 class LanguageEnum(str, Enum):
@@ -26,14 +27,6 @@ class LanguageEnum(str, Enum):
 class CodeExecutorInput(BaseModel):
     code: str = Field(description="Code snippet that needs to be executed.")
     language: LanguageEnum = Field(description="The language of the code snippet")
-
-
-def _handle_error(error: ToolException) -> str:
-    return (
-        "The following errors occurred during tool execution:"
-        + error.args[0]
-        + "Please try another tool."
-    )
 
 
 def execute_code(code: str, language: str) -> str:
@@ -79,9 +72,9 @@ def execute_code(code: str, language: str) -> str:
 CodeExecutionTool = StructuredTool.from_function(
     func=execute_code,
     name="Code Executor",
-    description="multiply numbers",
+    description="Execute the code snippet",
     args_schema=CodeExecutorInput,
     return_direct=True,
-    handle_tool_error=_handle_error,
+    handle_tool_error=handle_error,
     # coroutine= ... <- you can specify an async method if desired as well
 )
