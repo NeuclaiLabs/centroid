@@ -1,0 +1,4 @@
+from openastra.tools.code_execution_tool import CodeExecutionTool
+from openastra.tools.duckduckgo_search_tool import DuckDuckGoSearchTool
+from openastra.tools.html_scraper_tool import HTMLScraperTool
+

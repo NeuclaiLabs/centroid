@@ -4,7 +4,7 @@ from langchain.pydantic_v1 import BaseModel, Field
 from langchain.tools import StructuredTool
 from testcontainers.core.container import DockerContainer
 
-from ai.utils import handle_error
+from openastra.utils import handle_error
 
 
 class LanguageEnum(str, Enum):

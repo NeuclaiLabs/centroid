@@ -1,4 +1,4 @@
-from ai.tools.code_execution_tool import CodeExecutionTool
+from openastra.tools.code_execution_tool import CodeExecutionTool
 
 
 def test_hello_world():

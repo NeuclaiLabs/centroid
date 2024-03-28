@@ -1,4 +1,4 @@
-from ai.tools.html_scraper_tool import HTMLScraperTool
+from openastra.tools.html_scraper_tool import HTMLScraperTool
 
 
 def test_ddg_basic():

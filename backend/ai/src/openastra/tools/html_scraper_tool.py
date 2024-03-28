@@ -7,7 +7,7 @@ from langchain.tools import StructuredTool
 from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_community.document_transformers import Html2TextTransformer
 
-from ai.utils import handle_error
+from openastra.utils import handle_error
 
 logger = logging.getLogger(__name__)
 

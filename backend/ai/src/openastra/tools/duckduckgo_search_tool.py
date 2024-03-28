@@ -2,7 +2,7 @@ from langchain.pydantic_v1 import BaseModel, Field
 from langchain.tools import StructuredTool
 from langchain_community.tools import DuckDuckGoSearchResults
 
-from ai.utils import handle_error
+from openastra.utils import handle_error
 
 
 class DuckDuckGoSearchInput(BaseModel):
@@ -15,7 +15,7 @@ def search(query: str):
 
 DuckDuckGoSearchTool = StructuredTool.from_function(
     func=search,
-    name="Search Results",
+    name="tavily_search",
     description="Search for results on DuckDuckgo",
     args_schema=DuckDuckGoSearchInput,
     return_direct=True,
