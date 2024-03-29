@@ -16,7 +16,7 @@ passlib = { extras = ["bcrypt"], version = "^1.7.4" }
 tenacity = "^8.2.3"
 pydantic = ">2.0"
 emails = "^0.6"
-openastra =  {path = "./ai"}
+openastra = { path = "./ai" }
 
 gunicorn = "^21.2.0"
 jinja2 = "^3.1.2"
@@ -55,6 +55,7 @@ exclude = ["venv", "alembic"]
 
 [tool.ruff]
 target-version = "py310"
+exclude = ["alembic"]
 
 [tool.ruff.lint]
 select = [
