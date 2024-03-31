@@ -24,3 +24,13 @@ def test_email(email_to: EmailStr) -> Message:
         html_content=email_data.html_content,
     )
     return Message(message="Test email sent")
+
+
+@router.post(
+    "/hello",
+)
+def test_sample() -> Message:
+    """
+    Test emails.
+    """
+    return Message(message="Hello World!")
