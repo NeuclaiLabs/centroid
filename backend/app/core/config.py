@@ -1,5 +1,6 @@
 import secrets
 import warnings
+from pathlib import Path
 from typing import Annotated, Any, Literal
 
 from pydantic import (
@@ -53,10 +54,18 @@ class Settings(BaseSettings):
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str = ""
+    DB_TYPE: str = "sqlite"
 
     @computed_field  # type: ignore[misc]
     @property
-    def SQLALCHEMY_DATABASE_URI(self) -> PostgresDsn:
+    def SQLALCHEMY_DATABASE_URI(self) -> PostgresDsn | Any:
+        if self.DB_TYPE == "sqlite":
+            home_dir = Path.home()
+            openastra_dir = home_dir / ".openastra"
+            openastra_dir.mkdir(parents=True, exist_ok=True)
+            db = openastra_dir / "app.db"
+            return f"sqlite:///{db}"
+
         return MultiHostUrl.build(
             scheme="postgresql+psycopg",
             username=self.POSTGRES_USER,

@@ -3,6 +3,8 @@ from logging.config import fileConfig
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
+from pathlib import Path
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -29,6 +31,13 @@ target_metadata = SQLModel.metadata
 
 
 def get_url():
+    if os.getenv("DB_TYPE") == "sqlite":
+        home_dir = Path.home()
+        openastra_dir = home_dir / '.openastra'
+        openastra_dir.mkdir(parents=True, exist_ok=True)
+        db = openastra_dir / 'app.db'
+        return f"sqlite:///{db}"
+
     user = os.getenv("POSTGRES_USER", "postgres")
     password = os.getenv("POSTGRES_PASSWORD", "")
     server = os.getenv("POSTGRES_SERVER", "db")
