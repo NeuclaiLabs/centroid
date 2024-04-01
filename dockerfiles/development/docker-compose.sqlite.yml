@@ -26,8 +26,13 @@ services:
       - SENTRY_DSN=${SENTRY_DSN}
     volumes:
       - ~/.openastra:/root/.openastra
+      - ../../backend/:/app
     build:
       context: ../backend
+      args:
+        INSTALL_DEV: ${INSTALL_DEV-true}
+    # command: sleep infinity  # Infinite loop to keep container alive doing nothing
+    command: /start-reload.sh
 
   frontend:
     image: '${DOCKER_IMAGE_FRONTEND?Variable not set}:${TAG-latest}'

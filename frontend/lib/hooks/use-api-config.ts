@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import { toast } from "@/components/ui/use-toast"
+import { toast } from 'sonner'
 
 const apiConfigItemSchema = z.object({
   provider: z.enum(["OpenAI", "Groq", "Anthropic", "Ollama"], {
