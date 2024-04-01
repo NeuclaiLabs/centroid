@@ -6,7 +6,7 @@ services:
     volumes:
       - app-db-data:/var/lib/postgresql/data/pgdata
     env_file:
-      - .env
+      - ../../.env
     environment:
       - PGDATA=/var/lib/postgresql/data/pgdata
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
@@ -45,7 +45,7 @@ services:
     depends_on:
       - db
     env_file:
-      - .env
+      - ../../.env
     environment:
       - DOMAIN=${DOMAIN}
       - ENVIRONMENT=${ENVIRONMENT}

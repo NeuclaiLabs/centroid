@@ -1,0 +1,44 @@
+version: '3.3'
+services:
+  backend:
+    image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
+    restart: always
+    ports:
+      - '8888:8888'
+    networks:
+      - default
+    env_file:
+      - .env
+    environment:
+      - PORT=8888
+      - DB_TYPE=sqlite
+      - DOMAIN=${DOMAIN}
+      - ENVIRONMENT=${ENVIRONMENT}
+      - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS}
+      - SECRET_KEY=${SECRET_KEY?Variable not set}
+      - FIRST_SUPERUSER=${FIRST_SUPERUSER?Variable not set}
+      - FIRST_SUPERUSER_PASSWORD=${FIRST_SUPERUSER_PASSWORD?Variable not set}
+      - USERS_OPEN_REGISTRATION=${USERS_OPEN_REGISTRATION}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - EMAILS_FROM_EMAIL=${EMAILS_FROM_EMAIL}
+      - SENTRY_DSN=${SENTRY_DSN}
+    volumes:
+      - ~/.openastra:/root/.openastra
+    build:
+      context: ../backend
+
+  frontend:
+    image: '${DOCKER_IMAGE_FRONTEND?Variable not set}:${TAG-latest}'
+    restart: always
+    ports:
+      - '3000:3000'
+    networks:
+      - default
+    environment:
+      - PORT=3000
+    build:
+      context: ../frontend
+      args:
+        - NODE_ENV=production
