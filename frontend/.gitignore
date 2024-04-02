@@ -33,4 +33,6 @@ yarn-error.log*
 .turbo
 
 .contentlayer
-.env
+.vercel
+.vscode
+.env*.local

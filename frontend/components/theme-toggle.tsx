@@ -1,22 +1,30 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import { Moon, Sun } from "lucide-react"
-import { useTheme } from "next-themes"
+import * as React from 'react'
+import { useTheme } from 'next-themes'
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button'
+import { IconMoon, IconSun } from '@/components/ui/icons'
 
 export function ThemeToggle() {
   const { setTheme, theme } = useTheme()
+  const [_, startTransition] = React.useTransition()
 
   return (
     <Button
       variant="ghost"
       size="icon"
-      onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+      onClick={() => {
+        startTransition(() => {
+          setTheme(theme === 'light' ? 'dark' : 'light')
+        })
+      }}
     >
-      <Sun className="h-[1.5rem] w-[1.3rem] dark:hidden" />
-      <Moon className="hidden size-5 dark:block" />
+      {!theme ? null : theme === 'dark' ? (
+        <IconMoon className="transition-all" />
+      ) : (
+        <IconSun className="transition-all" />
+      )}
       <span className="sr-only">Toggle theme</span>
     </Button>
   )
