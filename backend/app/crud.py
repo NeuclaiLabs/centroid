@@ -59,3 +59,8 @@ def create_chat(*, session: Session, chat: Chat) -> Chat:
     session.commit()
     session.refresh(db_chat)
     return db_chat
+
+
+def get_chats(session: Session, user_id: str) -> list[Chat]:
+    statement = select(Chat).where(Chat.user_id == user_id)
+    return session.exec(statement).all()

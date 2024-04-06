@@ -54,15 +54,32 @@ def read_chat(session: SessionDep, current_user: CurrentUser, id: str) -> Chat:
 
 
 @router.post("/", response_model=Chat)
-def create_chat(*, session: SessionDep, current_user: CurrentUser, chat: Chat) -> Any:
+def create_or_update_chat(
+    *, session: SessionDep, current_user: CurrentUser, chat: Chat
+) -> Any:
     """
-    Create new chat.
+    Create or update a chat.
     """
-    chat = Chat.model_validate(chat)
-    session.add(chat)
+    # Get the existing chat, if any
+    existing_chat: Chat = session.get(Chat, chat.id)
+
+    # If the chat doesn't exist, create a new one
+    if not existing_chat:
+        chat = Chat.model_validate(chat)
+        session.add(chat)
+        session.commit()
+        session.refresh(chat)
+        return chat
+
+    # Otherwise, update the existing chat
+    if not current_user.is_superuser and (existing_chat.user_id != current_user.id):
+        raise HTTPException(status_code=400, detail="Not enough permissions")
+    update_dict = chat.model_dump(exclude_unset=True)
+    existing_chat.sqlmodel_update(update_dict)
+    session.add(existing_chat)
     session.commit()
-    session.refresh(chat)
-    return chat
+    session.refresh(existing_chat)
+    return existing_chat
 
 
 @router.put("/{id}", response_model=Chat)
@@ -98,3 +115,13 @@ def delete_chat(session: SessionDep, current_user: CurrentUser, id: str) -> Any:
     session.delete(chat)
     session.commit()
     return Message(message="Chat deleted successfully")
+
+
+@router.delete("/")
+def delete_all_user_chats(session: SessionDep, current_user: CurrentUser) -> Any:
+    """
+    Delete all chats for a user.
+    """
+    session.query(Chat).filter(Chat.user_id == str(current_user.id)).delete()
+    session.commit()
+    return Message(message="All chats deleted successfully")

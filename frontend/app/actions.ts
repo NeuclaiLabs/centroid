@@ -13,25 +13,52 @@ export async function getChats(userId?: string | null) {
   }
 
   try {
-    const pipeline = kv.pipeline()
-    const chats: string[] = await kv.zrange(`user:chat:${userId}`, 0, -1, {
-      rev: true
-    })
+    const response = await fetch(
+      `http://localhost:8080/api/v1/chats/?skip=0&limit=100`,
+      {
+        method: 'GET',
+        headers: {
+          accept: 'application/json',
+          // @ts-ignore
+          Authorization: `Bearer ${(await auth())?.user?.accessToken}`
+        }
+      }
+    )
 
-    for (const chat of chats) {
-      pipeline.hgetall(chat)
+    if (!response.ok) {
+      throw new Error('Network response was not ok')
     }
 
-    const results = await pipeline.exec()
-
-    return results as Chat[]
+    const res = await response.json()
+    return res['data']
   } catch (error) {
+    console.error('There was a problem with your fetch operation:', error)
     return []
   }
 }
 
 export async function getChat(id: string, userId: string) {
-  const chat = await kv.hgetall<Chat>(`chat:${id}`)
+  const response = await fetch(`http://localhost:8080/api/v1/chats/${id}`, {
+    method: 'GET',
+    headers: {
+      accept: 'application/json',
+      // @ts-ignore
+      Authorization: `Bearer ${(await auth())?.user?.accessToken}`
+    }
+  })
+
+  if (!response.ok) {
+    return null
+  }
+
+  // TODO: SQLMOdel alias brokend in backend. Ref: https://github.com/tiangolo/sqlmodel/discussions/725
+  const chat = await response.json().then(data => {
+    return {
+      ...data,
+      userId: data.user_id,
+      user_id: undefined
+    }
+  })
 
   if (!chat || (userId && chat.userId !== userId)) {
     return null
@@ -44,22 +71,21 @@ export async function removeChat({ id, path }: { id: string; path: string }) {
   const session = await auth()
 
   if (!session) {
-    return {
-      error: 'Unauthorized'
-    }
+    return { error: 'Unauthorized' }
   }
 
-  //Convert uid to string for consistent comparison with session.user.id
-  const uid = String(await kv.hget(`chat:${id}`, 'userId'))
-
-  if (uid !== session?.user?.id) {
-    return {
-      error: 'Unauthorized'
+  const response = await fetch(`http://localhost:8080/api/v1/chats/${id}`, {
+    method: 'DELETE',
+    headers: {
+      accept: 'application/json',
+      // @ts-ignore
+      Authorization: `Bearer ${session.user.accessToken}`
     }
-  }
+  })
 
-  await kv.del(`chat:${id}`)
-  await kv.zrem(`user:chat:${session.user.id}`, `chat:${id}`)
+  if (!response.ok) {
+    return { error: 'Unauthorized' }
+  }
 
   revalidatePath('/')
   return revalidatePath(path)
@@ -67,25 +93,25 @@ export async function removeChat({ id, path }: { id: string; path: string }) {
 
 export async function clearChats() {
   const session = await auth()
-
   if (!session?.user?.id) {
-    return {
-      error: 'Unauthorized'
+    return { error: 'Unauthorized' }
+  }
+
+  const response = await fetch(
+    `http://localhost:8080/api/v1/chats`,
+    {
+      method: 'DELETE',
+      headers: {
+        accept: 'application/json',
+        // @ts-ignore
+        Authorization: `Bearer ${session.user.accessToken}`
+      }
     }
-  }
+  )
 
-  const chats: string[] = await kv.zrange(`user:chat:${session.user.id}`, 0, -1)
-  if (!chats.length) {
-    return redirect('/')
+  if (!response.ok) {
+    return { error: 'Unauthorized' }
   }
-  const pipeline = kv.pipeline()
-
-  for (const chat of chats) {
-    pipeline.del(chat)
-    pipeline.zrem(`user:chat:${session.user.id}`, chat)
-  }
-
-  await pipeline.exec()
 
   revalidatePath('/')
   return redirect('/')
@@ -130,17 +156,24 @@ export async function shareChat(id: string) {
 
 export async function saveChat(chat: Chat) {
   const session = await auth()
-
   if (session && session.user) {
-    const pipeline = kv.pipeline()
-    pipeline.hmset(`chat:${chat.id}`, chat)
-    pipeline.zadd(`user:chat:${chat.userId}`, {
-      score: Date.now(),
-      member: `chat:${chat.id}`
+    const response = await fetch(`http://localhost:8080/api/v1/chats/`, {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'Content-Type': 'application/json',
+        // @ts-ignore
+        Authorization: `Bearer ${session.user.accessToken}`
+      },
+      body: JSON.stringify(chat)
     })
-    await pipeline.exec()
-  } else {
-    return
+
+    if (!response.ok) {
+      return
+    }
+    const savedChat = await response.json()
+
+    return savedChat
   }
 }
 

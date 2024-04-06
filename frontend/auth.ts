@@ -18,12 +18,11 @@ export const { auth, signIn, signOut } = NextAuth({
           })
           .safeParse(credentials)
 
-        console.log(credentials)
 
         if (parsedCredentials.success) {
           const { email, password } = parsedCredentials.data
           const res = await fetch(
-            'http://localhost:8888/api/v1/login/access-token',
+            'http://localhost:8080/api/v1/login/access-token',
             {
               method: 'POST',
               body: new URLSearchParams({
@@ -41,13 +40,14 @@ export const { auth, signIn, signOut } = NextAuth({
             return null
           }
           const response = await res.json()
-          const jwt = response.access_token
+          console.log("Response : ", response)
           const user = response.user as User
 
           response.user.id = String(response.user.id)
+          response.user.token = response.access_token
 
           if (!user) return null
-          return { ...user, jwt }
+          return { ...user }
         }
 
         return null

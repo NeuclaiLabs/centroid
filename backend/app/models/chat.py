@@ -23,7 +23,7 @@ class ChatBase(SQLModel):
 # Shared properties
 class Chat(ChatBase, table=True):
     id: str = Field(primary_key=True, default_factory=nanoid.generate)
-    user_id: str
+    user_id: str = Field(alias="userId")
     messages: list[ChatMessage] | None = Field(sa_column=Column(JSON))
     created_at: datetime | None = Field(
         default=None,
