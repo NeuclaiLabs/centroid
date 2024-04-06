@@ -54,7 +54,7 @@ class Settings(BaseSettings):
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str = ""
-    DB_TYPE: str = "sqlite"
+    DB_TYPE: str = ""
 
     @computed_field  # type: ignore[misc]
     @property

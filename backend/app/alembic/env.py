@@ -6,6 +6,7 @@ from sqlalchemy import engine_from_config, pool
 from pathlib import Path
 
 
+from app.core.config import settings
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -20,6 +21,7 @@ fileConfig(config.config_file_name)
 # target_metadata = mymodel.Base.metadata
 # target_metadata = None
 
+from app.core.models.chat import SQLModel
 from app.models import SQLModel  # noqa
 
 target_metadata = SQLModel.metadata
@@ -28,22 +30,6 @@ target_metadata = SQLModel.metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-
-
-def get_url():
-    if os.getenv("DB_TYPE") == "sqlite":
-        home_dir = Path.home()
-        openastra_dir = home_dir / '.openastra'
-        openastra_dir.mkdir(parents=True, exist_ok=True)
-        db = openastra_dir / 'app.db'
-        return f"sqlite:///{db}"
-
-    user = os.getenv("POSTGRES_USER", "postgres")
-    password = os.getenv("POSTGRES_PASSWORD", "")
-    server = os.getenv("POSTGRES_SERVER", "db")
-    port = os.getenv("POSTGRES_PORT", "5432")
-    db = os.getenv("POSTGRES_DB", "app")
-    return f"postgresql+psycopg://{user}:{password}@{server}:{port}/{db}"
 
 
 def run_migrations_offline():
@@ -58,9 +44,8 @@ def run_migrations_offline():
     script output.
 
     """
-    url = get_url()
     context.configure(
-        url=url, target_metadata=target_metadata, literal_binds=True, compare_type=True
+        url=str(settings.SQLALCHEMY_DATABASE_URI), target_metadata=target_metadata, literal_binds=True, compare_type=True
     )
 
     with context.begin_transaction():
@@ -75,7 +60,7 @@ def run_migrations_online():
 
     """
     configuration = config.get_section(config.config_ini_section)
-    configuration["sqlalchemy.url"] = get_url()
+    configuration["sqlalchemy.url"] = str(settings.SQLALCHEMY_DATABASE_URI)
     connectable = engine_from_config(
         configuration,
         prefix="sqlalchemy.",

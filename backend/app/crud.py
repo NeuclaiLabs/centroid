@@ -2,6 +2,7 @@ from typing import Any
 
 from sqlmodel import Session, select
 
+from app.core.models.chat import Chat
 from app.core.security import get_password_hash, verify_password
 from app.models import Item, ItemCreate, User, UserCreate, UserUpdate
 
@@ -51,3 +52,11 @@ def create_item(*, session: Session, item_in: ItemCreate, owner_id: int) -> Item
     session.commit()
     session.refresh(db_item)
     return db_item
+
+
+def create_chat(*, session: Session, chat: Chat) -> Chat:
+    db_chat = Chat.model_validate(chat)
+    session.add(db_chat)
+    session.commit()
+    session.refresh(db_chat)
+    return db_chat
