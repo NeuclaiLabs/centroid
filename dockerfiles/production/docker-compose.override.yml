@@ -1,6 +1,5 @@
 version: "3.3"
 services:
-
   proxy:
     image: traefik:v2.3
     volumes:

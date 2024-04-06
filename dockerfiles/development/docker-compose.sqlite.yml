@@ -1,10 +1,10 @@
-version: '3.3'
+version: "3.3"
 services:
   backend:
-    image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
+    image: "${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}"
     restart: always
     ports:
-      - '8888:8888'
+      - "8888:8888"
     networks:
       - default
     env_file:
@@ -35,10 +35,10 @@ services:
     command: /start-reload.sh
 
   frontend:
-    image: '${DOCKER_IMAGE_FRONTEND?Variable not set}:${TAG-latest}'
+    image: "${DOCKER_IMAGE_FRONTEND?Variable not set}:${TAG-latest}"
     restart: always
     ports:
-      - '3000:3000'
+      - "3000:3000"
     networks:
       - default
     environment:

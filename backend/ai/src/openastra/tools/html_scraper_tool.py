@@ -1,12 +1,10 @@
 import logging
-from typing import List  # noqa: UP035
 
 from fake_useragent import UserAgent
 from langchain.pydantic_v1 import BaseModel, Field, HttpUrl
 from langchain.tools import StructuredTool
 from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_community.document_transformers import Html2TextTransformer
-
 from openastra.utils import handle_error
 
 logger = logging.getLogger(__name__)
@@ -42,7 +40,7 @@ def scrape_html(urls: list[str]):
 
 
 class HTMLScraperInput(BaseModel):
-    urls: List[HttpUrl] = Field(description="The list of urls to be scraped")
+    urls: list[HttpUrl] = Field(description="The list of urls to be scraped")
 
 
 HTMLScraperTool = StructuredTool.from_function(

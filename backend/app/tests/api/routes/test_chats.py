@@ -96,7 +96,7 @@ def test_read_chat(
 
 
 def test_read_chat_not_found(
-    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+    client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
     response = client.get(
         f"{settings.API_V1_STR}/chats/999",
@@ -184,7 +184,7 @@ def test_update_chat(
 
 
 def test_update_chat_not_found(
-    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+    client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
     update_data = ChatUpdate(
         title="Updated chat title",
@@ -231,7 +231,7 @@ def test_delete_chat(
 
 
 def test_delete_chat_not_found(
-    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+    client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
     response = client.delete(
         f"{settings.API_V1_STR}/chats/999",

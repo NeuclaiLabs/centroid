@@ -56,13 +56,13 @@ class ChatsOut(SQLModel):
 
 
 # Automatically serialize ChatMessage objects before inserting into the database
-def before_insert_listener(mapper, connection, target):
+def before_insert_listener(mapper, connection, target):  # noqa: ARG001
     if target.messages:
         target.messages = [message.dict() for message in target.messages]
 
 
 # Automatically deserialize ChatMessage objects after loading from the database
-def after_load_listener(target, context):
+def after_load_listener(target, context):  # noqa: ARG001
     if target.messages:
         target.messages = [ChatMessage(**message) for message in target.messages]
 

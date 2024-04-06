@@ -1,4 +1,4 @@
-version: '3.3'
+version: "3.3"
 services:
   db:
     image: postgres:12
@@ -23,10 +23,10 @@ services:
     environment:
       - ADMINER_DESIGN=pepa-linha-dark
   backend:
-    image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
+    image: "${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}"
     restart: always
     ports:
-      - '8888:8888'
+      - "8888:8888"
     networks:
       - default
     env_file:
@@ -52,10 +52,10 @@ services:
       context: ../backend
 
   frontend:
-    image: '${DOCKER_IMAGE_FRONTEND?Variable not set}:${TAG-latest}'
+    image: "${DOCKER_IMAGE_FRONTEND?Variable not set}:${TAG-latest}"
     restart: always
     ports:
-      - '3000:3000'
+      - "3000:3000"
     networks:
       - default
     environment:

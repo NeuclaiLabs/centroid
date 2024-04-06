@@ -97,17 +97,14 @@ export async function clearChats() {
     return { error: 'Unauthorized' }
   }
 
-  const response = await fetch(
-    `http://localhost:8080/api/v1/chats`,
-    {
-      method: 'DELETE',
-      headers: {
-        accept: 'application/json',
-        // @ts-ignore
-        Authorization: `Bearer ${session.user.accessToken}`
-      }
+  const response = await fetch(`http://localhost:8080/api/v1/chats`, {
+    method: 'DELETE',
+    headers: {
+      accept: 'application/json',
+      // @ts-ignore
+      Authorization: `Bearer ${session.user.accessToken}`
     }
-  )
+  })
 
   if (!response.ok) {
     return { error: 'Unauthorized' }

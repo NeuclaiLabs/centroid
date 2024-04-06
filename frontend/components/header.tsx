@@ -4,9 +4,7 @@ import Link from 'next/link'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { auth } from '@/auth'
 import { Button, buttonVariants } from '@/components/ui/button'
-import {
-  IconOpenAstra,
-} from '@/components/ui/icons'
+import { IconOpenAstra } from '@/components/ui/icons'
 import { UserMenu } from '@/components/user-menu'
 import { SidebarMobile } from './sidebar-mobile'
 import { SidebarToggle } from './sidebar-toggle'

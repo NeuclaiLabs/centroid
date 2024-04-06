@@ -10,7 +10,6 @@ on:
       - synchronize
 
 jobs:
-
   test:
     runs-on: ubuntu-latest
     steps:
@@ -20,7 +19,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: "3.10"
 
       - run: docker compose build
       - run: docker compose down -v --remove-orphans
@@ -37,7 +36,7 @@ jobs:
           path: backend/htmlcov
 
   # https://github.com/marketplace/actions/alls-green#why
-  alls-green:  # This job does nothing and is only used for the branch protection
+  alls-green: # This job does nothing and is only used for the branch protection
     if: always()
     needs:
       - test

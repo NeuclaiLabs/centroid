@@ -22,11 +22,12 @@ In that case, you will need to use a fake local domain (`dev.example.com`) and m
 
 If you have a custom domain like that, you need to add it to the list in the variable `BACKEND_CORS_ORIGINS` in the `.env` file.
 
-* Open your `hosts` file with administrative privileges using a text editor:
-  * **Note for Windows**: If you are in Windows, open the main Windows menu, search for "notepad", right click on it, and select the option "open as Administrator" or similar. Then click the "File" menu, "Open file", go to the directory `c:\Windows\System32\Drivers\etc\`, select the option to show "All files" instead of only "Text (.txt) files", and open the `hosts` file.
-  * **Note for Mac and Linux**: Your `hosts` file is probably located at `/etc/hosts`, you can edit it in a terminal running `sudo nano /etc/hosts`.
+- Open your `hosts` file with administrative privileges using a text editor:
 
-* Additional to the contents it might have, add a new line with the custom IP (e.g. `192.168.99.150`) a space character, and your fake local domain: `dev.example.com`.
+  - **Note for Windows**: If you are in Windows, open the main Windows menu, search for "notepad", right click on it, and select the option "open as Administrator" or similar. Then click the "File" menu, "Open file", go to the directory `c:\Windows\System32\Drivers\etc\`, select the option to show "All files" instead of only "Text (.txt) files", and open the `hosts` file.
+  - **Note for Mac and Linux**: Your `hosts` file is probably located at `/etc/hosts`, you can edit it in a terminal running `sudo nano /etc/hosts`.
+
+- Additional to the contents it might have, add a new line with the custom IP (e.g. `192.168.99.150`) a space character, and your fake local domain: `dev.example.com`.
 
 The new line might look like:
 
@@ -34,8 +35,8 @@ The new line might look like:
 192.168.99.150    dev.example.com
 ```
 
-* Save the file.
-  * **Note for Windows**: Make sure you save the file as "All files", without an extension of `.txt`. By default, Windows tries to add the extension. Make sure the file is saved as is, without extension.
+- Save the file.
+  - **Note for Windows**: Make sure you save the file as "All files", without an extension of `.txt`. By default, Windows tries to add the extension. Make sure the file is saved as is, without extension.
 
 ...that will make your computer think that the fake local domain is served by that custom IP, and when you open that URL in your browser, it will talk directly to your locally running server when it is asked to go to `dev.example.com` and think that it is a remote server while it is actually running in your computer.
 
@@ -51,13 +52,13 @@ If you need to use your local stack with a different domain than `localhost`, yo
 
 To simplify your Docker Compose setup, for example, so that the API docs (Swagger UI) knows where is your API, you should let it know you are using that domain for development.
 
-* Open the file located at `./.env`. It would have a line like:
+- Open the file located at `./.env`. It would have a line like:
 
 ```
 DOMAIN=localhost
 ```
 
-* Change it to the domain you are going to use, e.g.:
+- Change it to the domain you are going to use, e.g.:
 
 ```
 DOMAIN=localhost.tiangolo.com
