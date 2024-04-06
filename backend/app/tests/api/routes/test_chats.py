@@ -3,8 +3,7 @@ from sqlmodel import Session
 
 from app import crud
 from app.core.config import settings
-from app.core.models.chat import Chat, ChatMessage, ChatUpdate
-from app.models import UserCreate
+from app.models import Chat, ChatMessage, ChatUpdate, UserCreate
 from app.tests.utils.utils import random_email, random_string
 
 

@@ -21,7 +21,6 @@ fileConfig(config.config_file_name)
 # target_metadata = mymodel.Base.metadata
 # target_metadata = None
 
-from app.core.models.chat import SQLModel
 from app.models import SQLModel  # noqa
 
 target_metadata = SQLModel.metadata

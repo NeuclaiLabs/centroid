@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlmodel import Session
 
 from app import crud
-from app.core.models.chat import Chat, ChatMessage
+from app.models import Chat, ChatMessage
 from app.tests.utils.user import create_random_user
 from app.tests.utils.utils import random_lower_string, random_string
 
