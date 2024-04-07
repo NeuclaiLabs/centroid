@@ -8,7 +8,7 @@ from sqlmodel import JSON, Field, SQLModel
 class ChatMessage(SQLModel):
     id: str
     role: str
-    name: str | None = Field(default="")
+    name: str | None = None
     content: str
 
     def to_dict(self):

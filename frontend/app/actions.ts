@@ -6,6 +6,7 @@ import { kv } from '@vercel/kv'
 
 import { auth } from '@/auth'
 import { type Chat } from '@/lib/types'
+import { type Message } from 'ai'
 
 export async function getChats(userId?: string | null) {
   if (!userId) {
@@ -51,14 +52,21 @@ export async function getChat(id: string, userId: string) {
     return null
   }
 
-  // TODO: SQLMOdel alias brokend in backend. Ref: https://github.com/tiangolo/sqlmodel/discussions/725
+  // TODO: SQLMOdel alias broken in backend. Ref: https://github.com/tiangolo/sqlmodel/discussions/725
   const chat = await response.json().then(data => {
     return {
       ...data,
       userId: data.user_id,
-      user_id: undefined
+      user_id: undefined,
+      messages: data.messages.map((message: Message) => ({
+        ...message,
+        name: message.name || undefined
+      }))
     }
   })
+
+  delete chat.user_id
+
 
   if (!chat || (userId && chat.userId !== userId)) {
     return null

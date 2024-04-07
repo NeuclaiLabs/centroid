@@ -39,7 +39,6 @@ export const { auth, signIn, signOut } = NextAuth({
             return null
           }
           const response = await res.json()
-          console.log('Response : ', response)
           const user = response.user as User
 
           response.user.id = String(response.user.id)
