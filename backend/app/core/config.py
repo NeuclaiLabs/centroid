@@ -15,6 +15,24 @@ from pydantic_core import MultiHostUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing_extensions import Self
 
+env_file: str = ".env"
+
+
+def get_env_file(env_type="local"):
+    global env_file  # Use the global env_file variable
+    if env_type == "staging":
+        env_file = ".env.staging"
+    elif env_type == "production":
+        env_file = ".env.production"
+    elif env_type == "local":
+        env_file = ".env.local"
+
+    # Check if the specified env_file exists, otherwise fall back to .env
+    env_path = Path(env_file)
+    if not env_path.is_file():
+        env_file = ".env"
+    return env_file
+
 
 def parse_cors(v: Any) -> list[str] | str:
     if isinstance(v, str) and not v.startswith("["):
@@ -25,9 +43,11 @@ def parse_cors(v: Any) -> list[str] | str:
 
 
 class Settings(BaseSettings):
+    # print(load_environment_variables())
     model_config = SettingsConfigDict(
-        env_file=".env", env_ignore_empty=True, extra="ignore"
+        env_file=get_env_file(), env_ignore_empty=True, extra="ignore"
     )
+
     API_V1_STR: str = "/api/v1"
     SECRET_KEY: str = secrets.token_urlsafe(32)
     # 60 minutes * 24 hours * 8 days = 8 days
@@ -118,7 +138,6 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _enforce_non_default_secrets(self) -> Self:
-        print("super user: ", self.FIRST_SUPERUSER)
         self._check_default_secret("SECRET_KEY", self.SECRET_KEY)
         self._check_default_secret("POSTGRES_PASSWORD", self.POSTGRES_PASSWORD)
         self._check_default_secret(
