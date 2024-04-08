@@ -1,5 +1,27 @@
 version: "3.3"
 services:
+  db:
+    image: postgres:12
+    restart: always
+    volumes:
+      - app-db-data:/var/lib/postgresql/data/pgdata
+    env_file:
+      - .env.staging
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
+      - POSTGRES_USER=${POSTGRES_USER?Variable not set}
+      - POSTGRES_DB=${POSTGRES_DB?Variable not set}
+  adminer:
+    image: adminer
+    restart: always
+    networks:
+      - traefik-public
+      - default
+    depends_on:
+      - db
+    environment:
+      - ADMINER_DESIGN=pepa-linha-dark
   backend:
     image: "${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}"
     restart: always
@@ -8,10 +30,10 @@ services:
     networks:
       - default
     env_file:
-      - .env
+      - .env.staging
     environment:
       - PORT=8888
-      - DB_TYPE=sqlite
+      - DB_TYPE=postgres
       - DOMAIN=${DOMAIN}
       - ENVIRONMENT=${ENVIRONMENT}
       - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS}
@@ -26,13 +48,8 @@ services:
       - SENTRY_DSN=${SENTRY_DSN}
     volumes:
       - ~/.openastra:/root/.openastra
-      - ../../backend/:/app
     build:
       context: ../backend
-      args:
-        INSTALL_DEV: ${INSTALL_DEV-true}
-    # command: sleep infinity  # Infinite loop to keep container alive doing nothing
-    command: /start-reload.sh
 
   frontend:
     image: "${DOCKER_IMAGE_FRONTEND?Variable not set}:${TAG-latest}"
@@ -43,7 +60,11 @@ services:
       - default
     environment:
       - PORT=3000
+    env_file:
+      - .env.staging
     build:
       context: ../frontend
       args:
-        - NODE_ENV=production
+        - NODE_ENV=staging
+volumes:
+  app-db-data:

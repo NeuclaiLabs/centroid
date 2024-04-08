@@ -15,7 +15,7 @@ export async function getChats(userId?: string | null) {
 
   try {
     const response = await fetch(
-      `http://localhost:8080/api/v1/chats/?skip=0&limit=100`,
+      `${process.env.BACKEND_HOST}/api/v1/chats/?skip=0&limit=100`,
       {
         method: 'GET',
         headers: {
@@ -39,7 +39,7 @@ export async function getChats(userId?: string | null) {
 }
 
 export async function getChat(id: string, userId: string) {
-  const response = await fetch(`http://localhost:8080/api/v1/chats/${id}`, {
+  const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/chats/${id}`, {
     method: 'GET',
     headers: {
       accept: 'application/json',
@@ -82,7 +82,7 @@ export async function removeChat({ id, path }: { id: string; path: string }) {
     return { error: 'Unauthorized' }
   }
 
-  const response = await fetch(`http://localhost:8080/api/v1/chats/${id}`, {
+  const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/chats/${id}`, {
     method: 'DELETE',
     headers: {
       accept: 'application/json',
@@ -105,7 +105,7 @@ export async function clearChats() {
     return { error: 'Unauthorized' }
   }
 
-  const response = await fetch(`http://localhost:8080/api/v1/chats`, {
+  const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/chats`, {
     method: 'DELETE',
     headers: {
       accept: 'application/json',
@@ -162,7 +162,7 @@ export async function shareChat(id: string) {
 export async function saveChat(chat: Chat) {
   const session = await auth()
   if (session && session.user) {
-    const response = await fetch(`http://localhost:8080/api/v1/chats/`, {
+    const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/chats/`, {
       method: 'POST',
       headers: {
         accept: 'application/json',

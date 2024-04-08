@@ -21,7 +21,7 @@ export const { auth, signIn, signOut } = NextAuth({
         if (parsedCredentials.success) {
           const { email, password } = parsedCredentials.data
           const res = await fetch(
-            'http://localhost:8080/api/v1/login/access-token',
+            `${process.env.BACKEND_HOST}/api/v1/login/access-token`,
             {
               method: 'POST',
               body: new URLSearchParams({
