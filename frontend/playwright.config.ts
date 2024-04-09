@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test'
 
 /**
  * Read environment variables from file.
@@ -27,25 +27,40 @@ export default defineConfig({
     // baseURL: 'http://127.0.0.1:3000',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+    trace: 'on-first-retry'
   },
 
   /* Configure projects for major browsers */
   projects: [
+    // Auth setup project
+    { name: 'setup', testMatch: /.*\.setup\.ts/ },
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/user.json'
+      },
+      dependencies: ['setup']
     },
 
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      use: {
+        ...devices['Desktop Firefox'],
+        storageState: 'playwright/.auth/user.json'
+      },
+
+      dependencies: ['setup']
     },
 
     {
       name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
+      use: {
+        ...devices['Desktop Safari'],
+        storageState: 'playwright/.auth/user.json'
+      },
+      dependencies: ['setup']
+    }
 
     /* Test against mobile viewports. */
     // {
@@ -67,6 +82,8 @@ export default defineConfig({
     //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
     // },
   ],
+  globalSetup: require.resolve('./global-setup'),
+  globalTeardown: require.resolve('./global-teardown')
 
   /* Run your local dev server before starting the tests */
   // webServer: {
@@ -74,4 +91,4 @@ export default defineConfig({
   //   url: 'http://127.0.0.1:3000',
   //   reuseExistingServer: !process.env.CI,
   // },
-});
+})

@@ -1,8 +1,10 @@
-import { test, expect } from '@playwright/test'
+import { test as setup, expect } from '@playwright/test'
 
-test('test', async ({ page }) => {
+const authFile = 'playwright/.auth/user.json'
+
+setup('authenticate', async ({ page }) => {
+  // Perform authentication steps. Replace these actions with your own.
   await page.goto('http://localhost:3000/')
-  await page.goto('http://localhost:3000/login')
   await page.getByPlaceholder('Enter your email address').click()
   await page
     .getByPlaceholder('Enter your email address')
@@ -15,8 +17,8 @@ test('test', async ({ page }) => {
       'Welcome to Next.js AI Chatbot!This is an open source AI chatbot app template'
     )
   ).toBeVisible()
-  await page.getByText('What are thetrending').click()
-  await expect(page.getByRole('main')).toContainText(
-    'What are the trending memecoins today?'
-  )
+
+  // End of authentication steps.
+
+  await page.context().storageState({ path: authFile })
 })

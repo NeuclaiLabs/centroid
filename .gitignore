@@ -3,3 +3,4 @@
 .env.local
 .env.development
 .env.production
+playwright/.auth

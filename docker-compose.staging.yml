@@ -3,67 +3,61 @@ services:
   db:
     image: postgres:12
     restart: always
+    networks:
+      - default
+    ports:
+      - "5432:5432"
     volumes:
       - app-db-data:/var/lib/postgresql/data/pgdata
     env_file:
+      - .env
       - .env.staging
     environment:
       - PGDATA=/var/lib/postgresql/data/pgdata
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
-      - POSTGRES_USER=${POSTGRES_USER?Variable not set}
-      - POSTGRES_DB=${POSTGRES_DB?Variable not set}
   adminer:
     image: adminer
     restart: always
     networks:
-      - traefik-public
       - default
+    ports:
+      - "8080:8080"
     depends_on:
       - db
     environment:
       - ADMINER_DESIGN=pepa-linha-dark
+
   backend:
     image: "${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}"
     restart: always
+    depends_on:
+      - db
     ports:
       - "8888:8888"
     networks:
       - default
     env_file:
+      - .env
       - .env.staging
     environment:
       - PORT=8888
       - DB_TYPE=postgres
-      - DOMAIN=${DOMAIN}
-      - ENVIRONMENT=${ENVIRONMENT}
-      - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS}
-      - SECRET_KEY=${SECRET_KEY?Variable not set}
-      - FIRST_SUPERUSER=${FIRST_SUPERUSER?Variable not set}
-      - FIRST_SUPERUSER_PASSWORD=${FIRST_SUPERUSER_PASSWORD?Variable not set}
-      - USERS_OPEN_REGISTRATION=${USERS_OPEN_REGISTRATION}
-      - SMTP_HOST=${SMTP_HOST}
-      - SMTP_USER=${SMTP_USER}
-      - SMTP_PASSWORD=${SMTP_PASSWORD}
-      - EMAILS_FROM_EMAIL=${EMAILS_FROM_EMAIL}
-      - SENTRY_DSN=${SENTRY_DSN}
-    volumes:
-      - ~/.openastra:/root/.openastra
     build:
-      context: ../backend
+      context: backend
 
   frontend:
     image: "${DOCKER_IMAGE_FRONTEND?Variable not set}:${TAG-latest}"
     restart: always
     ports:
       - "3000:3000"
+    env_file:
+      - .env
+      - .env.staging
     networks:
       - default
     environment:
       - PORT=3000
-    env_file:
-      - .env.staging
     build:
-      context: ../frontend
+      context: frontend
       args:
         - NODE_ENV=staging
 volumes:
