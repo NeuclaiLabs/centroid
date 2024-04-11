@@ -4,14 +4,12 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  server: {
-    // @ts-ignore
-    deps: {
-      inline: ['next-auth']
-    }
-  },
+  server: {},
   test: {
-    environment: 'jsdom'
+    environment: 'jsdom',
+    exclude: ['tests/*'],
+    include: ['__tests__/*'],
+    includeSource: ['components/*.{js,ts}']
   },
   resolve: {
     alias: {

@@ -11,7 +11,7 @@
     "type-check": "tsc --noEmit",
     "format:write": "prettier --write \"{app,lib,components}/**/*.{ts,tsx,mdx}\" --cache",
     "format:check": "prettier --check \"{app,lib,components}**/*.{ts,tsx,mdx}\" --cache",
-    "test": "vitest",
+    "test": "vitest __tests__",
     "test:e2e": "playwright test"
   },
   "dependencies": {
@@ -29,7 +29,7 @@
     "@vercel/analytics": "^1.1.2",
     "@vercel/kv": "^1.0.1",
     "@vercel/og": "^0.6.2",
-    "ai": "^3.0.12",
+    "ai": "^3.0.20",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "d3-scale": "^4.0.2",
@@ -55,7 +55,6 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "testcontainers": "^10.8.1",
     "@playwright/test": "^1.43.0",
     "@tailwindcss/typography": "^0.5.10",
     "@testing-library/jest-dom": "^6.4.2",
@@ -79,6 +78,7 @@
     "tailwind-merge": "^2.2.0",
     "tailwindcss": "^3.4.1",
     "tailwindcss-animate": "^1.0.7",
+    "testcontainers": "^10.8.1",
     "typescript": "^5.3.3",
     "vitest": "^1.4.0"
   },

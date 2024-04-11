@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
     "lib": ["dom", "dom.iterable", "esnext"],
+    "types": [
+      "vitest/importMeta"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
