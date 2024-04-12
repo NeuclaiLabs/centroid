@@ -1,10 +1,10 @@
 import { z } from 'zod'
 
-import { EventsSkeleton } from '@/lib/tools/stocks/components/events-skeleton'
-import { Events } from '@/lib/tools/stocks/components/events'
-import { StocksSkeleton } from '@/lib/tools/stocks/components/stocks-skeleton'
-import { Stocks } from '@/lib/tools/stocks/components/stocks'
-import { StockSkeleton } from '@/lib/tools/stocks/components/stock-skeleton'
+import { EventsSkeleton } from './components/events-skeleton'
+import { Events } from './components/events'
+import { StocksSkeleton } from './components/stocks-skeleton'
+import { Stocks } from './components/stocks'
+import { StockSkeleton } from './components/stock-skeleton'
 import { getMutableAIState } from 'ai/rsc'
 
 import {
@@ -12,27 +12,22 @@ import {
   BotMessage,
   Stock,
   Purchase
-} from '@/lib/tools/stocks/components'
+} from '@/ai/tools/stocks/components'
 
 import { sleep, nanoid } from '@/lib/utils'
+import { getToolDefinitions } from './definitions'
 
-export function getTools(
+import { type ToolRenderer } from '@/ai/tools/types'
+
+export function getToolRenderers(
   aiState: ReturnType<typeof getMutableAIState> | undefined
-) {
+): Record<string, ToolRenderer> {
+  const toolDefinitions = getToolDefinitions()
   return {
     listStocks: {
-      description: 'List three imaginary stocks that are trending.',
-      component: 'stocks',
-      parameters: z.object({
-        stocks: z.array(
-          z.object({
-            symbol: z.string().describe('The symbol of the stock'),
-            price: z.number().describe('The price of the stock'),
-            delta: z.number().describe('The change in price of the stock')
-          })
-        )
-      }),
-      render: async function* ({ stocks }: z.infer<typeof this.parameters>) {
+      render: async function* ({
+        stocks
+      }: z.infer<typeof toolDefinitions.listSocks.parameters>) {
         yield (
           <BotCard>
             <StocksSkeleton />
@@ -62,23 +57,11 @@ export function getTools(
       }
     },
     showStockPrice: {
-      description:
-        'Get the current stock price of a given stock or currency. Use this to show the price to the user.',
-      component: 'stock',
-      parameters: z.object({
-        symbol: z
-          .string()
-          .describe(
-            'The name or symbol of the stock or currency. e.g. DOGE/AAPL/USD.'
-          ),
-        price: z.number().describe('The price of the stock.'),
-        delta: z.number().describe('The change in price of the stock')
-      }),
       render: async function* ({
         symbol,
         price,
         delta
-      }: z.infer<typeof this.parameters>) {
+      }: z.infer<typeof toolDefinitions.showStockPrice.parameters>) {
         yield (
           <BotCard>
             <StockSkeleton />
@@ -108,27 +91,11 @@ export function getTools(
       }
     },
     showStockPurchase: {
-      description:
-        'Show price and the UI to purchase a stock or currency. Use this if the user wants to purchase a stock or currency.',
-      component: 'purchase',
-      parameters: z.object({
-        symbol: z
-          .string()
-          .describe(
-            'The name or symbol of the stock or currency. e.g. DOGE/AAPL/USD.'
-          ),
-        price: z.number().describe('The price of the stock.'),
-        numberOfShares: z
-          .number()
-          .describe(
-            'The **number of shares** for a stock or currency to purchase. Can be optional if the user did not specify it.'
-          )
-      }),
       render: async function* ({
         symbol,
         price,
         numberOfShares = 100
-      }: z.infer<typeof this.parameters>) {
+      }: z.infer<typeof toolDefinitions.showStockPurchase.parameters>) {
         if (numberOfShares <= 0 || numberOfShares > 1000) {
           aiState?.done({
             ...aiState.get(),
@@ -177,21 +144,9 @@ export function getTools(
       }
     },
     getEvents: {
-      description:
-        'List funny imaginary events between user highlighted dates that describe stock activity.',
-      component: 'events',
-      parameters: z.object({
-        events: z.array(
-          z.object({
-            date: z
-              .string()
-              .describe('The date of the event, in ISO-8601 format'),
-            headline: z.string().describe('The headline of the event'),
-            description: z.string().describe('The description of the event')
-          })
-        )
-      }),
-      render: async function* ({ events }: z.infer<typeof this.parameters>) {
+      render: async function* ({
+        events
+      }: z.infer<typeof toolDefinitions.getEvents.parameters>) {
         yield (
           <BotCard>
             <EventsSkeleton />
@@ -221,11 +176,4 @@ export function getTools(
       }
     }
   }
-}
-
-export const components: Record<string, any> = {
-  stock: Stock,
-  purchase: Purchase,
-  events: Events,
-  stocks: Stocks
 }

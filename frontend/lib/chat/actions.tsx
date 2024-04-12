@@ -8,7 +8,7 @@ import {
   render,
   createStreamableValue
 } from 'ai/rsc'
-import { getTools, components } from '@/lib/tools/stocks/definitions'
+import { getTools } from '@/ai/tools'
 
 import OpenAI from 'openai'
 
@@ -17,7 +17,7 @@ import {
   BotCard,
   BotMessage,
   SystemMessage
-} from '@/lib/tools/stocks/components'
+} from '@/ai/tools/stocks/components'
 
 import {
   formatNumber,
@@ -26,7 +26,7 @@ import {
   nanoid
 } from '@/lib/utils'
 import { saveChat } from '@/app/actions'
-import { SpinnerMessage, UserMessage } from '@/lib/tools/stocks/components/message'
+import { SpinnerMessage, UserMessage } from '@/components/message'
 import { Chat } from '@/lib/types'
 import { auth } from '@/auth'
 
@@ -284,11 +284,10 @@ export const getUIStateFromAIState = (aiState: Chat) => {
 }
 
 const getToolUIComponent = (message: Message) => {
-  const name =
-    getTools(undefined)[message?.name as keyof ReturnType<typeof getTools>]
-      .component
   try {
-    const DynamicComponent = components[name]
+    const DynamicComponent =
+      getTools(undefined)[message?.name as keyof ReturnType<typeof getTools>]
+        .component
 
     return (
       <BotCard>
