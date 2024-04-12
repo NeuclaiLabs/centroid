@@ -4,13 +4,10 @@ import dynamic from 'next/dynamic'
 import { StockSkeleton } from './stock-skeleton'
 import { StocksSkeleton } from './stocks-skeleton'
 import { EventsSkeleton } from './events-skeleton'
+import { type ToolUIComponent } from '@/ai/tools/types'
 
-export { spinner } from '../../../../components/spinner'
-export {
-  BotCard,
-  BotMessage,
-  SystemMessage
-} from '../../../../components/message'
+export { spinner } from '@/components/spinner'
+export { BotCard, BotMessage, SystemMessage } from '@/components/message'
 
 const Stock = dynamic(() => import('./stock').then(mod => mod.Stock), {
   ssr: false,

@@ -1,7 +1,3 @@
-// import { Events } from '@/ai/tools/stocks/components/events'
-
-// import { Stocks } from '@/ai/tools/stocks/components/stocks'
-
 import { Events, Stocks, Stock, Purchase } from '@/ai/tools/stocks/components'
 import { type ToolUIComponent } from '@/ai/tools/types'
 

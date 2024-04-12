@@ -1,10 +1,10 @@
 import { z } from 'zod'
 
-import { EventsSkeleton } from './components/events-skeleton'
-import { Events } from './components/events'
-import { StocksSkeleton } from './components/stocks-skeleton'
-import { Stocks } from './components/stocks'
-import { StockSkeleton } from './components/stock-skeleton'
+import { EventsSkeleton } from '@/ai/tools/stocks/components/events-skeleton'
+import { Events } from '@/ai/tools/stocks/components/events'
+import { StocksSkeleton } from '@/ai/tools/stocks/components/stocks-skeleton'
+import { Stocks } from '@/ai/tools/stocks/components/stocks'
+import { StockSkeleton } from '@/ai/tools/stocks/components/stock-skeleton'
 import { getMutableAIState } from 'ai/rsc'
 
 import {

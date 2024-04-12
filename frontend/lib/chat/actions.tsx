@@ -2,7 +2,6 @@ import 'server-only'
 
 import {
   createAI,
-  createStreamableUI,
   getMutableAIState,
   getAIState,
   render,
@@ -10,21 +9,13 @@ import {
 } from 'ai/rsc'
 import { getTools } from '@/ai/tools'
 
+import { confirmPurchase } from '@/ai/tools/stocks/actions'
+
 import OpenAI from 'openai'
 
-import {
-  spinner,
-  BotCard,
-  BotMessage,
-  SystemMessage
-} from '@/ai/tools/stocks/components'
+import { BotCard, BotMessage } from '@/ai/tools/stocks/components'
 
-import {
-  formatNumber,
-  runAsyncFnWithoutBlocking,
-  sleep,
-  nanoid
-} from '@/lib/utils'
+import { nanoid } from '@/lib/utils'
 import { saveChat } from '@/app/actions'
 import { SpinnerMessage, UserMessage } from '@/components/message'
 import { Chat } from '@/lib/types'
@@ -33,87 +24,6 @@ import { auth } from '@/auth'
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || ''
 })
-
-async function confirmPurchase(symbol: string, price: number, amount: number) {
-  'use server'
-
-  const aiState = getMutableAIState<typeof AI>()
-
-  const purchasing = createStreamableUI(
-    <div className="inline-flex items-start gap-1 md:items-center">
-      {spinner}
-      <p className="mb-2">
-        Purchasing {amount} ${symbol}...
-      </p>
-    </div>
-  )
-
-  const systemMessage = createStreamableUI(null)
-
-  runAsyncFnWithoutBlocking(async () => {
-    await sleep(1000)
-
-    purchasing.update(
-      <div className="inline-flex items-start gap-1 md:items-center">
-        {spinner}
-        <p className="mb-2">
-          Purchasing {amount} ${symbol}... working on it...
-        </p>
-      </div>
-    )
-
-    await sleep(1000)
-
-    purchasing.done(
-      <div>
-        <p className="mb-2">
-          You have successfully purchased {amount} ${symbol}. Total cost:{' '}
-          {formatNumber(amount * price)}
-        </p>
-      </div>
-    )
-
-    systemMessage.done(
-      <SystemMessage>
-        You have purchased {amount} shares of {symbol} at ${price}. Total cost ={' '}
-        {formatNumber(amount * price)}.
-      </SystemMessage>
-    )
-
-    aiState.done({
-      ...aiState.get(),
-      messages: [
-        ...aiState.get().messages.slice(0, -1),
-        {
-          id: nanoid(),
-          role: 'function',
-          name: 'showStockPurchase',
-          content: JSON.stringify({
-            symbol,
-            price,
-            defaultAmount: amount,
-            status: 'completed'
-          })
-        },
-        {
-          id: nanoid(),
-          role: 'system',
-          content: `[User has purchased ${amount} shares of ${symbol} at ${price}. Total cost = ${
-            amount * price
-          }]`
-        }
-      ]
-    })
-  })
-
-  return {
-    purchasingUI: purchasing.value,
-    newMessage: {
-      id: nanoid(),
-      display: systemMessage.value
-    }
-  }
-}
 
 async function submitUserMessage(content: string) {
   'use server'
@@ -273,29 +183,29 @@ export const getUIStateFromAIState = (aiState: Chat) => {
     .map((message, index) => ({
       id: `${aiState.chatId}-${index}`,
       display:
-        message.role === 'function' ? (
-          getToolUIComponent(message)
+        message.role === 'function' || message.role === 'tool' ? (
+          (() => {
+            try {
+              const DynamicComponent =
+                getTools(undefined)[
+                  message?.name as keyof ReturnType<typeof getTools>
+                ].component
+              return (
+                <BotCard>
+                  <DynamicComponent props={JSON.parse(message.content)} />
+                </BotCard>
+              )
+            } catch (error: any) {
+              console.error(
+                `Error fetching component for message ${message.name}: ${error.message}`
+              )
+              return null
+            }
+          })()
         ) : message.role === 'user' ? (
           <UserMessage>{message.content}</UserMessage>
         ) : (
           <BotMessage content={message.content} />
         )
     }))
-}
-
-const getToolUIComponent = (message: Message) => {
-  try {
-    const DynamicComponent =
-      getTools(undefined)[message?.name as keyof ReturnType<typeof getTools>]
-        .component
-
-    return (
-      <BotCard>
-        <DynamicComponent props={JSON.parse(message.content)} />
-      </BotCard>
-    )
-  } catch (error: any) {
-    console.error(`Error fetching component for ${name}: ${error.message}`)
-    return null
-  }
 }

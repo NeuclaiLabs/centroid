@@ -3,10 +3,7 @@ import { getToolRenderers } from '@/ai/tools/stocks/renderers'
 import { getToolUIComponents } from '@/ai/tools/stocks/ui'
 import { getMutableAIState } from 'ai/rsc'
 
-import {
-  type ToolDefinition,
-  type Tool
-} from '@/ai/tools/types'
+import { type ToolDefinition, type Tool } from '@/ai/tools/types'
 
 export function getTools(
   aiState: ReturnType<typeof getMutableAIState> | undefined
