@@ -7,7 +7,7 @@ import { getMissingKeys } from '../actions'
 import { redirect } from 'next/navigation'
 
 export const metadata = {
-  title: 'Next.js AI Chatbot'
+  title: 'OpenAstra'
 }
 
 export default async function IndexPage() {

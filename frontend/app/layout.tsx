@@ -12,7 +12,7 @@ export const metadata = {
   metadataBase: new URL(`https://${process.env.VERCEL_URL}`),
   title: {
     default: 'OpenAstra - Chat Assistant',
-    template: `%s - OpenAstra Chat Assistant`
+    template: `%s - Chat Assistant`
   },
   description: 'Your AI assistant.',
   icons: {
