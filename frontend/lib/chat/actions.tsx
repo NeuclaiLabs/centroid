@@ -82,6 +82,7 @@ Besides that, you can also chat with users and do some calculations if needed.`
       }
 
       if (done) {
+        console.log("Streaming text done")
         textStream.done()
         aiState.done({
           ...aiState.get(),
