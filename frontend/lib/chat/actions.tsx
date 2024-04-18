@@ -22,7 +22,8 @@ import { Chat } from '@/lib/types'
 import { auth } from '@/auth'
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || ''
+  apiKey: process.env.OPENAI_API_KEY || '',
+  baseURL: process.env.BACKEND_HOST + '/api/v1/proxy'
 })
 
 async function submitUserMessage(content: string) {
@@ -46,7 +47,7 @@ async function submitUserMessage(content: string) {
   let textNode: undefined | React.ReactNode
 
   const ui = render({
-    model: 'gpt-3.5-turbo',
+    model: 'mistral:instruct',
     provider: openai,
     initial: <SpinnerMessage />,
     messages: [
