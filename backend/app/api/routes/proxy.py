@@ -239,22 +239,32 @@ async def create_chat_completion(chat: ChatCompletionRequest) -> ChatCompletionC
                 "".join([event.choices[0].delta.content for event in events])
             )
             # Yielding name
-            events[-1].choices[0].delta.function_call = {
-                "name": tools_detected["tool"],
-                "arguments": None,
-            }
+            events[-1].choices[0].delta.tool_calls = [
+                {
+                    "index": 0,
+                    "function": {
+                        "name": tools_detected["tool"],
+                        "arguments": None,
+                    },
+                }
+            ]
             yield ("data: " + json.dumps(events[-1].model_dump()) + "\n\n")
 
             # Yielding arguments
-            events[-1].choices[0].delta.function_call = {
-                "name": None,
-                "arguments": json.dumps(tools_detected["input"]),
-            }
+            events[-1].choices[0].delta.tool_calls = [
+                {
+                    "index": 0,
+                    "function": {
+                        "name": None,
+                        "arguments": json.dumps(tools_detected["input"]),
+                    },
+                }
+            ]
             yield ("data: " + json.dumps(events[-1].model_dump()) + "\n\n")
 
             # Yielding final chunk
             events[-1].choices[0].delta = {}
-            events[-1].choices[0].finish_reason = "function_call"
+            events[-1].choices[0].finish_reason = "tool_calls"
             yield ("data: " + json.dumps(events[-1].model_dump()) + "\n\n")
 
     return StreamingResponse(response_stream(), media_type="text/event-stream")

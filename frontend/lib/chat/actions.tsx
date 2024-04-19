@@ -101,7 +101,7 @@ Besides that, you can also chat with users and do some calculations if needed.`
 
       return textNode
     },
-    functions: getTools(aiState),
+    tools: getTools(aiState)
   })
 
   return {
