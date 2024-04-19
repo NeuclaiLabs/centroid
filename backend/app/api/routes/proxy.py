@@ -231,23 +231,30 @@ async def create_chat_completion(chat: ChatCompletionRequest) -> ChatCompletionC
                     + json.dumps(event.model_dump(), ensure_ascii=False)
                     + "\n\n"
                 )
+
         print("Is tool invocation", event.choices[0], is_tool_invocation)
+
         if is_tool_invocation:
             tools_detected = json.loads(
                 "".join([event.choices[0].delta.content for event in events])
             )
+            # Yielding name
             events[-1].choices[0].delta.function_call = {
-                "index": 0,
-                "function": {
-                    "name": tools_detected["tool"],
-                    "arguments": json.dumps(tools_detected["input"]),
-                },
+                "name": tools_detected["tool"],
+                "arguments": None,
             }
-            events[-1].choices[0].finish_reason = "tool_calls"
-            print(json.dumps(events[-1].model_dump()))
             yield ("data: " + json.dumps(events[-1].model_dump()) + "\n\n")
+
+            # Yielding arguments
+            events[-1].choices[0].delta.function_call = {
+                "name": None,
+                "arguments": json.dumps(tools_detected["input"]),
+            }
+            yield ("data: " + json.dumps(events[-1].model_dump()) + "\n\n")
+
+            # Yielding final chunk
             events[-1].choices[0].delta = {}
+            events[-1].choices[0].finish_reason = "function_call"
             yield ("data: " + json.dumps(events[-1].model_dump()) + "\n\n")
-            yield ("data: [DONE]\n\n")
 
     return StreamingResponse(response_stream(), media_type="text/event-stream")
