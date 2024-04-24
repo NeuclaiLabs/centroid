@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import { TailwindIndicator } from '@/components/tailwind-indicator'
 import { Providers } from '@/components/providers'
 import { Header } from '@/components/header'
+import { SidebarDesktop } from '@/components/sidebar-desktop'
 import { Toaster } from '@/components/ui/sonner'
 
 export const metadata = {
@@ -50,10 +51,16 @@ export default function RootLayout({ children }: RootLayoutProps) {
           enableSystem
           disableTransitionOnChange
         >
-          <div className="flex flex-col min-h-screen">
-            <Header />
-            <main className="flex flex-col flex-1 bg-muted/50">{children}</main>
+          <div className="flex h-screen">
+            <div className="hidden lg:block">
+              <SidebarDesktop />
+            </div>
+            <div className="flex flex-1 flex-col">
+              <Header />
+              <main className="flex-1 bg-muted/50">{children}</main>
+            </div>
           </div>
+
           <TailwindIndicator />
         </Providers>
       </body>

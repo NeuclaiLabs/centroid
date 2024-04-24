@@ -23,10 +23,6 @@ async function SidebarSection() {
           <SidebarToggle />
         </>
       )}
-      <Link href="/" className="flex items-center">
-        <IconOpenAstra className="size-6 mr-2" />
-        <span className="font-bold text-xl">openastra</span>
-      </Link>
     </>
   )
 }

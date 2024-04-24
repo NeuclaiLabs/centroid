@@ -13,9 +13,15 @@ export function Sidebar({ className, children }: SidebarProps) {
   return (
     <div
       data-state={isSidebarOpen && !isLoading ? 'open' : 'closed'}
-      className={cn(className, 'h-full flex-col dark:bg-zinc-950')}
+      className={cn(className, 'h-screen flex-col dark:bg-zinc-950 ')}
     >
-      {children}
+      <aside
+        className={`peer inset-y-0  z-30 flex  border-r flex-col  border-r   duration-300 ease-in-out data-[state=open]:translate-x-0 ${
+          !isSidebarOpen ? 'lg:flex lg:w-[250px] xl:w-[300px]' : 'w-0'
+        }`}
+      >
+        {children}
+      </aside>
     </div>
   )
 }
