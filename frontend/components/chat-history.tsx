@@ -14,11 +14,22 @@ interface ChatHistoryProps {
 
 export async function ChatHistory({ userId }: ChatHistoryProps) {
   return (
-    <div className="flex flex-col h-screen">
-      <div className="flex items-center justify-between p-4">
-        <Link href="/" className="flex items-center">
-          <IconOpenAstra className="size-6 mr-2" />
-          <span className="font-bold text-sm">New Chat</span>
+    <div className="flex flex-col h-screen ">
+      <div className="flex items-center justify-between p-2">
+        <Link
+          href="/"
+          className={cn(
+            buttonVariants({ variant: 'outline' }),
+            'h-10 w-full justify-start p-0 border-none bg-none shadow-none transition-colors hover:bg-zinc-200/40 dark:hover:bg-zinc-300/10'
+          )}
+        >
+          <div className="flex items-center">
+            <IconOpenAstra className="size-6 ml-2" />
+            <span className="font-bold text-sm pl-2">New Chat</span>
+          </div>
+          <div className="ml-auto">
+            <IconPlus className="size-4 mr-2" />
+          </div>
         </Link>
       </div>
 

@@ -63,7 +63,7 @@ export function ChatPanel({
         isAtBottom={isAtBottom}
         scrollToBottom={scrollToBottom}
       /> */}
-      <div className=" space-y-4 border-t bg-secondary-background px-4 py-2 shadow-lg sm:rounded-t-xl sm:border md:py-4">
+      <div className="">
         <div className="mb-4 grid grid-cols-2 gap-2 px-4 sm:px-0">
           {messages.length === 0 &&
             exampleMessages.map((example, index) => (
@@ -100,7 +100,7 @@ export function ChatPanel({
         </div>
 
         <PromptForm input={input} setInput={setInput} />
-        <FooterText className="hidden sm:block" />
+        <FooterText className="hidden sm:block p-4" />
       </div>
     </div>
   )
