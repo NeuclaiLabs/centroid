@@ -232,7 +232,12 @@ async def create_chat_completion(chat: ChatCompletionRequest) -> ChatCompletionC
                     + "\n\n"
                 )
 
-        print("Is tool invocation", event.choices[0], is_tool_invocation)
+        print(
+            "Is tool invocation",
+            event.choices[0],
+            is_tool_invocation,
+            "".join([event.choices[0].delta.content for event in events]),
+        )
 
         if is_tool_invocation:
             tools_detected = json.loads(

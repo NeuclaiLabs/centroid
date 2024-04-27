@@ -16,7 +16,7 @@ export function Sidebar({ className, children }: SidebarProps) {
       className={cn(className, 'h-screen flex-col dark:bg-zinc-950')}
     >
       <div
-        className={`peer inset-y-0 z-30 shrink-0 w-72 flex flex-col border-r  transition-all duration-300 ${
+        className={`peer inset-y-0 z-30 shrink-0 w-[260px] flex flex-col border-r  transition-all duration-300 ${
           isSidebarOpen ? '-ml-72' : ''
         }`}
       >
