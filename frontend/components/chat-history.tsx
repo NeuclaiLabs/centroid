@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { SidebarList } from '@/components/sidebar-list'
 import { buttonVariants } from '@/components/ui/button'
-import { IconPlus } from '@/components/ui/icons'
+import { IconNotePencil } from '@/components/ui/icons'
 import { IconOpenAstra } from '@/components/ui/icons'
 
 interface ChatHistoryProps {
@@ -14,7 +14,7 @@ interface ChatHistoryProps {
 
 export async function ChatHistory({ userId }: ChatHistoryProps) {
   return (
-    <div className="flex flex-col h-screen pt-0">
+    <div className="flex flex-col h-screen pt-2">
       <div className="flex items-center justify-between p-2">
         <Link
           href="/"
@@ -28,7 +28,7 @@ export async function ChatHistory({ userId }: ChatHistoryProps) {
             <span className="font-bold text-sm pl-2">New Chat</span>
           </div>
           <div className="ml-auto">
-            <IconPlus className="size-4 mr-2" />
+            <IconNotePencil className="size-5 mr-2" />
           </div>
         </Link>
       </div>

@@ -1,12 +1,8 @@
 import * as React from 'react'
 
-import { shareChat } from '@/app/actions'
-import { Button } from '@/components/ui/button'
 import { PromptForm } from '@/components/prompt-form'
 import { ButtonScrollToBottom } from '@/components/button-scroll-to-bottom'
-import { IconShare } from '@/components/ui/icons'
 import { FooterText } from '@/components/footer'
-import { ChatShareDialog } from '@/components/chat-share-dialog'
 import { useAIState, useActions, useUIState } from 'ai/rsc'
 import type { AI } from '@/lib/chat/actions'
 import { nanoid } from 'nanoid'
@@ -59,11 +55,14 @@ export function ChatPanel({
 
   return (
     <div className="fixed bottom-0 w-full mx-auto max-w-2xl px-4">
-      {/* <ButtonScrollToBottom
-        isAtBottom={isAtBottom}
-        scrollToBottom={scrollToBottom}
-      /> */}
-      <div className="">
+      <div className="mb-10 ">
+        <ButtonScrollToBottom
+          className="left-1/2 bottom-30"
+          isAtBottom={isAtBottom}
+          scrollToBottom={scrollToBottom}
+        />
+      </div>
+      <div>
         <div className="mb-4 grid grid-cols-2 gap-2 px-4 sm:px-0">
           {messages.length === 0 &&
             exampleMessages.map((example, index) => (
@@ -98,7 +97,6 @@ export function ChatPanel({
               </div>
             ))}
         </div>
-
         <PromptForm input={input} setInput={setInput} />
         <FooterText className="hidden sm:block p-4" />
       </div>

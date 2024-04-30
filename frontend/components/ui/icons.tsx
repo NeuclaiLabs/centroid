@@ -166,26 +166,26 @@ function IconArrowUp({ className, ...props }: React.ComponentProps<'svg'>) {
       className={cn('size-4', className)}
       {...props}
     >
-        <rect width="256" height="256" fill="none" />
-        <line
-          x1="128"
-          y1="216"
-          x2="128"
-          y2="40"
-          fill="none"
-          stroke="currentColor"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="16"
-        />
-        <polyline
-          points="56 112 128 40 200 112"
-          fill="none"
-          stroke="currentColor"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="16"
-        />
+      <rect width="256" height="256" fill="none" />
+      <line
+        x1="128"
+        y1="216"
+        x2="128"
+        y2="40"
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="16"
+      />
+      <polyline
+        points="56 112 128 40 200 112"
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="16"
+      />
     </svg>
   )
 }
@@ -200,6 +200,78 @@ function IconArrowDown({ className, ...props }: React.ComponentProps<'svg'>) {
       {...props}
     >
       <path d="m205.66 149.66-72 72a8 8 0 0 1-11.32 0l-72-72a8 8 0 0 1 11.32-11.32L120 196.69V40a8 8 0 0 1 16 0v156.69l58.34-58.35a8 8 0 0 1 11.32 11.32Z" />
+    </svg>
+  )
+}
+
+function IconVerticalLine({
+  className,
+  ...props
+}: React.ComponentProps<'svg'>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 256 256"
+      fill="currentColor"
+      className={cn('size-4', className)}
+      {...props}
+    >
+      <rect width="256" height="256" fill="none" />
+      <line
+        x1="128"
+        y1="24"
+        x2="128"
+        y2="232"
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="60"
+      />
+    </svg>
+  )
+}
+
+function IconCaretLeft({ className, ...props }: React.ComponentProps<'svg'>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 256 256"
+      fill="currentColor"
+      className={cn('size-4', className)}
+      {...props}
+    >
+      <rect width="256" height="256" fill="none" />
+      <polyline
+        points="160 208 80 128 160 48"
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="60"
+      />
+    </svg>
+  )
+}
+
+function IconCaretRight({ className, ...props }: React.ComponentProps<'svg'>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 256 256"
+      fill="currentColor"
+      className={cn('size-4', className)}
+      {...props}
+    >
+      <rect width="256" height="256" fill="none" />
+      <polyline
+        points="96 48 176 128 96 208"
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="60"
+      />
     </svg>
   )
 }
@@ -242,6 +314,47 @@ function IconPlus({ className, ...props }: React.ComponentProps<'svg'>) {
       {...props}
     >
       <path d="M224 128a8 8 0 0 1-8 8h-80v80a8 8 0 0 1-16 0v-80H40a8 8 0 0 1 0-16h80V40a8 8 0 0 1 16 0v80h80a8 8 0 0 1 8 8Z" />
+    </svg>
+  )
+}
+
+function IconNotePencil({ className, ...props }: React.ComponentProps<'svg'>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 256 256"
+      fill="currentColor"
+      className={cn('size-4', className)}
+      {...props}
+    >
+      <rect width="256" height="256" fill="none" />
+      <polygon
+        points="128 160 96 160 96 128 192 32 224 64 128 160"
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="16"
+      />
+      <line
+        x1="168"
+        y1="56"
+        x2="200"
+        y2="88"
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="16"
+      />
+      <path
+        d="M216,128v80a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V48a8,8,0,0,1,8-8h80"
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="16"
+      />
     </svg>
   )
 }
@@ -590,6 +703,10 @@ export {
   IconClose,
   IconShare,
   IconUsers,
+  IconNotePencil,
+  IconCaretLeft,
+  IconCaretRight,
+  IconVerticalLine,
   IconExternalLink,
   IconChevronUpDown,
   IconMoreHorizontal

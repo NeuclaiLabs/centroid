@@ -4,11 +4,9 @@ import Link from 'next/link'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { auth } from '@/auth'
 import { Button, buttonVariants } from '@/components/ui/button'
-import { IconOpenAstra } from '@/components/ui/icons'
 import { UserMenu } from '@/components/user-menu'
-import { SidebarMobile } from './sidebar-mobile'
-import { SidebarToggle } from './sidebar-toggle'
-import { ChatHistory } from './chat-history'
+import { SidebarMobile } from '@/components/sidebar-mobile'
+import { ChatHistory } from '@/components/chat-history'
 import { Session } from '@/lib/types'
 
 async function SidebarSection() {
@@ -20,7 +18,6 @@ async function SidebarSection() {
           <SidebarMobile>
             <ChatHistory userId={session.user.id} />
           </SidebarMobile>
-          <SidebarToggle />
         </>
       )}
     </>
@@ -47,7 +44,7 @@ async function UserOrLogin() {
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 flex items-center justify-between w-full h-14 px-4 border-b shrink-0 bg-secondary ">
+    <header className="sticky top-0 z-50 flex items-center justify-between w-full h-14 px-4  shrink-0 bg-secondary ">
       <div className="flex items-center">
         <React.Suspense fallback={<div className="flex-1 overflow-auto" />}>
           <SidebarSection />

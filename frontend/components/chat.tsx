@@ -12,6 +12,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { Message } from '@/lib/chat/actions'
 import { useScrollAnchor } from '@/lib/hooks/use-scroll-anchor'
 import { toast } from 'sonner'
+import { ButtonScrollToBottom } from '@/components/button-scroll-to-bottom'
 
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
@@ -73,7 +74,7 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
         )}
         <div className="h-px w-full" ref={visibilityRef} />
       </div>
-      <div className="mx-auto max-w-2xl">
+      <div className="mx-auto max-w-3xl">
         <div className="fixed bottom-0 w-full">
           <ChatPanel
             id={id}

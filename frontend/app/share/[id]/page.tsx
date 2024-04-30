@@ -39,7 +39,7 @@ export default async function SharePage({ params }: SharePageProps) {
     <>
       <div className="flex-1 space-y-6">
         <div className="border-b bg-background px-4 py-6 md:px-6 md:py-8">
-          <div className="mx-auto max-w-2xl">
+          <div className="mx-auto max-w-3xl">
             <div className="space-y-1 md:-mx-8">
               <h1 className="text-2xl font-bold">{chat.title}</h1>
               <div className="text-sm text-muted-foreground">
