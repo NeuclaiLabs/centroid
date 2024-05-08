@@ -2,6 +2,8 @@ import * as React from 'react'
 import Link from 'next/link'
 
 import { ThemeToggle } from '@/components/theme-toggle'
+import { ModeToggle } from '@/components/mode-toggle'
+
 import { auth } from '@/auth'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { UserMenu } from '@/components/user-menu'
@@ -29,9 +31,9 @@ async function UserOrLogin() {
   return (
     <>
       <div className="flex items-center">
-        <ThemeToggle />
+        <ModeToggle />
         {session?.user ? (
-          <UserMenu user={session.user} />
+          <></>
         ) : (
           <Button variant="link" asChild className="-ml-2">
             <Link href="/login">Login</Link>

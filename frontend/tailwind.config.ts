@@ -18,6 +18,7 @@ module.exports = {
       }
     },
     extend: {
+      focusRing: false,
       fontFamily: {
         sans: ['var(--font-geist-sans)'],
         mono: ['var(--font-geist-mono)']
@@ -78,8 +79,5 @@ module.exports = {
       }
     }
   },
-  plugins: [
-    require('tailwindcss-animate'),
-    require('@tailwindcss/typography'),
-  ]
+  plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')]
 }
