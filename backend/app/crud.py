@@ -3,7 +3,16 @@ from typing import Any
 from sqlmodel import Session, select
 
 from app.core.security import get_password_hash, verify_password
-from app.models import Chat, Item, ItemCreate, User, UserCreate, UserUpdate
+from app.models import (
+    Chat,
+    Connection,
+    ConnectionCreate,
+    Item,
+    ItemCreate,
+    User,
+    UserCreate,
+    UserUpdate,
+)
 
 
 def create_user(*, session: Session, user_create: UserCreate) -> User:
@@ -59,6 +68,18 @@ def create_chat(*, session: Session, chat: Chat) -> Chat:
     session.commit()
     session.refresh(db_chat)
     return db_chat
+
+
+def create_connection(
+    *, session: Session, connection_in: ConnectionCreate, owner_id: str
+) -> Connection:
+    db_connection = Connection.model_validate(
+        connection_in, update={"owner_id": owner_id}
+    )
+    session.add(db_connection)
+    session.commit()
+    session.refresh(db_connection)
+    return db_connection
 
 
 def get_chats(session: Session, user_id: str) -> list[Chat]:
