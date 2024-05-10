@@ -223,7 +223,10 @@ export async function getConnections(userId?: string | null) {
     }
 
     const res = await response.json()
-    return res['data']
+    return res['data'].map((connection: any) => ({
+      ...connection,
+      createdAt: new Date(connection.created_at)
+    }))
   } catch (error) {
     console.error(error)
     console.error('There was a problem with your fetch operation:', error)

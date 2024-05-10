@@ -11,9 +11,5 @@ export default async function IndexPage() {
     redirect('/login')
   }
 
-  return (
-    <main className="flex flex-col p-4">
-      <Settings userId={session.user?.id} />
-    </main>
-  )
+  return <Settings userId={session.user?.id} />
 }
