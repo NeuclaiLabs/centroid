@@ -1,3 +1,7 @@
+'use client'
+
+import React, { useEffect, useState, cache } from 'react'
+import { type Connection } from '@/lib/types'
 import { Badge } from '@/components/ui/badge'
 import {
   Card,
@@ -43,12 +47,66 @@ import {
   SheetTitle,
   SheetTrigger
 } from '@/components/ui/sheet'
+import { toast } from 'sonner'
 
 import { Label } from '@/components/ui/label'
-import { AddProviderForm } from '@/components/add-provider'
+import { AddConnectionForm } from '@/components/add-connection'
+import { getConnections, removeConnection } from '@/app/actions'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { IconMoreHorizontal, IconTrash, IconPlus } from './ui/icons'
-export function Settings() {
+import {
+  IconMoreHorizontal,
+  IconSpinner,
+  IconTrash,
+  IconPlus
+} from './ui/icons'
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog'
+
+import { format } from 'date-fns'
+
+export function Settings({ userId }: { userId: string }) {
+  const [connections, setConnections] = useState<Connection[]>([])
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false)
+  const [deleteConnectionId, setDeleteConnectionId] = useState<string | null>(
+    null
+  )
+
+  const [isRemovePending, startRemoveTransition] = React.useTransition()
+
+  useEffect(() => {
+    const fetchConnections = cache(async () => {
+      const fetchedConnections = await getConnections(userId)
+      setConnections(fetchedConnections)
+    })
+    fetchConnections()
+  }, [userId])
+  const handleDelete = async (id: string) => {
+    setDeleteConnectionId(id)
+    setDeleteDialogOpen(true)
+  }
+
+  const confirmDelete = async () => {
+    startRemoveTransition(async () => {
+      if (deleteConnectionId) {
+        await removeConnection({ id: deleteConnectionId })
+        setConnections(
+          connections.filter(connection => connection.id !== deleteConnectionId)
+        )
+        setDeleteDialogOpen(false)
+        setDeleteConnectionId(null)
+        toast.success('Connection deleted')
+      }
+    })
+  }
   return (
     <div className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
       <Tabs defaultValue="account">
@@ -99,32 +157,69 @@ export function Settings() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <TableRow>
-                    <TableCell className="font-medium">
-                      Laser Lemonade Machine
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">Draft</Badge>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      $499.99
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">25</TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      2023-07-12 10:42 AM
-                    </TableCell>
-                    <TableCell>
-                      <Button aria-haspopup="true" size="icon" variant="ghost">
-                        <IconTrash className="size-4" />
-                        <span className="sr-only">Toggle menu</span>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
+                  {connections.map(connection => (
+                    <TableRow key={connection.id}>
+                      <TableCell className="font-medium">
+                        {connection.name}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{connection.type}</Badge>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {connection.data.apiKey}
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">25</TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {connection!.createdAt
+                          ? connection!.createdAt.toISOString()
+                          : ''}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          aria-haspopup="true"
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleDelete(connection!.id)}
+                        >
+                          <IconTrash className="size-4" />
+                          <span className="sr-only">Delete Connection</span>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
+              <AlertDialog
+                open={deleteDialogOpen}
+                onOpenChange={setDeleteDialogOpen}
+              >
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Are you absolutely sure?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will delete the connection.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel disabled={isRemovePending}>
+                      Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      disabled={isRemovePending}
+                      onClick={confirmDelete}
+                    >
+                      {isRemovePending && (
+                        <IconSpinner className="mr-2 animate-spin" />
+                      )}
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </CardContent>
             <CardFooter>
-
               <Sheet>
                 <SheetTrigger asChild>
                   <Button className="mt-6">
@@ -134,20 +229,22 @@ export function Settings() {
                 <SheetContent>
                   <SheetHeader>
                     <SheetTitle className="pb-6">Add Connection</SheetTitle>
-                    <SheetDescription>
-                    </SheetDescription>
+                    <SheetDescription></SheetDescription>
                   </SheetHeader>
-                  <AddProviderForm/>
+                  <AddConnectionForm
+                    onConnectionAdded={async () =>
+                      setConnections(await getConnections(userId))
+                    }
+                  />
                   <SheetFooter>
-                    <SheetClose asChild>
-                    </SheetClose>
+                    <SheetClose asChild></SheetClose>
                   </SheetFooter>
                 </SheetContent>
               </Sheet>
             </CardFooter>
           </Card>
         </TabsContent>
-        <TabsContent value="tools">
+        <TabsContent value="code">
           <Card x-chunk="A list of products in a table with actions. Each row has an image, name, status, price, total sales, created at and actions.">
             <CardHeader>
               <CardTitle>Products</CardTitle>

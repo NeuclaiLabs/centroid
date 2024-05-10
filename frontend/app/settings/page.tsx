@@ -5,9 +5,15 @@ import { redirect } from 'next/navigation'
 import { Settings } from '@/components/settings'
 
 export default async function IndexPage() {
+  const session = (await auth()) as Session
+
+  if (!session) {
+    redirect('/login')
+  }
+
   return (
     <main className="flex flex-col p-4">
-      <Settings />
+      <Settings userId={session.user?.id} />
     </main>
   )
 }
