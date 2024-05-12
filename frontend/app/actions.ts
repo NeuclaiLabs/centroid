@@ -200,7 +200,8 @@ export async function getMissingKeys() {
 }
 
 export async function getConnections(userId?: string | null) {
-  if (!userId) {
+  const session = await auth()
+  if (!session?.user || !session.user.id) {
     return []
   }
 

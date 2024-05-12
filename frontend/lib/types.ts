@@ -13,7 +13,7 @@ export interface Connection extends Record<string, any> {
   id: string
   name: string
   type: string
-  data: any
+  data: { url?: string; key?: string }
   createdAt?: Date
   updatedAt?: Date
   ownerId: string
@@ -43,4 +43,10 @@ export interface User extends Record<string, any> {
   email: string
   password: string
   salt: string
+}
+
+export interface Model {
+  id: string
+  name?: string
+  connection: Connection
 }

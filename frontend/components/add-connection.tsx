@@ -26,7 +26,7 @@ import { saveConnection } from '@/app/actions'
 
 const connectionDataSchema = z.object({
   url: z.string().url('URL must be a valid URL'),
-  apiKey: z.string().min(1, 'API Key is required')
+  key: z.string().min(1, 'API Key is required')
 })
 
 const connectionFormSchema = z.object({
@@ -126,7 +126,7 @@ export function AddConnectionForm({
             />
             <FormField
               control={form.control}
-              name={`data.apiKey`}
+              name={`data.key`}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>API Key</FormLabel>

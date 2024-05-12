@@ -88,7 +88,6 @@ export function Settings({ userId }: { userId: string }) {
   useEffect(() => {
     const fetchConnections = cache(async () => {
       const fetchedConnections = await getConnections(userId)
-      console.log(fetchedConnections)
       setConnections(fetchedConnections)
     })
     fetchConnections()

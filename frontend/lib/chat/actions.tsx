@@ -18,7 +18,7 @@ import { BotCard, BotMessage } from '@/ai/tools/stocks/components'
 import { nanoid } from '@/lib/utils'
 import { saveChat } from '@/app/actions'
 import { SpinnerMessage, UserMessage } from '@/components/message'
-import { Chat } from '@/lib/types'
+import { Chat, Model } from '@/lib/types'
 import { auth } from '@/auth'
 
 const openai = new OpenAI({
@@ -26,9 +26,9 @@ const openai = new OpenAI({
   baseURL: process.env.BACKEND_HOST + '/api/v1/proxy'
 })
 
-async function submitUserMessage(content: string) {
+async function submitUserMessage(content: string, model: Model) {
   'use server'
-
+  console.log("Model: ", model)
   const aiState = getMutableAIState<typeof AI>()
 
   aiState.update({
@@ -47,7 +47,7 @@ async function submitUserMessage(content: string) {
   let textNode: undefined | React.ReactNode
 
   const ui = render({
-    model: 'mistral:instruct',
+    model: model!.name || model.id,
     provider: openai,
     initial: <SpinnerMessage />,
     messages: [
@@ -82,7 +82,7 @@ Besides that, you can also chat with users and do some calculations if needed.`
       }
 
       if (done) {
-        console.log("Streaming text done")
+        console.log('Streaming text done')
         textStream.done()
         aiState.done({
           ...aiState.get(),
