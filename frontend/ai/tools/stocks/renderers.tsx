@@ -25,7 +25,7 @@ export function getToolRenderers(
   const toolDefinitions = getToolDefinitions()
   return {
     listStocks: {
-      render: async function* ({
+      generate: async function* ({
         stocks
       }: z.infer<typeof toolDefinitions.listSocks.parameters>) {
         yield (
@@ -57,7 +57,7 @@ export function getToolRenderers(
       }
     },
     showStockPrice: {
-      render: async function* ({
+      generate: async function* ({
         symbol,
         price,
         delta
@@ -91,7 +91,7 @@ export function getToolRenderers(
       }
     },
     showStockPurchase: {
-      render: async function* ({
+      generate: async function* ({
         symbol,
         price,
         numberOfShares = 100
@@ -144,7 +144,7 @@ export function getToolRenderers(
       }
     },
     getEvents: {
-      render: async function* ({
+      generate: async function* ({
         events
       }: z.infer<typeof toolDefinitions.getEvents.parameters>) {
         yield (

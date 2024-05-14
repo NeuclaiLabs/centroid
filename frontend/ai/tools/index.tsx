@@ -18,7 +18,7 @@ export function getTools(
         key,
         {
           ...value,
-          render: renderers[key]?.render,
+          generate: renderers[key]?.generate,
           component: components[key]?.component
         }
       ]

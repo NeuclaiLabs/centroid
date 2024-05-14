@@ -7,6 +7,7 @@ import { useAIState, useActions, useUIState } from 'ai/rsc'
 import type { AI } from '@/lib/chat/actions'
 import { nanoid } from 'nanoid'
 import { UserMessage } from '@/components/message'
+import { useSelectedModel } from '@/lib/hooks/use-selected-model'
 
 export interface ChatPanelProps {
   id?: string
@@ -29,6 +30,7 @@ export function ChatPanel({
   const [messages, setMessages] = useUIState<typeof AI>()
   const { submitUserMessage } = useActions()
   const [shareDialogOpen, setShareDialogOpen] = React.useState(false)
+  const [selectedModel] = useSelectedModel()
 
   const exampleMessages = [
     {
@@ -79,9 +81,10 @@ export function ChatPanel({
                       display: <UserMessage>{example.message}</UserMessage>
                     }
                   ])
-
+                  console.log("Selected model: ", selectedModel)
                   const responseMessage = await submitUserMessage(
-                    example.message
+                    example.message,
+                    selectedModel
                   )
 
                   setMessages(currentMessages => [

@@ -4,6 +4,10 @@ import { getConnections } from '@/app/actions'
 import { cache } from 'react'
 import { Connection, Model } from '@/lib/types'
 
+const loadConnections = cache(async (userId?: string) => {
+  return await getConnections()
+})
+
 const fetchModelsByProvider = cache(
   async (connection: Connection): Promise<Model[]> => {
     switch (connection.type) {
@@ -39,7 +43,7 @@ export const useAvailableModels = (): Model[] => {
   useEffect(() => {
     const fetchAvailableModels = async () => {
       try {
-        const connections: Connection[] = await getConnections()
+        const connections: Connection[] = await loadConnections()
         const models = await Promise.all(
           connections.map(async connection => {
             return (await fetchModelsByProvider(connection)).map(record => ({

@@ -34,7 +34,7 @@ export interface AccountProps {
   signOut: () => Promise<void>
 }
 
-export async function Account({ user, signOut }: AccountProps) {
+export function Account({ user, signOut }: AccountProps) {
   enum Dialogs {
     dialog1 = 'dialog1',
     dialog2 = 'dialog2'

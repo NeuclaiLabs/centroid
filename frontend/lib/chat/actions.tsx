@@ -4,14 +4,15 @@ import {
   createAI,
   getMutableAIState,
   getAIState,
-  render,
+  streamUI,
   createStreamableValue
 } from 'ai/rsc'
 import { getTools } from '@/ai/tools'
 
 import { confirmPurchase } from '@/ai/tools/stocks/actions'
 
-import OpenAI from 'openai'
+import { createOpenAI, openai } from '@ai-sdk/openai'
+import { createOllama } from 'ollama-ai-provider'
 
 import { BotCard, BotMessage } from '@/ai/tools/stocks/components'
 
@@ -21,14 +22,30 @@ import { SpinnerMessage, UserMessage } from '@/components/message'
 import { Chat, Model } from '@/lib/types'
 import { auth } from '@/auth'
 
-const openai = new OpenAI({
+const openAIProvider = createOpenAI({
   apiKey: process.env.OPENAI_API_KEY || '',
-  baseURL: process.env.BACKEND_HOST + '/api/v1/proxy'
+})
+
+const ollamaProvider = createOllama({
+  baseURL: 'http://localhost:11434/v1'
 })
 
 async function submitUserMessage(content: string, model: Model) {
   'use server'
-  console.log("Model: ", model)
+  let provider = null
+  switch (model.connection.type) {
+    case 'openai':
+      provider = createOpenAI({
+        baseURL: model.connection.url || 'https://api.openai.com/v1',
+        apiKey: model.connection.key || process.env.OPENAI_API_KEY
+      })
+      break
+    default:
+      provider = createOllama({
+        baseURL: 'http://localhost:11434/api'
+      })
+  }
+
   const aiState = getMutableAIState<typeof AI>()
 
   aiState.update({
@@ -45,10 +62,8 @@ async function submitUserMessage(content: string, model: Model) {
 
   let textStream: undefined | ReturnType<typeof createStreamableValue<string>>
   let textNode: undefined | React.ReactNode
-
-  const ui = render({
-    model: model!.name || model.id,
-    provider: openai,
+  const result = await streamUI({
+    model: provider(model!.name || model.id),
     initial: <SpinnerMessage />,
     messages: [
       {
@@ -82,7 +97,6 @@ Besides that, you can also chat with users and do some calculations if needed.`
       }
 
       if (done) {
-        console.log('Streaming text done')
         textStream.done()
         aiState.done({
           ...aiState.get(),
@@ -106,7 +120,7 @@ Besides that, you can also chat with users and do some calculations if needed.`
 
   return {
     id: nanoid(),
-    display: ui
+    display: result.value
   }
 }
 
@@ -134,7 +148,7 @@ export const AI = createAI<AIState, UIState>({
   },
   initialUIState: [],
   initialAIState: { chatId: nanoid(), messages: [] },
-  unstable_onGetUIState: async () => {
+  onGetUIState: async () => {
     'use server'
 
     const session = await auth()
@@ -150,7 +164,7 @@ export const AI = createAI<AIState, UIState>({
       return
     }
   },
-  unstable_onSetAIState: async ({ state, done }) => {
+  onSetAIState: async ({ state, done }) => {
     'use server'
 
     const session = await auth()

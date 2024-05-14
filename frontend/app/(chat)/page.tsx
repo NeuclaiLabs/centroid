@@ -3,7 +3,7 @@ import { Chat } from '@/components/chat'
 import { AI } from '@/lib/chat/actions'
 import { auth } from '@/auth'
 import { Session } from '@/lib/types'
-import { getMissingKeys } from '../actions'
+import { getMissingKeys } from '@/app/actions'
 import { redirect } from 'next/navigation'
 
 export const metadata = {

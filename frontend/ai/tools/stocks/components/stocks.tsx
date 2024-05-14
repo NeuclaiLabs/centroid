@@ -3,6 +3,7 @@
 import { useActions, useUIState } from 'ai/rsc'
 
 import type { AI } from '@/lib/chat/actions'
+import { useSelectedModel } from '@/lib/hooks/use-selected-model'
 
 interface Stock {
   symbol: string
@@ -13,6 +14,7 @@ interface Stock {
 export function Stocks({ props: stocks }: { props: Stock[] }) {
   const [, setMessages] = useUIState<typeof AI>()
   const { submitUserMessage } = useActions()
+  const [selectedModel] = useSelectedModel()
 
   return (
     <div>
@@ -22,7 +24,10 @@ export function Stocks({ props: stocks }: { props: Stock[] }) {
             key={stock.symbol}
             className="flex cursor-pointer flex-row gap-2 rounded-lg bg-zinc-800 p-2 text-left hover:bg-zinc-700 sm:w-52"
             onClick={async () => {
-              const response = await submitUserMessage(`View ${stock.symbol}`)
+              const response = await submitUserMessage(
+                `View ${stock.symbol}`,
+                selectedModel
+              )
               setMessages(currentMessages => [...currentMessages, response])
             }}
           >

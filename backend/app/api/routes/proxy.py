@@ -197,7 +197,7 @@ logger = logging.getLogger(__name__)
 
 
 client = AsyncOpenAI(
-    base_url="http://localhost:11434/v1",
+    base_url="https://api.openai.com/v1",
     api_key=os.environ.get("OPENAI_API_KEY"),  # required, but unused
 )
 

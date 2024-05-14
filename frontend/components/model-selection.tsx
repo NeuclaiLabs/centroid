@@ -1,7 +1,6 @@
 'use client'
 
 import * as React from 'react'
-import { useSelectedModel } from '@/lib/hooks/use-selected-model'
 import { useAvailableModels } from '@/lib/hooks/use-available-models'
 import { IconCheck, IconChevronUpDown } from '@/components/ui/icons'
 import { cn } from '@/lib/utils'
@@ -19,13 +18,16 @@ import {
   PopoverTrigger
 } from '@/components/ui/popover'
 import { usePathname } from 'next/navigation'
+import { ModelSelectionContext } from '@/lib/hooks/use-model-selection'
 
 export function ModelSelection() {
-  const [selectedModel, updateSelectedModel] = useSelectedModel()
+  const { selectedModel, updateSelectedModel } = React.useContext(
+    ModelSelectionContext
+  )
+
   const availableModels = useAvailableModels()
   const [open, setOpen] = React.useState(false)
   const pathName = usePathname()
-  console.log('Path name: ', pathName)
 
   return (
     !pathName.includes('settings') && (

@@ -6,7 +6,7 @@ export type ToolDefinition = {
 }
 
 export type ToolRenderer = {
-  render: (params: z.ZodType<any>) => any
+  generate: (params: z.ZodType<any>) => any
 }
 
 export type ToolUIComponent<T = any> = {

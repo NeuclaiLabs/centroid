@@ -3,6 +3,7 @@
 import * as React from 'react'
 import Textarea from 'react-textarea-autosize'
 
+import { useEffect, useState, useContext } from 'react'
 import { useActions, useUIState } from 'ai/rsc'
 
 import { UserMessage } from '@/components/message'
@@ -17,7 +18,7 @@ import {
 import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
 import { nanoid } from 'nanoid'
 import { useRouter } from 'next/navigation'
-import { useSelectedModel } from '@/lib/hooks/use-selected-model'
+import { ModelSelectionContext } from '@/lib/hooks/use-model-selection'
 
 export function PromptForm({
   input,
@@ -30,7 +31,8 @@ export function PromptForm({
   const { formRef, onKeyDown } = useEnterSubmit()
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
   const { submitUserMessage } = useActions()
-  const [selectedModel] = useSelectedModel()
+  const { selectedModel } = useContext(ModelSelectionContext)
+
   const [_, setMessages] = useUIState<typeof AI>()
 
   React.useEffect(() => {
@@ -44,7 +46,6 @@ export function PromptForm({
       ref={formRef}
       onSubmit={async (e: any) => {
         e.preventDefault()
-
         // Blur focus on mobile
         if (window.innerWidth < 600) {
           e.target['message']?.blur()
