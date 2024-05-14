@@ -1,5 +1,6 @@
 import * as React from 'react'
 
+import { useContext } from 'react'
 import { PromptForm } from '@/components/prompt-form'
 import { ButtonScrollToBottom } from '@/components/button-scroll-to-bottom'
 import { FooterText } from '@/components/footer'
@@ -7,7 +8,7 @@ import { useAIState, useActions, useUIState } from 'ai/rsc'
 import type { AI } from '@/lib/chat/actions'
 import { nanoid } from 'nanoid'
 import { UserMessage } from '@/components/message'
-import { useSelectedModel } from '@/lib/hooks/use-selected-model'
+import { ModelSelectionContext } from '@/lib/hooks/use-model-selection'
 
 export interface ChatPanelProps {
   id?: string
@@ -29,8 +30,7 @@ export function ChatPanel({
   const [aiState] = useAIState()
   const [messages, setMessages] = useUIState<typeof AI>()
   const { submitUserMessage } = useActions()
-  const [shareDialogOpen, setShareDialogOpen] = React.useState(false)
-  const [selectedModel] = useSelectedModel()
+  const { selectedModel } = useContext(ModelSelectionContext)
 
   const exampleMessages = [
     {
@@ -81,7 +81,6 @@ export function ChatPanel({
                       display: <UserMessage>{example.message}</UserMessage>
                     }
                   ])
-                  console.log("Selected model: ", selectedModel)
                   const responseMessage = await submitUserMessage(
                     example.message,
                     selectedModel

@@ -1,9 +1,10 @@
 'use client'
 
+import { useContext } from 'react'
 import { useActions, useUIState } from 'ai/rsc'
 
 import type { AI } from '@/lib/chat/actions'
-import { useSelectedModel } from '@/lib/hooks/use-selected-model'
+import { ModelSelectionContext } from '@/lib/hooks/use-model-selection'
 
 interface Stock {
   symbol: string
@@ -14,7 +15,7 @@ interface Stock {
 export function Stocks({ props: stocks }: { props: Stock[] }) {
   const [, setMessages] = useUIState<typeof AI>()
   const { submitUserMessage } = useActions()
-  const [selectedModel] = useSelectedModel()
+  const { selectedModel } = useContext(ModelSelectionContext)
 
   return (
     <div>

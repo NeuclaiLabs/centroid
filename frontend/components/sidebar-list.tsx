@@ -47,10 +47,10 @@ export async function SidebarList({ userId }: SidebarListProps) {
           {/* <ThemeToggle className="mt-2 mb-4"/>
           <ClearHistory clearChats={clearChats}> */}
         </div>
-        {/* <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between">
           <ThemeToggle />
           <ClearHistory clearChats={clearChats} isEnabled={chats?.length > 0} />
-        </div> */}
+        </div>
       </div>
     </div>
   )
