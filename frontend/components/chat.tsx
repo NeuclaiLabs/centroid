@@ -37,8 +37,11 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   }, [id, path, session?.user, messages])
 
   useEffect(() => {
-    const messagesLength = aiState.messages?.length
-    if (messagesLength === 2) {
+    const userMessagesLength = aiState.messages?.filter(
+      (message: { role: string }) => message.role === 'user'
+    ).length
+
+    if (userMessagesLength === 1 && aiState.messages?.length > 1) {
       router.refresh()
     }
   }, [aiState.messages, router])
