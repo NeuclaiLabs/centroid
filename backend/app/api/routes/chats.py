@@ -20,7 +20,9 @@ def read_chats(
     if current_user.is_superuser:
         statement = select(func.count()).select_from(Chat)
         count = session.exec(statement).one()
-        statement = select(Chat).offset(skip).limit(limit)
+        statement = (
+            select(Chat).order_by(Chat.created_at.desc()).offset(skip).limit(limit)
+        )
         chats = session.exec(statement).all()
     else:
         statment = (
@@ -32,6 +34,7 @@ def read_chats(
         statement = (
             select(Chat)
             .where(Chat.user_id == current_user.id)
+            .order_by(Chat.created_at.desc())
             .offset(skip)
             .limit(limit)
         )

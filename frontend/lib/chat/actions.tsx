@@ -22,22 +22,15 @@ import { SpinnerMessage, UserMessage } from '@/components/message'
 import { Chat, Model, Message } from '@/lib/types'
 import { auth } from '@/auth'
 
-const openAIProvider = createOpenAI({
-  apiKey: process.env.OPENAI_API_KEY || ''
-})
-
-const ollamaProvider = createOllama({
-  baseURL: 'http://localhost:11434/v1'
-})
-
 async function submitUserMessage(content: string, model: Model) {
   'use server'
   let provider = null
   switch (model.connection.type) {
+    case 'groq':
     case 'openai':
       provider = createOpenAI({
-        baseURL: model.connection.url || 'https://api.openai.com/v1',
-        apiKey: model.connection.key || process.env.OPENAI_API_KEY
+        baseURL: model.connection.data.url || 'https://api.openai.com/v1',
+        apiKey: model.connection.data.key || process.env.OPENAI_API_KEY
       })
       break
     default:
@@ -71,17 +64,6 @@ async function submitUserMessage(content: string, model: Model) {
         content: `\
 You are a stock trading conversation bot and you can help users buy stocks, step by step.
 You and the user can discuss stock prices and the user can adjust the amount of stocks they want to buy, or place an order, in the UI.
-
-Messages inside [] means that it's a UI element or a user event. For example:
-- "[Price of AAPL = 100]" means that an interface of the stock price of AAPL is shown to the user.
-- "[User has changed the amount of AAPL to 10]" means that the user has changed the amount of AAPL to 10 in the UI.
-
-If the user requests purchasing a stock, call \`show_stock_purchase_ui\` to show the purchase UI.
-If the user just wants the price, call \`show_stock_price\` to show the price.
-If you want to show trending stocks, call \`list_stocks\`.
-If you want to show events, call \`get_events\`.
-If the user wants to sell stock, or complete another impossible task, respond that you are a demo and cannot do that.
-
 Besides that, you can also chat with users and do some calculations if needed.`
       },
       ...aiState.get().messages.map((message: any) => ({
@@ -123,7 +105,6 @@ Besides that, you can also chat with users and do some calculations if needed.`
     display: result.value
   }
 }
-
 
 export type AIState = {
   chatId: string
@@ -194,24 +175,22 @@ export const getUIStateFromAIState = (aiState: Chat) => {
       display:
         message.role === 'tool' ? (
           message.content.map(tool => {
-            ;(() => {
-              try {
-                const DynamicComponent =
-                  getTools(undefined)[
-                    tool.toolName as keyof ReturnType<typeof getTools>
-                  ].component
-                return (
-                  <BotCard>
-                    <DynamicComponent props={tool.result} />
-                  </BotCard>
-                )
-              } catch (error: any) {
-                console.error(
-                  `Error fetching component for message ${tool.toolName}: ${error.message}`
-                )
-                return null
-              }
-            })()
+            try {
+              const DynamicComponent =
+                getTools(undefined)[
+                  tool.toolName as keyof ReturnType<typeof getTools>
+                ].component
+              return (
+                <BotCard>
+                  <DynamicComponent props={tool.result} />
+                </BotCard>
+              )
+            } catch (error: any) {
+              console.error(
+                `Error fetching component for message ${tool.toolName}: ${error.message}`
+              )
+              return null
+            }
           })
         ) : message.role === 'user' ? (
           <UserMessage>{message.content as string}</UserMessage>

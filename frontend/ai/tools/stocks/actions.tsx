@@ -67,18 +67,7 @@ export async function confirmPurchase(
     aiState.done({
       ...aiState.get(),
       messages: [
-        ...aiState.get().messages.slice(0, -1),
-        {
-          id: nanoid(),
-          role: 'function',
-          name: 'showStockPurchase',
-          content: JSON.stringify({
-            symbol,
-            price,
-            defaultAmount: amount,
-            status: 'completed'
-          })
-        },
+        ...aiState.get().messages,
         {
           id: nanoid(),
           role: 'system',
