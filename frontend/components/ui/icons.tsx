@@ -174,17 +174,17 @@ function IconArrowUp({ className, ...props }: React.ComponentProps<'svg'>) {
         y2="40"
         fill="none"
         stroke="currentColor"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="16"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="16"
       />
       <polyline
         points="56 112 128 40 200 112"
         fill="none"
         stroke="currentColor"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="16"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="16"
       />
     </svg>
   )
@@ -224,9 +224,9 @@ function IconVerticalLine({
         y2="232"
         fill="none"
         stroke="currentColor"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="60"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="60"
       />
     </svg>
   )
@@ -246,9 +246,9 @@ function IconCaretLeft({ className, ...props }: React.ComponentProps<'svg'>) {
         points="160 208 80 128 160 48"
         fill="none"
         stroke="currentColor"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="60"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="60"
       />
     </svg>
   )
@@ -268,9 +268,9 @@ function IconCaretRight({ className, ...props }: React.ComponentProps<'svg'>) {
         points="96 48 176 128 96 208"
         fill="none"
         stroke="currentColor"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="60"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="60"
       />
     </svg>
   )
@@ -332,9 +332,9 @@ function IconNotePencil({ className, ...props }: React.ComponentProps<'svg'>) {
         points="128 160 96 160 96 128 192 32 224 64 128 160"
         fill="none"
         stroke="currentColor"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="16"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="16"
       />
       <line
         x1="168"
@@ -343,17 +343,17 @@ function IconNotePencil({ className, ...props }: React.ComponentProps<'svg'>) {
         y2="88"
         fill="none"
         stroke="currentColor"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="16"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="16"
       />
       <path
         d="M216,128v80a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V48a8,8,0,0,1,8-8h80"
         fill="none"
         stroke="currentColor"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="16"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="16"
       />
     </svg>
   )
@@ -460,9 +460,9 @@ function IconSidebar({ className, ...props }: React.ComponentProps<'svg'>) {
         y2="128"
         fill="none"
         stroke="currentColor"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="16"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="16"
       />
       <line
         x1="40"
@@ -471,9 +471,9 @@ function IconSidebar({ className, ...props }: React.ComponentProps<'svg'>) {
         y2="64"
         fill="none"
         stroke="currentColor"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="16"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="16"
       />
       <line
         x1="40"
@@ -482,9 +482,9 @@ function IconSidebar({ className, ...props }: React.ComponentProps<'svg'>) {
         y2="192"
         fill="none"
         stroke="currentColor"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="16"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="16"
       />
     </svg>
   )

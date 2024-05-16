@@ -9,7 +9,7 @@ class ChatMessage(SQLModel):
     id: str
     role: str
     name: str | None = None
-    content: str
+    content: list | str | dict | None = None
 
     def to_dict(self):
         return self.dict()

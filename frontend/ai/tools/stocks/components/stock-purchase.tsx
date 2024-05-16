@@ -14,7 +14,7 @@ interface Purchase {
 }
 
 export function Purchase({
-  props: { numberOfShares, symbol, price, status = 'requires_action' }
+  props: { numberOfShares, symbol, price, status = 'expired' }
 }: {
   props: Purchase
 }) {

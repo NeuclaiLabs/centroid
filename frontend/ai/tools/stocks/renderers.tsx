@@ -35,6 +35,7 @@ export function getToolRenderers(
         )
 
         await sleep(1000)
+        const toolCallId = nanoid()
 
         aiState?.done({
           ...aiState.get(),
@@ -42,9 +43,27 @@ export function getToolRenderers(
             ...aiState.get().messages,
             {
               id: nanoid(),
-              role: 'function',
-              name: 'listStocks',
-              content: JSON.stringify(stocks)
+              role: 'assistant',
+              content: [
+                {
+                  type: 'tool-call',
+                  toolName: 'listStocks',
+                  toolCallId,
+                  args: { stocks }
+                }
+              ]
+            },
+            {
+              id: nanoid(),
+              role: 'tool',
+              content: [
+                {
+                  type: 'tool-result',
+                  toolName: 'listStocks',
+                  toolCallId,
+                  result: stocks
+                }
+              ]
             }
           ]
         })
@@ -69,16 +88,34 @@ export function getToolRenderers(
         )
 
         await sleep(1000)
-
+        const toolCallId = nanoid()
         aiState?.done({
           ...aiState.get(),
           messages: [
             ...aiState.get().messages,
             {
               id: nanoid(),
-              role: 'function',
-              name: 'showStockPrice',
-              content: JSON.stringify({ symbol, price, delta })
+              role: 'assistant',
+              content: [
+                {
+                  type: 'tool-call',
+                  toolName: 'showStockPrice',
+                  toolCallId,
+                  args: { symbol, price, delta }
+                }
+              ]
+            },
+            {
+              id: nanoid(),
+              role: 'tool',
+              content: [
+                {
+                  type: 'tool-result',
+                  toolName: 'showStockPrice',
+                  toolCallId,
+                  result: { symbol, price, delta }
+                }
+              ]
             }
           ]
         })
@@ -96,11 +133,41 @@ export function getToolRenderers(
         price,
         numberOfShares = 100
       }: z.infer<typeof toolDefinitions.showStockPurchase.parameters>) {
+        const toolCallId = nanoid()
         if (numberOfShares <= 0 || numberOfShares > 1000) {
           aiState?.done({
             ...aiState.get(),
             messages: [
               ...aiState.get().messages,
+              {
+                id: nanoid(),
+                role: 'assistant',
+                content: [
+                  {
+                    type: 'tool-call',
+                    toolName: 'showStockPurchase',
+                    toolCallId,
+                    args: { symbol, price, numberOfShares }
+                  }
+                ]
+              },
+              {
+                id: nanoid(),
+                role: 'tool',
+                content: [
+                  {
+                    type: 'tool-result',
+                    toolName: 'showStockPurchase',
+                    toolCallId,
+                    result: {
+                      symbol,
+                      price,
+                      numberOfShares,
+                      status: 'expired'
+                    }
+                  }
+                ]
+              },
               {
                 id: nanoid(),
                 role: 'system',
@@ -118,13 +185,31 @@ export function getToolRenderers(
             ...aiState.get().messages,
             {
               id: nanoid(),
-              role: 'function',
-              name: 'showStockPurchase',
-              content: JSON.stringify({
-                symbol,
-                price,
-                numberOfShares
-              })
+              role: 'assistant',
+              content: [
+                {
+                  type: 'tool-call',
+                  toolName: 'showStockPurchase',
+                  toolCallId,
+                  args: { symbol, price, numberOfShares }
+                }
+              ]
+            },
+            {
+              id: nanoid(),
+              role: 'tool',
+              content: [
+                {
+                  type: 'tool-result',
+                  toolName: 'showStockPurchase',
+                  toolCallId,
+                  result: {
+                    symbol,
+                    price,
+                    numberOfShares
+                  }
+                }
+              ]
             }
           ]
         })
@@ -154,16 +239,34 @@ export function getToolRenderers(
         )
 
         await sleep(1000)
-
+        const toolCallId = nanoid()
         aiState?.done({
           ...aiState.get(),
           messages: [
             ...aiState.get().messages,
             {
               id: nanoid(),
-              role: 'function',
-              name: 'getEvents',
-              content: JSON.stringify(events)
+              role: 'assistant',
+              content: [
+                {
+                  type: 'tool-call',
+                  toolName: 'getEvents',
+                  toolCallId,
+                  args: { events }
+                }
+              ]
+            },
+            {
+              id: nanoid(),
+              role: 'tool',
+              content: [
+                {
+                  type: 'tool-result',
+                  toolName: 'getEvents',
+                  toolCallId,
+                  result: events
+                }
+              ]
             }
           ]
         })

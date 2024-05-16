@@ -19,11 +19,11 @@ import { BotCard, BotMessage } from '@/ai/tools/stocks/components'
 import { nanoid } from '@/lib/utils'
 import { saveChat } from '@/app/actions'
 import { SpinnerMessage, UserMessage } from '@/components/message'
-import { Chat, Model } from '@/lib/types'
+import { Chat, Model, Message } from '@/lib/types'
 import { auth } from '@/auth'
 
 const openAIProvider = createOpenAI({
-  apiKey: process.env.OPENAI_API_KEY || '',
+  apiKey: process.env.OPENAI_API_KEY || ''
 })
 
 const ollamaProvider = createOllama({
@@ -85,7 +85,7 @@ If the user wants to sell stock, or complete another impossible task, respond th
 Besides that, you can also chat with users and do some calculations if needed.`
       },
       ...aiState.get().messages.map((message: any) => ({
-        role: message.role,
+        role: message.role || 'user',
         content: message.content,
         name: message.name
       }))
@@ -124,12 +124,6 @@ Besides that, you can also chat with users and do some calculations if needed.`
   }
 }
 
-export type Message = {
-  role: 'user' | 'assistant' | 'system' | 'function' | 'data' | 'tool'
-  content: string
-  id: string
-  name?: string
-}
 
 export type AIState = {
   chatId: string
@@ -150,7 +144,6 @@ export const AI = createAI<AIState, UIState>({
   initialAIState: { chatId: nanoid(), messages: [] },
   onGetUIState: async () => {
     'use server'
-
     const session = await auth()
 
     if (session && session.user) {
@@ -164,7 +157,7 @@ export const AI = createAI<AIState, UIState>({
       return
     }
   },
-  onSetAIState: async ({ state, done }) => {
+  onSetAIState: async ({ state }) => {
     'use server'
 
     const session = await auth()
@@ -175,8 +168,8 @@ export const AI = createAI<AIState, UIState>({
       const createdAt = new Date()
       const userId = session.user.id as string
       const path = `/chat/${chatId}`
-      const title = messages[0].content.substring(0, 100)
-
+      const firstMessageContent = messages[0].content as string
+      const title = firstMessageContent.substring(0, 100)
       const chat: Chat = {
         id: chatId,
         title,
@@ -199,29 +192,32 @@ export const getUIStateFromAIState = (aiState: Chat) => {
     .map((message, index) => ({
       id: `${aiState.chatId}-${index}`,
       display:
-        message.role === 'function' || message.role === 'tool' ? (
-          (() => {
-            try {
-              const DynamicComponent =
-                getTools(undefined)[
-                  message?.name as keyof ReturnType<typeof getTools>
-                ].component
-              return (
-                <BotCard>
-                  <DynamicComponent props={JSON.parse(message.content)} />
-                </BotCard>
-              )
-            } catch (error: any) {
-              console.error(
-                `Error fetching component for message ${message.name}: ${error.message}`
-              )
-              return null
-            }
-          })()
+        message.role === 'tool' ? (
+          message.content.map(tool => {
+            ;(() => {
+              try {
+                const DynamicComponent =
+                  getTools(undefined)[
+                    tool.toolName as keyof ReturnType<typeof getTools>
+                  ].component
+                return (
+                  <BotCard>
+                    <DynamicComponent props={tool.result} />
+                  </BotCard>
+                )
+              } catch (error: any) {
+                console.error(
+                  `Error fetching component for message ${tool.toolName}: ${error.message}`
+                )
+                return null
+              }
+            })()
+          })
         ) : message.role === 'user' ? (
-          <UserMessage>{message.content}</UserMessage>
-        ) : (
+          <UserMessage>{message.content as string}</UserMessage>
+        ) : message.role === 'assistant' &&
+          typeof message.content === 'string' ? (
           <BotMessage content={message.content} />
-        )
-    }))
+        ) : null
+    })) as UIState
 }
