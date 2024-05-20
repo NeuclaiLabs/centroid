@@ -2,8 +2,9 @@ import * as React from 'react'
 import Link from 'next/link'
 
 import { ModeToggle } from '@/components/mode-toggle'
+import { Account } from '@/components/account'
 
-import { auth } from '@/auth'
+import { auth, signOut } from '@/auth'
 import { Button } from '@/components/ui/button'
 import { SidebarMobile } from '@/components/sidebar-mobile'
 import { ChatHistory } from '@/components/chat-history'
@@ -38,10 +39,18 @@ export async function Header() {
       <div className="flex items-center justify-end space-x-2">
         <React.Suspense fallback={<div className="flex-1 overflow-auto" />}>
           <div className="flex items-center">
-            {!session?.user && (
+            {!session?.user ? (
               <Button variant="link" asChild className="-ml-2">
                 <Link href="/login">Login</Link>
               </Button>
+            ) : (
+              <Account
+                user={session?.user}
+                signOut={async () => {
+                  'use server'
+                  await signOut()
+                }}
+              />
             )}
             <ModeToggle />
           </div>

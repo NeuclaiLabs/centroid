@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import {
   Command,
   CommandEmpty,
+  CommandList,
   CommandGroup,
   CommandInput,
   CommandItem
@@ -53,29 +54,31 @@ export function ModelSelection() {
         <PopoverContent className="w-[200px] p-0">
           <Command>
             <CommandInput placeholder="Search models" />
-            <CommandEmpty>No model found.</CommandEmpty>
-            <CommandGroup>
-              {availableModels.map(model => (
-                <CommandItem
-                  key={model.id}
-                  value={model.id}
-                  onSelect={currentValue => {
-                    updateSelectedModel(currentValue)
-                    setOpen(false)
-                  }}
-                >
-                  <IconCheck
-                    className={cn(
-                      'mr-2 size-4',
-                      selectedModel?.id === model.id.toLowerCase()
-                        ? 'opacity-100'
-                        : 'opacity-0'
-                    )}
-                  />
-                  {model.name}
-                </CommandItem>
-              ))}
-            </CommandGroup>
+            <CommandList>
+              <CommandEmpty>No model found.</CommandEmpty>
+              <CommandGroup>
+                {availableModels.map(model => (
+                  <CommandItem
+                    key={model.id}
+                    value={model.id}
+                    onSelect={currentValue => {
+                      updateSelectedModel(currentValue)
+                      setOpen(false)
+                    }}
+                  >
+                    <IconCheck
+                      className={cn(
+                        'mr-2 size-4',
+                        selectedModel?.id === model.id.toLowerCase()
+                          ? 'opacity-100'
+                          : 'opacity-0'
+                      )}
+                    />
+                    {model.name}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
           </Command>
         </PopoverContent>
       </Popover>

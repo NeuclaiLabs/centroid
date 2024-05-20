@@ -48,13 +48,13 @@ export function Account({ user, signOut }: AccountProps) {
           <button
             className={cn(
               buttonVariants({ variant: 'ghost' }),
-              'group w-full px-8 p-6 pl-2 justify-start focus-visible:ring-0 transition-colors hover:bg-zinc-200/40 dark:hover:bg-zinc-300/10'
+              ' transition-colors hover:bg-zinc-200/40 dark:hover:bg-zinc-300/10'
             )}
           >
-            <div className="flex size-7 shrink-0 select-none items-center justify-center rounded-full bg-muted/50 text-xs font-medium uppercase text-muted-foreground">
+            <div className="flex size-4 shrink-0 select-none items-center justify-center rounded-full bg-muted/50 text-xs font-medium uppercase text-muted-foreground">
               {getUserInitials(user.email)}
             </div>
-            <span className="ml-2 hidden md:block">{user.email}</span>
+            {/* <span className="ml-2 hidden md:block">{user.email}</span> */}
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-60">

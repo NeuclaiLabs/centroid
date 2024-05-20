@@ -37,17 +37,6 @@ export async function SidebarList({ userId }: SidebarListProps) {
         )}
       </div>
       <div className="flex flex-col p-2">
-        <div className="flex flex-1 flex-col">
-          <Account
-            user={session?.user}
-            signOut={async () => {
-              'use server'
-              await signOut()
-            }}
-          />
-          {/* <ThemeToggle className="mt-2 mb-4"/>
-          <ClearHistory clearChats={clearChats}> */}
-        </div>
         <div className="flex items-center justify-between">
           <ThemeToggle />
           <ClearHistory clearChats={clearChats} isEnabled={chats?.length > 0} />
