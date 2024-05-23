@@ -44,10 +44,10 @@ class UpdatePassword(SQLModel):
 # Database model, database table inferred from class name
 class User(UserBase, table=True):
     id: str | None = Field(default_factory=nanoid.generate, primary_key=True)
-    test2: str | None = Field(default_factory=nanoid.generate)
     hashed_password: str
     items: list["Item"] = Relationship(back_populates="owner")  # noqa: F821
     connections: list["Connection"] = Relationship(back_populates="owner")  # noqa: F821
+    actions: list["Action"] = Relationship(back_populates="owner")  # noqa: F821
 
 
 # Properties to return via API, id is always required

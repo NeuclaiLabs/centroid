@@ -4,6 +4,8 @@ from sqlmodel import Session, select
 
 from app.core.security import get_password_hash, verify_password
 from app.models import (
+    Action,
+    ActionCreate,
     Chat,
     Connection,
     ConnectionCreate,
@@ -80,6 +82,16 @@ def create_connection(
     session.commit()
     session.refresh(db_connection)
     return db_connection
+
+
+def create_action(
+    *, session: Session, action_in: ActionCreate, owner_id: str
+) -> Action:
+    db_action = Action.model_validate(action_in, update={"owner_id": owner_id})
+    session.add(db_action)
+    session.commit()
+    session.refresh(db_action)
+    return db_action
 
 
 def get_chats(session: Session, user_id: str) -> list[Chat]:
