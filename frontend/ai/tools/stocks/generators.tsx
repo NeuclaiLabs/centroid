@@ -5,7 +5,10 @@ import { Events } from '@/ai/tools/stocks/components/events'
 import { StocksSkeleton } from '@/ai/tools/stocks/components/stocks-skeleton'
 import { Stocks } from '@/ai/tools/stocks/components/stocks'
 import { StockSkeleton } from '@/ai/tools/stocks/components/stock-skeleton'
+import { Search } from '@/ai/tools/stocks/components/search'
+
 import { getMutableAIState } from 'ai/rsc'
+import { auth } from '@/auth'
 
 import {
   BotCard,
@@ -19,7 +22,7 @@ import { getToolDefinitions } from './definitions'
 
 import { type ToolRenderer } from '@/ai/tools/types'
 
-export function getToolRenderers(
+export function getToolGenerators(
   aiState: ReturnType<typeof getMutableAIState> | undefined
 ): Record<string, ToolRenderer> {
   const toolDefinitions = getToolDefinitions()
@@ -34,8 +37,28 @@ export function getToolRenderers(
           </BotCard>
         )
 
-        await sleep(1000)
-        const toolCallId = nanoid()
+        const response = await fetch(
+          `${process.env.BACKEND_HOST}/api/v1/actions/`,
+          {
+            method: 'POST',
+            headers: {
+              accept: 'application/json',
+              'Content-Type': 'application/json',
+              // @ts-ignore
+              Authorization: `Bearer ${(await auth())?.user?.accessToken}`
+            },
+            body: JSON.stringify({
+              chat_id: 'test_chat',
+              parent_id: null,
+              type: 'test_type',
+              steps: { key: 'value' },
+              status: 'pending',
+              result: null
+            })
+          }
+        )
+
+        const toolCallId = ((await response.json()) as { id: string }).id
 
         aiState?.done({
           ...aiState.get(),
@@ -274,6 +297,55 @@ export function getToolRenderers(
         return (
           <BotCard>
             <Events props={events} />
+          </BotCard>
+        )
+      }
+    },
+    search: {
+      generate: async function* ({
+        query
+      }: z.infer<typeof toolDefinitions.search.parameters>) {
+        yield (
+          <BotCard>
+            <EventsSkeleton />
+          </BotCard>
+        )
+        // await sleep(1000)
+        const toolCallId = nanoid()
+        aiState?.done({
+          ...aiState.get(),
+          messages: [
+            ...aiState.get().messages,
+            {
+              id: nanoid(),
+              role: 'assistant',
+              content: [
+                {
+                  type: 'tool-call',
+                  toolName: 'search',
+                  toolCallId,
+                  args: { query }
+                }
+              ]
+            },
+            {
+              id: nanoid(),
+              role: 'tool',
+              content: [
+                {
+                  type: 'tool-result',
+                  toolName: 'search',
+                  toolCallId,
+                  result: [{ description: query }]
+                }
+              ]
+            }
+          ]
+        })
+
+        return (
+          <BotCard>
+            <Search props={query} />
           </BotCard>
         )
       }
