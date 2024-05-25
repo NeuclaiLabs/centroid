@@ -8,6 +8,9 @@ dependencies:
   '@ai-sdk/openai':
     specifier: ^0.0.10
     version: 0.0.10(zod@3.22.4)
+  '@amplitude/analytics-browser':
+    specifier: ^2.8.1
+    version: 2.8.1
   '@hookform/resolvers':
     specifier: ^3.3.4
     version: 3.3.4(react-hook-form@7.51.4)
@@ -276,6 +279,48 @@ packages:
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
     dev: true
+
+  /@amplitude/analytics-browser@2.8.1:
+    resolution: {integrity: sha512-gvCvGQUbHjrmQQma5qBDQo25TD/p+TCoWX20XfGJC0rR51MCWacbYQZ6CQrECXte7c6XNzc11hC6Kf50bO0Sxw==}
+    dependencies:
+      '@amplitude/analytics-client-common': 2.2.1
+      '@amplitude/analytics-core': 2.2.8
+      '@amplitude/analytics-types': 2.5.1
+      '@amplitude/plugin-page-view-tracking-browser': 2.2.13
+      tslib: 2.6.2
+    dev: false
+
+  /@amplitude/analytics-client-common@2.2.1:
+    resolution: {integrity: sha512-JXpLjKgP7LiBMZF5eMjtiPiSPW8FxvF4bHubDg26Ck2buBUQvrBq6D4VyOky0m1zG7WA4vOoLANu3sWfF02/7Q==}
+    dependencies:
+      '@amplitude/analytics-connector': 1.5.0
+      '@amplitude/analytics-core': 2.2.8
+      '@amplitude/analytics-types': 2.5.1
+      tslib: 2.6.2
+    dev: false
+
+  /@amplitude/analytics-connector@1.5.0:
+    resolution: {integrity: sha512-T8mOYzB9RRxckzhL0NTHwdge9xuFxXEOplC8B1Y3UX3NHa3BLh7DlBUZlCOwQgMc2nxDfnSweDL5S3bhC+W90g==}
+    dev: false
+
+  /@amplitude/analytics-core@2.2.8:
+    resolution: {integrity: sha512-T4ZFk1LUD+4z02XMSWK4qPvMREUTgNtEoYQc6BvNyfOx1Ih21qyJLFcdSw05gL26JuuuYZWFkpHxxKm8IoZh8Q==}
+    dependencies:
+      '@amplitude/analytics-types': 2.5.1
+      tslib: 2.6.2
+    dev: false
+
+  /@amplitude/analytics-types@2.5.1:
+    resolution: {integrity: sha512-xGuLiHRLv5z3RSAHiICjzHK4TjUZJ7aHr/jM0XhSgD/V1YdmG/s8y1UAWGI2Stsxm2x0DWNOyEpjYkGohlnXtA==}
+    dev: false
+
+  /@amplitude/plugin-page-view-tracking-browser@2.2.13:
+    resolution: {integrity: sha512-EYvG4RTyNqIGlq3J+UnrTRRj75xp3nOSETeInPQbnHhiPaCzxTjWrb9URkzy2IYSyBSn4KEQkZegmzhWXxlvvw==}
+    dependencies:
+      '@amplitude/analytics-client-common': 2.2.1
+      '@amplitude/analytics-types': 2.5.1
+      tslib: 2.6.2
+    dev: false
 
   /@ampproject/remapping@2.2.1:
     resolution: {integrity: sha512-lFMjJTrFL3j7L9yBxwYfCq2k6qqwHyzuUl/XBnif78PWTJYyL/dfowQHWE3sp6U6ZzqWiiIZnpTMO96zhkjwtg==}

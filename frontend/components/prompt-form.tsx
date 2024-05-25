@@ -19,6 +19,7 @@ import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
 import { nanoid } from 'nanoid'
 import { useRouter } from 'next/navigation'
 import { ModelSelectionContext } from '@/lib/hooks/use-model-selection'
+import { useTelemetry } from '@/lib/hooks/use-telemetry'
 
 export function PromptForm({
   input,
@@ -32,6 +33,7 @@ export function PromptForm({
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
   const { submitUserMessage } = useActions()
   const { selectedModel } = useContext(ModelSelectionContext)
+  const { trackEvent } = useTelemetry()
 
   const [_, setMessages] = useUIState<typeof AI>()
 
@@ -63,7 +65,10 @@ export function PromptForm({
             display: <UserMessage>{value}</UserMessage>
           }
         ])
-
+        trackEvent({
+          eventType: 'Submit Message with new amplitude'
+          // Additional properties can be added here
+        })
         // Submit and get response message
         const responseMessage = await submitUserMessage(value, selectedModel)
         setMessages(currentMessages => [...currentMessages, responseMessage])

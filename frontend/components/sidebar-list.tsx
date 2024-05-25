@@ -20,7 +20,6 @@ const loadChats = cache(async (userId?: string) => {
 
 export async function SidebarList({ userId }: SidebarListProps) {
   const chats = await loadChats(userId)
-  console.log("loading chats...")
   const session = (await auth()) as Session
 
   return (

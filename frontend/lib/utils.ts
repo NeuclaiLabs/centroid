@@ -87,3 +87,21 @@ export const getMessageFromCode = (resultCode: string) => {
       return 'Logged in!'
   }
 }
+
+export const camelToSnakeObj = <T extends object>(obj: T): { [key: string]: any } => {
+  const result: { [key: string]: any } = {};
+
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      const snakeKey = camelToSnake(key);
+      result[snakeKey] = obj[key];
+    }
+  }
+
+  return result;
+};
+
+// Helper function to convert camelCase to snake_case
+export const camelToSnake = (str: string): string => {
+  return str.replace(/[A-Z]/g, match => `_${match.toLowerCase()}`)
+}
