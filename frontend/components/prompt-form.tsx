@@ -66,7 +66,7 @@ export function PromptForm({
           }
         ])
         trackEvent({
-          eventType: 'Submit Message with new amplitude'
+          eventType: 'Submit Message'
           // Additional properties can be added here
         })
         // Submit and get response message

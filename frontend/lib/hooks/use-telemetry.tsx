@@ -4,7 +4,7 @@ interface TelemetryEvent {
   eventType: string
   [key: string]: any // Additional properties can be added here
 }
-import {camelToSnakeObj} from '@/lib/utils'
+import { camelToSnakeObj, fetcher } from '@/lib/utils'
 
 export const useTelemetry = () => {
   const isDisabled = process.env.NEXT_PUBLIC_DISABLE_TELEMETRY === 'true'
@@ -16,7 +16,7 @@ export const useTelemetry = () => {
     }
 
     try {
-      const response = await fetch('https://api2.amplitude.com/2/httpapi', {
+      const result = await fetcher('https://api2.amplitude.com/2/httpapi', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -24,7 +24,7 @@ export const useTelemetry = () => {
         },
         body: JSON.stringify({
           api_key: 'ef5489b99fbbb64c53c7dc722ddc1d4e',
-          events: [camelToSnakeObj({...event, deviceId})]
+          events: [camelToSnakeObj({ ...event, deviceId })]
         })
       })
     } catch (err) {

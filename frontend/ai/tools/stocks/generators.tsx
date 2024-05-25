@@ -5,7 +5,7 @@ import { Events } from '@/ai/tools/stocks/components/events'
 import { StocksSkeleton } from '@/ai/tools/stocks/components/stocks-skeleton'
 import { Stocks } from '@/ai/tools/stocks/components/stocks'
 import { StockSkeleton } from '@/ai/tools/stocks/components/stock-skeleton'
-import { Search } from '@/ai/tools/stocks/components/search'
+import { Search } from '@/ai/tools/search/components/search'
 
 import { getMutableAIState } from 'ai/rsc'
 import { auth } from '@/auth'
