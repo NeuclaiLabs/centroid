@@ -103,7 +103,7 @@ export function BotCard({
       >
         <IconOpenAstra />
       </div>
-      <div className="ml-4 flex-1 pl-2">{children}</div>
+      <div className="ml-4 pl-2">{children}</div>
     </div>
   )
 }

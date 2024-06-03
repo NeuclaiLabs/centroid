@@ -88,20 +88,39 @@ export const getMessageFromCode = (resultCode: string) => {
   }
 }
 
-export const camelToSnakeObj = <T extends object>(obj: T): { [key: string]: any } => {
-  const result: { [key: string]: any } = {};
+export const camelToSnakeObj = <T extends object>(
+  obj: T
+): { [key: string]: any } => {
+  const result: { [key: string]: any } = {}
 
   for (const key in obj) {
     if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      const snakeKey = camelToSnake(key);
-      result[snakeKey] = obj[key];
+      const snakeKey = camelToSnake(key)
+      result[snakeKey] = obj[key]
     }
   }
 
-  return result;
-};
+  return result
+}
 
 // Helper function to convert camelCase to snake_case
 export const camelToSnake = (str: string): string => {
   return str.replace(/[A-Z]/g, match => `_${match.toLowerCase()}`)
+}
+
+export const truncateString = (
+  str: string,
+  length: number,
+  suffix: string = '...'
+): string => {
+  // If the string length is less than or equal to the specified length, return the original string
+  if (str.length <= length) {
+    return str
+  }
+
+  // Truncate the string to the specified length, accounting for the suffix length
+  const truncatedStr = str.slice(0, length - suffix.length)
+
+  // Append the suffix to the truncated string
+  return `${truncatedStr}${suffix}`
 }

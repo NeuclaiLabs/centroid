@@ -65,10 +65,9 @@ async function submitUserMessage(content: string, model: Model) {
 You are a helpful assistant which has access to the tools.
 Web Search: This tool augments your capabilities by performing web search to respond to user queries. Use this tool whenever it helps with giving more relevant and up-to-date information to the user.
 
-Besides that, you can also chat with users and do some calculations if needed.
 If you believe the tools would be helpful:
 - Think through which tool or tools would be most relevant and in what order you should use them.
-- Only use the tools included in the <tools> list, and use them exactly as specified (don't modify the tool names or arguments).
+- Only use the tools included in the tools list, and use them exactly as specified (don't modify the tool names or arguments).
 
 If you don't believe the tools are needed to answer the query:
 - Simply provide the response directly, without using any tools.
