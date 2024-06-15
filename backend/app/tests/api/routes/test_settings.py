@@ -2,62 +2,62 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session
 
 from app.core.config import settings
-from app.tests.utils.connection import create_random_connection
+from app.tests.utils.setting import create_random_setting
 
 
-def test_create_connection(
+def test_create_setting(
     client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
-    data = {"name": "Test Connection", "type": "test", "data": {"key": "value"}}
+    data = {"name": "Test setting", "kind": "test", "data": {"key": "value"}}
     response = client.post(
-        f"{settings.API_V1_STR}/connections/",
+        f"{settings.API_V1_STR}/settings/",
         headers=superuser_token_headers,
         json=data,
     )
     assert response.status_code == 200
     content = response.json()
     assert content["name"] == data["name"]
-    assert content["type"] == data["type"]
+    assert content["kind"] == data["kind"]
     assert content["data"] == data["data"]
     assert "id" in content
     assert "owner_id" in content
 
 
-def test_read_connection(
+def test_read_setting(
     client: TestClient, superuser_token_headers: dict[str, str], db: Session
 ) -> None:
-    connection = create_random_connection(db)
+    setting = create_random_setting(db)
     response = client.get(
-        f"{settings.API_V1_STR}/connections/{connection.id}",
+        f"{settings.API_V1_STR}/settings/{setting.id}",
         headers=superuser_token_headers,
     )
     assert response.status_code == 200
     content = response.json()
-    assert content["name"] == connection.name
-    assert content["type"] == connection.type
-    assert content["data"] == connection.data
-    assert content["id"] == connection.id
-    assert content["owner_id"] == connection.owner_id
+    assert content["name"] == setting.name
+    assert content["kind"] == setting.kind
+    assert content["data"] == setting.data
+    assert content["id"] == setting.id
+    assert content["owner_id"] == setting.owner_id
 
 
-def test_read_connection_not_found(
+def test_read_setting_not_found(
     client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
     response = client.get(
-        f"{settings.API_V1_STR}/connections/999",
+        f"{settings.API_V1_STR}/settings/999",
         headers=superuser_token_headers,
     )
     assert response.status_code == 404
     content = response.json()
-    assert content["detail"] == "Connection not found"
+    assert content["detail"] == "Setting not found"
 
 
-def test_read_connection_not_enough_permissions(
+def test_read_setting_not_enough_permissions(
     client: TestClient, normal_user_token_headers: dict[str, str], db: Session
 ) -> None:
-    connection = create_random_connection(db)
+    setting = create_random_setting(db)
     response = client.get(
-        f"{settings.API_V1_STR}/connections/{connection.id}",
+        f"{settings.API_V1_STR}/settings/{setting.id}",
         headers=normal_user_token_headers,
     )
     assert response.status_code == 400
@@ -65,13 +65,13 @@ def test_read_connection_not_enough_permissions(
     assert content["detail"] == "Not enough permissions"
 
 
-def test_read_connections(
+def test_read_settings(
     client: TestClient, superuser_token_headers: dict[str, str], db: Session
 ) -> None:
-    create_random_connection(db)
-    create_random_connection(db)
+    create_random_setting(db)
+    create_random_setting(db)
     response = client.get(
-        f"{settings.API_V1_STR}/connections/",
+        f"{settings.API_V1_STR}/settings/",
         headers=superuser_token_headers,
     )
     assert response.status_code == 200
@@ -79,46 +79,46 @@ def test_read_connections(
     assert len(content["data"]) >= 2
 
 
-def test_update_connection(
+def test_update_setting(
     client: TestClient, superuser_token_headers: dict[str, str], db: Session
 ) -> None:
-    connection = create_random_connection(db)
-    data = {"name": "Updated name", "type": "updated", "data": {"new_key": "new_value"}}
+    setting = create_random_setting(db)
+    data = {"name": "Updated name", "kind": "updated", "data": {"new_key": "new_value"}}
     response = client.put(
-        f"{settings.API_V1_STR}/connections/{connection.id}",
+        f"{settings.API_V1_STR}/settings/{setting.id}",
         headers=superuser_token_headers,
         json=data,
     )
     assert response.status_code == 200
     content = response.json()
     assert content["name"] == data["name"]
-    assert content["type"] == data["type"]
+    assert content["kind"] == data["kind"]
     assert content["data"] == data["data"]
-    assert content["id"] == connection.id
-    assert content["owner_id"] == connection.owner_id
+    assert content["id"] == setting.id
+    assert content["owner_id"] == setting.owner_id
 
 
-def test_update_connection_not_found(
+def test_update_setting_not_found(
     client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
-    data = {"name": "Updated name", "type": "updated", "data": {"new_key": "new_value"}}
+    data = {"name": "Updated name", "kind": "updated", "data": {"new_key": "new_value"}}
     response = client.put(
-        f"{settings.API_V1_STR}/connections/999",
+        f"{settings.API_V1_STR}/settings/999",
         headers=superuser_token_headers,
         json=data,
     )
     assert response.status_code == 404
     content = response.json()
-    assert content["detail"] == "Connection not found"
+    assert content["detail"] == "setting not found"
 
 
-def test_update_connection_not_enough_permissions(
+def test_update_setting_not_enough_permissions(
     client: TestClient, normal_user_token_headers: dict[str, str], db: Session
 ) -> None:
-    connection = create_random_connection(db)
-    data = {"name": "Updated name", "type": "updated", "data": {"new_key": "new_value"}}
+    setting = create_random_setting(db)
+    data = {"name": "Updated name", "kind": "updated", "data": {"new_key": "new_value"}}
     response = client.put(
-        f"{settings.API_V1_STR}/connections/{connection.id}",
+        f"{settings.API_V1_STR}/settings/{setting.id}",
         headers=normal_user_token_headers,
         json=data,
     )
@@ -127,37 +127,37 @@ def test_update_connection_not_enough_permissions(
     assert content["detail"] == "Not enough permissions"
 
 
-def test_delete_connection(
+def test_delete_setting(
     client: TestClient, superuser_token_headers: dict[str, str], db: Session
 ) -> None:
-    connection = create_random_connection(db)
+    setting = create_random_setting(db)
     response = client.delete(
-        f"{settings.API_V1_STR}/connections/{connection.id}",
+        f"{settings.API_V1_STR}/settings/{setting.id}",
         headers=superuser_token_headers,
     )
     assert response.status_code == 200
     content = response.json()
-    assert content["message"] == "Connection deleted successfully"
+    assert content["message"] == "setting deleted successfully"
 
 
-def test_delete_connection_not_found(
+def test_delete_setting_not_found(
     client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
     response = client.delete(
-        f"{settings.API_V1_STR}/connections/999",
+        f"{settings.API_V1_STR}/settings/999",
         headers=superuser_token_headers,
     )
     assert response.status_code == 404
     content = response.json()
-    assert content["detail"] == "Connection not found"
+    assert content["detail"] == "setting not found"
 
 
-def test_delete_connection_not_enough_permissions(
+def test_delete_setting_not_enough_permissions(
     client: TestClient, normal_user_token_headers: dict[str, str], db: Session
 ) -> None:
-    connection = create_random_connection(db)
+    setting = create_random_setting(db)
     response = client.delete(
-        f"{settings.API_V1_STR}/connections/{connection.id}",
+        f"{settings.API_V1_STR}/settings/{setting.id}",
         headers=normal_user_token_headers,
     )
     assert response.status_code == 400

@@ -32,7 +32,7 @@ export function getToolGenerators(
             <>Searching...</>
           </BotCard>
         )
-        fetch(`${process.env.BACKEND_HOST}/api/v1/actions/`, {
+        const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/actions/`, {
           method: 'POST',
           headers: {
             accept: 'application/json',
@@ -42,11 +42,15 @@ export function getToolGenerators(
           },
           body: JSON.stringify({
             "id": nanoid(),
-            "status": "in_progress",
-            "type": 'web-search',
-            "chat_id": aiState?.get().chatId
+            "kind": "web_search",
+            "chat_id": aiState?.get().chatId,
+            "payload": {
+              "query": query
+            }
           })
         })
+        const res = await response.json()
+        console.log(res['data'])
         const toolCallId = nanoid()
         aiState?.done({
           ...aiState.get(),

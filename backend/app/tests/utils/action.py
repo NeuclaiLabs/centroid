@@ -15,7 +15,7 @@ def create_random_action(db: Session) -> Action:
 
     chat_id = random_string()
     parent_id = random_string() if random.random() < 0.5 else None
-    type = random.choice(["type1", "type2", "type3"])
+    kind = random.choice(["kind1", "kind2", "kind3"])
     steps = {
         "key1": random_lower_string(),
         "key2": random_lower_string(),
@@ -33,7 +33,7 @@ def create_random_action(db: Session) -> Action:
     action_in = ActionCreate(
         chat_id=chat_id,
         parent_id=parent_id,
-        type=type,
+        kind=kind,
         steps=steps,
         result=result,
         status=status,

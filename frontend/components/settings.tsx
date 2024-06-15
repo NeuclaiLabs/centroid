@@ -74,7 +74,6 @@ import {
   AlertDialogTitle
 } from '@/components/ui/alert-dialog'
 
-import { format } from 'date-fns'
 
 export function Settings({ userId }: { userId: string }) {
   const [connections, setConnections] = useState<Connection[]>([])

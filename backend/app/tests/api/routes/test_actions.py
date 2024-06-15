@@ -11,7 +11,7 @@ def test_create_action(
     data = {
         "chat_id": "test_chat",
         "parent_id": None,
-        "type": "test_type",
+        "kind": "test_kind",
         "steps": {"key": "value"},
         "status": "pending",
         "result": None,
@@ -25,7 +25,7 @@ def test_create_action(
     content = response.json()
     assert content["chat_id"] == data["chat_id"]
     assert content["parent_id"] == data["parent_id"]
-    assert content["type"] == data["type"]
+    assert content["kind"] == data["kind"]
     assert content["steps"] == data["steps"]
     assert content["result"] == data["result"]
     assert content["status"] == data["status"]
@@ -45,7 +45,7 @@ def test_read_action(
     content = response.json()
     assert content["chat_id"] == action.chat_id
     assert content["parent_id"] == action.parent_id
-    assert content["type"] == action.type
+    assert content["kind"] == action.kind
     assert content["steps"] == action.steps
     assert content["result"] == action.result
     assert content["status"] == action.status
@@ -99,7 +99,7 @@ def test_update_action(
     data = {
         "chat_id": "updated_chat",
         "parent_id": "updated_parent",
-        "type": "updated_type",
+        "kind": "updated_kind",
         "steps": {"new_key": "new_value"},
         "result": {"result_key": "result_value"},
         "status": "completed",
@@ -113,7 +113,7 @@ def test_update_action(
     content = response.json()
     assert content["chat_id"] == data["chat_id"]
     assert content["parent_id"] == data["parent_id"]
-    assert content["type"] == data["type"]
+    assert content["kind"] == data["kind"]
     assert content["steps"] == data["steps"]
     assert content["result"] == data["result"]
     assert content["status"] == data["status"]
@@ -127,7 +127,7 @@ def test_update_action_not_found(
     data = {
         "chat_id": "updated_chat",
         "parent_id": "updated_parent",
-        "type": "updated_type",
+        "kind": "updated_kind",
         "steps": {"new_key": "new_value"},
         "result": {"result_key": "result_value"},
         "status": "completed",
@@ -149,7 +149,7 @@ def test_update_action_not_enough_permissions(
     data = {
         "chat_id": "updated_chat",
         "parent_id": "updated_parent",
-        "type": "updated_type",
+        "kind": "updated_kind",
         "steps": {"new_key": "new_value"},
         "result": {"result_key": "result_value"},
         "status": "completed",

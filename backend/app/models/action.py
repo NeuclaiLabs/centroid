@@ -10,16 +10,17 @@ from .user import User
 class ActionBase(SQLModel):
     chat_id: str
     parent_id: str | None = None
-    type: str
+    kind: str
     steps: dict | None = None
     result: dict | None = None
     status: str
+    payload: dict | None = None
 
 
 class ActionCreate(ActionBase):
     chat_id: str
     parent_id: str | None = None
-    type: str
+    kind: str
     steps: dict | None = None
     result: dict | None = None
     status: str
@@ -28,7 +29,7 @@ class ActionCreate(ActionBase):
 class ActionUpdate(ActionBase):
     chat_id: str | None = None
     parent_id: str | None = None
-    type: str | None = None
+    kind: str | None = None
     steps: dict | None = None
     result: dict | None = None
     status: str | None = None
@@ -40,7 +41,10 @@ class Action(ActionBase, table=True):
     result: dict | None = Field(
         default=None, sa_type=JSON, sa_column_kwargs={"nullable": True}
     )
-    steps: dict | None = Field(default=None, sa_type=JSON)
+    steps: dict | None = Field(
+        default=None, sa_type=JSON, sa_column_kwargs={"nullable": True}
+    )
+    payload: dict | None = Field(default=None, sa_type=JSON)
 
     owner_id: str | None = Field(
         default=None, foreign_key="user.id", nullable=False, alias="ownerId"

@@ -7,10 +7,10 @@ from app.models import (
     Action,
     ActionCreate,
     Chat,
-    Connection,
-    ConnectionCreate,
     Item,
     ItemCreate,
+    Setting,
+    SettingCreate,
     User,
     UserCreate,
     UserUpdate,
@@ -72,16 +72,14 @@ def create_chat(*, session: Session, chat: Chat) -> Chat:
     return db_chat
 
 
-def create_connection(
-    *, session: Session, connection_in: ConnectionCreate, owner_id: str
-) -> Connection:
-    db_connection = Connection.model_validate(
-        connection_in, update={"owner_id": owner_id}
-    )
-    session.add(db_connection)
+def create_setting(
+    *, session: Session, setting_in: SettingCreate, owner_id: str
+) -> Setting:
+    db_setting = Setting.model_validate(setting_in, update={"owner_id": owner_id})
+    session.add(db_setting)
     session.commit()
-    session.refresh(db_connection)
-    return db_connection
+    session.refresh(db_setting)
+    return db_setting
 
 
 def create_action(

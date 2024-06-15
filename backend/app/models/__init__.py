@@ -10,15 +10,15 @@ from .action import (
     ActionUpdate,
 )
 from .chat import Chat, ChatBase, ChatMessage, ChatOut, ChatsOut, ChatUpdate
-from .connection import (
-    Connection,
-    ConnectionBase,
-    ConnectionCreate,
-    ConnectionOut,
-    ConnectionsOut,
-    ConnectionUpdate,
-)
 from .item import Item, ItemBase, ItemCreate, ItemOut, ItemsOut, ItemUpdate
+from .setting import (
+    Setting,
+    SettingBase,
+    SettingCreate,
+    SettingOut,
+    SettingsOut,
+    SettingUpdate,
+)
 from .user import (
     UpdatePassword,
     User,
@@ -58,12 +58,12 @@ __all__ = [
     "ChatUpdate",
     "ChatOut",
     "ChatsOut",
-    "Connection",
-    "ConnectionBase",
-    "ConnectionCreate",
-    "ConnectionUpdate",
-    "ConnectionOut",
-    "ConnectionsOut",
+    "Setting",
+    "SettingBase",
+    "SettingCreate",
+    "SettingUpdate",
+    "SettingOut",
+    "SettingsOut",
     "Action",
     "ActionBase",
     "ActionCreate",

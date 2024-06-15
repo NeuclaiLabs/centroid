@@ -7,26 +7,26 @@ from sqlmodel import JSON, Field, Relationship, SQLModel  # Shared properties
 from .user import User
 
 
-class ConnectionBase(SQLModel):
+class SettingBase(SQLModel):
     name: str
     data: dict
-    type: str
+    kind: str
 
 
-class ConnectionCreate(ConnectionBase):
+class SettingCreate(SettingBase):
     name: str
     data: dict
-    type: str
+    kind: str
 
 
-class ConnectionUpdate(ConnectionBase):
+class SettingUpdate(SettingBase):
     name: str | None = None
     data: dict | None = None
-    type: str | None = None
+    kind: str | None = None
     updated_at: datetime = datetime.utcnow()
 
 
-class Connection(ConnectionBase, table=True):
+class Setting(SettingBase, table=True):
     id: str = Field(default_factory=nanoid.generate, primary_key=True)
     data: dict = Field(default=None, sa_type=JSON)
 
@@ -45,16 +45,16 @@ class Connection(ConnectionBase, table=True):
     owner_id: str | None = Field(
         default=None, foreign_key="user.id", nullable=False, alias="ownerId"
     )
-    owner: User | None = Relationship(back_populates="connections")
+    owner: User | None = Relationship(back_populates="settings")
 
 
-class ConnectionOut(ConnectionBase):
+class SettingOut(SettingBase):
     id: str
     owner_id: str
     created_at: datetime
     updated_at: datetime
 
 
-class ConnectionsOut(SQLModel):
-    data: list[ConnectionOut]
+class SettingsOut(SQLModel):
+    data: list[SettingOut]
     count: int

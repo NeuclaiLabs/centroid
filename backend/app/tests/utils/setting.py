@@ -3,19 +3,17 @@ import random
 from sqlmodel import Session
 
 from app import crud
-from app.models import Connection, ConnectionCreate
+from app.models import Setting, SettingCreate
 from app.tests.utils.user import create_random_user
 from app.tests.utils.utils import random_lower_string
 
 
-def create_random_connection(db: Session) -> Connection:
+def create_random_setting(db: Session) -> Setting:
     user = create_random_user(db)
     owner_id = user.id
     assert owner_id is not None
     name = random_lower_string()
-    type = random.choice(["type1", "type2", "type3"])
+    kind = random.choice(["kind1", "kind2", "kind3"])
     data = {"key": random_lower_string(), "value": random_lower_string()}
-    connection_in = ConnectionCreate(name=name, type=type, data=data)
-    return crud.create_connection(
-        session=db, connection_in=connection_in, owner_id=owner_id
-    )
+    setting_in = SettingCreate(name=name, kind=kind, data=data)
+    return crud.create_setting(session=db, setting_in=setting_in, owner_id=owner_id)
