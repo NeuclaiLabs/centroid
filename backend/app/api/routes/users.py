@@ -14,6 +14,7 @@ from app.core.security import get_password_hash, verify_password
 from app.models import (
     Item,
     Message,
+    SettingCreate,
     UpdatePassword,
     User,
     UserCreate,
@@ -156,6 +157,9 @@ def register_user(session: SessionDep, user_in: UserRegister) -> Any:
         )
     user_create = UserCreate.model_validate(user_in)
     user = crud.create_user(session=session, user_create=user_create)
+    crud.create_setting(
+        session=session, setting_create=SettingCreate(), owner_id=user.id
+    )
     return user
 
 

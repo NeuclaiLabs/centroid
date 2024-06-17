@@ -30,7 +30,7 @@ def create_random_action(db: Session) -> Action:
     )
     status = random.choice(["pending", "in_progress", "completed", "failed"])
 
-    action_in = ActionCreate(
+    action_create = ActionCreate(
         chat_id=chat_id,
         parent_id=parent_id,
         kind=kind,
@@ -39,4 +39,6 @@ def create_random_action(db: Session) -> Action:
         status=status,
     )
 
-    return crud.create_action(session=db, action_in=action_in, owner_id=owner_id)
+    return crud.create_action(
+        session=db, action_create=action_create, owner_id=owner_id
+    )

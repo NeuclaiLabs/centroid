@@ -8,27 +8,20 @@ from .user import User
 
 
 class SettingBase(SQLModel):
-    name: str
     data: dict
-    kind: str
 
 
 class SettingCreate(SettingBase):
-    name: str
-    data: dict
-    kind: str
+    data: dict = {"general": {}, "code": {}, "search": {}}.copy()
 
 
 class SettingUpdate(SettingBase):
-    name: str | None = None
-    data: dict | None = None
-    kind: str | None = None
     updated_at: datetime = datetime.utcnow()
 
 
 class Setting(SettingBase, table=True):
     id: str = Field(default_factory=nanoid.generate, primary_key=True)
-    data: dict = Field(default=None, sa_type=JSON)
+    data: dict | None = Field(default=None, sa_type=JSON)
 
     created_at: datetime | None = Field(
         default=None,

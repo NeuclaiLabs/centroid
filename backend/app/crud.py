@@ -73,9 +73,9 @@ def create_chat(*, session: Session, chat: Chat) -> Chat:
 
 
 def create_setting(
-    *, session: Session, setting_in: SettingCreate, owner_id: str
+    *, session: Session, setting_create: SettingCreate, owner_id: str
 ) -> Setting:
-    db_setting = Setting.model_validate(setting_in, update={"owner_id": owner_id})
+    db_setting = Setting.model_validate(setting_create, update={"owner_id": owner_id})
     session.add(db_setting)
     session.commit()
     session.refresh(db_setting)
@@ -83,9 +83,9 @@ def create_setting(
 
 
 def create_action(
-    *, session: Session, action_in: ActionCreate, owner_id: str
+    *, session: Session, action_create: ActionCreate, owner_id: str
 ) -> Action:
-    db_action = Action.model_validate(action_in, update={"owner_id": owner_id})
+    db_action = Action.model_validate(action_create, update={"owner_id": owner_id})
     session.add(db_action)
     session.commit()
     session.refresh(db_action)

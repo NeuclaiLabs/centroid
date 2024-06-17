@@ -15,5 +15,7 @@ def create_random_setting(db: Session) -> Setting:
     name = random_lower_string()
     kind = random.choice(["kind1", "kind2", "kind3"])
     data = {"key": random_lower_string(), "value": random_lower_string()}
-    setting_in = SettingCreate(name=name, kind=kind, data=data)
-    return crud.create_setting(session=db, setting_in=setting_in, owner_id=owner_id)
+    setting_create = SettingCreate(name=name, kind=kind, data=data)
+    return crud.create_setting(
+        session=db, setting_create=setting_create, owner_id=owner_id
+    )

@@ -5,7 +5,7 @@ from sqlmodel import Session, select
 
 from app import crud
 from app.core.config import settings
-from app.models import User, UserCreate
+from app.models import Setting, User, UserCreate
 from app.tests.utils.utils import random_email, random_lower_string
 
 
@@ -265,7 +265,7 @@ def test_update_password_me_same_password_error(
     )
 
 
-def test_register_user(client: TestClient) -> None:
+def test_register_user(client: TestClient, db: Session) -> None:
     with patch("app.core.config.settings.USERS_OPEN_REGISTRATION", True):
         username = random_email()
         password = random_lower_string()
@@ -277,6 +277,7 @@ def test_register_user(client: TestClient) -> None:
         )
         assert r.status_code == 200
         created_user = r.json()
+        assert db.exec(select(Setting).where(Setting.owner_id == created_user["id"]))
         assert created_user["email"] == username
         assert created_user["full_name"] == full_name
 

@@ -1,8 +1,8 @@
 """Init tables
 
-Revision ID: 8d29de499596
+Revision ID: 249359a62be2
 Revises:
-Create Date: 2024-06-15 23:19:29.657030
+Create Date: 2024-06-17 15:18:02.082730
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ import sqlmodel.sql.sqltypes
 
 
 # revision identifiers, used by Alembic.
-revision = '8d29de499596'
+revision = '249359a62be2'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -63,10 +63,8 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('setting',
-    sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('kind', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('data', sa.JSON(), nullable=False),
+    sa.Column('data', sa.JSON(), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
     sa.Column('owner_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
