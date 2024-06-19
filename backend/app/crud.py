@@ -24,6 +24,7 @@ def create_user(*, session: Session, user_create: UserCreate) -> User:
     session.add(db_obj)
     session.commit()
     session.refresh(db_obj)
+    create_setting(session=session, setting_create=SettingCreate(), owner_id=db_obj.id)
     return db_obj
 
 

@@ -21,6 +21,13 @@ export interface Connection extends Record<string, any> {
   ownerId: string
 }
 
+export interface Settings extends Record<string, any> {
+  id: string
+  data: {
+    [key: string]: any
+  }
+}
+
 export type ServerActionResult<Result> = Promise<
   | Result
   | {

@@ -1,12 +1,8 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { getConnections } from '@/app/actions'
 import { cache } from 'react'
 import { Connection, Model } from '@/lib/types'
-
-const loadConnections = cache(async (userId?: string) => {
-  return await getConnections()
-})
+import { useSettings } from '@/lib/hooks/use-settings'
 
 const fetchModelsByProvider = cache(
   async (connection: Connection): Promise<Model[]> => {
@@ -28,7 +24,7 @@ const fetchModelsByProvider = cache(
         const response = await fetch(`${connection.data.url}/api/tags`)
         const records = (await response.json())['models']
         return records.map((model: { name: String }) => ({
-          id: connection.id + "/" + model.name,
+          id: connection.id + '/' + model.name,
           connection
         }))
       default:
@@ -39,16 +35,17 @@ const fetchModelsByProvider = cache(
 
 export const useAvailableModels = (): Model[] => {
   const [availableModels, setAvailableModels] = useState<Model[]>([])
+  const { settings } = useSettings()
 
   useEffect(() => {
     const fetchAvailableModels = async () => {
       try {
-        const connections: Connection[] = await loadConnections()
+        const connections: Connection[] = settings?.data?.general?.connections || []
         const models = await Promise.all(
           connections.map(async connection => {
             return (await fetchModelsByProvider(connection)).map(record => ({
               ...record,
-              name: record.id.split("/", 2)[1]
+              name: record.id.split('/', 2)[1]
             }))
           })
         )
@@ -60,7 +57,7 @@ export const useAvailableModels = (): Model[] => {
     }
 
     fetchAvailableModels()
-  }, [])
+  }, [settings])
 
   return availableModels
 }

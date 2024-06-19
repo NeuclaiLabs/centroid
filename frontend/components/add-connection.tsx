@@ -22,7 +22,7 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { type Connection } from '@/lib/types'
-import { saveConnection } from '@/app/actions'
+import { nanoid } from '@/lib/utils'
 
 const connectionDataSchema = z.object({
   url: z.string().url('URL must be a valid URL'),
@@ -50,13 +50,10 @@ const connectionFormSchema = z.object({
 export function AddConnectionForm({
   onConnectionAdded
 }: {
-  onConnectionAdded: () => void
+  onConnectionAdded: (connection: Connection) => Promise<void>
 }) {
   async function onSubmit(data: z.infer<typeof connectionFormSchema>) {
-    // Create a new connection
-    await saveConnection(data as Connection)
-    onConnectionAdded()
-
+    await onConnectionAdded({ ...(data as Connection), id: nanoid() })
     toast('Connection added successfully.')
   }
 
@@ -67,7 +64,7 @@ export function AddConnectionForm({
       type: 'ollama',
       data: {
         url: 'http://localhost:11434',
-        apiKey: 'default'
+        key: 'default'
       }
     }
   })

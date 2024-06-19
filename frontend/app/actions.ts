@@ -6,8 +6,9 @@ import { kv } from '@vercel/kv'
 
 import { auth } from '@/auth'
 import { type Chat } from '@/lib/types'
-import { type Connection } from '@/lib/types'
+import { type Settings } from '@/lib/types'
 import { type Message } from 'ai'
+import { fetcher } from '@/lib/utils'
 
 export async function getChats(userId?: string | null) {
   if (!userId) {
@@ -199,7 +200,7 @@ export async function getMissingKeys() {
     .filter(key => key !== '')
 }
 
-export async function getConnections(userId?: string | null) {
+export async function getSettings(userId?: string | null) {
   const session = await auth()
   if (!session?.user || !session.user.id) {
     return []
@@ -207,8 +208,8 @@ export async function getConnections(userId?: string | null) {
 
   try {
     const session = await auth()
-    const response = await fetch(
-      `${process.env.BACKEND_HOST}/api/v1/connections/?skip=0&limit=100`,
+    const response = await fetcher(
+      `${process.env.BACKEND_HOST}/api/v1/settings/?skip=0&limit=100`,
       {
         method: 'GET',
         headers: {
@@ -218,16 +219,7 @@ export async function getConnections(userId?: string | null) {
         }
       }
     )
-
-    if (!response.ok) {
-      throw new Error('Network response was not ok')
-    }
-
-    const res = await response.json()
-    return res['data'].map((connection: any) => ({
-      ...connection,
-      createdAt: new Date(connection.created_at)
-    }))
+    return response['data'][0]
   } catch (error) {
     console.error(error)
     console.error('There was a problem with your fetch operation:', error)
@@ -235,79 +227,28 @@ export async function getConnections(userId?: string | null) {
   }
 }
 
-export async function getConnection(id: string, userId: string) {
-  const session = await auth()
-  const response = await fetch(
-    `${process.env.BACKEND_HOST}/api/v1/connections/${id}`,
-    {
-      method: 'GET',
-      headers: {
-        accept: 'application/json',
-        // @ts-ignore
-        Authorization: `Bearer ${session?.user?.accessToken}`
-      }
-    }
-  )
-
-  if (!response.ok) {
-    return null
-  }
-
-  const connection = await response.json()
-
-  if (!connection || (userId && connection.ownerId !== userId)) {
-    return null
-  }
-
-  return connection
-}
-
-export async function removeConnection({ id }: { id: string }) {
-  const session = await auth()
-
-  if (!session) {
-    return { error: 'Unauthorized' }
-  }
-
-  const response = await fetch(
-    `${process.env.BACKEND_HOST}/api/v1/connections/${id}`,
-    {
-      method: 'DELETE',
-      headers: {
-        accept: 'application/json',
-        // @ts-ignore
-        Authorization: `Bearer ${session?.user?.accessToken}`
-      }
-    }
-  )
-
-  if (!response.ok) {
-    return { error: 'Unauthorized' }
-  }
-}
-
-export async function saveConnection(connection: Connection) {
+export async function saveSettings(settings: Settings) {
   const session = await auth()
   if (session && session.user) {
-    const response = await fetch(
-      `${process.env.BACKEND_HOST}/api/v1/connections/`,
+    const response = await fetcher(
+      `${process.env.BACKEND_HOST}/api/v1/settings/${settings.id}`,
       {
-        method: 'POST',
+        method: 'PUT',
         headers: {
           accept: 'application/json',
           'Content-Type': 'application/json',
           // @ts-ignore
           Authorization: `Bearer ${session?.user?.accessToken}`
         },
-        body: JSON.stringify(connection)
+        body: JSON.stringify(settings)
       }
     )
-
     if (!response.ok) {
       return
     }
-    const savedConnection = await response.json()
 
-    return savedConnection
+    const res = await response.json()
+    console.log(res['data'])
+    return settings
   }
 }

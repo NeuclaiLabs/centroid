@@ -12,7 +12,7 @@ class SettingBase(SQLModel):
 
 
 class SettingCreate(SettingBase):
-    data: dict = {"general": {}, "code": {}, "search": {}}.copy()
+    data: dict = {"general": {"connections": []}, "code": {}, "search": {}}.copy()
 
 
 class SettingUpdate(SettingBase):

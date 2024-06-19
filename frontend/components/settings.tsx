@@ -54,7 +54,6 @@ import { toast } from 'sonner'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { AddConnectionForm } from '@/components/add-connection'
-import { getConnections, removeConnection } from '@/app/actions'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   IconMoreHorizontal,
@@ -73,10 +72,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from '@/components/ui/alert-dialog'
-
+import { useSettings } from '@/lib/hooks/use-settings'
 
 export function Settings({ userId }: { userId: string }) {
-  const [connections, setConnections] = useState<Connection[]>([])
+  const { settings, updateSettings } = useSettings()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false)
   const [deleteConnectionId, setDeleteConnectionId] = useState<string | null>(
     null
@@ -84,13 +83,6 @@ export function Settings({ userId }: { userId: string }) {
 
   const [isRemovePending, startRemoveTransition] = React.useTransition()
 
-  useEffect(() => {
-    const fetchConnections = cache(async () => {
-      const fetchedConnections = await getConnections(userId)
-      setConnections(fetchedConnections)
-    })
-    fetchConnections()
-  }, [userId])
   const handleDelete = async (id: string) => {
     setDeleteConnectionId(id)
     setDeleteDialogOpen(true)
@@ -99,13 +91,14 @@ export function Settings({ userId }: { userId: string }) {
   const confirmDelete = async () => {
     startRemoveTransition(async () => {
       if (deleteConnectionId) {
-        await removeConnection({ id: deleteConnectionId })
-        setConnections(
-          connections.filter(connection => connection.id !== deleteConnectionId)
-        )
+        settings.data.general.connections =
+          settings.data.general.connections.filter(
+            (connection: { id: string }) => connection.id !== deleteConnectionId
+          )
+        updateSettings('general', settings['data']['general'])
+        toast.success('Connection deleted')
         setDeleteDialogOpen(false)
         setDeleteConnectionId(null)
-        toast.success('Connection deleted')
       }
     })
   }
@@ -164,36 +157,41 @@ export function Settings({ userId }: { userId: string }) {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {connections.map(connection => (
-                      <TableRow key={connection.id}>
-                        <TableCell className="font-medium">
-                          {connection.name}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{connection.type}</Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          {connection.data.apiKey}
-                        </TableCell>
+                    {settings.data.general &&
+                      settings!.data.general!.connections.map(
+                        (connection: Connection) => (
+                          <TableRow key={connection.id}>
+                            <TableCell className="font-medium">
+                              {connection.name}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{connection.type}</Badge>
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">
+                              {connection.data.key}
+                            </TableCell>
 
-                        <TableCell className="hidden md:table-cell">
-                          {connection!.createdAt
-                            ? connection!.createdAt.toISOString()
-                            : 'None'}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            aria-haspopup="true"
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => handleDelete(connection!.id)}
-                          >
-                            <IconTrash className="size-4" />
-                            <span className="sr-only">Delete Connection</span>
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                            <TableCell className="hidden md:table-cell">
+                              {connection!.createdAt
+                                ? connection!.createdAt.toISOString()
+                                : 'None'}
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                aria-haspopup="true"
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => handleDelete(connection!.id)}
+                              >
+                                <IconTrash className="size-4" />
+                                <span className="sr-only">
+                                  Delete Connection
+                                </span>
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        )
+                      )}
                   </TableBody>
                 </Table>
                 <AlertDialog
@@ -239,9 +237,13 @@ export function Settings({ userId }: { userId: string }) {
                       <SheetDescription></SheetDescription>
                     </SheetHeader>
                     <AddConnectionForm
-                      onConnectionAdded={async () =>
-                        setConnections(await getConnections(userId))
-                      }
+                      onConnectionAdded={async (connection: Connection) => {
+                        ;(settings['data']['general'].connections =
+                          settings['data']['general'].connections || []).push(
+                          connection
+                        )
+                        updateSettings('general', settings['data']['general'])
+                      }}
                     />
                     <SheetFooter>
                       <SheetClose asChild></SheetClose>
