@@ -2,8 +2,9 @@ from enum import Enum
 
 from langchain.pydantic_v1 import BaseModel, Field
 from langchain.tools import StructuredTool
-from openastra.utils import handle_error
 from testcontainers.core.container import DockerContainer
+
+from openastra.utils import handle_error
 
 
 class LanguageEnum(str, Enum):

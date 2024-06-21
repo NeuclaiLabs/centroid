@@ -4,11 +4,9 @@ version = "0.1.0"
 description = ""
 authors = ["Srikanth Srungarapu <srikanth235@gmail.com>"]
 readme = "README.md"
-packages = [{ include = "openastra", from = "src" }]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-langchain = "0.2.3"
 testcontainers = "^4.2.0"
 duckduckgo-search = "^5.1.0"
 stackapi = "^0.3.0"
@@ -16,6 +14,7 @@ html2text = "^2024.2.26"
 tdqm = "^0.0.1"
 fake-useragent = "^1.5.1"
 notebook = "^7.1.2"
+langchain-community = "^0.2.5"
 
 
 [tool.poetry.group.dev.dependencies]
