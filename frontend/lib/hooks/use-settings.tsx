@@ -22,7 +22,10 @@ const fetchSettings = async () => {
 }
 
 const SettingsProvider = ({ children }: { children: ReactNode }) => {
-  const [settings, setSettings] = useState<Settings>({ id: '', data: {} })
+  const [settings, setSettings] = useState<Settings>({
+    id: '',
+    data: { general: {} }
+  })
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -38,7 +41,6 @@ const SettingsProvider = ({ children }: { children: ReactNode }) => {
   }, [])
 
   const updateSettings = async (type: string, newSettings: any) => {
-
     const updatedSettings = {
       ...settings,
       data: {
