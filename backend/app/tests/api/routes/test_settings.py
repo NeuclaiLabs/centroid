@@ -8,7 +8,7 @@ from app.tests.utils.setting import create_random_setting
 def test_create_setting(
     client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
-    data = {"name": "Test setting", "kind": "test", "data": {"key": "value"}}
+    data = {"data": {"key": "value"}}
     response = client.post(
         f"{settings.API_V1_STR}/settings/",
         headers=superuser_token_headers,
@@ -16,8 +16,6 @@ def test_create_setting(
     )
     assert response.status_code == 200
     content = response.json()
-    assert content["name"] == data["name"]
-    assert content["kind"] == data["kind"]
     assert content["data"] == data["data"]
     assert "id" in content
     assert "owner_id" in content
@@ -33,8 +31,6 @@ def test_read_setting(
     )
     assert response.status_code == 200
     content = response.json()
-    assert content["name"] == setting.name
-    assert content["kind"] == setting.kind
     assert content["data"] == setting.data
     assert content["id"] == setting.id
     assert content["owner_id"] == setting.owner_id
@@ -83,7 +79,7 @@ def test_update_setting(
     client: TestClient, superuser_token_headers: dict[str, str], db: Session
 ) -> None:
     setting = create_random_setting(db)
-    data = {"name": "Updated name", "kind": "updated", "data": {"new_key": "new_value"}}
+    data = {"data": {"new_key": "new_value"}}
     response = client.put(
         f"{settings.API_V1_STR}/settings/{setting.id}",
         headers=superuser_token_headers,
@@ -91,8 +87,6 @@ def test_update_setting(
     )
     assert response.status_code == 200
     content = response.json()
-    assert content["name"] == data["name"]
-    assert content["kind"] == data["kind"]
     assert content["data"] == data["data"]
     assert content["id"] == setting.id
     assert content["owner_id"] == setting.owner_id
@@ -101,7 +95,7 @@ def test_update_setting(
 def test_update_setting_not_found(
     client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
-    data = {"name": "Updated name", "kind": "updated", "data": {"new_key": "new_value"}}
+    data = {"data": {"new_key": "new_value"}}
     response = client.put(
         f"{settings.API_V1_STR}/settings/999",
         headers=superuser_token_headers,
@@ -116,7 +110,7 @@ def test_update_setting_not_enough_permissions(
     client: TestClient, normal_user_token_headers: dict[str, str], db: Session
 ) -> None:
     setting = create_random_setting(db)
-    data = {"name": "Updated name", "kind": "updated", "data": {"new_key": "new_value"}}
+    data = {"data": {"new_key": "new_value"}}
     response = client.put(
         f"{settings.API_V1_STR}/settings/{setting.id}",
         headers=normal_user_token_headers,

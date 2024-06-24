@@ -46,7 +46,9 @@ class User(UserBase, table=True):
     id: str | None = Field(default_factory=nanoid.generate, primary_key=True)
     hashed_password: str
     items: list["Item"] = Relationship(back_populates="owner")  # noqa: F821
-    settings: list["Setting"] = Relationship(back_populates="owner")  # noqa: F821
+    settings: list["Setting"] = Relationship(  # noqa: F821
+        sa_relationship_kwargs={"cascade": "delete"}, back_populates="owner"
+    )  # noqa: F821
     actions: list["Action"] = Relationship(back_populates="owner")  # noqa: F821
 
 

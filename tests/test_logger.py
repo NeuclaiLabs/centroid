@@ -1,3 +1,4 @@
+import io
 import logging
 import re
 from datetime import datetime
@@ -83,25 +84,40 @@ def test_custom_sensitive_patterns():
     assert "1234-5678-9012-3456" not in record.msg
 
 
-def test_color_formatting():
-    color_formatter = ColoredFormatter(
-        "%(log_color)s%(levelname)s:%(name)s:%(message)s",
-        log_colors={
-            "DEBUG": "cyan",
-            "INFO": "green",
-            "WARNING": "yellow",
-            "ERROR": "red",
-            "CRITICAL": "red,bg_white",
-        },
-    )
+def test_color_formatting(reset_logger):
+    # Find the existing StreamHandler with the ColoredFormatter
+    stream_handler = None
+    for handler in logger.logger.handlers:
+        if isinstance(handler, logging.StreamHandler) and isinstance(
+            handler.formatter, ColoredFormatter
+        ):
+            stream_handler = handler
+            break
 
-    record = logging.LogRecord(
-        "test", logging.ERROR, "", 0, "This is an error message", (), None
-    )
-    formatted_msg = color_formatter.format(record)
+    assert stream_handler is not None, "StreamHandler with ColoredFormatter not found"
 
+    # Backup the original stream and replace it with StringIO
+    original_stream = stream_handler.stream
+    stream = io.StringIO()
+    stream_handler.setStream(stream)
+
+    # Log an error message
+    logger.error("This is an error message")
+
+    # Get the formatted message from the stream
+    formatted_msg = stream.getvalue()
+
+    # Restore the original stream
+    stream_handler.setStream(original_stream)
+
+    # Check if the color code for red is in the formatted message
     assert "\x1b[31m" in formatted_msg  # Red color code
-    assert "ERROR:test:This is an error message" in formatted_msg
+
+    # Check if the expected message is in the formatted message
+    assert "This is an error message" in formatted_msg
+
+    # Close the StringIO stream
+    stream.close()
 
 
 def test_timestamp_logging(caplog):
