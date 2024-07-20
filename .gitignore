@@ -13,3 +13,4 @@ app.egg-info
 htmlcov
 .cache
 .venv
+logs/*

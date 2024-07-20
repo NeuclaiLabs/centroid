@@ -13,10 +13,9 @@ stackapi = "^0.3.0"
 html2text = "^2024.2.26"
 tdqm = "^0.0.1"
 fake-useragent = "^1.5.1"
-notebook = "^7.1.2"
-langchain-community = "^0.2.5"
 colorlog = "^6.8.2"
 sentry-sdk = "^2.6.0"
+litellm = "^1.40.26"
 
 
 [tool.poetry.group.dev.dependencies]

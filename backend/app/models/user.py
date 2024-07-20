@@ -49,7 +49,7 @@ class User(UserBase, table=True):
     settings: list["Setting"] = Relationship(  # noqa: F821
         sa_relationship_kwargs={"cascade": "delete"}, back_populates="owner"
     )  # noqa: F821
-    actions: list["Action"] = Relationship(back_populates="owner")  # noqa: F821
+    tool_calls: list["ToolCall"] = Relationship(back_populates="owner")  # noqa: F821
 
 
 # Properties to return via API, id is always required

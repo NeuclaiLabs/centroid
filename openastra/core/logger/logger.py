@@ -54,13 +54,7 @@ class Logger:
             "%(log_color)s%(asctime)s - %(name)s - %(levelname)s - %(message)s",
             datefmt=None,
             reset=True,
-            log_colors={
-                "DEBUG": "cyan",
-                "INFO": "green",
-                "WARNING": "yellow",
-                "ERROR": "red",
-                "CRITICAL": "red,bg_white",
-            },
+            log_colors=LogConfig.CONSOLE_COLORS,
             secondary_log_colors={},
             style="%",
         )
@@ -95,12 +89,13 @@ class Logger:
         timed_handler.setFormatter(file_formatter)
         self.logger.addHandler(timed_handler)
 
-        # Initialize Sentry
-        sentry_logging = LoggingIntegration(
-            level=logging.INFO,  # Capture info and above as breadcrumbs
-            event_level=logging.ERROR,  # Send errors as events
-        )
-        sentry_sdk.init(dsn=LogConfig.SENTRY_DSN, integrations=[sentry_logging])
+        # Initialize
+        if LogConfig.ENABLE_SENTRY:
+            sentry_logging = LoggingIntegration(
+                level=logging.INFO,  # Capture info and above as breadcrumbs
+                event_level=logging.ERROR,  # Send errors as events
+            )
+            sentry_sdk.init(dsn=LogConfig.SENTRY_DSN, integrations=[sentry_logging])
 
     def add_filter(self, keyword):
         custom_filter = CustomFilter(keyword, LogConfig.SENSITIVE_PATTERNS)

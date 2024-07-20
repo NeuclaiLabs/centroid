@@ -1,14 +1,6 @@
 # models/__init__.py
 from sqlmodel import SQLModel
 
-from .action import (
-    Action,
-    ActionBase,
-    ActionCreate,
-    ActionOut,
-    ActionsOut,
-    ActionUpdate,
-)
 from .chat import Chat, ChatBase, ChatMessage, ChatOut, ChatsOut, ChatUpdate
 from .item import Item, ItemBase, ItemCreate, ItemOut, ItemsOut, ItemUpdate
 from .setting import (
@@ -18,6 +10,14 @@ from .setting import (
     SettingOut,
     SettingsOut,
     SettingUpdate,
+)
+from .tool_call import (
+    ToolCall,
+    ToolCallBase,
+    ToolCallCreate,
+    ToolCallOut,
+    ToolCallsOut,
+    ToolCallUpdate,
 )
 from .user import (
     UpdatePassword,
@@ -64,11 +64,11 @@ __all__ = [
     "SettingUpdate",
     "SettingOut",
     "SettingsOut",
-    "Action",
-    "ActionBase",
-    "ActionCreate",
-    "ActionOut",
-    "ActionsOut",
-    "ActionUpdate",
+    "ToolCall",
+    "ToolCallBase",
+    "ToolCallCreate",
+    "ToolCallOut",
+    "ToolCallsOut",
+    "ToolCallUpdate",
     "SQLModel",
 ]

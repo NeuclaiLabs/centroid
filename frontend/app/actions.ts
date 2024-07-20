@@ -16,6 +16,7 @@ export async function getChats(userId?: string | null) {
   }
 
   try {
+    console.log("Backend host: ", process.env.BACKEND_HOST)
     const response = await fetch(
       `${process.env.BACKEND_HOST}/api/v1/chats/?skip=0&limit=100`,
       {

@@ -2,75 +2,72 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session
 
 from app.core.config import settings
-from app.tests.utils.action import create_random_action
+from app.tests.utils.tool_call import create_random_tool_call
 
 
-def test_create_action(
+def test_create_tool_call(
     client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
     data = {
         "chat_id": "test_chat",
-        "parent_id": None,
         "kind": "test_kind",
-        "steps": {"key": "value"},
-        "status": "pending",
         "result": None,
+        "status": "pending",
+        "payload": {"key": "value"},
     }
     response = client.post(
-        f"{settings.API_V1_STR}/actions/",
+        f"{settings.API_V1_STR}/tool-calls/",
         headers=superuser_token_headers,
         json=data,
     )
     assert response.status_code == 200
     content = response.json()
     assert content["chat_id"] == data["chat_id"]
-    assert content["parent_id"] == data["parent_id"]
     assert content["kind"] == data["kind"]
-    assert content["steps"] == data["steps"]
     assert content["result"] == data["result"]
     assert content["status"] == data["status"]
+    assert content["payload"] == data["payload"]
     assert "id" in content
     assert "owner_id" in content
 
 
-def test_read_action(
+def test_read_tool_call(
     client: TestClient, superuser_token_headers: dict[str, str], db: Session
 ) -> None:
-    action = create_random_action(db)
+    tool_call = create_random_tool_call(db)
     response = client.get(
-        f"{settings.API_V1_STR}/actions/{action.id}",
+        f"{settings.API_V1_STR}/tool-calls/{tool_call.id}",
         headers=superuser_token_headers,
     )
     assert response.status_code == 200
     content = response.json()
-    assert content["chat_id"] == action.chat_id
-    assert content["parent_id"] == action.parent_id
-    assert content["kind"] == action.kind
-    assert content["steps"] == action.steps
-    assert content["result"] == action.result
-    assert content["status"] == action.status
-    assert content["id"] == action.id
-    assert content["owner_id"] == action.owner_id
+    assert content["chat_id"] == tool_call.chat_id
+    assert content["kind"] == tool_call.kind
+    assert content["result"] == tool_call.result
+    assert content["status"] == tool_call.status
+    assert content["payload"] == tool_call.payload
+    assert content["id"] == tool_call.id
+    assert content["owner_id"] == tool_call.owner_id
 
 
-def test_read_action_not_found(
+def test_read_tool_call_not_found(
     client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
     response = client.get(
-        f"{settings.API_V1_STR}/actions/999",
+        f"{settings.API_V1_STR}/tool-calls/999",
         headers=superuser_token_headers,
     )
     assert response.status_code == 404
     content = response.json()
-    assert content["detail"] == "Action not found"
+    assert content["detail"] == "Tool call not found"
 
 
-def test_read_action_not_enough_permissions(
+def test_read_tool_call_not_enough_permissions(
     client: TestClient, normal_user_token_headers: dict[str, str], db: Session
 ) -> None:
-    action = create_random_action(db)
+    tool_call = create_random_tool_call(db)
     response = client.get(
-        f"{settings.API_V1_STR}/actions/{action.id}",
+        f"{settings.API_V1_STR}/tool-calls/{tool_call.id}",
         headers=normal_user_token_headers,
     )
     assert response.status_code == 400
@@ -78,13 +75,13 @@ def test_read_action_not_enough_permissions(
     assert content["detail"] == "Not enough permissions"
 
 
-def test_read_actions(
+def test_read_tool_calls(
     client: TestClient, superuser_token_headers: dict[str, str], db: Session
 ) -> None:
-    create_random_action(db)
-    create_random_action(db)
+    create_random_tool_call(db)
+    create_random_tool_call(db)
     response = client.get(
-        f"{settings.API_V1_STR}/actions/",
+        f"{settings.API_V1_STR}/tool-calls/",
         headers=superuser_token_headers,
     )
     assert response.status_code == 200
@@ -92,70 +89,66 @@ def test_read_actions(
     assert len(content["data"]) >= 2
 
 
-def test_update_action(
+def test_update_tool_call(
     client: TestClient, superuser_token_headers: dict[str, str], db: Session
 ) -> None:
-    action = create_random_action(db)
+    tool_call = create_random_tool_call(db)
     data = {
         "chat_id": "updated_chat",
-        "parent_id": "updated_parent",
         "kind": "updated_kind",
-        "steps": {"new_key": "new_value"},
         "result": {"result_key": "result_value"},
         "status": "completed",
+        "payload": {"new_key": "new_value"},
     }
     response = client.put(
-        f"{settings.API_V1_STR}/actions/{action.id}",
+        f"{settings.API_V1_STR}/tool-calls/{tool_call.id}",
         headers=superuser_token_headers,
         json=data,
     )
     assert response.status_code == 200
     content = response.json()
     assert content["chat_id"] == data["chat_id"]
-    assert content["parent_id"] == data["parent_id"]
     assert content["kind"] == data["kind"]
-    assert content["steps"] == data["steps"]
     assert content["result"] == data["result"]
     assert content["status"] == data["status"]
-    assert content["id"] == action.id
-    assert content["owner_id"] == action.owner_id
+    assert content["payload"] == data["payload"]
+    assert content["id"] == tool_call.id
+    assert content["owner_id"] == tool_call.owner_id
 
 
-def test_update_action_not_found(
+def test_update_tool_call_not_found(
     client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
     data = {
         "chat_id": "updated_chat",
-        "parent_id": "updated_parent",
         "kind": "updated_kind",
-        "steps": {"new_key": "new_value"},
         "result": {"result_key": "result_value"},
         "status": "completed",
+        "payload": {"new_key": "new_value"},
     }
     response = client.put(
-        f"{settings.API_V1_STR}/actions/999",
+        f"{settings.API_V1_STR}/tool-calls/999",
         headers=superuser_token_headers,
         json=data,
     )
     assert response.status_code == 404
     content = response.json()
-    assert content["detail"] == "Action not found"
+    assert content["detail"] == "Tool call not found"
 
 
-def test_update_action_not_enough_permissions(
+def test_update_tool_call_not_enough_permissions(
     client: TestClient, normal_user_token_headers: dict[str, str], db: Session
 ) -> None:
-    action = create_random_action(db)
+    tool_call = create_random_tool_call(db)
     data = {
         "chat_id": "updated_chat",
-        "parent_id": "updated_parent",
         "kind": "updated_kind",
-        "steps": {"new_key": "new_value"},
         "result": {"result_key": "result_value"},
         "status": "completed",
+        "payload": {"new_key": "new_value"},
     }
     response = client.put(
-        f"{settings.API_V1_STR}/actions/{action.id}",
+        f"{settings.API_V1_STR}/tool-calls/{tool_call.id}",
         headers=normal_user_token_headers,
         json=data,
     )
@@ -164,37 +157,37 @@ def test_update_action_not_enough_permissions(
     assert content["detail"] == "Not enough permissions"
 
 
-def test_delete_action(
+def test_delete_tool_call(
     client: TestClient, superuser_token_headers: dict[str, str], db: Session
 ) -> None:
-    action = create_random_action(db)
+    tool_call = create_random_tool_call(db)
     response = client.delete(
-        f"{settings.API_V1_STR}/actions/{action.id}",
+        f"{settings.API_V1_STR}/tool-calls/{tool_call.id}",
         headers=superuser_token_headers,
     )
     assert response.status_code == 200
     content = response.json()
-    assert content["message"] == "Action deleted successfully"
+    assert content["message"] == "Tool call deleted successfully"
 
 
-def test_delete_action_not_found(
+def test_delete_tool_call_not_found(
     client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
     response = client.delete(
-        f"{settings.API_V1_STR}/actions/999",
+        f"{settings.API_V1_STR}/tool-calls/999",
         headers=superuser_token_headers,
     )
     assert response.status_code == 404
     content = response.json()
-    assert content["detail"] == "Action not found"
+    assert content["detail"] == "Tool call not found"
 
 
-def test_delete_action_not_enough_permissions(
+def test_delete_tool_call_not_enough_permissions(
     client: TestClient, normal_user_token_headers: dict[str, str], db: Session
 ) -> None:
-    action = create_random_action(db)
+    tool_call = create_random_tool_call(db)
     response = client.delete(
-        f"{settings.API_V1_STR}/actions/{action.id}",
+        f"{settings.API_V1_STR}/tool-calls/{tool_call.id}",
         headers=normal_user_token_headers,
     )
     assert response.status_code == 400

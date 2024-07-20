@@ -4,13 +4,13 @@ from sqlmodel import Session, select
 
 from app.core.security import get_password_hash, verify_password
 from app.models import (
-    Action,
-    ActionCreate,
     Chat,
     Item,
     ItemCreate,
     Setting,
     SettingCreate,
+    ToolCall,
+    ToolCallCreate,
     User,
     UserCreate,
     UserUpdate,
@@ -84,13 +84,15 @@ def create_setting(
 
 
 def create_action(
-    *, session: Session, action_create: ActionCreate, owner_id: str
-) -> Action:
-    db_action = Action.model_validate(action_create, update={"owner_id": owner_id})
-    session.add(db_action)
+    *, session: Session, tool_call_create: ToolCallCreate, owner_id: str
+) -> ToolCall:
+    db_tool_call = ToolCall.model_validate(
+        tool_call_create, update={"owner_id": owner_id}
+    )
+    session.add(db_tool_call)
     session.commit()
-    session.refresh(db_action)
-    return db_action
+    session.refresh(db_tool_call)
+    return db_tool_call
 
 
 def get_chats(session: Session, user_id: str) -> list[Chat]:

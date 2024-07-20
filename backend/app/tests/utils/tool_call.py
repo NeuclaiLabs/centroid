@@ -2,24 +2,18 @@ import random
 
 from sqlmodel import Session
 
-from app import crud
-from app.models import Action, ActionCreate
+from app.models import ToolCall, ToolCallCreate
 from app.tests.utils.user import create_random_user
 from app.tests.utils.utils import random_lower_string, random_string
 
 
-def create_random_action(db: Session) -> Action:
+def create_random_tool_call(db: Session) -> ToolCall:
     user = create_random_user(db)
     owner_id = user.id
     assert owner_id is not None
 
     chat_id = random_string()
-    parent_id = random_string() if random.random() < 0.5 else None
     kind = random.choice(["kind1", "kind2", "kind3"])
-    steps = {
-        "key1": random_lower_string(),
-        "key2": random_lower_string(),
-    }
     result = (
         {
             "result_key": random_lower_string(),
@@ -29,16 +23,21 @@ def create_random_action(db: Session) -> Action:
         else None
     )
     status = random.choice(["pending", "in_progress", "completed", "failed"])
+    payload = {
+        "key1": random_lower_string(),
+        "key2": random_lower_string(),
+    }
 
-    action_create = ActionCreate(
+    tool_call_create = ToolCallCreate(
         chat_id=chat_id,
-        parent_id=parent_id,
         kind=kind,
-        steps=steps,
         result=result,
         status=status,
+        payload=payload,
     )
 
-    return crud.create_action(
-        session=db, action_create=action_create, owner_id=owner_id
-    )
+    tool_call = ToolCall(**tool_call_create.dict(), owner_id=owner_id)
+    db.add(tool_call)
+    db.commit()
+    db.refresh(tool_call)
+    return tool_call

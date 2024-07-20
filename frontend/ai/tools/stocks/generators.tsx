@@ -38,7 +38,7 @@ export function getToolGenerators(
         )
 
         const response = await fetch(
-          `${process.env.BACKEND_HOST}/api/v1/actions/`,
+          `${process.env.BACKEND_HOST}/api/v1/tool-calls/`,
           {
             method: 'POST',
             headers: {
@@ -49,11 +49,9 @@ export function getToolGenerators(
             },
             body: JSON.stringify({
               chat_id: 'test_chat',
-              parent_id: null,
-              type: 'test_type',
-              steps: { key: 'value' },
+              kind: 'calculator',
+              payload: { key: 'value' },
               status: 'pending',
-              result: null
             })
           }
         )

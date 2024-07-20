@@ -1,5 +1,9 @@
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 class LogConfig:
     # Log directory and file name
@@ -29,24 +33,7 @@ class LogConfig:
         "CRITICAL": "red,bg_white",
     }
 
-    # Minimum log levels for different handlers
-    CONSOLE_LOG_LEVEL = os.environ.get("CONSOLE_LOG_LEVEL", "INFO")
-    FILE_LOG_LEVEL = os.environ.get("FILE_LOG_LEVEL", "DEBUG")
-
     # Enable/disable specific handlers
-    ENABLE_CONSOLE_HANDLER = (
-        os.environ.get("ENABLE_CONSOLE_HANDLER", "true").lower() == "true"
-    )
-    ENABLE_FILE_HANDLER = (
-        os.environ.get("ENABLE_FILE_HANDLER", "true").lower() == "true"
-    )
     ENABLE_SENTRY = os.environ.get("ENABLE_SENTRY", "false").lower() == "true"
-
-    # Additional Sentry options
-    SENTRY_ENVIRONMENT = os.environ.get("SENTRY_ENVIRONMENT", "production")
-    SENTRY_RELEASE = os.environ.get("SENTRY_RELEASE", "1.0.0")
-
-    # Performance settings
-    ASYNC_LOGGING = os.environ.get("ASYNC_LOGGING", "false").lower() == "true"
 
     SENSITIVE_PATTERNS = ["api_key", "jwt_secret", "ssh_password", "password"]
