@@ -36,7 +36,7 @@ export function getToolGenerators(
             <StocksSkeleton />
           </BotCard>
         )
-
+        console.log(aiState?.get().model)
         const response = await fetch(
           `${process.env.BACKEND_HOST}/api/v1/tool-calls/`,
           {

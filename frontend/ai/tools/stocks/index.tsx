@@ -7,8 +7,7 @@ import { type ToolDefinition, type Tool } from '@/ai/tools/types'
 import { Events, Stocks, Stock, Purchase } from '@/ai/tools/stocks/components'
 import { type ToolUIComponent } from '@/ai/tools/types'
 
-
-export function getStockTools(
+export function getTools(
   aiState: ReturnType<typeof getMutableAIState> | undefined
 ): Record<string, Tool> {
   const definitions = getToolDefinitions()

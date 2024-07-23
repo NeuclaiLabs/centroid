@@ -11,7 +11,8 @@ const fetchModelsByProvider = cache(
         return [
           { id: connection.id + '/gpt-3.5-turbo-0125', connection },
           { id: connection.id + '/gpt-4-turbo', connection },
-          { id: connection.id + '/gpt-3.5-turbo', connection }
+          { id: connection.id + '/gpt-3.5-turbo', connection },
+          { id: connection.id + '/gpt-4o-mini', connection }
         ]
       case 'groq':
         return [
@@ -40,7 +41,8 @@ export const useAvailableModels = (): Model[] => {
   useEffect(() => {
     const fetchAvailableModels = async () => {
       try {
-        const connections: Connection[] = settings?.data?.general?.connections || []
+        const connections: Connection[] =
+          settings?.data?.general?.connections || []
         const models = await Promise.all(
           connections.map(async connection => {
             return (await fetchModelsByProvider(connection)).map(record => ({

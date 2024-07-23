@@ -1,9 +1,9 @@
-from pydanic import Field
+from pydantic import Field
 
-from openastra.openastra.tools.base import BaseConfigModel, BaseContextModel
+from openastra.tools.base import BaseConfig, BaseContext
 
 
-class SearchConfig(BaseConfigModel):
+class SearchConfig(BaseConfig):
     api_key: str
     base_url: str
     num_results: int = 10
@@ -13,7 +13,7 @@ class SearchConfig(BaseConfigModel):
     safe_search: bool = True
 
 
-class SearchContext(BaseContextModel):
-    kind: str = Field("search", const=True)
+class SearchContext(BaseContext):
+    kind: str = Field("search", literal=True)
     query: str
     timeout: int = 30

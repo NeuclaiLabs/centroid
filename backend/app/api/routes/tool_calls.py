@@ -71,6 +71,7 @@ def create_tool_call(
     session.add(tool_call)
     session.commit()
     session.refresh(tool_call)
+    # ToolRunner.run(config=None, context=None, name=None)
     return tool_call
 
 

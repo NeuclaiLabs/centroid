@@ -18,8 +18,9 @@ class ToolCallBase(SQLModel):
 class ToolCallCreate(ToolCallBase):
     chat_id: str
     kind: str
-    result: dict | None = None
-    status: str
+    # queued, in_progress, requires_action, cancelling, cancelled, failed, completed, incomplete, or expired.
+    status: str | None = "in_progress"
+    payload: dict | None = None
 
 
 class ToolCallUpdate(ToolCallBase):

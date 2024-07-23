@@ -19,6 +19,7 @@ export async function fetcher<JSON = any>(
 
   if (!res.ok) {
     const json = await res.json()
+    console.error(json)
     if (json.error) {
       const error = new Error(json.error) as Error & {
         status: number

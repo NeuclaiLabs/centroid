@@ -40,7 +40,10 @@ async function submitUserMessage(content: string, model: Model) {
   }
 
   const aiState = getMutableAIState<typeof AI>()
-
+  aiState.update({
+    ...aiState.get(),
+    model: model
+  })
   aiState.update({
     ...aiState.get(),
     messages: [
@@ -117,6 +120,7 @@ In all cases, do your best to provide a helpful answer to the user's query, whet
 
 export type AIState = {
   chatId: string
+  model: Model | null
   messages: Message[]
 }
 
@@ -131,13 +135,13 @@ export const AI = createAI<AIState, UIState>({
     confirmPurchase
   },
   initialUIState: [],
-  initialAIState: { chatId: nanoid(), messages: [] },
+  initialAIState: { chatId: nanoid(), model: null, messages: [] },
   onGetUIState: async () => {
     'use server'
     const session = await auth()
 
     if (session && session.user) {
-      const aiState = getAIState()
+      const aiState = getAIState() as Chat
 
       if (aiState) {
         const uiState = getUIStateFromAIState(aiState)

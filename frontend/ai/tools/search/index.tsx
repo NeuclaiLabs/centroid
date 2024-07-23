@@ -7,7 +7,7 @@ import { type ToolDefinition, type Tool } from '@/ai/tools/types'
 import { Search } from '@/ai/tools/search/components'
 import { type ToolUIComponent } from '@/ai/tools/types'
 
-export function getSearchTools(
+export function getTools(
   aiState: ReturnType<typeof getMutableAIState> | undefined
 ): Record<string, Tool> {
   const definitions = getToolDefinitions()

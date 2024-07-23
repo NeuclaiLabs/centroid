@@ -2,9 +2,8 @@ from abc import ABC, abstractmethod
 
 import requests
 
-from openastra.tools.web_search.config import SearchConfig
-from openastra.tools.web_search.context import SearchContext
 from openastra.tools.web_search.factory import SearchProviderFactory
+from openastra.tools.web_search.models import SearchConfig, SearchContext
 
 
 class SearchProvider(ABC):
@@ -129,62 +128,62 @@ class SearchManager:
         return results
 
 
-def display_results(results: dict, provider: str):
-    if provider == "serper":
-        for i, result in enumerate(results.get("organic", []), 1):
-            print(f"\n--- Result {i} ---")
-            print(f"Title: {result.get('title', 'N/A')}")
-            print(f"URL: {result.get('link', 'N/A')}")
-            print(f"Snippet: {result.get('snippet', 'N/A')}")
-    elif provider == "bing":
-        for i, result in enumerate(results.get("webPages", {}).get("value", []), 1):
-            print(f"\n--- Result {i} ---")
-            print(f"Title: {result.get('name', 'N/A')}")
-            print(f"URL: {result.get('url', 'N/A')}")
-            print(f"Snippet: {result.get('snippet', 'N/A')}")
-    elif provider == "kagi":
-        for i, result in enumerate(results.get("data", []), 1):
-            print(f"\n--- Result {i} ---")
-            print(f"Title: {result.get('title', 'N/A')}")
-            print(f"URL: {result.get('url', 'N/A')}")
-            print(f"Snippet: {result.get('snippet', 'N/A')}")
+# def display_results(results: dict, provider: str):
+#     if provider == "serper":
+#         for i, result in enumerate(results.get("organic", []), 1):
+#             print(f"\n--- Result {i} ---")
+#             print(f"Title: {result.get('title', 'N/A')}")
+#             print(f"URL: {result.get('link', 'N/A')}")
+#             print(f"Snippet: {result.get('snippet', 'N/A')}")
+#     elif provider == "bing":
+#         for i, result in enumerate(results.get("webPages", {}).get("value", []), 1):
+#             print(f"\n--- Result {i} ---")
+#             print(f"Title: {result.get('name', 'N/A')}")
+#             print(f"URL: {result.get('url', 'N/A')}")
+#             print(f"Snippet: {result.get('snippet', 'N/A')}")
+#     elif provider == "kagi":
+#         for i, result in enumerate(results.get("data", []), 1):
+#             print(f"\n--- Result {i} ---")
+#             print(f"Title: {result.get('title', 'N/A')}")
+#             print(f"URL: {result.get('url', 'N/A')}")
+#             print(f"Snippet: {result.get('snippet', 'N/A')}")
 
 
-def main():
-    search_manager = SearchManager()
-    provider = input("Enter the search provider (serper/bing/kagi): ").lower()
-    api_key = input("Enter your API key: ")
-    base_url = input("Enter the base URL for the API: ")
-    query = input("Enter your search query: ")
-    num_results = int(input("Enter the number of results (default is 10): ") or 10)
-    blacklisted_urls = (
-        input("Enter blacklisted URLs (comma-separated, optional): ").split(",")
-        if input("Do you want to blacklist any URLs? (y/n): ").lower() == "y"
-        else None
-    )
-    language = input("Enter language code (default is 'en'): ") or "en"
-    country = input("Enter country code (default is 'us'): ") or "us"
-    safe_search = input("Enable safe search? (y/n, default is y): ").lower() != "n"
+# def main():
+#     search_manager = SearchManager()
+#     provider = input("Enter the search provider (serper/bing/kagi): ").lower()
+#     api_key = input("Enter your API key: ")
+#     base_url = input("Enter the base URL for the API: ")
+#     query = input("Enter your search query: ")
+#     num_results = int(input("Enter the number of results (default is 10): ") or 10)
+#     blacklisted_urls = (
+#         input("Enter blacklisted URLs (comma-separated, optional): ").split(",")
+#         if input("Do you want to blacklist any URLs? (y/n): ").lower() == "y"
+#         else None
+#     )
+#     language = input("Enter language code (default is 'en'): ") or "en"
+#     country = input("Enter country code (default is 'us'): ") or "us"
+#     safe_search = input("Enable safe search? (y/n, default is y): ").lower() != "n"
 
-    config = SearchConfig(
-        api_key=api_key,
-        base_url=base_url,
-        num_results=num_results,
-        blacklisted_urls=blacklisted_urls,
-        language=language,
-        country=country,
-        safe_search=safe_search,
-    )
+#     config = SearchConfig(
+#         api_key=api_key,
+#         base_url=base_url,
+#         num_results=num_results,
+#         blacklisted_urls=blacklisted_urls,
+#         language=language,
+#         country=country,
+#         safe_search=safe_search,
+#     )
 
-    try:
-        results = search_manager.search(provider, query, config)
-        if results:
-            display_results(results, provider)
-        else:
-            print("No results found or an error occurred.")
-    except ValueError as e:
-        print(e)
+#     try:
+#         results = search_manager.search(provider, query, config)
+#         if results:
+#             display_results(results, provider)
+#         else:
+#             print("No results found or an error occurred.")
+#     except ValueError as e:
+#         print(e)
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
