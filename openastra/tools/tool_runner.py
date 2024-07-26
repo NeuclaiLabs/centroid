@@ -1,5 +1,5 @@
 from openastra.tools import CalculatorTool
-from openastra.tools.base import BaseConfig, BaseContext, BaseTool
+from openastra.tools.base import BaseTool, BaseToolConfig, BaseToolContext
 
 
 class ToolRegistry:
@@ -18,7 +18,7 @@ class ToolRegistry:
 
 
 class ToolRunner:
-    def __init__(self, config: BaseConfig, context: BaseContext, name: str):
+    def __init__(self, config: BaseToolConfig, context: BaseToolContext, name: str):
         self.config = config
         self.context = context
         self.name = name

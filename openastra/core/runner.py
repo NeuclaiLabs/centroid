@@ -2,11 +2,11 @@ from litellm import completion
 
 from openastra.core.logger import logger
 
-from .models import BaseConfig, BaseContext
+from .models import BaseToolConfig, BaseToolContext
 
 
 class Runner:
-    def run(self, context: BaseContext, config: BaseConfig):
+    def run(self, context: BaseToolContext, config: BaseToolConfig):
         response = completion(
             model=self.payload.llm or "ollama/mistral",
             messages=[

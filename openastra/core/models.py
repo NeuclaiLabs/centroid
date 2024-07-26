@@ -1,10 +1,10 @@
 from pydantic import BaseModel
 
 
-class BaseConfig(BaseModel):
+class BaseToolConfig(BaseModel):
     pass
 
 
-class BaseContext(BaseModel):
+class BaseToolContext(BaseModel):
     kind: str
     pass

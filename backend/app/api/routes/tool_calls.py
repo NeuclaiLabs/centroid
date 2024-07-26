@@ -6,6 +6,7 @@ from sqlmodel import func, select
 from app.api.deps import CurrentUser, SessionDep
 from app.models import (
     Message,
+    Setting,
     ToolCall,
     ToolCallCreate,
     ToolCallOut,
@@ -71,7 +72,10 @@ def create_tool_call(
     session.add(tool_call)
     session.commit()
     session.refresh(tool_call)
-    # ToolRunner.run(config=None, context=None, name=None)
+    statement = select(Setting).where(Setting.owner_id == current_user.id)
+    settings = session.exec(statement).first()
+    print(settings)
+    # ToolRunner(config=settings, context=tool_call_in.payload, name=tool_call.kind).run()
     return tool_call
 
 

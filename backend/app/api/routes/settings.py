@@ -21,25 +21,19 @@ def read_settings(
     session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
 ) -> Any:
     """Retrieve Settings."""
-    if current_user.is_superuser:
-        statement = select(func.count()).select_from(Setting)
-        count = session.exec(statement).one()
-        statement = select(Setting).offset(skip).limit(limit)
-        settings = session.exec(statement).all()
-    else:
-        statement = (
-            select(func.count())
-            .select_from(Setting)
-            .where(Setting.owner_id == current_user.id)
-        )
-        count = session.exec(statement).one()
-        statement = (
-            select(Setting)
-            .where(Setting.owner_id == current_user.id)
-            .offset(skip)
-            .limit(limit)
-        )
-        settings = session.exec(statement).all()
+    statement = (
+        select(func.count())
+        .select_from(Setting)
+        .where(Setting.owner_id == current_user.id)
+    )
+    count = session.exec(statement).one()
+    statement = (
+        select(Setting)
+        .where(Setting.owner_id == current_user.id)
+        .offset(skip)
+        .limit(limit)
+    )
+    settings = session.exec(statement).all()
     return SettingsOut(data=settings, count=count)
 
 

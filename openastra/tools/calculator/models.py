@@ -1,11 +1,12 @@
-from openastra.tools.base import BaseConfig, BaseContext
+from openastra.tools.base import BaseToolConfig, BaseToolContext
 
 
-class CalculatorConfig(BaseConfig):
+class CalculatorToolConfig(BaseToolConfig):
     pass
 
 
-class CalculatorContext(BaseContext):
+class CalculatorToolContext(BaseToolContext):
     kind: str = "calculator"
-    expression: str
     timeout: int = 30
+    args: dict
+    model: dict

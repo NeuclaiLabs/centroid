@@ -3,11 +3,11 @@ from abc import ABC, abstractmethod
 from pydantic import BaseModel, Field
 
 
-class BaseConfig(BaseModel):
+class BaseToolConfig(BaseModel):
     pass
 
 
-class BaseContext(BaseModel):
+class BaseToolContext(BaseModel):
     pass
 
 
@@ -30,10 +30,14 @@ class BaseTool(ABC):
     _metrics: dict
     _name: str
 
-    def __init__(self, name: str, context: BaseContext, config: BaseConfig):
+    def __init__(self, name: str, context: BaseToolContext, config: BaseToolConfig):
         self._name = name
         self.context = context
         self.config = config
+
+    @property
+    def name(self) -> str:
+        return self._name
 
     @abstractmethod
     def run(self) -> BaseResult:

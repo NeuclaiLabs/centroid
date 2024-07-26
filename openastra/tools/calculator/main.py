@@ -2,24 +2,27 @@ import time
 
 from openastra.core.logger import logger
 from openastra.tools.base import BaseResult, BaseTool
-from openastra.tools.calculator.models import CalculatorConfig, CalculatorContext
+from openastra.tools.calculator.models import (
+    CalculatorToolConfig,
+    CalculatorToolContext,
+)
 
 
 class CalculatorTool(BaseTool):
     _name = "calculator"
 
-    def __init__(self, context: CalculatorContext, config: CalculatorConfig):
+    def __init__(self, context: CalculatorToolContext, config: CalculatorToolConfig):
         super().__init__(
             self._name,
-            CalculatorContext(**context),
-            CalculatorConfig(**config[self._name]),
+            CalculatorToolContext(**context),
+            CalculatorToolConfig(**config[self._name]),
         )
 
     def run(self) -> BaseResult:
         start_time = time.time()
         try:
             # Use the built-in eval function to evaluate the expression
-            result = eval(self.context.expression)
+            result = eval(self.context.args.expression)
             end_time = time.time()
             execution_time_ms = (end_time - start_time) * 1000
             execution_time_ms = round(execution_time_ms, 2)
