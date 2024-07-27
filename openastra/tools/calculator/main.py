@@ -1,7 +1,7 @@
 import time
 
 from openastra.core.logger import logger
-from openastra.tools.base import BaseResult, BaseTool
+from openastra.tools.base import BaseTool, BaseToolResult
 from openastra.tools.calculator.models import (
     CalculatorToolConfig,
     CalculatorToolContext,
@@ -15,12 +15,13 @@ class CalculatorTool(BaseTool):
         super().__init__(
             self._name,
             CalculatorToolContext(**context),
-            CalculatorToolConfig(**config[self._name]),
+            CalculatorToolConfig(**{}),
         )
 
-    def run(self) -> BaseResult:
+    def run(self) -> BaseToolResult:
         start_time = time.time()
         try:
+            print(f"Expression: { self.context.args.expression}")
             # Use the built-in eval function to evaluate the expression
             result = eval(self.context.args.expression)
             end_time = time.time()
@@ -33,6 +34,8 @@ class CalculatorTool(BaseTool):
             }
         except Exception as e:
             end_time = time.time()
+            execution_time_ms = (end_time - start_time) * 1000
+            execution_time_ms = round(execution_time_ms, 2)
             logger.exception(e)
             return {
                 "result": None,
@@ -40,14 +43,3 @@ class CalculatorTool(BaseTool):
                 "status": "error",
                 "error": str(e),
             }
-
-
-if __name__ == "__main__":
-    calculator = CalculatorTool(
-        context={
-            "expression": "1+2**5%3-23+1+2**5%3-23+1+2**5%3-23",
-            "args": {},
-        },
-        config={"general": {}, "web_search": {}, "calculator": {}},
-    )
-    logger.info(calculator.run())

@@ -20,7 +20,7 @@ export default async function IndexPage() {
   }
 
   return (
-    <AI initialAIState={{ chatId: id, messages: [] }}>
+    <AI initialAIState={{ chatId: id, model: null, messages: [] }}>
       <Chat id={id} session={session} missingKeys={missingKeys} />
     </AI>
   )

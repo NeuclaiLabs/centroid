@@ -1,3 +1,5 @@
+import warnings
+
 import sentry_sdk
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
@@ -5,6 +7,11 @@ from starlette.middleware.cors import CORSMiddleware
 
 from app.api.main import api_router
 from app.core.config import settings
+
+# Suppress specific Pydantic warnings
+warnings.filterwarnings(
+    "ignore", message="Pydantic serializer warnings:", category=UserWarning
+)
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:

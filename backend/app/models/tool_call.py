@@ -58,10 +58,10 @@ class ToolCall(ToolCallBase, table=True):
 
 
 class ToolCallOut(ToolCallBase):
-    id: str
-    owner_id: str
-    created_at: datetime
-    updated_at: datetime
+    id: str | None
+    created_at: datetime | None
+    updated_at: datetime | None
+    result: dict
 
 
 class ToolCallsOut(SQLModel):

@@ -1,5 +1,10 @@
 from openastra.tools import CalculatorTool
-from openastra.tools.base import BaseTool, BaseToolConfig, BaseToolContext
+from openastra.tools.base import (
+    BaseTool,
+    BaseToolConfig,
+    BaseToolContext,
+    BaseToolResult,
+)
 
 
 class ToolRegistry:
@@ -28,7 +33,7 @@ class ToolRunner:
         tool_cls = ToolRegistry.get_tool(self.name)
         return tool_cls(context=self.context, config=self.config)
 
-    def run(self):
+    def run(self) -> BaseToolResult:
         return self.tool_instance.run()
 
 

@@ -7,13 +7,18 @@ class BaseToolConfig(BaseModel):
     pass
 
 
-class BaseToolContext(BaseModel):
+class BaseToolArgs(BaseModel):
     pass
 
 
-class BaseResult(BaseModel):
+class BaseToolContext(BaseModel):
+    model: dict | None = None
+    timeout: int = 30
+
+
+class BaseToolResult(BaseModel):
     result: int | float | str | dict | None = Field(
-        None, description="The result of the calculation"
+        None, description="The result of the tool call"
     )
     execution_time: float = Field(
         ..., description="Total time taken for execution in seconds"
@@ -40,5 +45,5 @@ class BaseTool(ABC):
         return self._name
 
     @abstractmethod
-    def run(self) -> BaseResult:
+    def run(self) -> BaseToolResult:
         pass

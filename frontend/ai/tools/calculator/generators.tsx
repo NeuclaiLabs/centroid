@@ -80,7 +80,7 @@ export function getToolGenerators(
                   type: 'tool-result',
                   toolName: TOOL,
                   toolCallId,
-                  result: [{ description: 'test' }]
+                  result: response.result
                 }
               ]
             }
@@ -90,7 +90,7 @@ export function getToolGenerators(
 
         return (
           <BotCard>
-            <Calculator props={{"result": "6"}}  />
+            <Calculator props={{"result": response.result.result}}  />
           </BotCard>
         )
       }

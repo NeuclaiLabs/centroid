@@ -1,6 +1,7 @@
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
+from openastra.tools.tool_runner import ToolRunner
 from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
@@ -74,8 +75,10 @@ def create_tool_call(
     session.refresh(tool_call)
     statement = select(Setting).where(Setting.owner_id == current_user.id)
     settings = session.exec(statement).first()
-    print(settings)
-    # ToolRunner(config=settings, context=tool_call_in.payload, name=tool_call.kind).run()
+    result = ToolRunner(
+        config=settings, context=tool_call_in.payload, name=tool_call.kind
+    ).run()
+    tool_call.result = result
     return tool_call
 
 
