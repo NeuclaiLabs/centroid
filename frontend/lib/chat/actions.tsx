@@ -9,8 +9,6 @@ import {
 } from 'ai/rsc'
 import { getTools } from '@/ai/tools'
 
-import { confirmPurchase } from '@/ai/tools/stocks/actions'
-
 import { createOpenAI, openai } from '@ai-sdk/openai'
 import { createOllama } from 'ollama-ai-provider'
 
@@ -109,7 +107,14 @@ In all cases, do your best to provide a helpful answer to the user's query, whet
 
       return textNode
     },
-    tools: getTools(aiState)
+    tools: getTools(aiState),
+    onFinish: ({ usage }) => {
+      const { promptTokens, completionTokens, totalTokens } = usage
+      // your own logic, e.g. for saving the chat history or recording usage
+      console.log('Prompt tokens:', promptTokens)
+      console.log('Completion tokens:', completionTokens)
+      console.log('Total tokens:', totalTokens)
+    }
   })
 
   return {
@@ -131,8 +136,7 @@ export type UIState = {
 
 export const AI = createAI<AIState, UIState>({
   actions: {
-    submitUserMessage,
-    confirmPurchase
+    submitUserMessage
   },
   initialUIState: [],
   initialAIState: { chatId: nanoid(), model: null, messages: [] },

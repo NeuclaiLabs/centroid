@@ -34,7 +34,7 @@ class ToolCallUpdate(ToolCallBase):
 
 
 class ToolCall(ToolCallBase, table=True):
-    # __tablename__ = "tool_call"
+    __tablename__ = "tool_call"
     id: str = Field(default_factory=nanoid.generate, primary_key=True)
     result: dict | None = Field(
         default=None, sa_type=JSON, sa_column_kwargs={"nullable": True}

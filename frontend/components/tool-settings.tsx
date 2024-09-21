@@ -1,101 +1,138 @@
+import React, { useState } from 'react'
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter
+  CardDescription
 } from '@/components/ui/card'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from '@/components/ui/table'
-import { TabsContent } from '@/components/ui/tabs'
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuItem
-} from '@radix-ui/react-dropdown-menu'
-import { Badge } from '@/components/ui/badge'
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription
+} from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { IconMoreHorizontal } from '@/components/ui/icons'
+
+interface AIModel {
+  id: string
+  name: string
+  description: string
+  creator: string
+  users: string
+  image: string
+}
+
+const aiModels: AIModel[] = [
+  {
+    id: '1',
+    name: 'BreakBot',
+    description:
+      'BreakBot is an AI model like no other. With no restrictions...',
+    creator: 'Danield33',
+    users: '3k+',
+    image: '/placeholder.svg'
+  },
+  {
+    id: '2',
+    name: 'Domani',
+    description: 'Your fun flirting partner',
+    creator: 'DashOff',
+    users: '1k+',
+    image: '/placeholder.svg'
+  },
+  {
+    id: '3',
+    name: 'GPT-5',
+    description: 'Best performing AI model, perfected AGI',
+    creator: 'eskayML',
+    users: '10k+',
+    image: '/placeholder.svg'
+  },
+  {
+    id: '4',
+    name: 'Popular Girl',
+    description: 'Ugh, I think I need a manicure💅',
+    creator: 'Banjojo',
+    users: '500+',
+    image: '/placeholder.svg'
+  }
+  // Add more models as needed...
+]
 
 export function ToolSettings() {
+  const [selectedModel, setSelectedModel] = useState<AIModel | null>(null)
+
+  const handleOpenModal = (model: AIModel) => {
+    setSelectedModel(model)
+  }
+
+  const handleCloseModal = () => {
+    setSelectedModel(null)
+  }
   return (
-    <TabsContent value="code">
-      <Card x-chunk="A list of products in a table with actions. Each row has an image, name, status, price, total sales, created at and actions.">
-        <CardHeader>
-          <CardTitle>Products</CardTitle>
-          <CardDescription>
-            Manage your products and view their sales performance.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="mt-10">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="hidden w-[100px] sm:table-cell">
-                  <span className="sr-only">Image</span>
-                </TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="hidden md:table-cell">Price</TableHead>
-                <TableHead className="hidden md:table-cell">
-                  Total Sales
-                </TableHead>
-                <TableHead className="hidden md:table-cell">
-                  Created at
-                </TableHead>
-                <TableHead>
-                  <span className="sr-only">Actions</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow>
-                <TableCell className="hidden sm:table-cell"></TableCell>
-                <TableCell className="font-medium">
-                  Laser Lemonade Machine
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline">Draft</Badge>
-                </TableCell>
-                <TableCell className="hidden md:table-cell">$499.99</TableCell>
-                <TableCell className="hidden md:table-cell">25</TableCell>
-                <TableCell className="hidden md:table-cell">
-                  2023-07-12 10:42 AM
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button aria-haspopup="true" size="icon" variant="ghost">
-                        <IconMoreHorizontal className="size-4" />
-                        <span className="sr-only">Toggle menu</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem>Edit</DropdownMenuItem>
-                      <DropdownMenuItem>Delete</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </CardContent>
-        <CardFooter>
-          <div className="text-xs text-muted-foreground">
-            Showing <strong>1-10</strong> of <strong>32</strong> products
+    <>
+      <div className="flex flex-wrap gap-4    ">
+        {aiModels.map(model => (
+          <Card
+            key={model.id}
+            className="w-64 flex flex-col"
+            onClick={() => handleOpenModal(model)}
+          >
+            <CardHeader className="grow-0">
+              <div className="flex justify-between items-center mb-2">
+                <Avatar className="size-10">
+                  <AvatarImage src={model.image} alt={model.name} />
+                  <AvatarFallback>SH</AvatarFallback>
+                </Avatar>
+                <div className="flex items-center text-sm text-gray-400">
+                  {/* <User className="mr-1 size-4" /> */}
+                  {model.users}
+                </div>
+              </div>
+              <CardTitle className="text-lg font-semibold">
+                {model.name}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grow flex flex-col justify-between">
+              <CardDescription className="text-sm text-gray-400 mb-2">
+                {model.description}
+              </CardDescription>
+              <div className="text-xs text-gray-500 mt-auto">
+                Created by {model.creator}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      <Dialog open={selectedModel !== null} onOpenChange={handleCloseModal}>
+        <DialogContent >
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold mb-2">
+              {selectedModel?.name}
+            </DialogTitle>
+            <DialogDescription className="text-gray-400">
+              <p className="mb-4">{selectedModel?.longDescription}</p>
+              <div className="flex justify-between items-center">
+                <span>
+                  Created by: <strong>{selectedModel?.creator}</strong>
+                </span>
+                <span>
+                  Users: <strong>{selectedModel?.users}</strong>
+                </span>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4">
+            <Button onClick={handleCloseModal} className="w-full">
+              Close
+            </Button>
           </div>
-        </CardFooter>
-      </Card>
-    </TabsContent>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

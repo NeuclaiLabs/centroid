@@ -7,8 +7,8 @@ import { toast } from 'sonner'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
-import { Settings as SearchSettings } from '@/ai/tools/search/settings'
 import { AccountSettings } from '@/components/account-settings'
+import { ToolSettings } from '@/components/tool-settings'
 import { useSettings } from '@/lib/hooks/use-settings'
 
 export function Settings({ userId }: { userId: string }) {
@@ -48,15 +48,15 @@ export function Settings({ userId }: { userId: string }) {
               <div className="flex items-center text-xl">Settings</div>
               <div className="flex items-center">
                 <TabsTrigger value="account">Account</TabsTrigger>
-                <TabsTrigger value="search">Web Search</TabsTrigger>
+                <TabsTrigger value="tools">Tools</TabsTrigger>
               </div>
             </TabsList>
           </div>
           <TabsContent value="account">
             <AccountSettings />
           </TabsContent>
-          <TabsContent value="search">
-            <SearchSettings />
+          <TabsContent value="tools">
+            <ToolSettings />
           </TabsContent>
         </Tabs>
       </div>

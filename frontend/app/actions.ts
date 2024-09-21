@@ -11,8 +11,15 @@ import { type Message } from 'ai'
 import { fetcher } from '@/lib/utils'
 
 export async function getChats(userId?: string | null) {
+  const session = await auth()
   if (!userId) {
     return []
+  }
+
+  if (userId !== session?.user?.id) {
+    return {
+      error: 'Unauthorized'
+    }
   }
 
   try {
@@ -42,6 +49,13 @@ export async function getChats(userId?: string | null) {
 }
 
 export async function getChat(id: string, userId: string) {
+  const session = await auth()
+
+  if (userId !== session?.user?.id) {
+    return {
+      error: 'Unauthorized'
+    }
+  }
   const response = await fetch(
     `${process.env.BACKEND_HOST}/api/v1/chats/${id}`,
     {

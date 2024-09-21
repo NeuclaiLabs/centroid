@@ -25,7 +25,8 @@ export function getTools(
         {
           ...value,
           generate: generators[key]?.generate,
-          component: components[key]?.component
+          component: components[key]?.component,
+          settings: null
         }
       ]
     )
