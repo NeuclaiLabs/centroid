@@ -1,69 +1,36 @@
-import { GeistSans } from 'geist/font/sans'
-import { GeistMono } from 'geist/font/mono'
+import { Metadata } from "next";
+import { Toaster } from "sonner";
 
-import '@/app/globals.css'
-import { cn } from '@/lib/utils'
-import { TailwindIndicator } from '@/components/tailwind-indicator'
-import { Providers } from '@/components/providers'
-import { Header } from '@/components/header'
-import { SidebarDesktop } from '@/components/sidebar-desktop'
-import { Toaster } from '@/components/ui/sonner'
+import { Navbar } from "@/components/custom/navbar";
+import { ThemeProvider } from "@/components/custom/theme-provider";
 
-export const metadata = {
-  metadataBase: new URL(`https://${process.env.VERCEL_URL}`),
-  title: {
-    default: 'OpenAstra - Chat Assistant',
-    template: `%s - Chat Assistant`
-  },
-  description: 'Your AI assistant.',
-  icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon-16x16.png',
-    apple: '/apple-touch-icon.png'
-  }
-}
+import "./globals.css";
 
-export const viewport = {
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' }
-  ]
-}
+export const metadata: Metadata = {
+  metadataBase: new URL("https://chat.vercel.ai"),
+  title: "Next.js Chatbot Template",
+  description: "Next.js chatbot template using the AI SDK.",
+};
 
-interface RootLayoutProps {
-  children: React.ReactNode
-}
-
-export default function RootLayout({ children }: RootLayoutProps) {
+export default async function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={cn(
-          'font-sans antialiased',
-          GeistSans.variable,
-          GeistMono.variable
-        )}
-      >
-        <Toaster position="top-center" />
-        <Providers
+    <html lang="en">
+      <body className="antialiased">
+        <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <div className="flex h-screen">
-            <div className="hidden lg:block">
-              <SidebarDesktop />
-            </div>
-            <div className="flex flex-1 flex-col">
-              <Header />
-              <main className="flex-1 bg-secondary">{children}</main>
-            </div>
-          </div>
-
-          <TailwindIndicator />
-        </Providers>
+          <Toaster position="top-center" />
+          <Navbar />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
-  )
+  );
 }
