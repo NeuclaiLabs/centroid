@@ -79,7 +79,7 @@ export function PromptForm({
     )
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault()
     const value = input.trim()
     setInput('')
@@ -134,6 +134,26 @@ export function PromptForm({
           className="hidden"
           multiple
         />
+        {attachments.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {attachments.map((file, index) => (
+              <div
+                key={index}
+                className="flex items-center rounded-md bg-background p-2"
+              >
+                <span className="text-sm">{file.name}</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="ml-2 size-5"
+                  onClick={() => removeAttachment(index)}
+                >
+                  <IconClose className="size-3" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
         <Textarea
           ref={inputRef}
           tabIndex={0}
@@ -165,26 +185,6 @@ export function PromptForm({
           </Tooltip>
         </div>
       </div>
-      {attachments.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-2">
-          {attachments.map((file, index) => (
-            <div
-              key={index}
-              className="flex items-center rounded-md bg-background p-2"
-            >
-              <span className="text-sm">{file.name}</span>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="ml-2 size-5"
-                onClick={() => removeAttachment(index)}
-              >
-                <IconClose className="size-3" />
-              </Button>
-            </div>
-          ))}
-        </div>
-      )}
     </form>
   )
 }

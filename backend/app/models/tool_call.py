@@ -34,7 +34,7 @@ class ToolCallUpdate(ToolCallBase):
 
 
 class ToolCall(ToolCallBase, table=True):
-    __tablename__ = "tool_call"
+    __tablename__ = "tool_calls"
     id: str = Field(default_factory=nanoid.generate, primary_key=True)
     result: dict | None = Field(
         default=None, sa_type=JSON, sa_column_kwargs={"nullable": True}
@@ -42,7 +42,7 @@ class ToolCall(ToolCallBase, table=True):
     payload: dict | None = Field(default=None, sa_type=JSON)
 
     owner_id: str | None = Field(
-        default=None, foreign_key="user.id", nullable=False, alias="ownerId"
+        default=None, foreign_key="users.id", nullable=False, alias="ownerId"
     )
     owner: User | None = Relationship(back_populates="tool_calls")
     created_at: datetime | None = Field(

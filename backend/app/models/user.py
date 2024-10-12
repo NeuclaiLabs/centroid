@@ -1,5 +1,13 @@
+from typing import TYPE_CHECKING
+
 import nanoid
 from sqlmodel import Field, Relationship, SQLModel
+
+if TYPE_CHECKING:
+    from .item import Item
+    from .setting import Setting
+    from .team import TeamMember
+    from .tool_call import ToolCall
 
 
 # Shared properties
@@ -43,13 +51,19 @@ class UpdatePassword(SQLModel):
 
 # Database model, database table inferred from class name
 class User(UserBase, table=True):
+    __tablename__ = "users"
     id: str | None = Field(default_factory=nanoid.generate, primary_key=True)
     hashed_password: str
-    items: list["Item"] = Relationship(back_populates="owner")  # noqa: F821
-    settings: list["Setting"] = Relationship(  # noqa: F821
-        sa_relationship_kwargs={"cascade": "delete"}, back_populates="owner"
-    )  # noqa: F821
-    tool_calls: list["ToolCall"] = Relationship(back_populates="owner")  # noqa: F821
+    items: list["Item"] = Relationship(back_populates="owner")
+    settings: list["Setting"] = Relationship(
+        cascade_delete=True, back_populates="owner"
+    )
+    tool_calls: list["ToolCall"] = Relationship(
+        back_populates="owner", cascade_delete=True
+    )
+    team_memberships: list["TeamMember"] = Relationship(
+        back_populates="user", cascade_delete=True
+    )
 
 
 # Properties to return via API, id is always required

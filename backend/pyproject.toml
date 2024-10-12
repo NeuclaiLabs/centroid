@@ -27,7 +27,7 @@ sqlmodel = "^0.0.21"
 # Pin bcrypt until passlib supports the latest
 bcrypt = "4.0.1"
 pydantic-settings = "^2.2.1"
-sentry-sdk = { extras = ["fastapi"], version = "^1.40.6" }
+sentry-sdk = { extras = ["fastapi"], version = "^2.15.0" }
 nanoid = "^2.0.0"
 openai = "^1.17.1"
 pyjwt = "^2.8.0"

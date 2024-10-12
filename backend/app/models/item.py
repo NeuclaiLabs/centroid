@@ -22,7 +22,7 @@ class ItemUpdate(ItemBase):
 class Item(ItemBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     title: str
-    owner_id: str | None = Field(default=None, foreign_key="user.id", nullable=False)
+    owner_id: str | None = Field(default=None, foreign_key="users.id", nullable=False)
     owner: User | None = Relationship(back_populates="items")
 
 

@@ -11,6 +11,21 @@ from .setting import (
     SettingsOut,
     SettingUpdate,
 )
+from .team import (
+    Team,
+    TeamCreate,
+    TeamInvitationStatus,
+    TeamMember,
+    TeamMemberCreate,
+    TeamMemberOut,
+    TeamMembersOut,
+    TeamMemberUpdate,
+    TeamOut,
+    TeamOutWithMembers,
+    TeamRole,
+    TeamsOut,
+    TeamUpdate,
+)
 from .tool_call import (
     ToolCall,
     ToolCallBase,
@@ -33,6 +48,22 @@ from .user import (
 from .utils import Message, NewPassword, Token, TokenPayload
 
 __all__ = [
+    "Item",
+    "Setting",
+    "Team",
+    "TeamMember",
+    "TeamCreate",
+    "TeamOut",
+    "TeamsOut",
+    "TeamInvitationStatus",
+    "TeamRole",
+    "TeamUpdate",
+    "TeamMemberCreate",
+    "TeamMemberUpdate",
+    "TeamMemberOut",
+    "TeamMembersOut",
+    "TeamOutWithMembers",
+    "ToolCall",
     "User",
     "UserBase",
     "UserCreate",

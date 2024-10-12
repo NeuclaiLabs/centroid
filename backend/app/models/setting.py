@@ -20,6 +20,7 @@ class SettingUpdate(SettingBase):
 
 
 class Setting(SettingBase, table=True):
+    __tablename__ = "settings"
     id: str = Field(default_factory=nanoid.generate, primary_key=True)
     data: dict | None = Field(default=None, sa_type=JSON)
 
@@ -36,7 +37,7 @@ class Setting(SettingBase, table=True):
         sa_column_kwargs={"onupdate": func.now(), "server_default": func.now()},
     )
     owner_id: str | None = Field(
-        default=None, foreign_key="user.id", nullable=False, alias="ownerId"
+        default=None, foreign_key="users.id", nullable=False, alias="ownerId"
     )
     owner: User | None = Relationship(back_populates="settings")
 

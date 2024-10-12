@@ -19,7 +19,7 @@ export async function confirmPurchase(
   price: number,
   amount: number
 ) {
-  'use server'
+  // 'use server'
 
   const aiState = getMutableAIState<typeof AI>()
 

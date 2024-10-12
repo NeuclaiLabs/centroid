@@ -56,7 +56,7 @@ export function ChatPanel({
   ]
 
   return (
-    <div className="fixed bottom-0 w-full mx-auto max-w-3xl px-4">
+    <div className="mx-auto max-w-3xl px-4">
       <div className="mb-10 ">
         <ButtonScrollToBottom
           className="left-1/2 bottom-30"

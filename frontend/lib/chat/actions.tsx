@@ -17,26 +17,29 @@ import { BotCard, BotMessage } from '@/ai/tools/stocks/components'
 import { nanoid } from '@/lib/utils'
 import { saveChat } from '@/app/actions'
 import { SpinnerMessage, UserMessage } from '@/components/message'
-import { Chat, Model, Message } from '@/lib/types'
+import { Chat, Model, Message, StorageObject } from '@/lib/types'
 import { auth } from '@/auth'
 
-async function submitUserMessage(content: string, model: Model) {
+async function submitUserMessage(content: string, files: StorageObject[] | undefined, model: Model) {
   'use server'
   let provider = null
-  switch (model.connection.type) {
-    case 'groq':
-    case 'openai':
-      provider = createOpenAI({
-        baseURL: model.connection.data.url || 'https://api.openai.com/v1',
-        apiKey: model.connection.data.key || process.env.OPENAI_API_KEY
-      })
-      break
-    default:
-      provider = createOllama({
-        baseURL: 'http://localhost:11434/api'
-      })
-  }
-
+  // switch (model.connection.type) {
+  //   case 'groq':
+  //   case 'openai':
+  //     provider = createOpenAI({
+  //       baseURL: model.connection.data.url || 'https://api.openai.com/v1',
+  //       apiKey: model.connection.data.key || process.env.OPENAI_API_KEY
+  //     })
+  //     break
+  //   default:
+  //     provider = createOllama({
+  //       baseURL: 'http://localhost:11434/api'
+  //     })
+  // }
+  provider = createOpenAI({
+    baseURL: 'https://api.openai.com/v1',
+    apiKey: 'sk-proj-eXrQS0396lcpeLw9SeYFT3BlbkFJi3KJa72kdsyXcurQ3AHm'
+  })
   const aiState = getMutableAIState<typeof AI>()
   aiState.update({
     ...aiState.get(),
@@ -49,7 +52,8 @@ async function submitUserMessage(content: string, model: Model) {
       {
         id: nanoid(),
         role: 'user',
-        content
+        content,
+        files
       }
     ]
   })
@@ -57,7 +61,7 @@ async function submitUserMessage(content: string, model: Model) {
   let textStream: undefined | ReturnType<typeof createStreamableValue<string>>
   let textNode: undefined | React.ReactNode
   const result = await streamUI({
-    model: provider(model!.name || model.id),
+    model: provider('gpt-4o'),
     initial: <SpinnerMessage />,
     messages: [
       {

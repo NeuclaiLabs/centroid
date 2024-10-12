@@ -1,16 +1,15 @@
 'use client'
 
-import { cn } from '@/lib/utils'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { ChatList } from '@/components/chat-list'
 import { ChatPanel } from '@/components/chat-panel'
 import { EmptyScreen } from '@/components/empty-screen'
-import { useLocalStorage } from '@/lib/hooks/use-local-storage'
-import { useEffect, useState } from 'react'
 import { useUIState, useAIState } from 'ai/rsc'
 import { Session, Message } from '@/lib/types'
+import { useLocalStorage } from '@/lib/hooks/use-local-storage'
 import { usePathname, useRouter } from 'next/navigation'
 import { useScrollAnchor } from '@/lib/hooks/use-scroll-anchor'
-import { toast } from 'sonner'
 
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
@@ -25,33 +24,21 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   const [input, setInput] = useState('')
   const [messages] = useUIState()
   const [aiState] = useAIState()
-
   const [_, setNewChatId] = useLocalStorage('newChatId', id)
+  const [previewContent, setPreviewContent] = useState<string | null>(null)
 
   useEffect(() => {
-    if (session?.user) {
-      if (!path.includes('chat') && messages.length === 1) {
-        window.history.replaceState({}, '', `/chat/${id}`)
-      }
+    if (session?.user && !path.includes('chat') && messages.length === 1) {
+      window.history.replaceState({}, '', `/chat/${id}`)
     }
   }, [id, path, session?.user, messages])
-
-  useEffect(() => {
-    const userMessagesLength = aiState.messages?.filter(
-      (message: { role: string }) => message.role === 'user'
-    ).length
-
-    if (userMessagesLength === 1 && aiState.messages?.length > 1) {
-      router.refresh()
-    }
-  }, [aiState.messages, router])
 
   useEffect(() => {
     setNewChatId(id)
   })
 
   useEffect(() => {
-    missingKeys.map(key => {
+    missingKeys.forEach(key => {
       toast.error(`Missing ${key} environment variable!`)
     })
   }, [missingKeys])
@@ -59,24 +46,33 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   const { messagesRef, scrollRef, visibilityRef, isAtBottom, scrollToBottom } =
     useScrollAnchor()
 
+  const handlePreview = (content: string) => {
+    setPreviewContent(content)
+  }
+
   return (
-    <div
-      className="group w-full overflow-auto pl-0 peer-[[data-state=open]]:lg:pl-[250px] peer-[[data-state=open]]:xl:pl-[300px]"
-      ref={scrollRef}
-    >
-      <div
-        className={cn('pb-[200px] pt-4 md:pt-10', className)}
-        ref={messagesRef}
-      >
-        {messages.length ? (
-          <ChatList messages={messages} isShared={false} session={session} />
-        ) : (
-          <EmptyScreen />
-        )}
-        <div className="h-px w-full" ref={visibilityRef} />
-      </div>
-      <div className="mx-auto max-w-3xl">
-        <div className="fixed bottom-0 w-full">
+    <div className="flex size-full">
+      {/* Chat Section */}
+      <div className="flex-1 flex flex-col relative">
+        {/* Scrollable chat messages */}
+        <div
+          className="flex-1 overflow-auto pb-[160px] pt-4 md:pt-10"
+          ref={messagesRef}
+        >
+          {messages.length ? (
+            <ChatList
+              messages={messages}
+              isShared={false}
+              session={session}
+              onPreview={handlePreview}
+            />
+          ) : (
+            <EmptyScreen />
+          )}
+          <div className="h-px w-full" ref={visibilityRef} />
+        </div>
+        {/* Fixed ChatPanel only within this chat section */}
+        <div className="absolute bottom-0 inset-x-0 bg-white border-t border-gray-200">
           <ChatPanel
             id={id}
             input={input}
@@ -85,6 +81,18 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
             scrollToBottom={scrollToBottom}
           />
         </div>
+      </div>
+
+      {/* Preview Section */}
+      <div className="w-1/2 border-l border-gray-200 p-4">
+        <h2 className="text-lg font-semibold mb-4">Preview</h2>
+        {previewContent ? (
+          <div className="bg-gray-100 p-4 rounded">
+            <pre className="whitespace-pre-wrap">{previewContent}</pre>
+          </div>
+        ) : (
+          <p>No preview available</p>
+        )}
       </div>
     </div>
   )

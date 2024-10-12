@@ -37,6 +37,7 @@ export function getToolGenerators(
           </BotCard>
         )
         console.log(aiState?.get().model)
+        console.log("here inside server.....")
         const response = await fetch(
           `${process.env.BACKEND_HOST}/api/v1/tool-calls/`,
           {
