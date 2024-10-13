@@ -60,6 +60,9 @@ const config: Config = {
           "5": "hsl(var(--chart-5))",
         },
       },
+      fontSize: {
+        'custom': '0.9375rem', // Custom size between sm and base
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],

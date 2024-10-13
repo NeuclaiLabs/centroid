@@ -9,14 +9,15 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
 
-import { Chat } from "@/db/schema";
-import { fetcher } from "@/lib/utils";
 
 import {
   InfoIcon,
   MenuIcon,
+  MessageCirclePlusIcon,
+  MessageIcon,
   MoreHorizontalIcon,
   PencilEditIcon,
+  ProjectsIcon,
   TrashIcon,
 } from "./icons";
 import {
@@ -43,6 +44,9 @@ import {
   SheetHeader,
   SheetTitle,
 } from "../ui/sheet";
+
+import { Chat } from "@/db/schema";
+import { fetcher } from "@/lib/utils";
 
 export const History = ({ user }: { user: User | undefined }) => {
   const { id } = useParams();
@@ -103,7 +107,7 @@ export const History = ({ user }: { user: User | undefined }) => {
           setIsHistoryVisible(state);
         }}
       >
-        <SheetContent side="left" className="p-3 w-80 bg-muted">
+        <SheetContent side="left" className="p-3 pl-0 w-80 bg-muted">
           <SheetHeader>
             <VisuallyHidden.Root>
               <SheetTitle className="text-left">History</SheetTitle>
@@ -115,28 +119,48 @@ export const History = ({ user }: { user: User | undefined }) => {
 
           <div className="text-sm flex flex-row items-center justify-between">
             <div className="flex flex-row gap-2">
-              <div className="dark:text-zinc-300">History</div>
-
-              <div className="dark:text-zinc-400 text-zinc-500">
-                {history === undefined ? "loading" : history.length} chats
+              <div className="dark:text-zinc-300 font-bold font-mono text-xl pl-4">
+                OpenAstra
               </div>
+
+              {/* <div className="dark:text-zinc-400 text-zinc-500">
+                {history === undefined ? "loading" : history.length} chats
+              </div> */}
             </div>
           </div>
 
-          <div className="mt-10 flex flex-col">
+          <div className="mt-5 flex flex-col ml-2">
             {user && (
-              <Button
-                className="font-normal text-sm flex flex-row justify-between"
+              <>
+                <Button
+                  variant="ghost"
+                className={cx(
+                  "hover:bg-zinc-200 dark:hover:bg-zinc-700  text-custom h-8 justify-start pl-2 font-normal flex flex-row items-center gap-2 pr-2 w-full transition-none",
+                )}
                 asChild
               >
                 <Link href="/">
-                  <div>Start a new chat</div>
-                  <PencilEditIcon size={14} />
-                </Link>
-              </Button>
+                  <MessageCirclePlusIcon size={16} />
+                  <div>Start new chat</div>
+                  </Link>
+                </Button>
+                <Button
+                  variant="ghost"
+                className={cx(
+                  "hover:bg-zinc-200 dark:hover:bg-zinc-700  text-custom h-8 justify-start pl-2 font-normal flex flex-row items-center gap-2 pr-2 w-full transition-none",
+                )}
+                asChild
+              >
+                <Link href="/">
+                <ProjectsIcon size={16} />
+                  <div>Projects</div>
+                  </Link>
+                </Button>
+              </>
             )}
 
-            <div className="flex flex-col overflow-y-scroll p-1 h-[calc(100dvh-124px)]">
+            <div className="flex flex-col overflow-y-scroll p-1 h-[calc(100dvh-124px)] mt-5">
+              <div className="text-sm font-bold mb-2 ml-2">Recent Chats</div>
               {!user ? (
                 <div className="text-zinc-500 h-dvh w-full flex flex-row justify-center items-center text-sm gap-2">
                   <InfoIcon />
@@ -175,15 +199,18 @@ export const History = ({ user }: { user: User | undefined }) => {
                     <Button
                       variant="ghost"
                       className={cx(
-                        "hover:bg-zinc-200 dark:hover:bg-zinc-700 justify-between p-0 text-sm font-normal flex flex-row items-center gap-2 pr-2 w-full transition-none",
+                        "hover:bg-zinc-200 dark:hover:bg-zinc-700 h-8 justify-start p-0 text-sm font-normal flex flex-row items-center gap-2 pr-2 w-full transition-none",
                       )}
                       asChild
                     >
                       <Link
                         href={`/chat/${chat.id}`}
-                        className="text-ellipsis overflow-hidden text-left py-2 pl-2 rounded-lg outline-zinc-900"
+                        className="text-ellipsis overflow-hidden text-left py-2 pl-2 rounded-lg outline-zinc-900 flex items-center"
                       >
-                        {chat.messages[0].content as string}
+                        <div className="size-4 flex items-center justify-center shrink-0">
+                          <MessageIcon size={16} />
+                        </div>
+                        <span className="truncate">{(chat.messages[0].content as string)}</span>
                       </Link>
                     </Button>
 
