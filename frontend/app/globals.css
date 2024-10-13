@@ -116,3 +116,20 @@
     @apply bg-foreground/20 animate-pulse;
   }
 }
+
+/* Vertical scrollbar styles */
+::-webkit-scrollbar {
+  @apply w-1; /* Customize the width of the scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent; /* Customize the track color */
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/50 rounded-full; /* Customize the thumb color and shape */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-primary/70; /* Customize the thumb color on hover */
+}

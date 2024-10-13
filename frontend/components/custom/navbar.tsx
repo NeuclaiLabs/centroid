@@ -12,6 +12,12 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 
+function getUserInitials(name: string) {
+  if (!name || name === "") return "";
+  const [firstName, lastName] = name.split(' ')
+  return lastName ? `${firstName[0]}${lastName[0]}` : firstName.slice(0, 2)
+}
+
 export const Navbar = async () => {
   let session = await auth();
 
@@ -32,7 +38,7 @@ export const Navbar = async () => {
                 className="py-1.5 px-2 h-fit font-normal"
                 variant="secondary"
               >
-                {session.user?.email}
+                {getUserInitials(session.user?.email ?? "")}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
