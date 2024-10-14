@@ -192,7 +192,7 @@ export const History = ({ user }: { user: User | undefined }) => {
                   <div
                     key={chat.id}
                     className={cx(
-                      "flex flex-row items-center gap-6 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-md pr-2",
+                      "flex flex-row items-center gap-6 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-md pr-2 mb-1",
                       { "bg-zinc-200 dark:bg-zinc-700": chat.id === id },
                     )}
                   >

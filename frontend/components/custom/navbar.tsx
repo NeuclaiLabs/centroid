@@ -15,7 +15,7 @@ import {
 function getUserInitials(name: string) {
   if (!name || name === "") return "";
   const [firstName, lastName] = name.split(' ')
-  return lastName ? `${firstName[0]}${lastName[0]}` : firstName.slice(0, 2)
+  return lastName ? `${firstName[0]}${lastName[0]}`.toUpperCase() : firstName.slice(0, 2).toUpperCase()
 }
 
 export const Navbar = async () => {

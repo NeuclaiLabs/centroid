@@ -1,4 +1,6 @@
-import { put } from "@vercel/blob";
+import { randomUUID } from 'crypto';
+
+import { Client , S3Error } from "minio";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -18,6 +20,17 @@ const FileSchema = z.object({
       },
     ),
 });
+
+const BUCKET_NAME = "openastra";
+
+const minioClient = new Client({
+  endPoint: process.env.MINIO_ENDPOINT || "localhost",
+  port: parseInt(process.env.MINIO_PORT || "9000"),
+  useSSL: process.env.MINIO_USE_SSL === "true",
+  accessKey: process.env.MINIO_ACCESS_KEY || "XDxUIS38tdwhXhBHRdJS",
+  secretKey: process.env.MINIO_SECRET_KEY || "dEyxnX1x991giIX6V4BCg6DSkh3UFlpdnMlpuq6d",
+});
+
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -48,22 +61,32 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: errorMessage }, { status: 400 });
     }
 
-    const filename = file.name;
+    // Check if the file is not an image and ensure it has a content type
+    if (!["image/jpeg", "image/png"].includes(file.type) && !file.type) {
+      return NextResponse.json({ error: "Non-image files must specify a content type" }, { status: 400 });
+    }
+
+    // Generate a unique filename
+    const fileExtension = file.name.split('.').pop();
+    const safeFilename = `${randomUUID()}.${fileExtension}`;
+
     const fileBuffer = await file.arrayBuffer();
 
-    try {
-      const data = await put(`${filename}`, fileBuffer, {
-        access: "public",
-      });
+    await minioClient.putObject(BUCKET_NAME, safeFilename, Buffer.from(fileBuffer));
+    const fileUrl = `http://${process.env.MINIO_ENDPOINT || 'localhost'}:${process.env.MINIO_PORT || '9000'}/${BUCKET_NAME}/${safeFilename}`;
 
-      return NextResponse.json(data);
-    } catch (error) {
-      return NextResponse.json({ error: "Upload failed" }, { status: 500 });
-    }
+    console.log("File uploaded successfully. URL:", fileUrl);
+    return NextResponse.json({
+      url: fileUrl,
+      name: file.name,
+      originalFilename: file.name,
+      contentType: file.type
+    });
   } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to process request" },
-      { status: 500 },
-    );
+    console.error("Error in file upload:", error);
+    if (error instanceof S3Error) {
+      return NextResponse.json({ error: `MinIO S3 Error: ${error.message}`, code: error.code }, { status: 500 });
+    }
+    return NextResponse.json({ error: "Upload to MinIO failed" }, { status: 500 });
   }
 }
