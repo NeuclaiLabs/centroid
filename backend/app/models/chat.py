@@ -4,9 +4,11 @@ import nanoid
 from sqlalchemy import Column, DateTime, event, func
 from sqlmodel import JSON, Field, SQLModel
 
+from .base import CamelModel
 
-class ChatMessage(SQLModel):
-    id: str
+
+class ChatMessage(CamelModel):
+    id: str = Field(default_factory=nanoid.generate)
     role: str
     name: str | None = None
     content: list | str | dict | None = None
@@ -15,23 +17,21 @@ class ChatMessage(SQLModel):
         return self.dict()
 
 
-class ChatBase(SQLModel):
+class ChatBase(CamelModel):
     title: str | None
     path: str | None
 
 
 # Shared properties
-class Chat(ChatBase, table=True):
+class Chat(ChatBase, SQLModel, table=True):
     __tablename__ = "chats"
     id: str = Field(primary_key=True, default_factory=nanoid.generate)
-    user_id: str = Field(alias="userId")
+    user_id: str
     messages: list[ChatMessage] | None = Field(sa_column=Column(JSON))
     created_at: datetime | None = Field(
         default=None,
         sa_type=DateTime(timezone=True),
-        sa_column_kwargs={
-            "server_default": func.now(),
-        },
+        sa_column_kwargs={"server_default": func.now()},
     )
     updated_at: datetime | None = Field(
         default=None,
@@ -40,7 +40,7 @@ class Chat(ChatBase, table=True):
     )
 
 
-class ChatUpdate(SQLModel):
+class ChatUpdate(CamelModel):
     title: str | None
     messages: list[ChatMessage] | None
     updated_at: datetime = datetime.utcnow()
@@ -49,9 +49,10 @@ class ChatUpdate(SQLModel):
 class ChatOut(ChatBase):
     id: str
     user_id: str
+    messages: list[ChatMessage] | None
 
 
-class ChatsOut(SQLModel):
+class ChatsOut(CamelModel):
     data: list[ChatOut]
     count: int
 

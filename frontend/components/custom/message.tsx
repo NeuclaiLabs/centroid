@@ -49,6 +49,8 @@ export const Message = ({
                   <div key={toolCallId}>
                     {toolName === "getWeather" ? (
                       <Weather weatherAtLocation={result} />
+                    ) : toolName === "calculator" ? (
+                      <div>Calculator Result: {result}</div>
                     ) : null}
                   </div>
                 );

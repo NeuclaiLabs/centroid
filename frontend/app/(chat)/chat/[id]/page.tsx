@@ -82,27 +82,50 @@ function convertToUIMessages(messages: Array<CoreMessage>): Array<Message> {
 
 export default async function Page({ params }: { params: any }) {
   const { id } = params;
-  const chatFromDb = await getChatById({ id });
-
-  if (!chatFromDb) {
-    notFound();
-  }
-
-  // type casting
-  const chat: Chat = {
-    ...chatFromDb,
-    messages: convertToUIMessages(chatFromDb.messages as Array<CoreMessage>),
-  };
-
   const session = await auth();
 
   if (!session || !session.user) {
+    console.log("No session or user found");
     return notFound();
   }
 
-  if (session.user.id !== chat.userId) {
+  try {
+    console.log(`Fetching chat with ID: ${id}`);
+    const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/chats/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        // @ts-ignore
+        Authorization: `Bearer ${session.user.accessToken}`,
+      },
+    });
+
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        console.log("Chat not found in API");
+        return notFound();
+      }
+      throw new Error('Failed to fetch chat');
+    }
+
+    const chatFromApi = await response.json();
+
+    // type casting
+    const chat: Chat = {
+      ...chatFromApi,
+      messages: convertToUIMessages(chatFromApi.messages as Array<CoreMessage>),
+    };
+
+    if (session.user.id !== chat.userId) {
+      // @ts-ignore
+      console.log("User ID mismatch", session.user.id, chat.userId);
+      return notFound();
+    }
+
+    return <PreviewChat id={chat.id} initialMessages={chat.messages} />;
+  } catch (error) {
+    console.error("Error fetching chat:", error);
     return notFound();
   }
-
-  return <PreviewChat id={chat.id} initialMessages={chat.messages} />;
 }

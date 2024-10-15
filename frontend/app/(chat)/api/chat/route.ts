@@ -3,7 +3,6 @@ import { z } from "zod";
 
 import { customModel } from "@/ai";
 import { auth } from "@/app/(auth)/auth";
-import { deleteChatById, getChatById, saveChat } from "@/db/queries";
 
 export async function POST(request: Request) {
   const { id, messages }: { id: string; messages: Array<Message> } =
@@ -43,11 +42,24 @@ export async function POST(request: Request) {
     onFinish: async ({ responseMessages }) => {
       if (session.user && session.user.id) {
         try {
-          await saveChat({
-            id,
-            messages: [...coreMessages, ...responseMessages],
-            userId: session.user.id,
-          });
+          const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/chats/`, {
+            method: 'POST',
+            headers: {
+                accept: 'application/json',
+                'Content-Type': 'application/json',
+                // @ts-ignore
+                Authorization: `Bearer ${session?.user?.accessToken}`
+                  },
+              body: JSON.stringify({
+                id,
+                messages: [...coreMessages, ...responseMessages],
+                userId: session.user.id,
+              })
+          })
+
+          if (!response.ok) {
+            throw new Error("Failed to save chat");
+          }
         } catch (error) {
           console.error("Failed to save chat");
         }
@@ -77,16 +89,71 @@ export async function DELETE(request: Request) {
   }
 
   try {
-    const chat = await getChatById({ id });
+    const response = await fetch(
+    `${process.env.BACKEND_HOST}/api/v1/chats/${id}`,
+    {
+      method: 'DELETE',
+      headers: {
+        accept: 'application/json',
+          // @ts-ignore
+          Authorization: `Bearer ${session.user.accessToken}`,
+        },
+      }
+    );
 
-    if (chat.userId !== session.user.id) {
-      return new Response("Unauthorized", { status: 401 });
+    if (!response.ok) {
+      return { error: 'Unauthorized' }
     }
-
-    await deleteChatById({ id });
 
     return new Response("Chat deleted", { status: 200 });
   } catch (error) {
+    return new Response("An error occurred while processing your request", {
+      status: 500,
+    });
+  }
+}
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+
+  if (!id) {
+    return new Response("Not Found", { status: 404 });
+  }
+
+  const session = await auth();
+
+  if (!session || !session.user) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
+  try {
+    const response = await fetch(
+      `${process.env.BACKEND_HOST}/api/v1/chats/${id}`,
+      {
+        method: 'GET',
+        headers: {
+          accept: 'application/json',
+          // @ts-ignore
+          Authorization: `Bearer ${session.user.accessToken}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return new Response("Chat not found", { status: 404 });
+      }
+      return new Response("Unauthorized", { status: 401 });
+    }
+
+    const chatData = await response.json();
+    return new Response(JSON.stringify(chatData), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    console.error("Error fetching chat:", error);
     return new Response("An error occurred while processing your request", {
       status: 500,
     });

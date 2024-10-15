@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException
 from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
-from app.models import Chat, ChatsOut, ChatUpdate, Message
+from app.models import Chat, ChatOut, ChatsOut, ChatUpdate, Message
 
 router = APIRouter()
 
@@ -16,7 +16,6 @@ def read_chats(
     """
     Retrieve chats.
     """
-
     if current_user.is_superuser:
         statement = select(func.count()).select_from(Chat)
         count = session.exec(statement).one()
@@ -25,12 +24,12 @@ def read_chats(
         )
         chats = session.exec(statement).all()
     else:
-        statment = (
+        statement = (
             select(func.count())
             .select_from(Chat)
             .where(Chat.user_id == current_user.id)
         )
-        count = session.exec(statment).one()
+        count = session.exec(statement).one()
         statement = (
             select(Chat)
             .where(Chat.user_id == current_user.id)
@@ -40,7 +39,8 @@ def read_chats(
         )
         chats = session.exec(statement).all()
 
-    return ChatsOut(data=chats, count=count)
+    chat_out_list = [ChatOut(**chat.dict()) for chat in chats]
+    return ChatsOut(data=chat_out_list, count=count)
 
 
 @router.get("/{id}", response_model=Chat)
@@ -69,6 +69,7 @@ def create_or_update_chat(
     # If the chat doesn't exist, create a new one
     if not existing_chat:
         chat = Chat.model_validate(chat)
+        print("chat: ", chat)
         session.add(chat)
         session.commit()
         session.refresh(chat)

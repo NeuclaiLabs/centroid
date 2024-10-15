@@ -1,6 +1,11 @@
 import { NextAuthConfig } from "next-auth";
 
+import type { User } from "@/lib/types";
 export const authConfig = {
+  secret: process.env.SECRET_KEY,
+  session: {
+    strategy: 'jwt'
+  },
   pages: {
     signIn: "/login",
     newUser: "/",
@@ -10,7 +15,7 @@ export const authConfig = {
     // while this file is also used in non-Node.js environments
   ],
   callbacks: {
-    authorized({ auth, request: { nextUrl } }) {
+    async authorized({ auth, request: { nextUrl } }) {
       let isLoggedIn = !!auth?.user;
       let isOnChat = nextUrl.pathname.startsWith("/");
       let isOnRegister = nextUrl.pathname.startsWith("/register");
