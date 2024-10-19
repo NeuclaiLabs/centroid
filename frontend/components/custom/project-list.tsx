@@ -48,7 +48,7 @@ const messages: Message[] = [
 
 export default function Component() {
   return (
-    <div className="w-full max-w-3xl mx-auto p-4 pt-20 space-y-4">
+    <div className="w-full max-w-3xl mx-auto p-4 space-y-4">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500" />
         <Input className="pl-10" placeholder="Search" type="search" />
