@@ -155,7 +155,7 @@
   @apply bg-primary/70; /* Customize the thumb color on hover */
 }
 
-@layer utilities {
+/* @layer utilities {
   .step {
     counter-increment: step;
   }
@@ -174,10 +174,10 @@
     content: "";
     @apply absolute -inset-4 shadow-xl rounded-xl border;
   }
-}
+} */
 
-@media (max-width: 640px) {
+/* @media (max-width: 640px) {
   .container {
     @apply px-4;
   }
-}
+} */

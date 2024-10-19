@@ -14,21 +14,23 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 
-import { Chat } from "@/components/custom/chat";
-import { generateUUID } from "@/lib/utils";
+import { Chat } from "@/components/custom/chat"
+import { generateUUID } from "@/lib/utils"
 
 export const iframeHeight = "800px"
 
 export const description = "An inset sidebar with secondary navigation."
 
 export default function Page() {
-  const id = generateUUID();
+  const id = generateUUID()
 
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2">
+      <SidebarInset className="flex flex-col h-screen overflow-hidden">
+        <header
+          className="flex h-16 shrink-0 items-center gap-0 w-full z-50 border-0"
+        >
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />
@@ -47,14 +49,10 @@ export default function Page() {
             </Breadcrumb>
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          {/* <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div className="aspect-video rounded-xl bg-muted/50" />
-            <div className="aspect-video rounded-xl bg-muted/50" />
-            <div className="aspect-video rounded-xl bg-muted/50" />
+        <div className="flex-1 overflow-auto">
+          <div className="flex flex-col gap-4 p-4">
+            <Chat key={id} id={id} initialMessages={[]} />
           </div>
-          <div className="min-h-screen flex-1 rounded-xl bg-muted/50 md:min-h-min" /> */}
-          <Chat key={id} id={id} initialMessages={[]} />
         </div>
       </SidebarInset>
     </SidebarProvider>
