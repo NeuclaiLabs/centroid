@@ -18,6 +18,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
+import { Button } from "../ui/button"
 
 export function NavMain({
   items,
@@ -35,7 +36,8 @@ export function NavMain({
 }) {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
+      <Button variant="outline" className="bg-[hsl(var(--sidebar-background))] mb-2">New Chat</Button>
+      {/* <SidebarGroupLabel>Platform</SidebarGroupLabel> */}
       <SidebarMenu>
         {items.map((item) => (
           <Collapsible key={item.title} asChild defaultOpen={item.isActive}>
@@ -45,8 +47,8 @@ export function NavMain({
                 tooltip={item.title}
                 className="hover:bg-[hsl(var(--sidebar-accent))] transition-colors"
               >
-                <a href={item.url} className="flex items-center gap-2 px-2 py-2 rounded-md">
-                  <item.icon className="h-5 w-5" />
+                <a href={item.url} className="flex items-center gap-2 p-2 rounded-md">
+                  <item.icon className="size-5" />
                   <span>{item.title}</span>
                 </a>
               </SidebarMenuButton>
@@ -54,7 +56,7 @@ export function NavMain({
                 <>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuAction className="data-[state=open]:rotate-90 hover:bg-[hsl(var(--sidebar-accent))] transition-colors rounded-md">
-                      <ChevronRight className="h-4 w-4" />
+                      <ChevronRight className="size-4" />
                       <span className="sr-only">Toggle</span>
                     </SidebarMenuAction>
                   </CollapsibleTrigger>

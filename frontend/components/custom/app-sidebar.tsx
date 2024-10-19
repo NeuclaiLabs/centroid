@@ -11,11 +11,13 @@ import {
   Send,
   Settings2,
   SquareTerminal,
+  Shapes,
+  Flag,
 } from "lucide-react"
 import * as React from "react"
 
 import { NavMain } from "@/components/custom/nav-main"
-import { NavProjects } from "@/components/custom/nav-projects"
+import { NavChats } from "@/components/custom/nav-chats"
 import { NavSecondary } from "@/components/custom/nav-secondary"
 import { NavUser } from "@/components/custom/nav-user"
 
@@ -28,6 +30,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { OpenAstraIcon } from "./icons"
+import { auth } from "@/app/(auth)/auth"
 
 const data = {
   user: {
@@ -37,9 +41,9 @@ const data = {
   },
   navMain: [
     {
-      title: "Playground",
+      title: "Chat History",
       url: "#",
-      icon: SquareTerminal,
+      icon: BookOpen,
       isActive: true,
       items: [
         {
@@ -57,9 +61,9 @@ const data = {
       ],
     },
     {
-      title: "Models",
+      title: "Projects",
       url: "#",
-      icon: Bot,
+      icon: Shapes,
       items: [
         {
           title: "Genesis",
@@ -76,9 +80,9 @@ const data = {
       ],
     },
     {
-      title: "Documentation",
+      title: "Feedback",
       url: "#",
-      icon: BookOpen,
+      icon: Flag,
       items: [
         {
           title: "Introduction",
@@ -98,29 +102,29 @@ const data = {
         },
       ],
     },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
-    },
+    // {
+    //   title: "Settings",
+    //   url: "#",
+    //   icon: Settings2,
+    //   items: [
+    //     {
+    //       title: "General",
+    //       url: "#",
+    //     },
+    //     {
+    //       title: "Team",
+    //       url: "#",
+    //     },
+    //     {
+    //       title: "Billing",
+    //       url: "#",
+    //     },
+    //     {
+    //       title: "Limits",
+    //       url: "#",
+    //     },
+    //   ],
+    // },
   ],
   navSecondary: [
     {
@@ -162,7 +166,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton size="lg" asChild className="hover:bg-[hsl(var(--sidebar-accent))] transition-colors">
               <a href="#">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-[hsl(var(--sidebar-primary))] text-[hsl(var(--sidebar-primary-foreground))]">
-                  <Command className="size-4" />
+                  <OpenAstraIcon size={16} />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">OpenAstra</span>
@@ -175,7 +179,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <NavChats />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

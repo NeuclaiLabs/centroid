@@ -9,6 +9,9 @@ import "./globals.css";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/custom/app-sidebar"
 
+import { SessionProvider } from "next-auth/react"
+
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://chat.vercel.ai"),
   title: "Next.js Chatbot Template",
@@ -29,9 +32,13 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <SessionProvider>
           <Toaster position="top-center" />
           {/* <Navbar /> */}
-          {children}
+          <SessionProvider>
+            {children}
+          </SessionProvider>
+          </SessionProvider>
         </ThemeProvider>
       </body>
     </html>
