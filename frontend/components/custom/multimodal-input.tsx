@@ -16,7 +16,15 @@ import { toast } from "sonner";
 import { ArrowUpIcon, PaperclipIcon, StopIcon } from "./icons";
 import { PreviewAttachment } from "./preview-attachment";
 import { Button } from "../ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 import { Textarea } from "../ui/textarea";
+
+import { PlusIcon, ChevronDownIcon } from "lucide-react";
 
 const suggestedActions = [
   {
@@ -145,8 +153,52 @@ export function MultimodalInput({
     [setAttachments],
   );
 
+  const [selectedProject, setSelectedProject] = useState<string | null>(null);
+
+  const randomProjects = [
+    "Cosmic Voyager",
+    "Emerald Nexus",
+    "Quantum Forge",
+  ];
+
   return (
     <div className="relative w-full flex flex-col gap-4">
+      <div className="absolute bottom-2 left-2 flex items-center space-x-1">
+        <Button
+          className="p-1.5 size-8 flex items-center justify-center dark:border-zinc-700"
+          onClick={(event) => {
+            event.preventDefault();
+            fileInputRef.current?.click();
+          }}
+          variant="outline"
+          disabled={isLoading}
+        >
+          <PaperclipIcon size={14} />
+        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              className="px-2 h-8 flex items-center space-x-1 dark:border-zinc-700"
+              variant="outline"
+              disabled={isLoading}
+            >
+              {/* {!selectedProject && <PlusIcon size={14} />} */}
+              <span>{selectedProject || "Project"}</span>
+              <ChevronDownIcon size={14} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            {randomProjects.map((project) => (
+              <DropdownMenuItem
+                key={project}
+                onSelect={() => setSelectedProject(project)}
+              >
+                {project}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
       {messages.length === 0 &&
         attachments.length === 0 &&
         uploadQueue.length === 0 && (
@@ -240,7 +292,7 @@ export function MultimodalInput({
         </Button>
       ) : (
         <Button
-          className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5"
+          className="p-1.5 h-fit absolute bottom-2 right-2 m-0.5"
           onClick={(event) => {
             handleSubmit(event);
           }}
@@ -249,18 +301,6 @@ export function MultimodalInput({
           <ArrowUpIcon size={14} />
         </Button>
       )}
-
-      <Button
-        className="rounded-full p-1.5 h-fit absolute bottom-2 right-10 m-0.5 dark:border-zinc-700"
-        onClick={(event) => {
-          event.preventDefault();
-          fileInputRef.current?.click();
-        }}
-        variant="outline"
-        disabled={isLoading}
-      >
-        <PaperclipIcon size={14} />
-      </Button>
     </div>
   );
 }

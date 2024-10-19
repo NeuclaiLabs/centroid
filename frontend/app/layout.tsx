@@ -6,6 +6,9 @@ import { ThemeProvider } from "@/components/custom/theme-provider";
 
 import "./globals.css";
 
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { AppSidebar } from "@/components/custom/app-sidebar"
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://chat.vercel.ai"),
   title: "Next.js Chatbot Template",

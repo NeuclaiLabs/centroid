@@ -11,6 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import React from "react";
 
 function getUserInitials(name: string) {
   if (!name || name === "") return "";
