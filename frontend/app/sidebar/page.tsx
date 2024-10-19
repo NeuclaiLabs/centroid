@@ -14,11 +14,16 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 
+import { Chat } from "@/components/custom/chat";
+import { generateUUID } from "@/lib/utils";
+
 export const iframeHeight = "800px"
 
 export const description = "An inset sidebar with secondary navigation."
 
 export default function Page() {
+  const id = generateUUID();
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -43,12 +48,13 @@ export default function Page() {
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+          {/* <div className="grid auto-rows-min gap-4 md:grid-cols-3">
             <div className="aspect-video rounded-xl bg-muted/50" />
             <div className="aspect-video rounded-xl bg-muted/50" />
             <div className="aspect-video rounded-xl bg-muted/50" />
           </div>
-          <div className="min-h-screen flex-1 rounded-xl bg-muted/50 md:min-h-min" />
+          <div className="min-h-screen flex-1 rounded-xl bg-muted/50 md:min-h-min" /> */}
+          <Chat key={id} id={id} initialMessages={[]} />
         </div>
       </SidebarInset>
     </SidebarProvider>

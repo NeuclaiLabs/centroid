@@ -45,7 +45,7 @@ export function NavMain({
                 tooltip={item.title}
                 className="hover:bg-[hsl(var(--sidebar-accent))] transition-colors"
               >
-                <a href={item.url} className="flex items-center gap-3 px-3 py-2 rounded-md">
+                <a href={item.url} className="flex items-center gap-2 px-2 py-2 rounded-md">
                   <item.icon className="h-5 w-5" />
                   <span>{item.title}</span>
                 </a>
