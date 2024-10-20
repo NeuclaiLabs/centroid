@@ -53,8 +53,9 @@ export function Chat({ id, initialMessages }: { id: string; initialMessages: Arr
 
   return (
     <div className="flex flex-col h-full overflow-hidden" style={contentStyle}>
-      <div className="flex-1 overflow-y-auto">
-        <div className="flex flex-col gap-4 w-full max-w-3xl mx-auto px-4 pb-32">
+      {/* Wrapper for centering both messages and footer */}
+      <div className="flex flex-col items-center justify-center size-full">
+        <div className="flex-1 overflow-y-auto w-full max-w-3xl px-4 pb-32">
           {messages.length > 0 &&
             messages.map((message, index) => (
               <PreviewMessage
@@ -67,24 +68,25 @@ export function Chat({ id, initialMessages }: { id: string; initialMessages: Arr
             ))}
           <div ref={messagesEndRef} />
         </div>
+        {/* Footer remains within this flex-centered wrapper */}
+        <footer className="bg-background w-full max-w-3xl fixed bottom-0">
+          <div className="w-full p-4 md:py-6" style={{ paddingTop: 0 }}>
+            <form className="flex flex-row gap-2 relative items-end w-full">
+              <MultimodalInput
+                input={input}
+                setInput={setInput}
+                handleSubmit={handleSubmit}
+                isLoading={isLoading}
+                stop={stop}
+                attachments={attachments}
+                setAttachments={setAttachments}
+                messages={messages}
+                append={append}
+              />
+            </form>
+          </div>
+        </footer>
       </div>
-      <footer className="fixed bottom-0 bg-background w-full" style={contentStyle}>
-        <div className="w-full max-w-3xl mx-auto p-4 md:py-6" style={{ paddingTop: 0 }}>
-          <form className="flex flex-row gap-2 relative items-end w-full">
-            <MultimodalInput
-              input={input}
-              setInput={setInput}
-              handleSubmit={handleSubmit}
-              isLoading={isLoading}
-              stop={stop}
-              attachments={attachments}
-              setAttachments={setAttachments}
-              messages={messages}
-              append={append}
-            />
-          </form>
-        </div>
-      </footer>
     </div>
   )
 }
