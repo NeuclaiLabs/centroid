@@ -123,7 +123,11 @@ export default async function Page({ params }: { params: any }) {
       return notFound();
     }
 
-    return <PreviewChat id={chat.id} initialMessages={chat.messages} />;
+    return  (
+      <div className="flex flex-col gap-4 p-4">
+        <PreviewChat id={chat.id} initialMessages={chat.messages} />
+      </div>
+    );
   } catch (error) {
     console.error("Error fetching chat:", error);
     return notFound();

@@ -1,6 +1,7 @@
 "use client"
 
 import { ChevronRight, type LucideIcon } from "lucide-react"
+import { useRouter } from 'next/navigation'
 
 import {
   Collapsible,
@@ -34,9 +35,11 @@ export function NavMain({
     }[]
   }[]
 }) {
+  const router = useRouter()
+
   return (
     <SidebarGroup>
-      <Button variant="outline" className="bg-[hsl(var(--sidebar-background))] mb-2">New Chat</Button>
+      <Button variant="outline" onClick={() => router.push('/')} className="bg-[hsl(var(--sidebar-background))] mb-2">New Chat</Button>
       {/* <SidebarGroupLabel>Platform</SidebarGroupLabel> */}
       <SidebarMenu>
         {items.map((item) => (

@@ -4,11 +4,10 @@ import { Attachment, Message } from "ai"
 import { useChat } from "ai/react"
 import { useState } from "react"
 
+import { MultimodalInput } from "./multimodal-input"
 import { Message as PreviewMessage } from "@/components/custom/message"
 import { useScrollToBottom } from "@/components/custom/use-scroll-to-bottom"
 
-import { MultimodalInput } from "./multimodal-input"
-import { Overview } from "./overview"
 
 export function Chat({ id, initialMessages }: { id: string; initialMessages: Array<Message> }) {
   const { messages, handleSubmit, input, setInput, append, isLoading, stop } = useChat({
@@ -24,16 +23,12 @@ export function Chat({ id, initialMessages }: { id: string; initialMessages: Arr
   const [attachments, setAttachments] = useState<Array<Attachment>>([])
 
   return (
-    <div className="flex flex-col justify-between items-center gap-4 h-full w-full overflow-hidden">
+    <div className="flex flex-col justify-between items-center gap-4 size-full overflow-hidden">
       <div
         ref={messagesContainerRef}
-        className="flex flex-col gap-4 w-full max-w-3xl mx-auto px-4 overflow-y-auto flex-grow"
+        className="flex flex-col gap-4 w-full max-w-3xl mx-auto px-4 overflow-y-auto grow"
       >
-        {messages.length === 0 ? (
-          <div className="flex-grow flex items-center justify-center">
-            <Overview />
-          </div>
-        ) : (
+        {messages.length > 0 &&
           messages.map((message, index) => (
             <PreviewMessage
               key={`${id}-${index}`}
@@ -43,7 +38,7 @@ export function Chat({ id, initialMessages }: { id: string; initialMessages: Arr
               toolInvocations={message.toolInvocations}
             />
           ))
-        )}
+        }
         <div ref={messagesEndRef} className="shrink-0 min-w-[24px] min-h-[24px]" />
       </div>
 

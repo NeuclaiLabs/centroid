@@ -14,6 +14,7 @@ import React, {
 import { toast } from "sonner";
 
 import { ArrowUpIcon, PaperclipIcon, StopIcon } from "./icons";
+import { Paperclip } from "lucide-react";
 import { PreviewAttachment } from "./preview-attachment";
 import { Button } from "../ui/button";
 import {
@@ -173,7 +174,7 @@ export function MultimodalInput({
           variant="outline"
           disabled={isLoading}
         >
-          <PaperclipIcon size={14} />
+          <Paperclip size={14} />
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -202,33 +203,34 @@ export function MultimodalInput({
       {messages.length === 0 &&
         attachments.length === 0 &&
         uploadQueue.length === 0 && (
-          <div className="grid sm:grid-cols-2 gap-2 w-full md:px-0 mx-auto md:max-w-[500px]">
-            {suggestedActions.map((suggestedAction, index) => (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                transition={{ delay: 0.05 * index }}
-                key={index}
-                className={index > 1 ? "hidden sm:block" : "block"}
-              >
-                <button
-                  onClick={async () => {
-                    append({
-                      role: "user",
-                      content: suggestedAction.action,
-                    });
-                  }}
-                  className="w-full text-left border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 rounded-lg p-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex flex-col"
-                >
-                  <span className="font-medium">{suggestedAction.title}</span>
-                  <span className="text-zinc-500 dark:text-zinc-400">
-                    {suggestedAction.label}
-                  </span>
-                </button>
-              </motion.div>
-            ))}
-          </div>
+          // <div className="grid sm:grid-cols-2 gap-2 w-full md:px-0 mx-auto md:max-w-[500px]">
+          //   {suggestedActions.map((suggestedAction, index) => (
+          //     <motion.div
+          //       initial={{ opacity: 0, y: 20 }}
+          //       animate={{ opacity: 1, y: 0 }}
+          //       exit={{ opacity: 0, y: 20 }}
+          //       transition={{ delay: 0.05 * index }}
+          //       key={index}
+          //       className={index > 1 ? "hidden sm:block" : "block"}
+          //     >
+          //       <button
+          //         onClick={async () => {
+          //           append({
+          //             role: "user",
+          //             content: suggestedAction.action,
+          //           });
+          //         }}
+          //         className="w-full text-left border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 rounded-lg p-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex flex-col"
+          //       >
+          //         <span className="font-medium">{suggestedAction.title}</span>
+          //         <span className="text-zinc-500 dark:text-zinc-400">
+          //           {suggestedAction.label}
+          //         </span>
+          //       </button>
+          //     </motion.div>
+          //   ))}
+          // </div>
+          <></>
         )}
 
       <input
