@@ -143,6 +143,9 @@ dependencies:
   tailwindcss-animate:
     specifier: ^1.0.7
     version: 1.0.7(tailwindcss@3.4.7)
+  use-debounce:
+    specifier: ^10.0.4
+    version: 10.0.4(react@19.0.0-rc-7771d3a7-20240827)
   usehooks-ts:
     specifier: ^3.1.0
     version: 3.1.0(react@19.0.0-rc-7771d3a7-20240827)
@@ -7259,6 +7262,15 @@ packages:
       '@types/react': 18.3.3
       react: 19.0.0-rc-7771d3a7-20240827
       tslib: 2.6.3
+    dev: false
+
+  /use-debounce@10.0.4(react@19.0.0-rc-7771d3a7-20240827):
+    resolution: {integrity: sha512-6Cf7Yr7Wk7Kdv77nnJMf6de4HuDE4dTxKij+RqE9rufDsI6zsbjyAxcH5y2ueJCQAnfgKbzXbZHYlkFwmBlWkw==}
+    engines: {node: '>= 16.0.0'}
+    peerDependencies:
+      react: '*'
+    dependencies:
+      react: 19.0.0-rc-7771d3a7-20240827
     dev: false
 
   /use-sidecar@1.1.2(@types/react@18.3.3)(react@19.0.0-rc-7771d3a7-20240827):

@@ -1,25 +1,13 @@
 "use client"
 
-import {
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  LifeBuoy,
-  Map,
-  PieChart,
-  Send,
-  Settings2,
-  SquareTerminal,
-  Shapes,
-  Flag,
-} from "lucide-react"
-import * as React from "react"
+import { BookOpen, LifeBuoy, Send, Shapes, Flag } from "lucide-react";
+import * as React from "react";
+import useSWR from "swr";
 
-import { NavMain } from "@/components/custom/nav-main"
-import { NavChats } from "@/components/custom/nav-chats"
-import { NavSecondary } from "@/components/custom/nav-secondary"
-import { NavUser } from "@/components/custom/nav-user"
+import { NavMain } from "@/components/custom/nav-main";
+import { NavChats } from "@/components/custom/nav-chats";
+import { NavSecondary } from "@/components/custom/nav-secondary";
+import { NavUser } from "@/components/custom/nav-user";
 
 import {
   Sidebar,
@@ -29,9 +17,11 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { OpenAstraIcon } from "./icons"
-import { auth } from "@/app/(auth)/auth"
+} from "@/components/ui/sidebar";
+import { OpenAstraIcon } from "./icons";
+import { fetcher } from "@/lib/utils";
+import { useSession } from "next-auth/react";
+import { Chat } from "@/db/schema";
 
 const data = {
   user: {
@@ -102,29 +92,6 @@ const data = {
         },
       ],
     },
-    // {
-    //   title: "Settings",
-    //   url: "#",
-    //   icon: Settings2,
-    //   items: [
-    //     {
-    //       title: "General",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Team",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Billing",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Limits",
-    //       url: "#",
-    //     },
-    //   ],
-    // },
   ],
   navSecondary: [
     {
@@ -142,28 +109,48 @@ const data = {
     {
       name: "Design Engineering",
       url: "#",
-      icon: Frame,
+      icon: Shapes,
     },
     {
       name: "Sales & Marketing",
       url: "#",
-      icon: PieChart,
+      icon: Shapes,
     },
     {
       name: "Travel",
       url: "#",
-      icon: Map,
+      icon: Shapes,
     },
   ],
-}
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { data: session } = useSession();
+  const user = session?.user;
+
+  // Retrieve chat history
+  const {
+    data: history,
+    isLoading,
+    mutate,
+  } = useSWR<Array<Chat>>(user ? "/api/history" : null, fetcher, {
+    fallbackData: [],
+  });
+
   return (
-    <Sidebar variant="inset" className="bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))]" {...props}>
+    <Sidebar
+      variant="inset"
+      className="bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))]"
+      {...props}
+    >
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild className="hover:bg-[hsl(var(--sidebar-accent))] transition-colors">
+            <SidebarMenuButton
+              size="lg"
+              asChild
+              className="hover:bg-[hsl(var(--sidebar-accent))] transition-colors"
+            >
               <a href="#">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-[hsl(var(--sidebar-primary))] text-[hsl(var(--sidebar-primary-foreground))]">
                   <OpenAstraIcon size={16} />
@@ -179,12 +166,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavChats />
+        {/* Pass chats to NavChats */}
+        <NavChats history={history || []} isLoading={isLoading} mutate={mutate} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }
