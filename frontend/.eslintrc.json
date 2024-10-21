@@ -35,6 +35,12 @@
       "typescript": {
         "alwaysTryTypes": true,
         "project": "./tsconfig.json"
+      },
+      "alias": {
+        "map": [
+          ["@", "./"]
+        ],
+        "extensions": [".ts", ".js", ".jsx", ".json", ".tsx"]
       }
     }
   },
