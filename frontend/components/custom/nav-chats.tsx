@@ -9,8 +9,14 @@ import {
   Trash2,
   type LucideIcon,
 } from "lucide-react"
-
+import Link from 'next/link';
+import { useParams } from "next/navigation";
+import { User } from "next-auth";
+import { useSession } from "next-auth/react"
 import { useState } from "react"
+import { toast } from "sonner";
+import useSWR from "swr";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,7 +34,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -38,18 +43,9 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-
-import { toast } from "sonner";
-import useSWR from "swr";
-
 import { Chat } from "@/db/schema";
 import { fetcher } from "@/lib/utils";
 
-import { useParams } from "next/navigation";
-import { User } from "next-auth";
-import { useSession } from "next-auth/react"
-
-import Link from 'next/link';
 
 
 export function NavChats({ history, isLoading, mutate }: { history: Chat[], isLoading: boolean, mutate: (history: Chat[]) => void }) {
@@ -64,11 +60,9 @@ export function NavChats({ history, isLoading, mutate }: { history: Chat[], isLo
     toast.promise(deletePromise, {
       loading: "Deleting chat...",
       success: () => {
-        // mutate((history) => {
-          if (history) {
-            return history.filter((h) => h.id !== deleteId);
-          }
-        // });
+        if (history) {
+          mutate(history.filter((h) => h.id !== deleteId));
+        }
         return "Chat deleted successfully";
       },
       error: "Failed to delete chat",

@@ -1,7 +1,5 @@
 "use client"
 
-import { useSession } from "next-auth/react"
-
 import {
   BadgeCheck,
   Bell,
@@ -13,6 +11,8 @@ import {
   Sun,
   Moon,
 } from "lucide-react"
+import { useSession } from "next-auth/react"
+import { useTheme } from "next-themes"
 
 import {
   Avatar,
@@ -34,7 +34,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { useTheme } from "next-themes"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 export function NavUser() {

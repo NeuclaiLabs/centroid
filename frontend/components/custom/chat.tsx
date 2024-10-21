@@ -32,6 +32,7 @@ export function Chat({ id, initialMessages }: { id: string; initialMessages: Arr
   const [messagesEndRef, scrollToBottom] = useScrollToBottom()
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([])
+  // @ts-ignore
   const { isOpen } = useSidebar()
   const isLargeScreen = useMediaQuery({ minWidth: 1024 })
 

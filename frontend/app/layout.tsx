@@ -1,15 +1,11 @@
 import { Metadata } from "next";
+import { SessionProvider } from "next-auth/react"
 import { Toaster } from "sonner";
 
-import { Navbar } from "@/components/custom/navbar";
 import { ThemeProvider } from "@/components/custom/theme-provider";
 
 import "./globals.css";
 
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/custom/app-sidebar"
-
-import { SessionProvider } from "next-auth/react"
 
 
 export const metadata: Metadata = {

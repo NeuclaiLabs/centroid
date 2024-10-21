@@ -1,14 +1,14 @@
 "use client"
 
 import { BookOpen, LifeBuoy, Send, Shapes, Flag } from "lucide-react";
+import { useSession } from "next-auth/react";
 import * as React from "react";
 import useSWR from "swr";
 
-import { NavMain } from "@/components/custom/nav-main";
 import { NavChats } from "@/components/custom/nav-chats";
+import { NavMain } from "@/components/custom/nav-main";
 import { NavSecondary } from "@/components/custom/nav-secondary";
 import { NavUser } from "@/components/custom/nav-user";
-
 import {
   Sidebar,
   SidebarContent,
@@ -18,10 +18,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { OpenAstraIcon } from "./icons";
-import { fetcher } from "@/lib/utils";
-import { useSession } from "next-auth/react";
 import { Chat } from "@/db/schema";
+import { fetcher } from "@/lib/utils";
+
+import { OpenAstraIcon } from "./icons";
+
 
 const data = {
   user: {

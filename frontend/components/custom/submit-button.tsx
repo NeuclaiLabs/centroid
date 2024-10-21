@@ -3,7 +3,6 @@
 import { useFormStatus } from "react-dom";
 
 import { LoaderIcon } from "@/components/custom/icons";
-
 import { Button } from "@/components/ui/button";
 
 export function SubmitButton({ children }: { children: React.ReactNode }) {

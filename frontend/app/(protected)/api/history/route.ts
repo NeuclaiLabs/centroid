@@ -7,7 +7,6 @@ export async function GET() {
     return Response.json("Unauthorized!", { status: 401 });
   }
 
-  // const chats = await getChatsByUserId({ id: session.user.id! });
   try {
     console.log("Backend host: ", process.env.BACKEND_HOST)
     const response = await fetch(
@@ -31,6 +30,6 @@ export async function GET() {
     return Response.json(res['data'])
   } catch (error) {
     console.error('There was a problem with your fetch operation:', error)
-    return []
+    return Response.json({ error: 'An error occurred while fetching data' }, { status: 500 })
   }
 }

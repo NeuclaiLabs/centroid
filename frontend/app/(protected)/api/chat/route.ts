@@ -102,7 +102,7 @@ export async function DELETE(request: Request) {
     );
 
     if (!response.ok) {
-      return { error: 'Unauthorized' }
+      return new Response("Unauthorized", { status: 401 });
     }
 
     return new Response("Chat deleted", { status: 200 });

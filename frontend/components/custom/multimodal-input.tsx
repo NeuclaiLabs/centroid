@@ -2,6 +2,7 @@
 
 import { Attachment, ChatRequestOptions, CreateMessage, Message } from "ai";
 import { motion } from "framer-motion";
+import { Paperclip , PlusIcon, ChevronDownIcon } from "lucide-react";
 import React, {
   useRef,
   useEffect,
@@ -14,7 +15,6 @@ import React, {
 import { toast } from "sonner";
 
 import { ArrowUpIcon, PaperclipIcon, StopIcon } from "./icons";
-import { Paperclip } from "lucide-react";
 import { PreviewAttachment } from "./preview-attachment";
 import { Button } from "../ui/button";
 import {
@@ -25,7 +25,6 @@ import {
 } from "../ui/dropdown-menu";
 import { Textarea } from "../ui/textarea";
 
-import { PlusIcon, ChevronDownIcon } from "lucide-react";
 
 const suggestedActions = [
   {

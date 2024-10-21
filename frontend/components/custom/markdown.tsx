@@ -1,7 +1,7 @@
+import Link from "next/link";
 import React, { memo, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import Link from "next/link";
 
 const CodeBlock = memo(({ inline, className, children, ...props }: any) => {
   const match = /language-(\w+)/.exec(className || "");
@@ -82,6 +82,7 @@ export const Markdown = memo(({ children }: { children: string }) => {
   const memoizedComponents = useMemo(() => MarkdownComponents, []);
 
   return (
+    // @ts-ignore
     <ReactMarkdown remarkPlugins={[remarkGfm]} components={memoizedComponents}>
       {children}
     </ReactMarkdown>

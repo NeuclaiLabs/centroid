@@ -1,4 +1,3 @@
-import { AppSidebar } from "../../components/custom/app-sidebar"
 
 import { Chat } from "@/components/custom/chat"
 import {
@@ -15,12 +14,9 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-
 import { generateUUID } from "@/lib/utils"
 
-export const iframeHeight = "800px"
-
-export const description = "An inset sidebar with secondary navigation."
+import { AppSidebar } from "../../components/custom/app-sidebar"
 
 export default function Page() {
   const id = generateUUID()
