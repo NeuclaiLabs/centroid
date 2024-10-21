@@ -7,7 +7,7 @@ import { useMediaQuery } from "react-responsive"
 
 import { Message as PreviewMessage } from "@/components/custom/message"
 import { MultimodalInput } from "@/components/custom/multimodal-input"
-import { useSidebar, SIDEBAR_WIDTH, SIDEBAR_WIDTH_ICON } from "@/components/ui/sidebar"
+import { useSidebar, SIDEBAR_WIDTH } from "@/components/ui/sidebar"
 
 // Custom hook for scrolling to bottom
 const useScrollToBottom = () => {
@@ -58,13 +58,14 @@ export function Chat({ id, initialMessages }: { id: string; initialMessages: Arr
         <div className="flex-1 overflow-y-auto w-full max-w-3xl px-4 pb-32">
           {messages.length > 0 &&
             messages.map((message, index) => (
-              <PreviewMessage
-                key={`${id}-${index}`}
-                role={message.role}
-                content={message.content}
-                attachments={message.experimental_attachments}
-                toolInvocations={message.toolInvocations}
-              />
+              <div key={`${message.id || `${id}-${index}`}`} className="mb-2">
+                <PreviewMessage
+                  role={message.role}
+                  content={message.content}
+                  attachments={message.experimental_attachments}
+                  toolInvocations={message.toolInvocations}
+                />
+              </div>
             ))}
           <div ref={messagesEndRef} />
         </div>

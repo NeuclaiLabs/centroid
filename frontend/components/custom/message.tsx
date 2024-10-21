@@ -30,7 +30,7 @@ export const Message = ({
         {role === "assistant" ? <OpenAstraIcon /> : <UserIcon />}
       </div>
 
-      <div className="flex flex-col gap-2 w-full">
+      <div className="flex flex-col  w-full">
         {content && (
           <div className="text-zinc-800 dark:text-zinc-300 flex flex-col gap-4">
             <Markdown>{content as string}</Markdown>
