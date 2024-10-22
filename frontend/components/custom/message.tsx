@@ -1,5 +1,3 @@
-"use client";
-
 import { Attachment, ToolInvocation } from "ai";
 import { motion } from "framer-motion";
 import { ReactNode } from "react";
@@ -22,17 +20,27 @@ export const Message = ({
 }) => {
   return (
     <motion.div
-      className={`flex flex-row gap-4 px-4 w-full`}
+      className={`flex ${
+        role === "assistant" ? "flex-row" : "flex-row-reverse"
+      } gap-4 px-4 w-full`}
       initial={{ y: 5, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
     >
-      <div className="size-[24px] flex flex-col justify-center items-center shrink-0 text-zinc-400">
-        {role === "assistant" ? <OpenAstraIcon /> : <UserIcon />}
-      </div>
+      {role === "assistant" && (
+        <div className="w-[24px] flex-shrink-0 flex flex-col justify-start items-center text-zinc-400">
+          <OpenAstraIcon size={24} />
+        </div>
+      )}
 
-      <div className="flex flex-col  w-full">
+      <div
+        className={`flex flex-col ${
+          role === "assistant"
+            ? "flex-grow text-zinc-800 dark:text-zinc-300 rounded-lg pb-3"
+            : "ml-auto max-w-[75%] bg-zinc-800 text-white rounded-full p-4"
+        }`}
+      >
         {content && (
-          <div className="text-zinc-800 dark:text-zinc-300 flex flex-col gap-4">
+          <div className="flex flex-col gap-4">
             <Markdown>{content as string}</Markdown>
           </div>
         )}
@@ -66,7 +74,7 @@ export const Message = ({
         )}
 
         {attachments && (
-          <div className="flex flex-row gap-2">
+          <div className="flex flex-row gap-2 flex-wrap">
             {attachments.map((attachment) => (
               <PreviewAttachment key={attachment.url} attachment={attachment} />
             ))}
