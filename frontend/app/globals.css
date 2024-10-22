@@ -140,7 +140,7 @@
 
 /* Vertical scrollbar styles */
 ::-webkit-scrollbar {
-  @apply w-1; /* Customize the width of the scrollbar */
+  @apply w-1.5; /* Customize the width of the scrollbar */
 }
 
 ::-webkit-scrollbar-track {
