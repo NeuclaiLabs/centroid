@@ -1,7 +1,7 @@
 import { convertToCoreMessages, Message, streamText } from "ai";
 import { z } from "zod";
 
-import { customModel } from "@/ai";
+import { customModel } from "@/ai2";
 import { auth } from "@/app/(auth)/auth";
 
 export async function POST(request: Request) {

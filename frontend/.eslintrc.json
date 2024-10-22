@@ -6,7 +6,10 @@
     "prettier",
     "plugin:tailwindcss/recommended"
   ],
-  "plugins": ["import", "tailwindcss"],
+  "plugins": [
+    "import",
+    "tailwindcss"
+  ],
   "rules": {
     "tailwindcss/no-custom-classname": "off",
     "tailwindcss/classnames-order": "off",
@@ -17,7 +20,10 @@
           "builtin",
           "external",
           "internal",
-          ["parent", "sibling"],
+          [
+            "parent",
+            "sibling"
+          ],
           "index",
           "object",
           "type"
@@ -38,11 +44,22 @@
       },
       "alias": {
         "map": [
-          ["@", "./"]
+          [
+            "@",
+            "."
+          ]
         ],
-        "extensions": [".ts", ".js", ".jsx", ".json", ".tsx"]
+        "extensions": [
+          ".ts",
+          ".js",
+          ".jsx",
+          ".json",
+          ".tsx"
+        ]
       }
     }
   },
-  "ignorePatterns": ["**/components/ui/**"]
+  "ignorePatterns": [
+    "**/components/ui/**"
+  ]
 }

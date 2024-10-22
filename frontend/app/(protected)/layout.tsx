@@ -1,4 +1,3 @@
-
 import { AppSidebar } from "@/components/custom/app-sidebar"
 import {
   Breadcrumb,
@@ -22,7 +21,6 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-
         <SidebarProvider>
           <AppSidebar />
           <SidebarInset className="flex flex-col h-screen overflow-hidden">
@@ -50,6 +48,5 @@ export default function RootLayout({
             </div>
           </SidebarInset>
         </SidebarProvider>
-
   )
 }
