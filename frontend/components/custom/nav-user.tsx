@@ -36,6 +36,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { cn } from "@/lib/utils"
 
 export function NavUser() {
   const { isMobile } = useSidebar()
@@ -92,26 +93,32 @@ export function NavUser() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer">
                 <Sparkles className="mr-2 size-4" />
                 Upgrade to Pro
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer">
                 <BadgeCheck className="mr-2 size-4" />
                 Account
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer">
                 <CreditCard className="mr-2 size-4" />
                 Billing
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer">
                 <Bell className="mr-2 size-4" />
                 Notifications
               </DropdownMenuItem>
-              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="flex items-center justify-between w-full">
+              <DropdownMenuItem
+                onSelect={(e) => e.preventDefault()}
+                className={cn(
+                  "flex items-center justify-between w-full",
+                  "cursor-pointer"
+                )}
+              >
                 <div className="flex items-center gap-2">
                   <Monitor className="size-4" />
                   Theme
@@ -132,7 +139,10 @@ export function NavUser() {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={(e) => { e.preventDefault();  handleSignOut() }}>
+            <DropdownMenuItem
+              onSelect={(e) => { e.preventDefault(); handleSignOut() }}
+              className="cursor-pointer"
+            >
               <LogOut className="mr-2 size-4" />
               Log out
             </DropdownMenuItem>
