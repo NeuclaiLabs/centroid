@@ -13,6 +13,7 @@ import {
 } from "lucide-react"
 import { useSession } from "next-auth/react"
 import { useTheme } from "next-themes"
+import { handleSignOut } from "@/app/(auth)/actions"
 
 import {
   Avatar,
@@ -131,7 +132,7 @@ export function NavUser() {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onSelect={(e) => { e.preventDefault();  handleSignOut() }}>
               <LogOut className="mr-2 size-4" />
               Log out
             </DropdownMenuItem>
