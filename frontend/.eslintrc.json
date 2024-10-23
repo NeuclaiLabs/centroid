@@ -42,20 +42,14 @@
         "alwaysTryTypes": true,
         "project": "./tsconfig.json"
       },
+      "node": {
+        "extensions": [".js", ".jsx", ".ts", ".tsx"]
+      },
       "alias": {
         "map": [
-          [
-            "@",
-            "."
-          ]
+          ["@", "./"]
         ],
-        "extensions": [
-          ".ts",
-          ".js",
-          ".jsx",
-          ".json",
-          ".tsx"
-        ]
+        "extensions": [".ts", ".js", ".jsx", ".json", ".tsx"]
       }
     }
   },

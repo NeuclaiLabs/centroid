@@ -10,7 +10,7 @@ export async function GET() {
   try {
     console.log("Backend host: ", process.env.BACKEND_HOST)
     const response = await fetch(
-      `${process.env.BACKEND_HOST}/api/v1/chats/?skip=0&limit=100`,
+      `${process.env.BACKEND_HOST}/api/v1/chats/?skip=0&limit=5`,
       {
         method: 'GET',
         headers: {

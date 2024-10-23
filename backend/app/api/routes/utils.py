@@ -33,4 +33,4 @@ def test_sample() -> Message:
     """
     Test emails.
     """
-    return Message(message="Hello World! ag")
+    return Message(message="Hello World!")
