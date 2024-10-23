@@ -35,7 +35,7 @@ const data = {
       title: "Chat History",
       url: "#",
       icon: BookOpen,
-      isActive: true,
+      isActive: false,
       items: [
         {
           title: "History",
@@ -154,7 +154,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             >
               <a href="#">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-[hsl(var(--sidebar-primary))] text-[hsl(var(--sidebar-primary-foreground))]">
-                  <OpenAstraIcon size={16} />
+                  <OpenAstraIcon size={24} />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">OpenAstra</span>
