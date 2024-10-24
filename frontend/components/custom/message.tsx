@@ -27,7 +27,7 @@ export const Message = ({
       animate={{ y: 0, opacity: 1 }}
     >
       {role === "assistant" && (
-        <div className="w-[24px] flex-shrink-0 flex flex-col justify-start items-center text-zinc-400">
+        <div className="w-[24px] flex-shrink-0 flex flex-col justify-start items-center">
           <OpenAstraIcon size={24} />
         </div>
       )}
@@ -35,8 +35,8 @@ export const Message = ({
       <div
         className={`flex flex-col ${
           role === "assistant"
-            ? "flex-grow text-zinc-800 dark:text-zinc-300 rounded-lg pb-3"
-            : "ml-auto max-w-[75%] bg-zinc-800 text-white rounded-full p-4"
+            ? "flex-grow rounded-lg pb-3"
+            : "ml-auto max-w-[75%] bg-secondary m-4 rounded-full p-4"
         }`}
       >
         {content && (

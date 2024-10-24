@@ -616,7 +616,6 @@ export const OpenAstraIcon = ({ size = 16 }: { size?: number }) => {
       height={size}
       strokeLinejoin="round"
       width={size}
-      style={{ color: "currentcolor" }}
       fill="currentColor"
       viewBox="0 0 32 32"
       role="img"

@@ -79,7 +79,7 @@ export function MultimodalInput({
   const adjustHeight = () => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight + 2}px`;
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   };
 
@@ -162,75 +162,7 @@ export function MultimodalInput({
   ];
 
   return (
-    <div className="relative w-full flex flex-col gap-4">
-      <div className="absolute bottom-2 left-2 flex items-center space-x-1">
-        <Button
-          className="p-1.5 size-8 flex items-center justify-center dark:border-zinc-700"
-          onClick={(event) => {
-            event.preventDefault();
-            fileInputRef.current?.click();
-          }}
-          variant="outline"
-          disabled={isLoading}
-        >
-          <Paperclip size={14} />
-        </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              className="px-2 h-8 flex items-center space-x-1 dark:border-zinc-700"
-              variant="outline"
-              disabled={isLoading}
-            >
-              {/* {!selectedProject && <PlusIcon size={14} />} */}
-              <span>{selectedProject || "Project"}</span>
-              <ChevronDownIcon size={14} />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            {randomProjects.map((project) => (
-              <DropdownMenuItem
-                key={project}
-                onSelect={() => setSelectedProject(project)}
-              >
-                {project}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      {messages.length === 0 &&
-        attachments.length === 0 &&
-        uploadQueue.length === 0 && (
-          // <div className="grid sm:grid-cols-2 gap-2 w-full md:px-0 mx-auto md:max-w-[500px]">
-          //   {suggestedActions.map((suggestedAction, index) => (
-          //     <motion.div
-          //       initial={{ opacity: 0, y: 20 }}
-          //       animate={{ opacity: 1, y: 0 }}
-          //       exit={{ opacity: 0, y: 20 }}
-          //       transition={{ delay: 0.05 * index }}
-          //       key={index}
-          //       className={index > 1 ? "hidden sm:block" : "block"}
-          //     >
-          //       <button
-          //         onClick={async () => {
-          //           append({
-          //             role: "user",
-          //             content: suggestedAction.action,
-          //           });
-          //         }}
-          //         className="w-full text-left border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 rounded-lg p-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex flex-col"
-          //       >
-          //         <span className="font-medium">{suggestedAction.title}</span>
-          //         <span className="text-zinc-500 dark:text-zinc-400">
-          //           {suggestedAction.label}
-          //         </span>
-          //       </button>
-          //     </motion.div>
-          //   ))}
-          // </div>
-          <></>
-        )}
+    <div className="relative w-full flex flex-col gap-2">
 
       <input
         type="file"
@@ -261,47 +193,90 @@ export function MultimodalInput({
         </div>
       )}
 
-      <Textarea
-        ref={textareaRef}
-        placeholder="Send a message..."
-        value={input}
-        onChange={handleInput}
-        className="min-h-[24px] overflow-hidden resize-none rounded-lg text-base bg-muted"
-        rows={3}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" && !event.shiftKey) {
-            event.preventDefault();
+      {/* Textarea wrapper */}
+      <div className="flex-grow relative pb-12"> {/* Adjust padding-bottom here */}
+        <Textarea
+          ref={textareaRef}
+          placeholder="Send a message..."
+          value={input}
+          onChange={handleInput}
+          className="min-h-[12px] max-h-48 border-none overflow-y-auto resize-none rounded-t-lg rounded-b-none text-base bg-muted focus:outline-none  focus-visible:ring-0 focus-visible:ring-offset-0"
+          rows={2}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && !event.shiftKey) {
+              event.preventDefault();
 
-            if (isLoading) {
-              toast.error("Please wait for the model to finish its response!");
-            } else {
-              submitForm();
+              if (isLoading) {
+                toast.error("Please wait for the model to finish its response!");
+              } else {
+                submitForm();
+              }
             }
-          }
-        }}
-      />
+          }}
+        />
+      </div>
 
-      {isLoading ? (
-        <Button
-          className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5"
-          onClick={(event) => {
-            event.preventDefault();
-            stop();
-          }}
-        >
-          <StopIcon size={14} />
-        </Button>
-      ) : (
-        <Button
-          className="p-1.5 h-fit absolute bottom-2 right-2 m-0.5"
-          onClick={(event) => {
-            handleSubmit(event);
-          }}
-          disabled={input.length === 0 || uploadQueue.length > 0}
-        >
-          <ArrowUpIcon size={14} />
-        </Button>
-      )}
+      {/* Action bar */}
+      <div className="absolute bottom-0 left-0 right-0 flex justify-between items-center py-2 px-4 bg-muted rounded-b-lg">
+        <div className="flex space-x-2">
+          <Button
+            className="p-1.5 size-8 flex items-center justify-center dark:border-zinc-700"
+            onClick={(event) => {
+              event.preventDefault();
+              fileInputRef.current?.click();
+            }}
+            variant="outline"
+            disabled={isLoading}
+          >
+            <Paperclip size={14} />
+          </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                className="px-2 h-8 flex items-center space-x-1 dark:border-zinc-700"
+                variant="outline"
+                disabled={isLoading}
+              >
+                <span>{selectedProject || "Project"}</span>
+                <ChevronDownIcon size={14} />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {randomProjects.map((project) => (
+                <DropdownMenuItem
+                  key={project}
+                  onSelect={() => setSelectedProject(project)}
+                >
+                  {project}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        {isLoading ? (
+          <Button
+            className="rounded-full p-1.5 h-fit m-0.5"
+            onClick={(event) => {
+              event.preventDefault();
+              stop();
+            }}
+          >
+            <StopIcon size={14} />
+          </Button>
+        ) : (
+          <Button
+            className="p-1.5 h-fit m-0.5"
+            onClick={(event) => {
+              handleSubmit(event);
+            }}
+            disabled={input.length === 0 || uploadQueue.length > 0}
+          >
+            <ArrowUpIcon size={14} />
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
