@@ -153,8 +153,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="hover:bg-[hsl(var(--sidebar-accent))] transition-colors"
             >
               <a href="#">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-[hsl(var(--sidebar-primary))] text-[hsl(var(--sidebar-primary-foreground))] dark:bg-gray-600">
-                  <OpenAstraIcon size={24} />
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                  <OpenAstraIcon size={24}/>
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">OpenAstra</span>

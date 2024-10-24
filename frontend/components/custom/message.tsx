@@ -28,7 +28,9 @@ export const Message = ({
     >
       {role === "assistant" && (
         <div className="w-[24px] flex-shrink-0 flex flex-col justify-start items-center">
-          <OpenAstraIcon size={24} />
+          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <OpenAstraIcon size={24} />
+          </div>
         </div>
       )}
 
