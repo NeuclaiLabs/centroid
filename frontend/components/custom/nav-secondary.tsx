@@ -30,7 +30,7 @@ export function NavSecondary({
               <SidebarMenuButton
                 asChild
                 size="sm"
-                className="hover:bg-[hsl(var(--sidebar-accent))] transition-colors"
+                className="hover:bg-sidebar-accent transition-colors"
               >
                 <a href={item.url} className="flex items-center gap-3 px-3 py-2 rounded-md">
                   <item.icon className="size-5" />

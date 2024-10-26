@@ -40,7 +40,7 @@ export function NavMain({
 
   return (
     <SidebarGroup>
-      <Button variant="outline" onClick={() => router.push('/')} className="bg-[hsl(var(--sidebar-background))] mb-2">New Chat</Button>
+      <Button variant="outline" onClick={() => router.push('/')} className="bg-sidebar mb-2">New Chat</Button>
       {/* <SidebarGroupLabel>Platform</SidebarGroupLabel> */}
       <SidebarMenu>
         {items.map((item) => (
@@ -49,7 +49,7 @@ export function NavMain({
               <SidebarMenuButton
                 asChild
                 tooltip={item.title}
-                className="hover:bg-[hsl(var(--sidebar-accent))] transition-colors"
+                className="hover:bg-sidebar-accent transition-colors"
               >
                 <a href={item.url} className="flex items-center gap-2 p-2 rounded-md">
                   <item.icon className="size-5" />
@@ -59,7 +59,7 @@ export function NavMain({
               {item.items?.length ? (
                 <>
                   <CollapsibleTrigger asChild>
-                    <SidebarMenuAction className="data-[state=open]:rotate-90 hover:bg-[hsl(var(--sidebar-accent))] transition-colors rounded-md">
+                    <SidebarMenuAction className="data-[state=open]:rotate-90 hover:bg-sidebar-accent transition-colors rounded-md">
                       <ChevronRight className="size-4" />
                       <span className="sr-only">Toggle</span>
                     </SidebarMenuAction>
@@ -70,7 +70,7 @@ export function NavMain({
                         <SidebarMenuSubItem key={subItem.title}>
                           <SidebarMenuSubButton
                             asChild
-                            className="hover:bg-[hsl(var(--sidebar-accent))] transition-colors"
+                            className="hover:bg-sidebar-accent transition-colors"
                           >
                             <a href={subItem.url} className="block px-3 py-2 rounded-md">
                               <span>{subItem.title}</span>

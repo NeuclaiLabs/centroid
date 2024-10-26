@@ -89,7 +89,7 @@ export function NavChats({ history, isLoading, mutate }: { history: Chat[], isLo
             <SidebarMenuItem key={chat.id}>
               <SidebarMenuButton
                 asChild
-                className="hover:bg-[hsl(var(--sidebar-accent))] transition-colors"
+                className="hover:bg-sidebar-accent transition-colors"
               >
                 <Link href={`/chat/${chat.id}`} className="flex items-center gap-2 p-2 rounded-md">
                   <span className="overflow-hidden whitespace-nowrap" style={{ textOverflow: "clip" }}>
@@ -101,7 +101,7 @@ export function NavChats({ history, isLoading, mutate }: { history: Chat[], isLo
                 <DropdownMenuTrigger asChild>
                   <SidebarMenuAction
                     showOnHover
-                    className="hover:bg-[hsl(var(--sidebar-accent))] transition-colors rounded-md"
+                    className="hover:bg-sidebar-accent transition-colors rounded-md"
                   >
                     <MoreHorizontal className="size-4 " />
                     <span className="sr-only text-sm">More</span>

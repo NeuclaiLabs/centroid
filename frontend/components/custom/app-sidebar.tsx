@@ -1,6 +1,6 @@
 "use client"
 
-import { BookOpen, LifeBuoy, Send, Shapes, Flag } from "lucide-react";
+import { BookOpen, LifeBuoy, Send, Shapes, Flag, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
 import * as React from "react";
 import useSWR from "swr";
@@ -22,6 +22,7 @@ import { Chat } from "@/db/schema";
 import { fetcher } from "@/lib/utils";
 
 import { OpenAstraIcon } from "./icons";
+import Link from "next/link";
 
 
 const data = {
@@ -32,24 +33,24 @@ const data = {
   },
   navMain: [
     {
-      title: "Chat History",
+      title: "Team",
       url: "#",
-      icon: BookOpen,
+      icon: Users,
       isActive: false,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
+      // items: [
+      //   {
+      //     title: "History",
+      //     url: "#",
+      //   },
+      //   {
+      //     title: "Starred",
+      //     url: "#",
+      //   },
+      //   {
+      //     title: "Settings",
+      //     url: "#",
+      //   },
+      // ],
     },
     {
       title: "Projects",
@@ -141,7 +142,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar
       variant="inset"
-      className="bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))]"
+      className="bg-sidebar text-sidebar-foreground"
       {...props}
     >
       <SidebarHeader>
@@ -150,17 +151,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton
               size="lg"
               asChild
-              className="hover:bg-[hsl(var(--sidebar-accent))] transition-colors"
+              className="hover:bg-sidebar-accent transition-colors"
             >
-              <a href="#">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+              <Link href="#">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700">
                   <OpenAstraIcon size={24}/>
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">OpenAstra</span>
                   <span className="truncate text-xs">Teams</span>
                 </div>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
