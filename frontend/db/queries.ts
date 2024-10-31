@@ -26,12 +26,12 @@ export async function createUser(email: string, password: string) {
   let salt = genSaltSync(10);
   let hash = hashSync(password, salt);
 
-  try {
-    return await db.insert(user).values({ email, password: hash });
-  } catch (error) {
-    console.error("Failed to create user in database");
-    throw error;
-  }
+  // try {
+  //   return await db.insert(user).values({ email, password: hash });
+  // } catch (error) {
+  //   console.error("Failed to create user in database");
+  //   throw error;
+  // }
 }
 
 export async function saveChat({
@@ -55,12 +55,12 @@ export async function saveChat({
         .where(eq(chat.id, id));
     }
 
-    return await db.insert(chat).values({
-      id,
-      createdAt: new Date(),
-      messages: JSON.stringify(messages),
-      userId,
-    });
+    // return await db.insert(chat).values({
+    //   id,
+    //   createdAt: new Date(),
+    //   messages: JSON.stringify(messages),
+    //   userId,
+    // });
   } catch (error) {
     console.error("Failed to save chat in database");
     throw error;

@@ -34,7 +34,8 @@ class TeamCreate(TeamBase):
 
 
 class TeamUpdate(TeamBase):
-    pass
+    description: str | None = None
+    name: str | None = None
 
 
 class Team(TeamBase, table=True):

@@ -182,7 +182,9 @@ def add_team_member(
         user_id=user.id if user else None,
         email=team_member.email,
         role=team_member.role,
-        invitation_status=TeamInvitationStatus.PENDING,
+        invitation_status=TeamInvitationStatus.ACCEPTED
+        if user
+        else TeamInvitationStatus.PENDING,
     )
     session.add(new_member)
     session.commit()

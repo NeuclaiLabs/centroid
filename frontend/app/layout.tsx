@@ -1,8 +1,10 @@
 import { Metadata } from "next";
-import { SessionProvider } from "next-auth/react"
+import Script from "next/script";
+import { SessionProvider } from "next-auth/react";
 import { Toaster } from "sonner";
 
 import { ThemeProvider } from "@/components/custom/theme-provider";
+
 
 import "./globals.css";
 
@@ -21,6 +23,17 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <Script id="microsoft-clarity" strategy="afterInteractive">
+          {`
+            (function(c,l,a,r,i,t,y){
+                c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+            })(window, document, "clarity", "script", "oo74o2rkwa");
+          `}
+        </Script>
+      </head>
       <body className="antialiased">
         <ThemeProvider
           attribute="class"
@@ -29,10 +42,8 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <SessionProvider>
-          <Toaster position="top-center" />
-          <SessionProvider>
+            <Toaster position="top-center" />
             {children}
-          </SessionProvider>
           </SessionProvider>
         </ThemeProvider>
       </body>

@@ -1,9 +1,12 @@
 "use client"
 
 import { BookOpen, LifeBuoy, Send, Shapes, Flag, Users } from "lucide-react";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import * as React from "react";
 import useSWR from "swr";
+
+import { OpenAstraIcon } from "./icons";
 
 import { NavChats } from "@/components/custom/nav-chats";
 import { NavMain } from "@/components/custom/nav-main";
@@ -21,9 +24,6 @@ import {
 import { Chat } from "@/db/schema";
 import { fetcher } from "@/lib/utils";
 
-import { OpenAstraIcon } from "./icons";
-import Link from "next/link";
-
 
 const data = {
   user: {
@@ -34,7 +34,7 @@ const data = {
   navMain: [
     {
       title: "Team",
-      url: "#",
+      url: "/teams",
       icon: Users,
       isActive: false,
       // items: [
@@ -139,6 +139,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     fallbackData: [],
   });
 
+  // Retrieve teams data
+  const {
+    data: teams,
+    isLoading: teamsIsLoading,
+    mutate: teamsMutate,
+  } = useSWR<Array<any>>(user ? "/api/teams" : null, fetcher, {
+    fallbackData: [],
+  });
+
+  // Modify navMain data to include team ID from teams data
+  const navMainWithTeamId = React.useMemo(() => {
+    const teamData = teams?.[0]; // Assuming we want the first team's ID
+    return data.navMain.map(item =>
+      item.title === "Team"
+        ? { ...item, url: item.url + "/" + teamData?.id ?? "" }
+        : item
+    );
+  }, [teams]);
+
   return (
     <Sidebar
       variant="inset"
@@ -167,7 +186,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={navMainWithTeamId} />
         {/* Pass chats to NavChats */}
         <NavChats history={history || []} isLoading={isLoading} mutate={mutate} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
