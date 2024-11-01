@@ -139,64 +139,62 @@ def delete_team(*, session: SessionDep, current_user: CurrentUser, team_id: str)
 
 
 # Team member management
-@router.post("/{team_id}/members", response_model=TeamMemberOut)
-def add_team_member(
+@router.post("/{team_id}/members", response_model=list[TeamMemberOut])
+def add_team_members(
     *,
     team_id: str,
     session: SessionDep,
     current_user: CurrentUser,
-    team_member_create: TeamMemberCreate,
+    team_members_create: list[TeamMemberCreate],
 ) -> Any:
-    """Add a new member to the team."""
-    team_member_create = TeamMemberCreate.model_validate(team_member_create)
-    team_member = TeamMember.model_validate(
-        {
-            **team_member_create.model_dump(),
-            "team_id": team_id,
-        }
-    )
-
-    if not team_member.email:
-        raise HTTPException(status_code=400, detail="Email is required")
+    """Add multiple new members to the team."""
     check_team_permissions(
-        session, team_member.team_id, current_user.id, [TeamRole.OWNER, TeamRole.ADMIN]
+        session, team_id, current_user.id, [TeamRole.OWNER, TeamRole.ADMIN]
     )
 
-    # Check if the user is already a member of the team
-    existing_member = session.exec(
-        select(TeamMember).where(
-            TeamMember.team_id == team_member.team_id,
-            TeamMember.email == team_member.email,
-        )
-    ).first()
-    if existing_member:
-        raise HTTPException(
-            status_code=400, detail="User is already a member of this team"
-        )
+    # Validate all emails are provided
+    if any(not member.email for member in team_members_create):
+        raise HTTPException(status_code=400, detail="Email is required for all members")
 
-    # Check if the user exists in the system
-    user = session.exec(select(User).where(User.email == team_member.email)).first()
-    # Create a new TeamMember entry
-    new_member = TeamMember(
-        team_id=team_id,
-        user_id=user.id if user else None,
-        email=team_member.email,
-        role=team_member.role,
-        invitation_status=TeamInvitationStatus.ACCEPTED
-        if user
-        else TeamInvitationStatus.PENDING,
-    )
-    session.add(new_member)
-    session.commit()
+    # Get all emails
+    emails = [member.email for member in team_members_create]
 
-    # Send invitation email
-    # invitation_link = f"{settings.server_host}/teams/{team_member.team_id}/accept-invitation"
-    # send_email(
-    #     email_to=team_member.email,
-    #     subject=f"Invitation to join {team.name}",
-    #     html_content=f"You have been invited to join the team {team.name}. Click here to accept: {invitation_link}",
-    # )
-    return TeamMemberOut.model_validate(new_member)
+    # Check existing team members in bulk
+    existing_members = session.exec(
+        select(TeamMember.email).where(
+            TeamMember.team_id == team_id, TeamMember.email.in_(emails)
+        )
+    ).all()
+    existing_emails = set(existing_members)
+
+    # Get existing users in bulk
+    existing_users = {
+        user.email: user
+        for user in session.exec(select(User).where(User.email.in_(emails))).all()
+    }
+
+    # Create new members in bulk
+    new_members = [
+        TeamMember(
+            team_id=team_id,
+            user_id=existing_users[member.email].id
+            if member.email in existing_users
+            else None,
+            email=member.email,
+            role=member.role,
+            invitation_status=TeamInvitationStatus.ACCEPTED
+            if member.email in existing_users
+            else TeamInvitationStatus.PENDING,
+        )
+        for member in team_members_create
+        if member.email not in existing_emails
+    ]
+
+    if new_members:
+        session.add_all(new_members)
+        session.commit()
+
+    return [TeamMemberOut.model_validate(member) for member in new_members]
 
 
 @router.put("/{team_id}/members/{user_id}", response_model=TeamMemberOut)

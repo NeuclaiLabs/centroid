@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronDown, Pencil, UserPlus } from 'lucide-react';
+import { ChevronDown, Pencil, Plus, UserPlus, X } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
@@ -73,9 +73,21 @@ const TeamPage = () => {
     }
   }, [team]);
 
-  const [newMemberName, setNewMemberName] = useState('');
-  const [newMemberEmail, setNewMemberEmail] = useState('');
-  const [newMemberRole, setNewMemberRole] = useState('Member');
+  const [emailList, setEmailList] = useState<string[]>([]);
+  const [currentEmail, setCurrentEmail] = useState('');
+
+  const handleAddEmail = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (currentEmail && !emailList.includes(currentEmail)) {
+      setEmailList([...emailList, currentEmail]);
+      setCurrentEmail('');
+    }
+  };
+
+  const removeEmail = (emailToRemove: string) => {
+    setEmailList(emailList.filter(email => email !== emailToRemove));
+  };
+
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentTab, setCurrentTab] = useState('members'); // Track active tab
@@ -128,23 +140,21 @@ const TeamPage = () => {
     try {
       const response = await fetch(`/api/teams/${teamId}/members`, {
         method: 'POST',
-        body: JSON.stringify({
-          email: newMemberEmail,
-        }),
+        body: JSON.stringify(emailList.map((email) => ({ email }))),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to send invitation');
+        throw new Error('Failed to send invitations');
       }
 
       mutateMembers();
       setIsInviteDialogOpen(false);
-      setNewMemberEmail('');
-      setNewMemberRole('Member');
-      toast.success('Invitation sent successfully');
+      setEmailList([]);
+      setCurrentEmail('');
+      toast.success('Invitations sent successfully');
     } catch (error) {
-      console.error('Error inviting member:', error);
-      toast.error('Failed to invite member');
+      console.error('Error inviting members:', error);
+      toast.error('Failed to send invitations');
     } finally {
       setIsSubmitting(false);
     }
@@ -279,36 +289,48 @@ const TeamPage = () => {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Invite a New Member</DialogTitle>
-                  <DialogDescription>Enter the details of the member you'd like to invite.</DialogDescription>
+                  <DialogTitle>Invite Members</DialogTitle>
+                  <DialogDescription>Enter the email addresses of the people you'd like to invite.</DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleInviteMember}>
-                  <div className="space-y-4">
-                    <Input
-                      type="text"
-                      placeholder="Full Name"
-                      value={newMemberName}
-                      onChange={(e) => setNewMemberName(e.target.value)}
-                      required
-                    />
+                <form onSubmit={handleAddEmail} className="space-y-4">
+                  <div className="flex gap-2">
                     <Input
                       type="email"
                       placeholder="Email Address"
-                      value={newMemberEmail}
-                      onChange={(e) => setNewMemberEmail(e.target.value)}
-                      required
+                      value={currentEmail}
+                      onChange={(e) => setCurrentEmail(e.target.value)}
                     />
-                  </div>
-                  <DialogFooter className="mt-4">
-                    <Button
-                      type="submit"
-                      variant="outline"
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? 'Sending...' : 'Send Invite'}
+                    <Button type="submit" variant="outline" size="icon">
+                      <Plus className="size-4" />
                     </Button>
-                  </DialogFooter>
+                  </div>
                 </form>
+
+                <div className="mt-4">
+                  {emailList.map((email) => (
+                    <div key={email} className="flex items-center justify-between py-2">
+                      <span className="text-sm">{email}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeEmail(email)}
+                        className="h-auto p-1 text-muted-foreground hover:text-destructive"
+                      >
+                        <X className="size-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+
+                <DialogFooter className="mt-4">
+                  <Button
+                    onClick={handleInviteMember}
+                    disabled={isSubmitting || emailList.length === 0}
+                    className="w-full"
+                  >
+                    {isSubmitting ? 'Sending...' : `Invite ${emailList.length} ${emailList.length === 1 ? 'Member' : 'Members'}`}
+                  </Button>
+                </DialogFooter>
               </DialogContent>
             </Dialog>
           </div>
