@@ -265,24 +265,17 @@ def get_team_members(
 ) -> TeamMembersOut:
     check_team_permissions(session, team_id, current_user.id)
 
-    # Retrieve all members of the team along with their user information
+    # Retrieve all members of the team, including pending invitations
     statement = (
         select(TeamMember, User)
-        .join(User, TeamMember.user_id == User.id)
-        .where(
-            TeamMember.team_id == team_id,
-            TeamMember.invitation_status == TeamInvitationStatus.ACCEPTED,
-        )
+        .outerjoin(User, TeamMember.user_id == User.id)  # Changed to outer join
+        .where(TeamMember.team_id == team_id)  # Removed invitation status filter
     )
 
-    count = session.exec(
-        select(func.count()).select_from(statement.subquery())
-    ).one()  # Count total members
-    team_members = session.exec(
-        statement.offset(skip).limit(limit)
-    ).all()  # Paginate results
+    count = session.exec(select(func.count()).select_from(statement.subquery())).one()
+    team_members = session.exec(statement.offset(skip).limit(limit)).all()
 
-    # Convert TeamMember objects to TeamMemberOut, including the member's name
+    # Convert TeamMember objects to TeamMemberOut, handling cases without associated users
     team_members_out = [
         TeamMemberOut(
             team_id=member.TeamMember.team_id,
@@ -290,15 +283,15 @@ def get_team_members(
             email=member.TeamMember.email,
             role=member.TeamMember.role,
             invitation_status=member.TeamMember.invitation_status,
-            name=member.User.full_name,
-            user=UserOut.model_validate(member.User),
+            name=member.User.full_name if member.User else None,  # Handle None case
+            user=UserOut.model_validate(member.User)
+            if member.User
+            else None,  # Handle None case
         )
         for member in team_members
     ]
 
-    return TeamMembersOut(
-        data=team_members_out, count=count
-    )  # Return count of total members
+    return TeamMembersOut(data=team_members_out, count=count)
 
 
 @router.post("/{team_id}/respond-invitation")

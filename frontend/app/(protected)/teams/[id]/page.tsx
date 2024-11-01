@@ -89,7 +89,7 @@ const TeamPage = () => {
     }
 
     try {
-      const response = await fetch(`/api/teams/${team.id}`, {
+      const response = await fetch(`/api/teams/${teamId}`, {
         method: 'PUT',
         body: JSON.stringify({ name: tempTitle }),
       });
@@ -110,7 +110,7 @@ const TeamPage = () => {
     }
 
     try {
-      const response = await fetch(`/api/teams/${team.id}`, {
+      const response = await fetch(`/api/teams/${teamId}`, {
         method: 'PUT',
         body: JSON.stringify({ description: tempDescription }),
       });
@@ -126,12 +126,10 @@ const TeamPage = () => {
   const handleInviteMember = async () => {
     setIsSubmitting(true);
     try {
-      const response = await fetch(`/api/teams/${team.id}/invites`, {
+      const response = await fetch(`/api/teams/${teamId}/members`, {
         method: 'POST',
         body: JSON.stringify({
-          name: newMemberName,
           email: newMemberEmail,
-          role: newMemberRole
         }),
       });
 
@@ -154,7 +152,7 @@ const TeamPage = () => {
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
-      const response = await fetch(`/api/teams/${team.id}/members/${userId}`, {
+      const response = await fetch(`/api/teams/${teamId}/members/${userId}`, {
         method: 'PUT',
         body: JSON.stringify({ role: newRole }),
       });

@@ -2,8 +2,6 @@
 
 import { z } from "zod";
 
-import { createUser, getUser } from "@/db/queries";
-
 import { signIn, signOut } from "./auth";
 
 const authFormSchema = z.object({
@@ -61,26 +59,37 @@ export const register = async (
       password: formData.get("password"),
     });
 
-    let [user] = await getUser(validatedData.email);
-
-    if (user) {
-      return { status: "user_exists" } as RegisterActionState;
-    } else {
-      await createUser(validatedData.email, validatedData.password);
-      await signIn("credentials", {
+    const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/users/signup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
         email: validatedData.email,
         password: validatedData.password,
-        redirect: false,
-      });
+      }),
+    });
 
-      return { status: "success" };
+    if (!response.ok) {
+      const error = await response.json();
+      if (response.status === 400 && error.detail.includes("already exists")) {
+        return { status: "user_exists" } as RegisterActionState;
+      }
+      return { status: "failed" } as RegisterActionState;
     }
+
+    await signIn("credentials", {
+      email: validatedData.email,
+      password: validatedData.password,
+      redirect: false,
+    });
+
+    return { status: "success" } as RegisterActionState;
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { status: "invalid_data" };
+      return { status: "invalid_data" } as RegisterActionState;
     }
-
-    return { status: "failed" };
+    return { status: "failed" } as RegisterActionState;
   }
 };
 
