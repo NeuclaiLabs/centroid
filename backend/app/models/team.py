@@ -1,7 +1,9 @@
+from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING, Optional
 
 import nanoid
+from sqlalchemy import DateTime, func
 from sqlmodel import Field, Relationship, SQLModel
 
 from .user import UserOut
@@ -43,6 +45,16 @@ class Team(TeamBase, table=True):
     id: str = Field(default_factory=nanoid.generate, primary_key=True)
     members: list["TeamMember"] = Relationship(
         back_populates="team", cascade_delete=True
+    )
+    created_at: datetime | None = Field(
+        default=None,
+        sa_type=DateTime(timezone=True),
+        sa_column_kwargs={"server_default": func.now()},
+    )
+    updated_at: datetime | None = Field(
+        default=None,
+        sa_type=DateTime(timezone=True),
+        sa_column_kwargs={"server_default": func.now(), "onupdate": func.now()},
     )
 
 

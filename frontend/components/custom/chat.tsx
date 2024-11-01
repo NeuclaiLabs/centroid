@@ -3,6 +3,7 @@
 import { Attachment, Message } from "ai"
 import { useChat } from "ai/react"
 import { useState, useEffect, useRef } from "react"
+import useSWR from "swr"
 
 import { Message as PreviewMessage } from "@/components/custom/message"
 import { MultimodalInput } from "@/components/custom/multimodal-input"
@@ -21,6 +22,8 @@ const useScrollToBottom = () => {
 }
 
 export function Chat({ id, initialMessages }: { id: string; initialMessages: Array<Message> }) {
+  const { mutate: mutateHistory } = useSWR<Array<any>>('/api/history')
+
   const { messages, handleSubmit, input, setInput, append, isLoading, stop } = useChat({
     body: { id },
     initialMessages,
@@ -40,6 +43,29 @@ export function Chat({ id, initialMessages }: { id: string; initialMessages: Arr
   useEffect(() => {
     scrollToBottom()
   }, [messages, scrollToBottom])
+
+  // Move the history update logic outside useChat
+  useEffect(() => {
+    if (messages.length == 1) {
+      mutateHistory((currentHistory) => {
+        if (!currentHistory) return currentHistory
+
+        // Check if chat already exists in history
+        const chatExists = currentHistory.some(chat => chat.id === id)
+        if (chatExists) return currentHistory
+
+        // Add new chat to history
+        const newChat: any = {
+          id,
+          messages: messages,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+
+        return [newChat, ...currentHistory]
+      }, false)
+    }
+  }, [id, messages, mutateHistory])
 
   return (
     <div className="relative flex flex-col h-screen bg-background">

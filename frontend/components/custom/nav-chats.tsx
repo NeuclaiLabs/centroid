@@ -93,7 +93,7 @@ export function NavChats({ history, isLoading, mutate }: { history: Chat[], isLo
               >
                 <Link href={`/chat/${chat.id}`} className="flex items-center gap-2 p-2 rounded-md">
                   <span className="overflow-hidden whitespace-nowrap" style={{ textOverflow: "clip" }}>
-                    {chat.messages[0].content}
+                    {chat.messages?.[0]?.content || 'New Chat'}
                   </span>
                 </Link>
               </SidebarMenuButton>
