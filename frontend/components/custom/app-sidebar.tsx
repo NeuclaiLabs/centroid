@@ -24,6 +24,8 @@ import {
 import { Chat } from "@/db/schema";
 import { fetcher } from "@/lib/utils";
 
+import { useTeams } from '@/components/custom/teams-provider';
+
 
 const data = {
   user: {
@@ -54,22 +56,22 @@ const data = {
     },
     {
       title: "Projects",
-      url: "#",
+      url: "/projects",
       icon: Shapes,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
+      // items: [
+      //   {
+      //     title: "Genesis",
+      //     url: "#",
+      //   },
+      //   {
+      //     title: "Explorer",
+      //     url: "#",
+      //   },
+      //   {
+      //     title: "Quantum",
+      //     url: "#",
+      //   },
+      // ],
     },
     {
       title: "Feedback",
@@ -129,6 +131,7 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
   const user = session?.user;
+  const { teams, currentTeam, isLoading: teamsIsLoading } = useTeams();
 
   // Retrieve chat history
   const {
@@ -139,24 +142,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     fallbackData: [],
   });
 
-  // Retrieve teams data
-  const {
-    data: teams,
-    isLoading: teamsIsLoading,
-    mutate: teamsMutate,
-  } = useSWR<Array<any>>(user ? "/api/teams" : null, fetcher, {
-    fallbackData: [],
-  });
-
   // Modify navMain data to include team ID from teams data
   const navMainWithTeamId = React.useMemo(() => {
-    const teamData = teams?.[0]; // Assuming we want the first team's ID
     return data.navMain.map(item =>
       item.title === "Team"
-        ? { ...item, url: item.url + "/" + teamData?.id ?? "" }
+        ? { ...item, url: item.url + "/" + (currentTeam?.id ?? "") }
         : item
     );
-  }, [teams]);
+  }, [currentTeam]);
 
   return (
     <Sidebar

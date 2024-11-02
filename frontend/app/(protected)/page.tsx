@@ -2,7 +2,6 @@
 import { Chat } from "@/components/custom/chat"
 import { generateUUID } from "@/lib/utils"
 
-import { AppSidebar } from "../../components/custom/app-sidebar"
 
 export default function Page() {
   const id = generateUUID()

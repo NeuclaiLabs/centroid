@@ -5,7 +5,6 @@ import { Toaster } from "sonner";
 
 import { ThemeProvider } from "@/components/custom/theme-provider";
 
-
 import "./globals.css";
 
 
