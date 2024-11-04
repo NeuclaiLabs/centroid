@@ -7,7 +7,9 @@ import { ThemeProvider } from "@/components/custom/theme-provider";
 
 import "./globals.css";
 
-
+export const viewport = {
+  maximumScale: 1, // Disable auto-zoom on mobile Safari
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://chat.vercel.ai"),
@@ -21,7 +23,13 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html
+      // `next-themes` injects an extra classname to the body element to avoid
+      // visual flicker before hydration. Hence the `suppressHydrationWarning`
+      // prop is necessary to avoid the React hydration mismatch warning.
+      suppressHydrationWarning
+      lang="en"
+    >
       <head>
         <Script id="microsoft-clarity" strategy="afterInteractive">
           {`
@@ -34,12 +42,7 @@ export default async function RootLayout({
         </Script>
       </head>
       <body className="antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <SessionProvider>
             <Toaster position="top-center" />
             {children}

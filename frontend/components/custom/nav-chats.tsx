@@ -1,19 +1,11 @@
-"use client"
+"use client";
 
-import {
-  ChevronRightIcon,
-  Folder,
-  InfoIcon,
-  MoreHorizontal,
-  Share,
-  Trash2,
-  type LucideIcon,
-} from "lucide-react"
-import Link from 'next/link';
+import { ChevronRightIcon, Folder, InfoIcon, MoreHorizontal, Share, Trash2, type LucideIcon } from "lucide-react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { User } from "next-auth";
-import { useSession } from "next-auth/react"
-import { useState } from "react"
+import { useSession } from "next-auth/react";
+import { useState } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
 
@@ -33,7 +25,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -42,13 +34,19 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 import { Chat } from "@/db/schema";
 import { fetcher } from "@/lib/utils";
 
-
-
-export function NavChats({ history, isLoading, mutate }: { history: Chat[], isLoading: boolean, mutate: (history: Chat[]) => void }) {
+export function NavChats({
+  history,
+  isLoading,
+  mutate,
+}: {
+  history: Chat[];
+  isLoading: boolean;
+  mutate: (history: Chat[]) => void;
+}) {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
@@ -74,9 +72,7 @@ export function NavChats({ history, isLoading, mutate }: { history: Chat[], isLo
   return (
     <>
       <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-        <SidebarGroupLabel className="text-foreground/50 text-sm">
-          Recent chats
-        </SidebarGroupLabel>
+        <SidebarGroupLabel className="text-foreground/50 text-sm">Recent chats</SidebarGroupLabel>
         <SidebarMenu>
           {!isLoading && history?.length === 0 ? (
             <div className="text-foreground h-[30dvh] w-full flex flex-row justify-center items-center text-sm gap-2">
@@ -87,31 +83,21 @@ export function NavChats({ history, isLoading, mutate }: { history: Chat[], isLo
 
           {history?.map((chat) => (
             <SidebarMenuItem key={chat.id}>
-              <SidebarMenuButton
-                asChild
-                className="hover:bg-sidebar-accent transition-colors"
-              >
+              <SidebarMenuButton asChild className="hover:bg-sidebar-accent transition-colors">
                 <Link href={`/chat/${chat.id}`} className="flex items-center gap-2 p-2 rounded-md">
                   <span className="overflow-hidden whitespace-nowrap" style={{ textOverflow: "clip" }}>
-                    {chat.messages?.[0]?.content || 'New Chat'}
+                    {chat.messages?.[0]?.content || "New Chat"}
                   </span>
                 </Link>
               </SidebarMenuButton>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <SidebarMenuAction
-                    showOnHover
-                    className="hover:bg-sidebar-accent transition-colors rounded-md"
-                  >
+                  <SidebarMenuAction showOnHover className="hover:bg-sidebar-accent transition-colors rounded-md">
                     <MoreHorizontal className="size-4 " />
                     <span className="sr-only text-sm">More</span>
                   </SidebarMenuAction>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  className="w-48"
-                  side="right"
-                  align="start"
-                >
+                <DropdownMenuContent className="w-48" side="right" align="start">
                   <DropdownMenuItem>
                     <Folder className="mr-2 size-4 text-muted-foreground" />
                     <span>View Project</span>
@@ -121,10 +107,12 @@ export function NavChats({ history, isLoading, mutate }: { history: Chat[], isLo
                     <span>Share Project</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => {
-                    setDeleteId(chat.id);
-                    setShowDeleteDialog(true);
-                  }}>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setDeleteId(chat.id);
+                      setShowDeleteDialog(true);
+                    }}
+                  >
                     <Trash2 className="mr-2 size-4 text-muted-foreground" />
                     <span>Delete Project</span>
                   </DropdownMenuItem>
@@ -155,9 +143,7 @@ export function NavChats({ history, isLoading, mutate }: { history: Chat[], isLo
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>
-              Continue
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleDelete}>Continue</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

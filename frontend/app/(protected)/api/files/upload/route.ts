@@ -1,6 +1,6 @@
-import { randomUUID } from 'crypto';
+import { randomUUID } from "crypto";
 
-import { Client , S3Error } from "minio";
+import { Client, S3Error } from "minio";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -12,13 +12,9 @@ const FileSchema = z.object({
     .refine((file) => file.size <= 5 * 1024 * 1024, {
       message: "File size should be less than 5MB",
     })
-    .refine(
-      (file) =>
-        ["image/jpeg", "image/png", "application/pdf"].includes(file.type),
-      {
-        message: "File type should be JPEG, PNG, or PDF",
-      },
-    ),
+    .refine((file) => ["image/jpeg", "image/png", "application/pdf"].includes(file.type), {
+      message: "File type should be JPEG, PNG, or PDF",
+    }),
 });
 
 const BUCKET_NAME = "openastra";
@@ -30,7 +26,6 @@ const minioClient = new Client({
   accessKey: process.env.MINIO_ACCESS_KEY || "XDxUIS38tdwhXhBHRdJS",
   secretKey: process.env.MINIO_SECRET_KEY || "dEyxnX1x991giIX6V4BCg6DSkh3UFlpdnMlpuq6d",
 });
-
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -54,9 +49,7 @@ export async function POST(request: Request) {
     const validatedFile = FileSchema.safeParse({ file });
 
     if (!validatedFile.success) {
-      const errorMessage = validatedFile.error.errors
-        .map((error) => error.message)
-        .join(", ");
+      const errorMessage = validatedFile.error.errors.map((error) => error.message).join(", ");
 
       return NextResponse.json({ error: errorMessage }, { status: 400 });
     }
@@ -67,20 +60,20 @@ export async function POST(request: Request) {
     }
 
     // Generate a unique filename
-    const fileExtension = file.name.split('.').pop();
+    const fileExtension = file.name.split(".").pop();
     const safeFilename = `${randomUUID()}.${fileExtension}`;
 
     const fileBuffer = await file.arrayBuffer();
 
     await minioClient.putObject(BUCKET_NAME, safeFilename, Buffer.from(fileBuffer));
-    const fileUrl = `http://${process.env.MINIO_ENDPOINT || 'localhost'}:${process.env.MINIO_PORT || '9000'}/${BUCKET_NAME}/${safeFilename}`;
+    const fileUrl = `http://${process.env.MINIO_ENDPOINT || "localhost"}:${process.env.MINIO_PORT || "9000"}/${BUCKET_NAME}/${safeFilename}`;
 
     console.log("File uploaded successfully. URL:", fileUrl);
     return NextResponse.json({
       url: fileUrl,
       name: file.name,
       originalFilename: file.name,
-      contentType: file.type
+      contentType: file.type,
     });
   } catch (error) {
     console.error("Error in file upload:", error);

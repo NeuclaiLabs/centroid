@@ -1,58 +1,58 @@
-'use client'
+"use client";
 
-import { Attachment, Message } from "ai"
-import { useChat } from "ai/react"
-import { useState, useEffect, useRef } from "react"
-import useSWR from "swr"
+import { Attachment, Message } from "ai";
+import { useChat } from "ai/react";
+import { useState, useEffect, useRef } from "react";
+import useSWR from "swr";
 
-import { Message as PreviewMessage } from "@/components/custom/message"
-import { MultimodalInput } from "@/components/custom/multimodal-input"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import { Message as PreviewMessage } from "@/components/custom/message";
+import { MultimodalInput } from "@/components/custom/multimodal-input";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 // Hook for scrolling to the bottom of the chat
 const useScrollToBottom = () => {
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "auto" })
-  }
+    messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+  };
 
-  return [messagesEndRef, scrollToBottom] as const
-}
+  return [messagesEndRef, scrollToBottom] as const;
+};
 
 export function Chat({ id, initialMessages }: { id: string; initialMessages: Array<Message> }) {
-  const { mutate: mutateHistory } = useSWR<Array<any>>('/api/history')
+  const { mutate: mutateHistory } = useSWR<Array<any>>("/api/history");
 
   const { messages, handleSubmit, input, setInput, append, isLoading, stop } = useChat({
     body: { id },
     initialMessages,
     onFinish: () => {
-      window.history.replaceState({}, "", `/chat/${id}`)
+      window.history.replaceState({}, "", `/chat/${id}`);
     },
-  })
+  });
 
-  const [messagesEndRef, scrollToBottom] = useScrollToBottom()
-  const [attachments, setAttachments] = useState<Array<Attachment>>([])
+  const [messagesEndRef, scrollToBottom] = useScrollToBottom();
+  const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const suggestions = [
     "Generate a multi-step onboarding flow",
     "How can I schedule cron jobs?",
-    "Write code to implement a min heap"
-  ]
+    "Write code to implement a min heap",
+  ];
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages, scrollToBottom])
+    scrollToBottom();
+  }, [messages, scrollToBottom]);
 
   // Move the history update logic outside useChat
   useEffect(() => {
     if (messages.length == 1) {
       mutateHistory((currentHistory) => {
-        if (!currentHistory) return currentHistory
+        if (!currentHistory) return currentHistory;
 
         // Check if chat already exists in history
-        const chatExists = currentHistory.some(chat => chat.id === id)
-        if (chatExists) return currentHistory
+        const chatExists = currentHistory.some((chat) => chat.id === id);
+        if (chatExists) return currentHistory;
 
         // Add new chat to history
         const newChat: any = {
@@ -60,21 +60,19 @@ export function Chat({ id, initialMessages }: { id: string; initialMessages: Arr
           messages: messages,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-        }
+        };
 
-        return [newChat, ...currentHistory]
-      }, false)
+        return [newChat, ...currentHistory];
+      }, false);
     }
-  }, [id, messages, mutateHistory])
+  }, [id, messages, mutateHistory]);
 
   return (
     <div className="relative flex flex-col h-screen bg-background">
       {messages.length === 0 ? (
         <div className="flex-1 flex items-center justify-center p-4">
           <Card className="w-full max-w-3xl mx-auto p-4 md:p-8 space-y-6 md:space-y-8 bg-background border-none shadow-none">
-            <h1 className="text-3xl md:text-5xl font-bold text-center break-words">
-              What can I help you with?
-            </h1>
+            <h1 className="text-3xl md:text-5xl font-bold text-center break-words">What can I help you with?</h1>
             <form className="flex flex-col items-center w-full space-y-4" onSubmit={handleSubmit}>
               <div className="w-full">
                 <MultimodalInput
@@ -109,7 +107,7 @@ export function Chat({ id, initialMessages }: { id: string; initialMessages: Arr
       ) : (
         <>
           <div className="flex-1 ">
-            <div className="max-w-3xl mx-auto px-4 py-4 md:py-8">
+            <div className="max-w-3xl mx-auto p-4 md:py-8">
               {messages.map((message, index) => (
                 <div
                   key={`${message.id || `${id}-${index}`}`}
@@ -147,5 +145,5 @@ export function Chat({ id, initialMessages }: { id: string; initialMessages: Arr
         </>
       )}
     </div>
-  )
+  );
 }

@@ -1,6 +1,7 @@
 import { Attachment, ToolInvocation } from "ai";
 import { motion } from "framer-motion";
 import { ReactNode } from "react";
+
 import { OpenAstraIcon, UserIcon } from "./icons";
 import { Markdown } from "./markdown";
 import { PreviewAttachment } from "./preview-attachment";
@@ -19,14 +20,12 @@ export const Message = ({
 }) => {
   return (
     <motion.div
-      className={`flex ${
-        role === "assistant" ? "flex-row" : "flex-row-reverse"
-      } gap-2 md:gap-4 px-2 md:px-4 w-full`}
+      className={`flex ${role === "assistant" ? "flex-row" : "flex-row-reverse"} gap-2 md:gap-4 px-2 md:px-4 w-full`}
       initial={{ y: 5, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
     >
       {role === "assistant" && (
-        <div className="flex-shrink-0 flex flex-col justify-start items-center">
+        <div className="shrink-0 flex flex-col justify-start items-center">
           <div className="flex aspect-square items-center justify-center rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
             <OpenAstraIcon size={24} />
           </div>
@@ -36,7 +35,7 @@ export const Message = ({
       <div
         className={`flex flex-col ${
           role === "assistant"
-            ? "flex-grow rounded-lg pb-3 max-w-full md:max-w-[85%] lg:max-w-[90%]"
+            ? "grow rounded-lg pb-3 max-w-full md:max-w-[85%] lg:max-w-[90%]"
             : "ml-auto max-w-[85%] md:max-w-[75%] bg-secondary m-2 md:m-4 rounded-full p-3 md:p-4"
         }`}
       >

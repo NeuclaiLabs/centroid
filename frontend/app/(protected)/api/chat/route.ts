@@ -5,8 +5,7 @@ import { customModel } from "@/ai2";
 import { auth } from "@/app/(auth)/auth";
 
 export async function POST(request: Request) {
-  const { id, messages }: { id: string; messages: Array<Message> } =
-    await request.json();
+  const { id, messages }: { id: string; messages: Array<Message> } = await request.json();
 
   const session = await auth();
 
@@ -18,8 +17,7 @@ export async function POST(request: Request) {
 
   const result = await streamText({
     model: customModel,
-    system:
-      "you are a friendly assistant! keep your responses concise and helpful.",
+    system: "you are a friendly assistant! keep your responses concise and helpful.",
     messages: coreMessages,
     maxSteps: 5,
     tools: {
@@ -31,7 +29,7 @@ export async function POST(request: Request) {
         }),
         execute: async ({ latitude, longitude }) => {
           const response = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m&hourly=temperature_2m&daily=sunrise,sunset&timezone=auto`,
+            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m&hourly=temperature_2m&daily=sunrise,sunset&timezone=auto`
           );
 
           const weatherData = await response.json();
@@ -43,19 +41,19 @@ export async function POST(request: Request) {
       if (session.user && session.user.id) {
         try {
           const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/chats/`, {
-            method: 'POST',
+            method: "POST",
             headers: {
-                accept: 'application/json',
-                'Content-Type': 'application/json',
-                // @ts-ignore
-                Authorization: `Bearer ${session?.user?.accessToken}`
-                  },
-              body: JSON.stringify({
-                id,
-                messages: [...coreMessages, ...responseMessages],
-                userId: session.user.id,
-              })
-          })
+              accept: "application/json",
+              "Content-Type": "application/json",
+              // @ts-ignore
+              Authorization: `Bearer ${session?.user?.accessToken}`,
+            },
+            body: JSON.stringify({
+              id,
+              messages: [...coreMessages, ...responseMessages],
+              userId: session.user.id,
+            }),
+          });
 
           if (!response.ok) {
             throw new Error("Failed to save chat");
@@ -89,17 +87,14 @@ export async function DELETE(request: Request) {
   }
 
   try {
-    const response = await fetch(
-    `${process.env.BACKEND_HOST}/api/v1/chats/${id}`,
-    {
-      method: 'DELETE',
+    const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/chats/${id}`, {
+      method: "DELETE",
       headers: {
-        accept: 'application/json',
-          // @ts-ignore
-          Authorization: `Bearer ${session.user.accessToken}`,
-        },
-      }
-    );
+        accept: "application/json",
+        // @ts-ignore
+        Authorization: `Bearer ${session.user.accessToken}`,
+      },
+    });
 
     if (!response.ok) {
       return new Response("Unauthorized", { status: 401 });
@@ -128,17 +123,14 @@ export async function GET(request: Request) {
   }
 
   try {
-    const response = await fetch(
-      `${process.env.BACKEND_HOST}/api/v1/chats/${id}`,
-      {
-        method: 'GET',
-        headers: {
-          accept: 'application/json',
-          // @ts-ignore
-          Authorization: `Bearer ${session.user.accessToken}`,
-        },
-      }
-    );
+    const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/chats/${id}`, {
+      method: "GET",
+      headers: {
+        accept: "application/json",
+        // @ts-ignore
+        Authorization: `Bearer ${session.user.accessToken}`,
+      },
+    });
 
     if (!response.ok) {
       if (response.status === 404) {
@@ -150,7 +142,7 @@ export async function GET(request: Request) {
     const chatData = await response.json();
     return new Response(JSON.stringify(chatData), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error("Error fetching chat:", error);

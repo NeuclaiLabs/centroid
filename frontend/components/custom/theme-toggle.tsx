@@ -1,18 +1,18 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 
 export function ThemeToggle() {
   const { setTheme, theme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setMounted(true);
   }, []);
 
   if (!mounted) {
-    return null;
+    return <div className="cursor-pointer" />;
   }
 
   return (

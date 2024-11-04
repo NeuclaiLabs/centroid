@@ -1,14 +1,14 @@
-import { Search } from "lucide-react"
+import { Search } from "lucide-react";
 
-import { Input } from "@/components/ui/input"
+import { Input } from "@/components/ui/input";
 
 interface Message {
-  id: string
-  sender: string
-  subject: string
-  preview: string
-  tags: string[]
-  timestamp: string
+  id: string;
+  sender: string;
+  subject: string;
+  preview: string;
+  tags: string[];
+  timestamp: string;
 }
 
 const messages: Message[] = [
@@ -16,35 +16,39 @@ const messages: Message[] = [
     id: "1",
     sender: "William Smith",
     subject: "Meeting Tomorrow",
-    preview: "Hi, let's have a meeting tomorrow to discuss the project. I've been reviewing the project details and have some ideas I'd like to share. It's crucial that we align on our next steps to ensure the project's success. Please com...",
+    preview:
+      "Hi, let's have a meeting tomorrow to discuss the project. I've been reviewing the project details and have some ideas I'd like to share. It's crucial that we align on our next steps to ensure the project's success. Please com...",
     tags: ["meeting", "work", "important"],
-    timestamp: "12 months ago"
+    timestamp: "12 months ago",
   },
   {
     id: "2",
     sender: "Alice Smith",
     subject: "Re: Project Update",
-    preview: "Thank you for the project update. It looks great! I've gone through the report, and the progress is impressive. The team has done a fantastic job, and I appreciate the hard work everyone has put in. I have a few minor...",
+    preview:
+      "Thank you for the project update. It looks great! I've gone through the report, and the progress is impressive. The team has done a fantastic job, and I appreciate the hard work everyone has put in. I have a few minor...",
     tags: ["work", "important"],
-    timestamp: "12 months ago"
+    timestamp: "12 months ago",
   },
   {
     id: "3",
     sender: "Bob Johnson",
     subject: "Weekend Plans",
-    preview: "Any plans for the weekend? I was thinking of going hiking in the nearby mountains. It's been a while since we had some outdoor fun. If you're interested, let me know, and we can plan the details. It'll be a great way to...",
+    preview:
+      "Any plans for the weekend? I was thinking of going hiking in the nearby mountains. It's been a while since we had some outdoor fun. If you're interested, let me know, and we can plan the details. It'll be a great way to...",
     tags: ["personal"],
-    timestamp: "over 1 year ago"
+    timestamp: "over 1 year ago",
   },
   {
     id: "4",
     sender: "Emily Davis",
     subject: "Re: Question about Budget",
-    preview: "I have a question about the budget for the upcoming project. It seems like there's a discrepancy in the allocation of resources. I've reviewed the budget report and identified a few areas where we might be able t...",
+    preview:
+      "I have a question about the budget for the upcoming project. It seems like there's a discrepancy in the allocation of resources. I've reviewed the budget report and identified a few areas where we might be able t...",
     tags: ["work", "budget"],
-    timestamp: "over 1 year ago"
-  }
-]
+    timestamp: "over 1 year ago",
+  },
+];
 
 export default function Component() {
   return (
@@ -66,5 +70,5 @@ export default function Component() {
         ))}
       </div>
     </div>
-  )
+  );
 }

@@ -1,25 +1,11 @@
-"use client"
+"use client";
 
-import {
-  BadgeCheck,
-  Bell,
-  ChevronsUpDown,
-  CreditCard,
-  LogOut,
-  Sparkles,
-  Monitor,
-  Sun,
-  Moon,
-} from "lucide-react"
-import { useSession } from "next-auth/react"
-import { useTheme } from "next-themes"
-import { handleSignOut } from "@/app/(auth)/actions"
+import { BadgeCheck, Bell, ChevronsUpDown, CreditCard, LogOut, Sparkles, Monitor, Sun, Moon } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useTheme } from "next-themes";
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
+import { handleSignOut } from "@/app/(auth)/actions";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,26 +14,21 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from "@/components/ui/sidebar"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/dropdown-menu";
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { cn } from "@/lib/utils";
 
 export function NavUser() {
-  const { isMobile } = useSidebar()
-  const { setTheme, theme } = useTheme()
-  const { data: session } = useSession()
+  const { isMobile } = useSidebar();
+  const { setTheme, theme } = useTheme();
+  const { data: session } = useSession();
 
   const user = {
     name: session?.user?.name || "Not Set",
     email: session?.user?.email || "guest@example.com",
     avatar: session?.user?.image || "",
-  }
+  };
 
   return (
     <SidebarMenu>
@@ -60,9 +41,7 @@ export function NavUser() {
             >
               <Avatar className="size-8 rounded-lg">
                 <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg">
-                  {user.name.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
+                <AvatarFallback className="rounded-lg">{user.name.slice(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">{user.name}</span>
@@ -81,9 +60,7 @@ export function NavUser() {
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="size-8 rounded-lg">
                   <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">
-                    {user.name.slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
+                  <AvatarFallback className="rounded-lg">{user.name.slice(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">{user.name}</span>
@@ -114,10 +91,7 @@ export function NavUser() {
               </DropdownMenuItem>
               <DropdownMenuItem
                 onSelect={(e) => e.preventDefault()}
-                className={cn(
-                  "flex items-center justify-between w-full",
-                  "cursor-pointer"
-                )}
+                className={cn("flex items-center justify-between w-full", "cursor-pointer")}
               >
                 <div className="flex items-center gap-2">
                   <Monitor className="size-4" />
@@ -125,13 +99,25 @@ export function NavUser() {
                 </div>
                 <div className="border rounded-full">
                   <ToggleGroup type="single" value={theme} onValueChange={setTheme} className="space-x-0.5 p-0.5">
-                    <ToggleGroupItem value="system" aria-label="System theme" className="data-[state=on]:bg-muted px-2 py-1">
+                    <ToggleGroupItem
+                      value="system"
+                      aria-label="System theme"
+                      className="data-[state=on]:bg-muted px-2 py-1"
+                    >
                       <Monitor className="size-4" />
                     </ToggleGroupItem>
-                    <ToggleGroupItem value="light" aria-label="Light theme" className="data-[state=on]:bg-muted px-2 py-1">
+                    <ToggleGroupItem
+                      value="light"
+                      aria-label="Light theme"
+                      className="data-[state=on]:bg-muted px-2 py-1"
+                    >
                       <Sun className="size-4" />
                     </ToggleGroupItem>
-                    <ToggleGroupItem value="dark" aria-label="Dark theme" className="data-[state=on]:bg-muted px-2 py-1">
+                    <ToggleGroupItem
+                      value="dark"
+                      aria-label="Dark theme"
+                      className="data-[state=on]:bg-muted px-2 py-1"
+                    >
                       <Moon className="size-4" />
                     </ToggleGroupItem>
                   </ToggleGroup>
@@ -140,7 +126,10 @@ export function NavUser() {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onSelect={(e) => { e.preventDefault(); handleSignOut() }}
+              onSelect={(e) => {
+                e.preventDefault();
+                handleSignOut();
+              }}
               className="cursor-pointer"
             >
               <LogOut className="mr-2 size-4" />
@@ -150,5 +139,5 @@ export function NavUser() {
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }

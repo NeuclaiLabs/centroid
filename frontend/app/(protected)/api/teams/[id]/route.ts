@@ -1,10 +1,8 @@
-import { auth } from "@/app/(auth)/auth";
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
-export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+import { auth } from "@/app/(auth)/auth";
+
+export async function PUT(request: NextRequest) {
   const session = await auth();
 
   if (!session || !session.user) {
@@ -12,16 +10,16 @@ export async function PUT(
   }
 
   try {
-    const teamData = await request.json();
+    const { id, ...teamData } = await request.json();
 
-    const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/teams/${params.id}`, {
-      method: 'PUT',
+    const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/teams/${id}`, {
+      method: "PUT",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         // @ts-ignore
-        Authorization: `Bearer ${session.user.accessToken}`
+        Authorization: `Bearer ${session.user.accessToken}`,
       },
-      body: JSON.stringify(teamData)
+      body: JSON.stringify(teamData),
     });
 
     if (!response.ok) {
@@ -32,18 +30,11 @@ export async function PUT(
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error updating team:", error);
-    return NextResponse.json(
-      { error: "Failed to update team" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to update team" }, { status: 500 });
   }
 }
 
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
-
+export async function GET(request: NextRequest) {
   const session = await auth();
 
   if (!session || !session.user) {
@@ -51,11 +42,13 @@ export async function GET(
   }
 
   try {
-    const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/teams/${params.id}`, {
+    const { id } = await request.json();
+
+    const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/teams/${id}`, {
       headers: {
         // @ts-ignore
-        Authorization: `Bearer ${session.user.accessToken}`
-      }
+        Authorization: `Bearer ${session.user.accessToken}`,
+      },
     });
 
     if (!response.ok) {
@@ -67,17 +60,11 @@ export async function GET(
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error fetching team:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch team" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch team" }, { status: 500 });
   }
 }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest) {
   const session = await auth();
 
   if (!session || !session.user) {
@@ -85,12 +72,14 @@ export async function DELETE(
   }
 
   try {
-    const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/teams/${params.id}`, {
-      method: 'DELETE',
+    const { id } = await request.json();
+
+    const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/teams/${id}`, {
+      method: "DELETE",
       headers: {
         // @ts-ignore
-        Authorization: `Bearer ${session.user.accessToken}`
-      }
+        Authorization: `Bearer ${session.user.accessToken}`,
+      },
     });
 
     if (!response.ok) {
@@ -100,9 +89,6 @@ export async function DELETE(
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error("Error deleting team:", error);
-    return NextResponse.json(
-      { error: "Failed to delete team" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to delete team" }, { status: 500 });
   }
 }

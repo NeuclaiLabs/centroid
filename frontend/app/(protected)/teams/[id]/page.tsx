@@ -1,20 +1,14 @@
-'use client'
+"use client";
 
-import { ChevronDown, Pencil, Plus, UserPlus, X } from 'lucide-react';
-import { useParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { toast } from 'sonner';
-import useSWR from 'swr';
+import { ChevronDown, Pencil, Plus, UserPlus, X } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import useSWR from "swr";
 
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent
-} from '@/components/ui/card';
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -28,37 +22,28 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent
-} from '@/components/ui/tabs';
-import { Textarea } from '@/components/ui/textarea';
-import { fetcher } from '@/lib/utils';
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { fetcher } from "@/lib/utils";
 
 const TeamPage = () => {
   const params = useParams();
   const teamId = params.id;
-  const { data: members, mutate: mutateMembers } = useSWR(
-    teamId ? `/api/teams/${teamId}/members` : null,
-    fetcher,
-    {
-      fallbackData: [],
-    }
-  );
+  const { data: members, mutate: mutateMembers } = useSWR(teamId ? `/api/teams/${teamId}/members` : null, fetcher, {
+    fallbackData: [],
+  });
 
-  const { data: team, isLoading, mutate: mutateTeam } = useSWR(
-    teamId ? `/api/teams/${teamId}` : null,
-    fetcher,
-    {
-      fallbackData: {},
-    }
-  );
+  const {
+    data: team,
+    isLoading,
+    mutate: mutateTeam,
+  } = useSWR(teamId ? `/api/teams/${teamId}` : null, fetcher, {
+    fallbackData: {},
+  });
 
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
@@ -74,23 +59,23 @@ const TeamPage = () => {
   }, [team]);
 
   const [emailList, setEmailList] = useState<string[]>([]);
-  const [currentEmail, setCurrentEmail] = useState('');
+  const [currentEmail, setCurrentEmail] = useState("");
 
   const handleAddEmail = (e: React.FormEvent) => {
     e.preventDefault();
     if (currentEmail && !emailList.includes(currentEmail)) {
       setEmailList([...emailList, currentEmail]);
-      setCurrentEmail('');
+      setCurrentEmail("");
     }
   };
 
   const removeEmail = (emailToRemove: string) => {
-    setEmailList(emailList.filter(email => email !== emailToRemove));
+    setEmailList(emailList.filter((email) => email !== emailToRemove));
   };
 
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentTab, setCurrentTab] = useState('members'); // Track active tab
+  const [currentTab, setCurrentTab] = useState("members"); // Track active tab
 
   const roles = ["owner", "admin", "member"];
 
@@ -102,16 +87,16 @@ const TeamPage = () => {
 
     try {
       const response = await fetch(`/api/teams/${teamId}`, {
-        method: 'PUT',
+        method: "PUT",
         body: JSON.stringify({ name: tempTitle }),
       });
-      console.log("Response", response)
+      console.log("Response", response);
       mutateTeam({ ...team, name: tempTitle });
       setIsEditingTitle(false);
-      toast.success('Team name updated successfully');
+      toast.success("Team name updated successfully");
     } catch (error) {
-      console.error('Error updating team name:', error);
-      toast.error('Failed to update team name');
+      console.error("Error updating team name:", error);
+      toast.error("Failed to update team name");
     }
   };
 
@@ -123,15 +108,15 @@ const TeamPage = () => {
 
     try {
       const response = await fetch(`/api/teams/${teamId}`, {
-        method: 'PUT',
+        method: "PUT",
         body: JSON.stringify({ description: tempDescription }),
       });
       mutateTeam({ ...team, description: tempDescription });
       setIsEditingDescription(false);
-      toast.success('Team description updated successfully');
+      toast.success("Team description updated successfully");
     } catch (error) {
-      console.error('Error updating team description:', error);
-      toast.error('Failed to update team description');
+      console.error("Error updating team description:", error);
+      toast.error("Failed to update team description");
     }
   };
 
@@ -139,22 +124,22 @@ const TeamPage = () => {
     setIsSubmitting(true);
     try {
       const response = await fetch(`/api/teams/${teamId}/members`, {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify(emailList.map((email) => ({ email }))),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to send invitations');
+        throw new Error("Failed to send invitations");
       }
 
       mutateMembers();
       setIsInviteDialogOpen(false);
       setEmailList([]);
-      setCurrentEmail('');
-      toast.success('Invitations sent successfully');
+      setCurrentEmail("");
+      toast.success("Invitations sent successfully");
     } catch (error) {
-      console.error('Error inviting members:', error);
-      toast.error('Failed to send invitations');
+      console.error("Error inviting members:", error);
+      toast.error("Failed to send invitations");
     } finally {
       setIsSubmitting(false);
     }
@@ -163,37 +148,33 @@ const TeamPage = () => {
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
       const response = await fetch(`/api/teams/${teamId}/members/${userId}`, {
-        method: 'PUT',
+        method: "PUT",
         body: JSON.stringify({ role: newRole }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update role');
+        throw new Error("Failed to update role");
       }
 
       mutateMembers();
-      toast.success('Member role updated successfully');
+      toast.success("Member role updated successfully");
     } catch (error) {
-      console.error('Error updating member role:', error);
-      toast.error('Failed to update member role');
+      console.error("Error updating member role:", error);
+      toast.error("Failed to update member role");
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent, submitFunction: () => void) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       submitFunction();
     }
   };
 
   // Add these filters for members
-  const acceptedMembers = members?.filter((member: any) =>
-    member.invitation_status === 'accepted'
-  ) || [];
+  const acceptedMembers = members?.filter((member: any) => member.invitation_status === "accepted") || [];
 
-  const pendingMembers = members?.filter((member: any) =>
-    member.invitation_status === 'pending'
-  ) || [];
+  const pendingMembers = members?.filter((member: any) => member.invitation_status === "pending") || [];
 
   if (isLoading) {
     return (
@@ -213,10 +194,7 @@ const TeamPage = () => {
             <Skeleton className="h-10 w-48 mb-4" />
             <div className="space-y-2">
               {[1, 2, 3].map((index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-4 border rounded-lg"
-                >
+                <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center space-x-4">
                     <Skeleton className="size-8 rounded-full" />
                     <div>
@@ -290,7 +268,7 @@ const TeamPage = () => {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Invite Members</DialogTitle>
-                  <DialogDescription>Enter the email addresses of the people you'd like to invite.</DialogDescription>
+                  <DialogDescription>Enter the email addresses of the people you want to invite.</DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleAddEmail} className="space-y-4">
                   <div className="flex gap-2">
@@ -328,7 +306,9 @@ const TeamPage = () => {
                     disabled={isSubmitting || emailList.length === 0}
                     className="w-full"
                   >
-                    {isSubmitting ? 'Sending...' : `Invite ${emailList.length} ${emailList.length === 1 ? 'Member' : 'Members'}`}
+                    {isSubmitting
+                      ? "Sending..."
+                      : `Invite ${emailList.length} ${emailList.length === 1 ? "Member" : "Members"}`}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -358,8 +338,11 @@ const TeamPage = () => {
                         />
                         <AvatarFallback className="text-xs">
                           {member.user?.name
-                            ? member.user.name.split(' ').map((n: string) => n[0]).join('')
-                            : 'UU'}
+                            ? member.user.name
+                                .split(" ")
+                                .map((n: string) => n[0])
+                                .join("")
+                            : "UU"}
                         </AvatarFallback>
                       </Avatar>
                       <div>
@@ -384,8 +367,8 @@ const TeamPage = () => {
                             <DropdownMenuItem
                               key={role}
                               onClick={() => handleRoleChange(member.user_id, role)}
-                              disabled={member.role === 'Owner'}
-                              className={member.role === role ? 'bg-primary/5 font-medium' : ''}
+                              disabled={member.role === "Owner"}
+                              className={member.role === role ? "bg-primary/5 font-medium" : ""}
                             >
                               {role.charAt(0).toUpperCase() + role.slice(1)}
                             </DropdownMenuItem>
@@ -401,18 +384,15 @@ const TeamPage = () => {
             <TabsContent value="pendingInvites">
               <div className="space-y-2">
                 {pendingMembers.map((member: any) => (
-                  <div
-                    key={member.user_id}
-                    className="flex items-center justify-between p-4 border rounded-lg"
-                  >
+                  <div key={member.user_id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex items-center space-x-4">
                       <Avatar className="size-8">
                         <AvatarFallback className="text-xs">
-                          {member.email?.charAt(0).toUpperCase() || 'UU'}
+                          {member.email?.charAt(0).toUpperCase() || "UU"}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <h3 className="font-medium text-sm">{member.user?.name || 'Pending Member'}</h3>
+                        <h3 className="font-medium text-sm">{member.user?.name || "Pending Member"}</h3>
                         <p className="text-sm text-muted-foreground">{member.user?.email || member.email}</p>
                       </div>
                     </div>
@@ -420,9 +400,7 @@ const TeamPage = () => {
                   </div>
                 ))}
                 {pendingMembers.length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-4">
-                    No pending invitations
-                  </p>
+                  <p className="text-sm text-muted-foreground text-center py-4">No pending invitations</p>
                 )}
               </div>
             </TabsContent>

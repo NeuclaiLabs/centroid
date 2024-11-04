@@ -1,10 +1,8 @@
-import { auth } from "@/app/(auth)/auth";
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+import { auth } from "@/app/(auth)/auth";
+
+export async function POST(request: NextRequest) {
   const session = await auth();
 
   if (!session || !session.user) {
@@ -12,16 +10,16 @@ export async function POST(
   }
 
   try {
-    const memberData = await request.json();
+    const { id, memberData } = await request.json();
 
-    const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/teams/${params.id}/members`, {
-      method: 'POST',
+    const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/teams/${id}/members`, {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         // @ts-ignore
-        Authorization: `Bearer ${session.user.accessToken}`
+        Authorization: `Bearer ${session.user.accessToken}`,
       },
-      body: JSON.stringify(memberData)
+      body: JSON.stringify(memberData),
     });
 
     if (!response.ok) {
@@ -32,17 +30,11 @@ export async function POST(
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error adding team member:", error);
-    return NextResponse.json(
-      { error: "Failed to add team member" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to add team member" }, { status: 500 });
   }
 }
 
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest) {
   const session = await auth();
 
   if (!session || !session.user) {
@@ -51,32 +43,27 @@ export async function GET(
 
   try {
     // Get URL search params for pagination
+    const { id } = await request.json();
     const { searchParams } = new URL(request.url);
-    const skip = searchParams.get('skip') || '0';
-    const limit = searchParams.get('limit') || '100';
+    const skip = searchParams.get("skip") || "0";
+    const limit = searchParams.get("limit") || "100";
 
-    const response = await fetch(
-      `${process.env.BACKEND_HOST}/api/v1/teams/${params.id}/members?skip=${skip}&limit=${limit}`,
-      {
-        headers: {
-          // @ts-ignore
-          Authorization: `Bearer ${session.user.accessToken}`
-        }
-      }
-    );
+    const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/teams/${id}/members?skip=${skip}&limit=${limit}`, {
+      headers: {
+        // @ts-ignore
+        Authorization: `Bearer ${session.user.accessToken}`,
+      },
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = (await response.json())['data'];
+    const data = (await response.json())["data"];
     console.log("Members", data);
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error fetching team members:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch team members" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch team members" }, { status: 500 });
   }
 }

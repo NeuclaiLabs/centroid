@@ -13,10 +13,7 @@ export interface LoginActionState {
   status: "idle" | "in_progress" | "success" | "failed" | "invalid_data";
 }
 
-export const login = async (
-  _: LoginActionState,
-  formData: FormData,
-): Promise<LoginActionState> => {
+export const login = async (_: LoginActionState, formData: FormData): Promise<LoginActionState> => {
   try {
     const validatedData = authFormSchema.parse({
       email: formData.get("email"),
@@ -40,19 +37,10 @@ export const login = async (
 };
 
 export interface RegisterActionState {
-  status:
-    | "idle"
-    | "in_progress"
-    | "success"
-    | "failed"
-    | "user_exists"
-    | "invalid_data";
+  status: "idle" | "in_progress" | "success" | "failed" | "user_exists" | "invalid_data";
 }
 
-export const register = async (
-  _: RegisterActionState,
-  formData: FormData,
-): Promise<RegisterActionState> => {
+export const register = async (_: RegisterActionState, formData: FormData): Promise<RegisterActionState> => {
   try {
     const validatedData = authFormSchema.parse({
       email: formData.get("email"),
@@ -60,9 +48,9 @@ export const register = async (
     });
 
     const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/users/signup`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         email: validatedData.email,
@@ -94,5 +82,5 @@ export const register = async (
 };
 
 export async function handleSignOut() {
-  await signOut({ redirectTo: "/" })
+  await signOut({ redirectTo: "/" });
 }

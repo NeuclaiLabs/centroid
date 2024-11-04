@@ -10,13 +10,13 @@ export async function POST(request: Request) {
   try {
     const teamData = await request.json();
     const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/teams/`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         // @ts-ignore
-        Authorization: `Bearer ${session.user.accessToken}`
+        Authorization: `Bearer ${session.user.accessToken}`,
       },
-      body: JSON.stringify(teamData)
+      body: JSON.stringify(teamData),
     });
 
     if (!response.ok) {
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     const createdTeam = await response.json();
     return new Response(JSON.stringify(createdTeam), {
       status: 201,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error("Failed to create team:", error);
@@ -44,12 +44,12 @@ export async function GET(request: Request) {
   }
 
   try {
-    const url = `${process.env.BACKEND_HOST}/api/v1/teams/`
+    const url = `${process.env.BACKEND_HOST}/api/v1/teams/`;
 
     const response = await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        accept: 'application/json',
+        accept: "application/json",
         // @ts-ignore
         Authorization: `Bearer ${session.user.accessToken}`,
       },
@@ -62,10 +62,10 @@ export async function GET(request: Request) {
       return new Response("Unauthorized", { status: 401 });
     }
 
-    const teamData = (await response.json())['data'];
+    const teamData = (await response.json())["data"];
     return new Response(JSON.stringify(teamData), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error("Error fetching team(s):", error);
@@ -91,9 +91,9 @@ export async function DELETE(request: Request) {
 
   try {
     const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/teams/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
       headers: {
-        accept: 'application/json',
+        accept: "application/json",
         // @ts-ignore
         Authorization: `Bearer ${session.user.accessToken}`,
       },

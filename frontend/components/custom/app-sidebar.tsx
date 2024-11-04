@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { BookOpen, LifeBuoy, Send, Shapes, Flag, Users } from "lucide-react";
 import Link from "next/link";
@@ -6,12 +6,11 @@ import { useSession } from "next-auth/react";
 import * as React from "react";
 import useSWR from "swr";
 
-import { OpenAstraIcon } from "./icons";
-
 import { NavChats } from "@/components/custom/nav-chats";
 import { NavMain } from "@/components/custom/nav-main";
 import { NavSecondary } from "@/components/custom/nav-secondary";
 import { NavUser } from "@/components/custom/nav-user";
+import { useTeams } from "@/components/custom/teams-provider";
 import {
   Sidebar,
   SidebarContent,
@@ -24,8 +23,7 @@ import {
 import { Chat } from "@/db/schema";
 import { fetcher } from "@/lib/utils";
 
-import { useTeams } from '@/components/custom/teams-provider';
-
+import { OpenAstraIcon } from "./icons";
 
 const data = {
   user: {
@@ -144,30 +142,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   // Modify navMain data to include team ID from teams data
   const navMainWithTeamId = React.useMemo(() => {
-    return data.navMain.map(item =>
-      item.title === "Team"
-        ? { ...item, url: item.url + "/" + (currentTeam?.id ?? "") }
-        : item
+    return data.navMain.map((item) =>
+      item.title === "Team" ? { ...item, url: item.url + "/" + (currentTeam?.id ?? "") } : item
     );
   }, [currentTeam]);
 
   return (
-    <Sidebar
-      variant="inset"
-      className="bg-sidebar text-sidebar-foreground"
-      {...props}
-    >
+    <Sidebar variant="inset" className="bg-sidebar text-sidebar-foreground" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              size="lg"
-              asChild
-              className="hover:bg-sidebar-accent transition-colors"
-            >
+            <SidebarMenuButton size="lg" asChild className="hover:bg-sidebar-accent transition-colors">
               <Link href="#">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700">
-                  <OpenAstraIcon size={24}/>
+                  <OpenAstraIcon size={24} />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">OpenAstra</span>

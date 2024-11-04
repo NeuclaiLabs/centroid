@@ -2,29 +2,15 @@
 
 import { Attachment, ChatRequestOptions, CreateMessage, Message } from "ai";
 import { motion } from "framer-motion";
-import { Paperclip , PlusIcon, ChevronDownIcon } from "lucide-react";
-import React, {
-  useRef,
-  useEffect,
-  useState,
-  useCallback,
-  Dispatch,
-  SetStateAction,
-  ChangeEvent,
-} from "react";
+import { Paperclip, PlusIcon, ChevronDownIcon } from "lucide-react";
+import React, { useRef, useEffect, useState, useCallback, Dispatch, SetStateAction, ChangeEvent } from "react";
 import { toast } from "sonner";
 
 import { ArrowUpIcon, PaperclipIcon, StopIcon } from "./icons";
 import { PreviewAttachment } from "./preview-attachment";
 import { Button } from "../ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Textarea } from "../ui/textarea";
-
 
 const suggestedActions = [
   {
@@ -59,13 +45,13 @@ export function MultimodalInput({
   messages: Array<Message>;
   append: (
     message: Message | CreateMessage,
-    chatRequestOptions?: ChatRequestOptions,
+    chatRequestOptions?: ChatRequestOptions
   ) => Promise<string | null | undefined>;
   handleSubmit: (
     event?: {
       preventDefault?: () => void;
     },
-    chatRequestOptions?: ChatRequestOptions,
+    chatRequestOptions?: ChatRequestOptions
   ) => void;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -136,34 +122,24 @@ export function MultimodalInput({
       try {
         const uploadPromises = files.map((file) => uploadFile(file));
         const uploadedAttachments = await Promise.all(uploadPromises);
-        const successfullyUploadedAttachments = uploadedAttachments.filter(
-          (attachment) => attachment !== undefined,
-        );
+        const successfullyUploadedAttachments = uploadedAttachments.filter((attachment) => attachment !== undefined);
 
-        setAttachments((currentAttachments) => [
-          ...currentAttachments,
-          ...successfullyUploadedAttachments,
-        ]);
+        setAttachments((currentAttachments) => [...currentAttachments, ...successfullyUploadedAttachments]);
       } catch (error) {
         console.error("Error uploading files!", error);
       } finally {
         setUploadQueue([]);
       }
     },
-    [setAttachments],
+    [setAttachments]
   );
 
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
 
-  const randomProjects = [
-    "Cosmic Voyager",
-    "Emerald Nexus",
-    "Quantum Forge",
-  ];
+  const randomProjects = ["Cosmic Voyager", "Emerald Nexus", "Quantum Forge"];
 
   return (
     <div className="relative w-full flex flex-col gap-2">
-
       <input
         type="file"
         className="fixed -top-4 -left-4 size-0.5 opacity-0 pointer-events-none"
@@ -194,7 +170,9 @@ export function MultimodalInput({
       )}
 
       {/* Textarea wrapper */}
-      <div className="flex-grow relative pb-12"> {/* Adjust padding-bottom here */}
+      <div className="grow relative pb-12">
+        {" "}
+        {/* Adjust padding-bottom here */}
         <Textarea
           ref={textareaRef}
           placeholder="Send a message..."
@@ -217,7 +195,7 @@ export function MultimodalInput({
       </div>
 
       {/* Action bar */}
-      <div className="absolute bottom-0 left-0 right-0 flex justify-between items-center py-2 px-4 bg-muted rounded-b-lg">
+      <div className="absolute bottom-0 inset-x-0 flex justify-between items-center py-2 px-4 bg-muted rounded-b-lg">
         <div className="flex space-x-2">
           <Button
             className="p-1.5 size-8 flex items-center justify-center dark:border-zinc-700"
@@ -244,10 +222,7 @@ export function MultimodalInput({
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               {randomProjects.map((project) => (
-                <DropdownMenuItem
-                  key={project}
-                  onSelect={() => setSelectedProject(project)}
-                >
+                <DropdownMenuItem key={project} onSelect={() => setSelectedProject(project)}>
                   {project}
                 </DropdownMenuItem>
               ))}
@@ -269,6 +244,7 @@ export function MultimodalInput({
           <Button
             className="p-1.5 h-fit m-0.5"
             onClick={(event) => {
+              event.preventDefault();
               handleSubmit(event);
             }}
             disabled={input.length === 0 || uploadQueue.length > 0}

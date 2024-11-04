@@ -13,16 +13,13 @@ const CodeBlock = memo(({ inline, className, children, ...props }: any) => {
       <code className={match[1]}>{children}</code>
     </pre>
   ) : (
-    <code
-      className={`${className} text-sm bg-zinc-100 dark:bg-zinc-800 py-0.5 px-1 rounded-md`}
-      {...props}
-    >
+    <code className={`${className} text-sm bg-zinc-100 dark:bg-zinc-800 py-0.5 px-1 rounded-md`} {...props}>
       {children}
     </code>
   );
 });
 
-CodeBlock.displayName = 'CodeBlock';
+CodeBlock.displayName = "CodeBlock";
 
 const OrderedList = memo(({ children, ...props }: any) => (
   <ol className="list-decimal list-outside ml-4" {...props}>
@@ -30,7 +27,7 @@ const OrderedList = memo(({ children, ...props }: any) => (
   </ol>
 ));
 
-OrderedList.displayName = 'OrderedList';
+OrderedList.displayName = "OrderedList";
 
 const ListItem = memo(({ children, ...props }: any) => (
   <li className="py-1" {...props}>
@@ -38,7 +35,7 @@ const ListItem = memo(({ children, ...props }: any) => (
   </li>
 ));
 
-ListItem.displayName = 'ListItem';
+ListItem.displayName = "ListItem";
 
 const UnorderedList = memo(({ children, ...props }: any) => (
   <ul className="list-disc list-outside ml-4" {...props}>
@@ -46,7 +43,7 @@ const UnorderedList = memo(({ children, ...props }: any) => (
   </ul>
 ));
 
-UnorderedList.displayName = 'UnorderedList';
+UnorderedList.displayName = "UnorderedList";
 
 const StrongText = memo(({ children, ...props }: any) => (
   <span className="font-semibold" {...props}>
@@ -54,20 +51,15 @@ const StrongText = memo(({ children, ...props }: any) => (
   </span>
 ));
 
-StrongText.displayName = 'StrongText';
+StrongText.displayName = "StrongText";
 
 const Anchor = memo(({ children, ...props }: any) => (
-  <Link
-    className="text-blue-500 hover:underline"
-    target="_blank"
-    rel="noreferrer"
-    {...props}
-  >
+  <Link className="text-blue-500 hover:underline" target="_blank" rel="noreferrer" {...props}>
     {children}
   </Link>
 ));
 
-Anchor.displayName = 'Anchor';
+Anchor.displayName = "Anchor";
 
 const MarkdownComponents = {
   code: CodeBlock,
@@ -89,4 +81,4 @@ export const Markdown = memo(({ children }: { children: string }) => {
   );
 });
 
-Markdown.displayName = 'Markdown';
+Markdown.displayName = "Markdown";

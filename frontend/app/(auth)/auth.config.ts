@@ -4,7 +4,7 @@ import type { User } from "@/lib/types";
 export const authConfig = {
   secret: process.env.SECRET_KEY,
   session: {
-    strategy: 'jwt'
+    strategy: "jwt",
   },
   pages: {
     signIn: "/login",

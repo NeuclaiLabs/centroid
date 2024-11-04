@@ -1,5 +1,8 @@
-import * as React from "react"
-import { Button } from "@/components/ui/button"
+import { Upload, X } from "lucide-react";
+import * as React from "react";
+import { useRef, useState } from "react";
+
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -7,45 +10,36 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
-import { Textarea } from "@/components/ui/textarea"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Upload, X } from "lucide-react"
-import { useRef } from "react"
-import { useState } from "react"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ProjectCreateDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) => {
-  const [files, setFiles] =  useState<File[]>([])
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [files, setFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
-      setFiles(prevFiles => [...prevFiles, ...Array.from(event.target.files as FileList)])
+      setFiles((prevFiles) => [...prevFiles, ...Array.from(event.target.files as FileList)]);
     }
-  }
+  };
 
   const handleRemoveFile = (fileToRemove: File) => {
-    setFiles(prevFiles => prevFiles.filter(file => file !== fileToRemove))
-  }
+    setFiles((prevFiles) => prevFiles.filter((file) => file !== fileToRemove));
+  };
 
   const handleUploadClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    fileInputRef.current?.click()
-  }
+    e.preventDefault();
+    fileInputRef.current?.click();
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -88,9 +82,7 @@ export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) 
           </div>
 
           <div>
-            <Label htmlFor="instructions">
-              Custom Instructions (optional)
-            </Label>
+            <Label htmlFor="instructions">Custom Instructions (optional)</Label>
             <DialogDescription className="mt-1">
               Give instructions to the AI that affects every thread in this space.
             </DialogDescription>
@@ -103,13 +95,7 @@ export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) 
           <div className="space-y-2">
             <Label>Knowledge</Label>
             <div>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                className="hidden"
-                multiple
-              />
+              <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" multiple />
               <Button variant="outline" onClick={handleUploadClick}>
                 <Upload className="mr-2 size-4" />
                 Upload files
@@ -120,11 +106,7 @@ export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) 
                 {files.map((file, index) => (
                   <li key={index} className="flex items-center justify-between text-sm">
                     <span>{file.name}</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveFile(file)}
-                    >
+                    <Button variant="ghost" size="sm" onClick={() => handleRemoveFile(file)}>
                       <X className="size-4" />
                       <span className="sr-only">Remove</span>
                     </Button>
@@ -138,11 +120,9 @@ export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) 
           <Button variant="secondary" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button>
-            Continue
-          </Button>
+          <Button>Continue</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
-}
+  );
+};

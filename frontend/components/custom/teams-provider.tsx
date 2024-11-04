@@ -1,10 +1,10 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
-import useSWR from 'swr';
+import { createContext, useContext, ReactNode, useState, useEffect } from "react";
+import useSWR from "swr";
 
-import { fetcher } from '@/lib/utils';
+import { fetcher } from "@/lib/utils";
 
 interface Team {
   id: string;
@@ -24,7 +24,7 @@ interface TeamsContextType {
 const TeamsContext = createContext<TeamsContextType | undefined>(undefined);
 
 // Create a key for localStorage
-const CURRENT_TEAM_KEY = 'currentTeam';
+const CURRENT_TEAM_KEY = "currentTeam";
 
 export function TeamsProvider({ children }: { children: ReactNode }) {
   const { data: session } = useSession();
@@ -34,8 +34,8 @@ export function TeamsProvider({ children }: { children: ReactNode }) {
   const {
     data: teams = [],
     isLoading,
-    mutate
-  } = useSWR<Team[]>(session?.user ? '/api/teams' : null, fetcher, {
+    mutate,
+  } = useSWR<Team[]>(session?.user ? "/api/teams" : null, fetcher, {
     fallbackData: [],
   });
 
@@ -45,7 +45,7 @@ export function TeamsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (teams.length && !currentTeam) {
       const savedTeamId = localStorage.getItem(CURRENT_TEAM_KEY);
-      const savedTeam = savedTeamId ? teams.find(team => team.id === savedTeamId) : null;
+      const savedTeam = savedTeamId ? teams.find((team) => team.id === savedTeamId) : null;
 
       // If no saved team or saved team not found in current teams list, use first team
       const teamToSet = savedTeam || teams[0];
@@ -70,7 +70,7 @@ export function TeamsProvider({ children }: { children: ReactNode }) {
         currentTeam,
         setCurrentTeam: handleSetCurrentTeam,
         isLoading,
-        mutate
+        mutate,
       }}
     >
       {children}
@@ -81,7 +81,7 @@ export function TeamsProvider({ children }: { children: ReactNode }) {
 export function useTeams() {
   const context = useContext(TeamsContext);
   if (context === undefined) {
-    throw new Error('useTeams must be used within a TeamsProvider');
+    throw new Error("useTeams must be used within a TeamsProvider");
   }
   return context;
 }

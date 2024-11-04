@@ -19,37 +19,33 @@ export const {
     Credentials({
       credentials: {},
       async authorize({ email, password }: any) {
-
         // let users = await getUser(email);
         // if (users.length === 0) return null;
         // let passwordsMatch = await compare(password, users[0].password!);
         // if (passwordsMatch) return users[0] as any;
-        const res = await fetch(
-            `${process.env.BACKEND_HOST}/api/v1/login/access-token`,
-            {
-              method: 'POST',
-              body: new URLSearchParams({
-                username: email,
-                password: password
-              }),
-              headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                Accept: 'application/json'
-              }
-            }
-          )
-          if (!res.ok) {
-            // credentials are invalid
-            return null
-          }
-          const response = await res.json()
-          const user = response.user as User
+        const res = await fetch(`${process.env.BACKEND_HOST}/api/v1/login/access-token`, {
+          method: "POST",
+          body: new URLSearchParams({
+            username: email,
+            password: password,
+          }),
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Accept: "application/json",
+          },
+        });
+        if (!res.ok) {
+          // credentials are invalid
+          return null;
+        }
+        const response = await res.json();
+        const user = response.user as User;
 
-          response.user.id = String(response.user.id)
-          response.user.token = response.access_token
+        response.user.id = String(response.user.id);
+        response.user.token = response.access_token;
 
-          if (!user) return null
-          return { ...user }
+        if (!user) return null;
+        return { ...user };
       },
     }),
   ],
@@ -57,20 +53,20 @@ export const {
     async jwt({ token, user }) {
       if (user) {
         // @ts-ignore
-        token = { ...token, accessToken: (user as User).token, id: user.id }
+        token = { ...token, accessToken: (user as User).token, id: user.id };
       }
 
-      return token
+      return token;
     },
     async session({ session, token }) {
       if (token) {
-        const { id, accessToken } = token as { id: string; accessToken: string }
-        const { user } = session
+        const { id, accessToken } = token as { id: string; accessToken: string };
+        const { user } = session;
         // @ts-ignore
-        session = { ...session, user: { ...user, id, accessToken } }
+        session = { ...session, user: { ...user, id, accessToken } };
       }
 
-      return session
-    }
+      return session;
+    },
   },
 });

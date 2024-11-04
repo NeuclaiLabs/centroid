@@ -1,20 +1,22 @@
-"use client"
+"use client";
 
-import { Clock, Layers, Lock, MoreVertical, Plus, Trash, User } from "lucide-react"
-import * as React from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
+import { Clock, Layers, Lock, MoreVertical, Plus, Trash, User } from "lucide-react";
+import * as React from "react";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Separator } from "@/components/ui/separator"
-import { ProjectCreate } from "./project-create"
+} from "@/components/ui/dropdown-menu";
+import { Separator } from "@/components/ui/separator";
+
+import { ProjectCreate } from "./project-create";
 
 export const Projects = () => {
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = React.useState(false);
 
   return (
     <>
@@ -24,10 +26,7 @@ export const Projects = () => {
         <div className="grid md:grid-cols-4 gap-4 mb-12">
           <Card className="w-full max-w-md" onClick={() => setOpen(true)}>
             <CardHeader className="p-6 flex flex-row items-center justify-between space-y-0">
-               <Button
-                variant="ghost"
-                className="size-8 rounded-full bg-secondary flex items-center justify-center p-0"
-              >
+              <Button variant="ghost" className="size-8 rounded-full bg-secondary flex items-center justify-center p-0">
                 <Plus className="size-4" />
               </Button>
             </CardHeader>
@@ -36,7 +35,7 @@ export const Projects = () => {
             </CardContent>
             <CardFooter className="px-6">
               <h3 className="text-sm text-primary/50">Start new project</h3>
-             </CardFooter>
+            </CardFooter>
           </Card>
           <Card className="w-full max-w-md">
             <CardHeader className="p-6 flex flex-row items-center justify-between space-y-0">
@@ -45,11 +44,7 @@ export const Projects = () => {
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-8 rounded-full flex items-center justify-center"
-                  >
+                  <Button variant="ghost" size="icon" className="size-8 rounded-full flex items-center justify-center">
                     <MoreVertical className="size-5" />
                     <span className="sr-only">More options</span>
                   </Button>
@@ -70,11 +65,10 @@ export const Projects = () => {
               <p className="text-sm text-primary/50">Updated 7 minutes ago</p>
             </CardFooter>
           </Card>
-
         </div>
       </div>
 
       <ProjectCreate open={open} onOpenChange={setOpen} />
     </>
-  )
-}
+  );
+};

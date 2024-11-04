@@ -19,9 +19,7 @@ function addToolMessageToChat({
       return {
         ...message,
         toolInvocations: message.toolInvocations.map((toolInvocation) => {
-          const toolResult = toolMessage.content.find(
-            (tool) => tool.toolCallId === toolInvocation.toolCallId,
-          );
+          const toolResult = toolMessage.content.find((tool) => tool.toolCallId === toolInvocation.toolCallId);
 
           if (toolResult) {
             return {
@@ -92,21 +90,20 @@ export default async function Page({ params }: { params: any }) {
   try {
     console.log(`Fetching chat with ID: ${id}`);
     const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/chats/${id}`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         // @ts-ignore
         Authorization: `Bearer ${session.user.accessToken}`,
       },
     });
-
 
     if (!response.ok) {
       if (response.status === 404) {
         console.log("Chat not found in API");
         return notFound();
       }
-      throw new Error('Failed to fetch chat');
+      throw new Error("Failed to fetch chat");
     }
 
     const chatFromApi = await response.json();
@@ -123,7 +120,7 @@ export default async function Page({ params }: { params: any }) {
       return notFound();
     }
 
-    return  (
+    return (
       <div className="flex flex-col gap-4 p-4 pb-0">
         <PreviewChat id={chat.id} initialMessages={chat.messages} />
       </div>
