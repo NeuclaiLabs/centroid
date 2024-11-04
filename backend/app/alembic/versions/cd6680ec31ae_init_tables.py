@@ -1,8 +1,8 @@
 """Init tables
 
-Revision ID: 9d552e52af12
+Revision ID: cd6680ec31ae
 Revises:
-Create Date: 2024-10-12 16:41:36.958461
+Create Date: 2024-11-04 11:39:33.502389
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ import sqlmodel.sql.sqltypes
 
 
 # revision identifiers, used by Alembic.
-revision = '9d552e52af12'
+revision = 'cd6680ec31ae'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -33,6 +33,8 @@ def upgrade():
     sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('description', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('users',
@@ -51,6 +53,19 @@ def upgrade():
     sa.Column('title', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('owner_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.ForeignKeyConstraint(['owner_id'], ['users.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('projects',
+    sa.Column('title', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('description', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('model', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('instructions', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('knowledge_files', sa.JSON(), nullable=True),
+    sa.Column('id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
+    sa.Column('team_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.ForeignKeyConstraint(['team_id'], ['teams.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('settings',
@@ -93,6 +108,7 @@ def downgrade():
     op.drop_table('tool_calls')
     op.drop_table('team_members')
     op.drop_table('settings')
+    op.drop_table('projects')
     op.drop_table('item')
     op.drop_index(op.f('ix_users_email'), table_name='users')
     op.drop_table('users')

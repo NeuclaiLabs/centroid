@@ -3,6 +3,14 @@ from sqlmodel import SQLModel
 
 from .chat import Chat, ChatBase, ChatMessage, ChatOut, ChatsOut, ChatUpdate
 from .item import Item, ItemBase, ItemCreate, ItemOut, ItemsOut, ItemUpdate
+from .project import (
+    Project,
+    ProjectBase,
+    ProjectCreate,
+    ProjectOut,
+    ProjectsOut,
+    ProjectUpdate,
+)
 from .setting import (
     Setting,
     SettingBase,
@@ -49,6 +57,12 @@ from .utils import Message, NewPassword, Token, TokenPayload
 
 __all__ = [
     "Item",
+    "Project",
+    "ProjectBase",
+    "ProjectCreate",
+    "ProjectOut",
+    "ProjectsOut",
+    "ProjectUpdate",
     "Setting",
     "Team",
     "TeamMember",

@@ -36,3 +36,22 @@ def create_random_team(db: Session, user: User | None = None) -> Team:
     db.refresh(team_member)
 
     return team
+
+
+def add_team_member(
+    db: Session,
+    team: Team,
+    user: User,
+    role: TeamRole = TeamRole.MEMBER,
+    invitation_status: TeamInvitationStatus = TeamInvitationStatus.ACCEPTED,
+) -> TeamMember:
+    team_member = TeamMember(
+        team_id=team.id,
+        user_id=user.id,
+        role=role,
+        invitation_status=invitation_status,
+    )
+    db.add(team_member)
+    db.commit()
+    db.refresh(team_member)
+    return team_member

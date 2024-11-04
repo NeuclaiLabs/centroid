@@ -4,6 +4,7 @@ from app.api.routes import (
     chats,
     items,
     login,
+    projects,
     settings,
     teams,
     tool_calls,
@@ -20,3 +21,4 @@ api_router.include_router(chats.router, prefix="/chats", tags=["chats"])
 api_router.include_router(tool_calls.router, prefix="/tool-calls", tags=["tool-calls"])
 api_router.include_router(settings.router, prefix="/settings", tags=["settings"])
 api_router.include_router(teams.router, prefix="/teams", tags=["teams"])
+api_router.include_router(projects.router, prefix="/projects", tags=["projects"])

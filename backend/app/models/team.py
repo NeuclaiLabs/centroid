@@ -1,14 +1,16 @@
+from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING, Optional
 
 import nanoid
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import DateTime, Field, Relationship, SQLModel, func
 
 from .user import UserOut
 
 if TYPE_CHECKING:
-    from .team import TeamMember
-    from .user import User, UserOut
+    from .project import Project
+    from .team_member import TeamMember
+    from .user import User
 
 
 class TeamRole(str, Enum):
@@ -44,16 +46,17 @@ class Team(TeamBase, table=True):
     members: list["TeamMember"] = Relationship(
         back_populates="team", cascade_delete=True
     )
-    # created_at: datetime | None = Field(
-    #     default=None,
-    #     sa_type=DateTime(timezone=True),
-    #     sa_column_kwargs={"server_default": func.now()},
-    # )
-    # updated_at: datetime | None = Field(
-    #     default=None,
-    #     sa_type=DateTime(timezone=True),
-    #     sa_column_kwargs={"server_default": func.now(), "onupdate": func.now()},
-    # )
+    projects: list["Project"] = Relationship(back_populates="team", cascade_delete=True)
+    created_at: datetime | None = Field(
+        default=None,
+        sa_type=DateTime(timezone=True),
+        sa_column_kwargs={"server_default": func.now()},
+    )
+    updated_at: datetime | None = Field(
+        default=None,
+        sa_type=DateTime(timezone=True),
+        sa_column_kwargs={"server_default": func.now(), "onupdate": func.now()},
+    )
 
 
 class TeamMemberBase(SQLModel):
