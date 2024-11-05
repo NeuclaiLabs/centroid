@@ -188,7 +188,6 @@ export function MultimodalInput({
 
       {/* Textarea wrapper */}
       <div className="grow relative pb-12">
-        {" "}
         {/* Adjust padding-bottom here */}
         <Textarea
           ref={textareaRef}
@@ -197,6 +196,7 @@ export function MultimodalInput({
           onChange={handleInput}
           className="min-h-[12px] max-h-48 border-none overflow-y-auto resize-none rounded-t-lg rounded-b-none text-base bg-muted focus:outline-none  focus-visible:ring-0 focus-visible:ring-offset-0"
           rows={2}
+          autoFocus
           onKeyDown={(event) => {
             if (event.key === "Enter" && !event.shiftKey) {
               event.preventDefault();

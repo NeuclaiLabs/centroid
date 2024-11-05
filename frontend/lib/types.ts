@@ -4,3 +4,10 @@ export interface User extends Record<string, any> {
   password: string;
   salt: string;
 }
+
+export interface Vote extends Record<string, any> {
+  id: string;
+  userId: string;
+  messageId: string;
+  isUpvoted: boolean;
+}

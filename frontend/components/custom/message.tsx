@@ -1,6 +1,6 @@
 "use client";
 
-import { Attachment, ToolInvocation } from "ai";
+import { Message } from "ai";
 import cx from "classnames";
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
@@ -9,19 +9,26 @@ import { Dispatch, ReactNode, SetStateAction } from "react";
 import { Markdown } from "./markdown";
 import { PreviewAttachment } from "./preview-attachment";
 import { Weather } from "./weather";
+import { OpenAstraIcon } from "./icons";
+import { MessageActions } from "./message-actions";
+import { Vote } from "@/lib/types";
 
-export const Message = ({
-  role,
-  content,
-  toolInvocations,
-  attachments,
+export const PreviewMessage = ({
+  message,
+  chatId,
+  vote,
+  isLoading,
 }: {
-  role: string;
-  content: string | ReactNode;
-  toolInvocations: Array<ToolInvocation> | undefined;
-  attachments?: Array<Attachment>;
+  message: Message;
+  chatId: string;
+  vote: Vote | undefined;
+  isLoading: boolean;
 }) => {
   let canvas = undefined;
+  let role = message.role;
+  let content = message.content;
+  let toolInvocations = message.toolInvocations;
+  let attachments = message.experimental_attachments;
 
   return (
     <motion.div
@@ -40,8 +47,8 @@ export const Message = ({
         )}
       >
         {role === "assistant" && (
-          <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border">
-            <Sparkles className="size-4" />
+          <div className="flex aspect-square size-8 items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700">
+            <OpenAstraIcon size={24} />
           </div>
         )}
         <div className="flex flex-col gap-2 w-full">
@@ -91,6 +98,14 @@ export const Message = ({
               ))}
             </div>
           )}
+
+          <MessageActions
+            key={`action-${message.id}`}
+            chatId={chatId}
+            message={message}
+            vote={vote}
+            isLoading={isLoading}
+          />
         </div>
       </div>
     </motion.div>
