@@ -1,8 +1,11 @@
-import { Attachment, ToolInvocation } from "ai";
-import { motion } from "framer-motion";
-import { ReactNode } from "react";
+"use client";
 
-import { OpenAstraIcon } from "./icons";
+import { Attachment, ToolInvocation } from "ai";
+import cx from "classnames";
+import { motion } from "framer-motion";
+import { Sparkles } from "lucide-react";
+import { Dispatch, ReactNode, SetStateAction } from "react";
+
 import { Markdown } from "./markdown";
 import { PreviewAttachment } from "./preview-attachment";
 import { Weather } from "./weather";
@@ -18,73 +21,78 @@ export const Message = ({
   toolInvocations: Array<ToolInvocation> | undefined;
   attachments?: Array<Attachment>;
 }) => {
+  let canvas = undefined;
+
   return (
     <motion.div
-      className={`flex ${role === "assistant" ? "flex-row" : "flex-row-reverse"} gap-2 md:gap-4 px-2 md:px-4 w-full`}
+      className="w-full mx-auto max-w-3xl px-4 group/message "
       initial={{ y: 5, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
+      data-role={role}
     >
-      {role === "assistant" && (
-        <div className="shrink-0 flex flex-col justify-start items-center">
-          <div className="flex aspect-square items-center justify-center rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-            <OpenAstraIcon size={24} />
-          </div>
-        </div>
-      )}
-
       <div
-        className={`flex flex-col ${
-          role === "assistant"
-            ? "grow rounded-lg pb-3 max-w-full md:max-w-[85%] lg:max-w-[90%]"
-            : "ml-auto max-w-[85%] md:max-w-[75%] bg-secondary m-2 md:m-4 rounded-full p-3 md:p-4"
-        }`}
+        className={cx(
+          "flex gap-4 group-data-[role=user]/message:px-5 w-full group-data-[role=user]/message:w-fit group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:py-3.5 rounded-xl",
+          {
+            "group-data-[role=user]/message:bg-muted": !canvas,
+            "group-data-[role=user]/message:bg-zinc-300 dark:group-data-[role=user]/message:bg-zinc-800": canvas,
+          }
+        )}
       >
-        {content && (
-          <div className="flex flex-col gap-2 md:gap-4 break-words">
-            <Markdown>{content as string}</Markdown>
+        {role === "assistant" && (
+          <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border">
+            <Sparkles className="size-4" />
           </div>
         )}
+        <div className="flex flex-col gap-2 w-full">
+          {content && (
+            <div className="flex flex-col gap-4">
+              <Markdown>{content as string}</Markdown>
+            </div>
+          )}
 
-        {toolInvocations && (
-          <div className="flex flex-col gap-2 md:gap-4">
-            {toolInvocations.map((toolInvocation) => {
-              const { toolName, toolCallId, state } = toolInvocation;
+          {toolInvocations && toolInvocations.length > 0 && (
+            <div className="flex flex-col gap-4">
+              {toolInvocations.map((toolInvocation) => {
+                const { toolName, toolCallId, state, args } = toolInvocation;
 
-              if (state === "result") {
-                const { result } = toolInvocation;
+                if (state === "result") {
+                  const { result } = toolInvocation;
 
-                return (
-                  <div key={toolCallId} className="w-full overflow-x-auto">
-                    {toolName === "getWeather" ? (
-                      <Weather weatherAtLocation={result} />
-                    ) : toolName === "calculator" ? (
-                      <div className="break-words">Calculator Result: {result}</div>
-                    ) : null}
-                  </div>
-                );
-              } else {
-                return (
-                  <div key={toolCallId} className="skeleton w-full">
-                    {toolName === "getWeather" ? <Weather /> : null}
-                  </div>
-                );
-              }
-            })}
-          </div>
-        )}
+                  return (
+                    <div key={toolCallId}>
+                      {toolName === "getWeather" ? (
+                        <Weather weatherAtLocation={result} />
+                      ) : (
+                        <pre>{JSON.stringify(result, null, 2)}</pre>
+                      )}
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div
+                      key={toolCallId}
+                      className={cx({
+                        skeleton: ["getWeather"].includes(toolName),
+                      })}
+                    >
+                      {toolName === "getWeather" ? <Weather /> : null}
+                    </div>
+                  );
+                }
+              })}
+            </div>
+          )}
 
-        {attachments && (
-          <div className="flex flex-row gap-2 flex-wrap">
-            {attachments.map((attachment) => (
-              <div key={attachment.url} className="max-w-full">
-                <PreviewAttachment attachment={attachment} />
-              </div>
-            ))}
-          </div>
-        )}
+          {attachments && (
+            <div className="flex flex-row gap-2">
+              {attachments.map((attachment) => (
+                <PreviewAttachment key={attachment.url} attachment={attachment} />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </motion.div>
   );
 };
-
-export default Message;

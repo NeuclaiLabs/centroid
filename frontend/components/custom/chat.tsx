@@ -111,7 +111,7 @@ export function Chat({ id, initialMessages }: { id: string; initialMessages: Arr
               {messages.map((message, index) => (
                 <div
                   key={`${message.id || `${id}-${index}`}`}
-                  className="mb-2 break-words overflow-hidden message-container"
+                  className="mb-4 break-words overflow-hidden message-container"
                 >
                   <PreviewMessage
                     role={message.role}

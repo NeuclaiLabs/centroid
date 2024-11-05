@@ -148,7 +148,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }, [currentTeam]);
 
   return (
-    <Sidebar variant="inset" className="bg-sidebar text-sidebar-foreground" {...props}>
+    <Sidebar className="group-data-[side=left]:border-r-0 bg-sidebar text-sidebar-foreground" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
