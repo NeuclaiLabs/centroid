@@ -6,7 +6,7 @@
     "prettier",
     "plugin:tailwindcss/recommended"
   ],
-  "plugins": ["import", "tailwindcss", "prettier"],
+  "plugins": ["import", "tailwindcss", "prettier", "unused-imports"],
   "rules": {
     "prettier/prettier": "error",
     "tailwindcss/no-custom-classname": "off",
@@ -21,7 +21,8 @@
           "caseInsensitive": true
         }
       }
-    ]
+    ],
+    "unused-imports/no-unused-imports": "error"
   },
   "settings": {
     "import/resolver": {

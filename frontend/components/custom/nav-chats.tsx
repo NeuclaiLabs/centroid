@@ -1,13 +1,9 @@
 "use client";
 
-import { ChevronRightIcon, Folder, InfoIcon, MoreHorizontal, Share, Trash2, type LucideIcon } from "lucide-react";
+import { ChevronRightIcon, Folder, InfoIcon, MoreHorizontal, Share, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { User } from "next-auth";
-import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { toast } from "sonner";
-import useSWR from "swr";
 
 import {
   AlertDialog,
@@ -33,10 +29,9 @@ import {
   SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/components/ui/sidebar";
 import { Chat } from "@/db/schema";
-import { fetcher } from "@/lib/utils";
+import { getTitleFromChat } from "@/lib/utils";
 
 export function NavChats({
   history,
@@ -86,7 +81,7 @@ export function NavChats({
               <SidebarMenuButton asChild className="hover:bg-sidebar-accent transition-colors">
                 <Link href={`/chat/${chat.id}`} className="flex items-center gap-2 p-2 rounded-md">
                   <span className="overflow-hidden whitespace-nowrap" style={{ textOverflow: "clip" }}>
-                    {chat.messages?.[0]?.content || "New Chat"}
+                    {getTitleFromChat(chat)}
                   </span>
                 </Link>
               </SidebarMenuButton>

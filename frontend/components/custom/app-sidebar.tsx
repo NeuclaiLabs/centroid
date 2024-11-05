@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, LifeBuoy, Send, Shapes, Flag, Users } from "lucide-react";
+import { LifeBuoy, Send, Shapes, Flag, Users } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import * as React from "react";

@@ -1,12 +1,12 @@
 "use client";
 
 import { Attachment, ChatRequestOptions, CreateMessage, Message } from "ai";
-import { motion } from "framer-motion";
-import { Paperclip, PlusIcon, ChevronDownIcon } from "lucide-react";
+import { Paperclip, ChevronDownIcon } from "lucide-react";
 import React, { useRef, useEffect, useState, useCallback, Dispatch, SetStateAction, ChangeEvent } from "react";
 import { toast } from "sonner";
+import { useLocalStorage } from "usehooks-ts";
 
-import { ArrowUpIcon, PaperclipIcon, StopIcon } from "./icons";
+import { ArrowUpIcon, StopIcon } from "./icons";
 import { PreviewAttachment } from "./preview-attachment";
 import { Button } from "../ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
@@ -69,6 +69,22 @@ export function MultimodalInput({
     }
   };
 
+  const [localStorageInput, setLocalStorageInput] = useLocalStorage("input", "");
+  useEffect(() => {
+    if (textareaRef.current) {
+      const domValue = textareaRef.current.value;
+      // Prefer DOM value over localStorage to handle hydration
+      const finalValue = domValue || localStorageInput || "";
+      setInput(finalValue);
+      adjustHeight();
+    }
+    // Only run once after hydration
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => {
+    setLocalStorageInput(input);
+  }, [input, setLocalStorageInput]);
+
   const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(event.target.value);
     adjustHeight();
@@ -83,7 +99,8 @@ export function MultimodalInput({
     });
 
     setAttachments([]);
-  }, [attachments, handleSubmit, setAttachments]);
+    setLocalStorageInput("");
+  }, [attachments, handleSubmit, setAttachments, setLocalStorageInput]);
 
   const uploadFile = async (file: File) => {
     const formData = new FormData();

@@ -1,6 +1,5 @@
 import { NextAuthConfig } from "next-auth";
 
-import type { User } from "@/lib/types";
 export const authConfig = {
   secret: process.env.SECRET_KEY,
   session: {
