@@ -21,9 +21,10 @@ import { Skeleton } from "../ui/skeleton";
 interface ProjectsProps {
   data: Project[] | null;
   isLoading: boolean;
+  count: number;
 }
 
-export const Projects = ({ data, isLoading }: ProjectsProps) => {
+export const Projects = ({ data, count, isLoading }: ProjectsProps) => {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
 
@@ -33,7 +34,7 @@ export const Projects = ({ data, isLoading }: ProjectsProps) => {
         <h1 className="text-2xl font-semibold mb-8 mx-auto">Projects</h1>
 
         <div className="grid md:grid-cols-4 gap-4 mb-12">
-          {isLoading ? (
+          {isLoading || !data ? (
             <>
               {[1, 2, 3].map((i) => (
                 <Card key={i} className="w-full max-w-md">

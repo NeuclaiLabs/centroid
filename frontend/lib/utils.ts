@@ -12,8 +12,18 @@ interface ApplicationError extends Error {
   status: number;
 }
 
-export const fetcher = async (url: string) => {
-  const res = await fetch(url);
+export const fetcher = async (url: string, token?: string) => {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const res = await fetch(url, {
+    headers,
+  });
 
   if (!res.ok) {
     const error = new Error("An error occurred while fetching the data.") as ApplicationError;
@@ -113,20 +123,3 @@ export function getTitleFromChat(chat: Chat) {
   }
   return firstMessage.content;
 }
-
-
-export const backendFetcher = async (url: string, token: string) => {
-  const response = await fetch(url, {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch projects");
-  }
-
-  const data = await response.json();
-  return data.data;
-};

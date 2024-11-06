@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import useSWR from "swr";
 import { useSession } from "next-auth/react";
 import { useTeams } from "@/components/custom/teams-provider";
-import { backendFetcher } from "@/lib/utils";
+import { fetcher } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -75,7 +75,7 @@ export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) 
       : null;
 
   // SWR hook for the projects list
-  const { mutate: mutateProjects } = useSWR(projectsKey, ([url, token]) => backendFetcher(url, token));
+  const { mutate: mutateProjects } = useSWR(projectsKey, ([url, token]) => fetcher(url, token));
 
   // @ts-ignore
   const { trigger: createProject, isMutating: isLoading } = useCreateProject(session?.user?.accessToken);

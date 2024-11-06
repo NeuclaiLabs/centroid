@@ -4,13 +4,17 @@ import useSWR from "swr";
 import { Projects } from "@/components/custom/projects";
 import { useSession } from "next-auth/react";
 import { useTeams } from "@/components/custom/teams-provider";
-import { backendFetcher as fetcher } from "@/lib/utils";
+import { fetcher } from "@/lib/utils";
 
 export default function Page() {
   const { data: session } = useSession();
   const { currentTeam } = useTeams();
 
-  const { data: projects, error, isLoading } = useSWR(
+  const {
+    data: res,
+    error,
+    isLoading,
+  } = useSWR(
     session?.user && currentTeam
       ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/?team_id=${currentTeam.id}`, session.user.accessToken]
       : null,
@@ -23,7 +27,7 @@ export default function Page() {
 
   return (
     <div className="flex flex-col gap-4 p-4">
-      <Projects data={projects} isLoading={isLoading} />
+      <Projects data={res?.data} count={res?.count} isLoading={isLoading} />
     </div>
   );
 }

@@ -2,10 +2,12 @@
 
 import { MoreHorizontal, PenLine, Plus, Timer, Upload, Bot, Sparkles } from "lucide-react";
 import * as React from "react";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Project } from "@/lib/types";
@@ -17,6 +19,21 @@ interface ProjectProps {
 export function Project({ isLoading, data }: ProjectProps) {
   let threads = null;
   console.log(data);
+
+  // Add state for editing
+  const [editingField, setEditingField] = useState<string | null>(null);
+  const [editedValues, setEditedValues] = useState({
+    title: data?.title || "",
+    description: data?.description || "",
+    instructions: data?.instructions || "",
+  });
+
+  // Add handler for saving edits
+  const handleSave = (field: string) => {
+    // TODO: Implement save logic here
+    setEditingField(null);
+  };
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen flex-col lg:flex-row p-6">
@@ -134,18 +151,58 @@ export function Project({ isLoading, data }: ProjectProps) {
         <div className="space-y-6">
           {/* Title Section */}
           <div className="space-y-2">
-            <h2 className="font-semibold">Title</h2>
-            <p className="text-sm text-muted-foreground">{JSON.stringify(data)}</p>
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold">Title</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setEditingField(editingField === 'title' ? null : 'title')}
+              >
+                {editingField === 'title' ? 'Cancel' : 'Edit'}
+              </Button>
+            </div>
+            {editingField === 'title' ? (
+              <div className="flex gap-2">
+                <Input
+                  value={editedValues.title}
+                  onChange={(e) => setEditedValues({ ...editedValues, title: e.target.value })}
+                  className="text-sm"
+                />
+                <Button size="sm" onClick={() => handleSave('title')}>Save</Button>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">{data?.title}</p>
+            )}
           </div>
 
           <Separator />
 
           {/* Description Section */}
-          {data?.description && (
+          {(data?.description || editingField === 'description') && (
             <>
               <div className="space-y-2">
-                <h2 className="font-semibold">Description</h2>
-                <p className="text-sm text-muted-foreground">{data?.description}</p>
+                <div className="flex items-center justify-between">
+                  <h2 className="font-semibold">Description</h2>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setEditingField(editingField === 'description' ? null : 'description')}
+                  >
+                    {editingField === 'description' ? 'Cancel' : 'Edit'}
+                  </Button>
+                </div>
+                {editingField === 'description' ? (
+                  <div className="flex flex-col gap-2">
+                    <Textarea
+                      value={editedValues.description}
+                      onChange={(e) => setEditedValues({ ...editedValues, description: e.target.value })}
+                      className="text-sm"
+                    />
+                    <Button size="sm" onClick={() => handleSave('description')}>Save</Button>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">{data?.description}</p>
+                )}
               </div>
               <Separator />
             </>
@@ -171,11 +228,26 @@ export function Project({ isLoading, data }: ProjectProps) {
                 <PenLine className="size-4" />
                 <h2 className="font-semibold">Instructions</h2>
               </div>
-              <Button variant="ghost" size="sm">
-                Edit
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setEditingField(editingField === 'instructions' ? null : 'instructions')}
+              >
+                {editingField === 'instructions' ? 'Cancel' : 'Edit'}
               </Button>
             </div>
-            <p className="text-sm text-muted-foreground">{data?.instructions || "No custom instructions added."}</p>
+            {editingField === 'instructions' ? (
+              <div className="flex flex-col gap-2">
+                <Textarea
+                  value={editedValues.instructions}
+                  onChange={(e) => setEditedValues({ ...editedValues, instructions: e.target.value })}
+                  className="text-sm"
+                />
+                <Button size="sm" onClick={() => handleSave('instructions')}>Save</Button>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">{data?.instructions || "No custom instructions added."}</p>
+            )}
           </div>
 
           <Separator />
