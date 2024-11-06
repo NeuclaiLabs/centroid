@@ -1,6 +1,10 @@
 import { Upload, X } from "lucide-react";
 import * as React from "react";
 import { useRef, useState } from "react";
+import useSWR from "swr";
+import { useSession } from "next-auth/react";
+import { useTeams } from "@/components/custom/teams-provider";
+import { backendFetcher } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -16,13 +20,90 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import useSWRMutation from "swr/mutation";
 
 interface ProjectCreateDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
+interface CreateProjectData {
+  title: string;
+  description: string;
+  model: string;
+  instructions: string;
+  team_id: string;
+}
+
+function useCreateProject(token: string | undefined) {
+  return useSWRMutation(
+    token ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/`, token] : null,
+    async ([url, token], { arg: data }: { arg: CreateProjectData }) => {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create project");
+      }
+
+      return response.json() as Promise<Project>;
+    }
+  );
+}
+
 export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) => {
+  const { data: session } = useSession();
+  const { currentTeam } = useTeams();
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    model: "default",
+    instructions: "",
+  });
+
+  // Key for projects list
+  const projectsKey =
+    session?.user && currentTeam
+      // @ts-ignore
+      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/?team_id=${currentTeam.id}`, session.user.accessToken]
+      : null;
+
+  // SWR hook for the projects list
+  const { mutate: mutateProjects } = useSWR(projectsKey, ([url, token]) => backendFetcher(url, token));
+
+  // @ts-ignore
+  const { trigger: createProject, isMutating: isLoading } = useCreateProject(session?.user?.accessToken);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // @ts-ignore
+    if (!session?.user?.accessToken || !currentTeam) return;
+
+    try {
+      const newProject = await createProject({
+        ...formData,
+        team_id: currentTeam.id,
+      });
+
+      await mutateProjects((currentData: any) => ({
+        ...currentData,
+        data: [...(currentData?.data || []), newProject],
+        count: (currentData?.count || 0) + 1,
+      }));
+
+      onOpenChange(false);
+      setFormData({ title: "", description: "", model: "default", instructions: "" });
+    } catch (error) {
+      console.error("Error creating project:", error);
+    }
+  };
+
   const [files, setFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -50,11 +131,17 @@ export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) 
           </div>
           <Separator className="my-4" />
         </DialogHeader>
-        <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+        <form id="create-project-form" className="space-y-6" onSubmit={handleSubmit}>
           <div className="flex gap-4">
             <div className="flex-1">
               <Label htmlFor="title">Title</Label>
-              <Input id="title" placeholder="Team Space..." className="mt-2" />
+              <Input
+                id="title"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                placeholder="Team Space..."
+                className="mt-2"
+              />
             </div>
           </div>
 
@@ -62,6 +149,8 @@ export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) 
             <Label htmlFor="description">Description (optional)</Label>
             <Textarea
               id="description"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="A collaborative space for discussing latest insights..."
               className="mt-2"
             />
@@ -69,7 +158,10 @@ export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) 
 
           <div>
             <Label htmlFor="model">AI Model</Label>
-            <Select defaultValue="default">
+            <Select
+              value={formData.model}
+              onValueChange={(value) => setFormData({ ...formData, model: value })}
+            >
               <SelectTrigger className="mt-2">
                 <SelectValue placeholder="Select a model" />
               </SelectTrigger>
@@ -120,7 +212,9 @@ export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) 
           <Button variant="secondary" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button>Continue</Button>
+          <Button type="submit" form="create-project-form">
+            Continue
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

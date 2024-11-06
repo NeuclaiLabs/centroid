@@ -113,3 +113,20 @@ export function getTitleFromChat(chat: Chat) {
   }
   return firstMessage.content;
 }
+
+
+export const backendFetcher = async (url: string, token: string) => {
+  const response = await fetch(url, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch projects");
+  }
+
+  const data = await response.json();
+  return data.data;
+};

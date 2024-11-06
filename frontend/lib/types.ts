@@ -3,6 +3,7 @@ export interface User extends Record<string, any> {
   email: string;
   password: string;
   salt: string;
+  accessToken: string;
 }
 
 export interface Vote extends Record<string, any> {
@@ -10,4 +11,16 @@ export interface Vote extends Record<string, any> {
   userId: string;
   messageId: string;
   isUpvoted: boolean;
+}
+
+export interface Project {
+  id: string;
+  title: string;
+  description: string;
+  model: string;
+  instructions: string;
+  files: string[];
+  threads: string[];
+  updated_at: string;
+  // add other project fields as needed
 }

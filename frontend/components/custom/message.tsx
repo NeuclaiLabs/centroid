@@ -39,7 +39,7 @@ export const PreviewMessage = ({
     >
       <div
         className={cx(
-          "flex gap-4 group-data-[role=user]/message:px-5 w-full group-data-[role=user]/message:w-fit group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:py-3.5 rounded-xl",
+          "flex gap-4 group-data-[role=user]/message:px-3 w-full group-data-[role=user]/message:w-fit group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:py-2 rounded-xl",
           {
             "group-data-[role=user]/message:bg-muted": !canvas,
             "group-data-[role=user]/message:bg-zinc-300 dark:group-data-[role=user]/message:bg-zinc-800": canvas,

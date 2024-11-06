@@ -1,29 +1,25 @@
-"use client";
+'use client';
 
 import useSWR from "swr";
-import { Projects } from "@/components/custom/projects";
 import { useSession } from "next-auth/react";
 import { useTeams } from "@/components/custom/teams-provider";
 import { backendFetcher as fetcher } from "@/lib/utils";
+import { Project } from "@/components/custom/project";
 
-export default function Page() {
+export default function Page({ params }: { params: { id: string } }) {
   const { data: session } = useSession();
   const { currentTeam } = useTeams();
 
-  const { data: projects, error, isLoading } = useSWR(
+  const { data: project, error, isLoading } = useSWR(
     session?.user && currentTeam
-      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/?team_id=${currentTeam.id}`, session.user.accessToken]
+      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/${params.id}`, session.user.accessToken]
       : null,
     ([url, token]) => fetcher(url, token)
   );
 
-  if (error) {
-    console.error("Error fetching projects:", error);
-  }
-
   return (
     <div className="flex flex-col gap-4 p-4">
-      <Projects data={projects} isLoading={isLoading} />
+      <Project isLoading={isLoading} data={project} />
     </div>
   );
 }

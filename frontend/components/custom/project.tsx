@@ -7,46 +7,65 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
-
+import { Skeleton } from "@/components/ui/skeleton";
+import type { Project } from "@/lib/types";
 interface ProjectProps {
-  title: string;
-  description?: string;
-  model?: string;
-  instructions?: string;
-  files?: Array<{
-    name: string;
-  }>;
-  threads?: Array<{
-    id: string;
-    content: string;
-    response: string;
-    timestamp: string;
-    status: string;
-  }>;
+  data?: Project;
+  isLoading?: boolean;
 }
 
-export function Project({
-  title = "Test",
-  description,
-  model = "Default",
-  instructions,
-  files = [],
-  threads = [
-    {
-      id: "1",
-      content: "hi",
-      response: "Hello! How can I assist you today?",
-      timestamp: "15 minutes ago",
-      status: "Writing",
-    },
-  ],
-}: ProjectProps) {
+export function Project({ isLoading, data }: ProjectProps) {
+  let threads = null;
+  console.log(data);
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen flex-col lg:flex-row p-6">
+        {/* Main Content Skeleton */}
+        <div className="flex-1 p-6 border-r">
+          {/* Title skeleton */}
+          <Skeleton className="h-8 w-48 mb-8" />
+
+          {/* New thread input skeleton */}
+          <Skeleton className="h-32 mb-8" />
+
+          {/* Threads skeleton */}
+          <div className="space-y-6">
+            <Skeleton className="h-6 w-24" />
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="p-4 space-y-4 border rounded-lg">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                  <div className="flex justify-between">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-8" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Sidebar Skeleton */}
+        <div className="w-full lg:w-80 p-6 bg-muted/30">
+          <div className="space-y-8">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-full" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col lg:flex-row p-6">
       {/* Main Content */}
       <div className="flex-1 p-6 border-r overflow-y-auto">
-        <h1 className="text-3xl font-semibold mb-8">{title}</h1>
+        <h1 className="text-3xl font-semibold mb-8">{data?.title}</h1>
 
         {/* New Thread Input */}
         <Card className="p-4 mb-8">
@@ -68,7 +87,7 @@ export function Project({
                   <Sparkles className="size-5" />
                 </div>
                 <div className="flex items-center gap-2">
-                  <Switch />
+                  {/* <Switch /> */}
                   <span>Pro</span>
                 </div>
                 <Button size="sm">
@@ -87,7 +106,7 @@ export function Project({
             <h2 className="text-lg font-semibold">Threads</h2>
           </div>
 
-          {threads.map((thread) => (
+          {threads?.map((thread) => (
             <Card key={thread.id} className="p-4">
               <div className="space-y-4">
                 <div className="font-medium">{thread.content}</div>
@@ -116,17 +135,17 @@ export function Project({
           {/* Title Section */}
           <div className="space-y-2">
             <h2 className="font-semibold">Title</h2>
-            <p className="text-sm text-muted-foreground">{title}</p>
+            <p className="text-sm text-muted-foreground">{JSON.stringify(data)}</p>
           </div>
 
           <Separator />
 
           {/* Description Section */}
-          {description && (
+          {data?.description && (
             <>
               <div className="space-y-2">
                 <h2 className="font-semibold">Description</h2>
-                <p className="text-sm text-muted-foreground">{description}</p>
+                <p className="text-sm text-muted-foreground">{data?.description}</p>
               </div>
               <Separator />
             </>
@@ -140,7 +159,7 @@ export function Project({
                 <h2 className="font-semibold">AI Model</h2>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground">{model || "Default"}</p>
+            <p className="text-sm text-muted-foreground">{data?.model || "Default"}</p>
           </div>
 
           <Separator />
@@ -156,7 +175,7 @@ export function Project({
                 Edit
               </Button>
             </div>
-            <p className="text-sm text-muted-foreground">{instructions || "No custom instructions added."}</p>
+            <p className="text-sm text-muted-foreground">{data?.instructions || "No custom instructions added."}</p>
           </div>
 
           <Separator />
@@ -172,11 +191,11 @@ export function Project({
                 <Plus className="size-4" />
               </Button>
             </div>
-            {files && files.length > 0 ? (
+            {data?.files && data?.files.length > 0 ? (
               <ul className="space-y-2">
-                {files.map((file, index) => (
+                {data?.files.map((file, index) => (
                   <li key={index} className="text-sm flex items-center justify-between">
-                    <span>{file.name}</span>
+                    <span>{file}</span>
                     <Button variant="ghost" size="icon">
                       <MoreHorizontal className="size-4" />
                     </Button>
