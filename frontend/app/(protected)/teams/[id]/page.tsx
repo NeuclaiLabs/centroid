@@ -10,9 +10,14 @@ export default function Page({ params }: { params: any }) {
   const teamId = params.id;
   const { data: session } = useSession();
 
-  const { data: members, mutate: mutateMembers } = useSWR(
-    teamId ? `/api/teams/${teamId}/members` : null,
-    fetcher,
+  const {
+    data: {data: members, count},
+    mutate: mutateMembers
+  } = useSWR(
+    session?.user && teamId
+      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/teams/${teamId}/members`, session?.user?.accessToken]
+      : null,
+    ([url, token]) => fetcher(url, token),
     { fallbackData: [] }
   );
 
@@ -20,9 +25,13 @@ export default function Page({ params }: { params: any }) {
     data: team,
     isLoading,
     mutate: mutateTeam,
-  } = useSWR(teamId ? `/api/teams/${teamId}` : null, fetcher, {
-    fallbackData: {},
-  });
+  } = useSWR(
+    session?.user && teamId
+      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/teams/${teamId}`, session?.user?.accessToken]
+      : null,
+    ([url, token]) => fetcher(url, token),
+    { fallbackData: {} }
+  );
 
   return (
     <Team

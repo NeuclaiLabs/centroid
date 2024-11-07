@@ -3,10 +3,12 @@ import { toast } from "sonner";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import useSWRMutation from "swr/mutation";
 
 import { TeamHeader } from "@/components/custom/team-header";
 import { InviteMemberDialog } from "@/components/custom/invite-member";
 import { MembersList } from "@/components/custom/team-members";
+import { useSession } from "next-auth/react";
 
 interface TeamProps {
   team: any;
@@ -15,6 +17,61 @@ interface TeamProps {
   mutateTeam: (data: any) => void;
   mutateMembers: () => void;
   teamId: string;
+}
+
+function useUpdateTeam(teamId: string, token: string | undefined) {
+  return useSWRMutation(
+    token ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/teams/${teamId}`, token]: null,
+    async ([url, token], { arg }: { arg: { name?: string; description?: string } }) => {
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(arg),
+      });
+      console.log(response);
+      if (!response.ok) throw new Error("Failed to update team");
+      return response.json();
+    }
+  );
+}
+
+function useInviteMembers(teamId: string, token: string | undefined) {
+  return useSWRMutation(
+    token ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/teams/${teamId}/members`, token] : null,
+    async ([url, token], { arg }: { arg: { email: string }[] }) => {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(arg),
+      });
+      if (!response.ok) throw new Error("Failed to send invitations");
+      return response.json();
+    }
+  );
+}
+
+function useUpdateMemberRole(teamId: string, token: string | undefined) {
+  return useSWRMutation(
+    token ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/teams/${teamId}/members`, token] : null,
+    async ([url, token], { arg }: { arg: { userId: string; role: string } }) => {
+      const response = await fetch(`${url}/${arg.userId}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ role: arg.role }),
+      });
+      if (!response.ok) throw new Error("Failed to update role");
+      return response.json();
+    }
+  );
 }
 
 export function Team({ team, members, isLoading, mutateTeam, mutateMembers, teamId }: TeamProps) {
@@ -28,6 +85,7 @@ export function Team({ team, members, isLoading, mutateTeam, mutateMembers, team
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentTab, setCurrentTab] = useState("members");
+  const { data: session } = useSession();
 
   const roles = ["owner", "admin", "member"];
 
@@ -38,6 +96,14 @@ export function Team({ team, members, isLoading, mutateTeam, mutateMembers, team
     }
   }, [team]);
 
+  // Mutation hooks
+  // @ts-ignore
+  const { trigger: updateTeam } = useUpdateTeam(teamId, session?.user?.accessToken);
+  // @ts-ignore
+  const { trigger: inviteMembers } = useInviteMembers(teamId, session?.user?.accessToken);
+  // @ts-ignore
+  const { trigger: updateRole } = useUpdateMemberRole(teamId, session?.user?.accessToken);
+
   // Handlers
   const handleTitleSubmit = async () => {
     if (tempTitle === team.name) {
@@ -46,10 +112,7 @@ export function Team({ team, members, isLoading, mutateTeam, mutateMembers, team
     }
 
     try {
-      const response = await fetch(`/api/teams/${teamId}`, {
-        method: "PUT",
-        body: JSON.stringify({ name: tempTitle }),
-      });
+      await updateTeam({ name: tempTitle });
       mutateTeam({ ...team, name: tempTitle });
       setIsEditingTitle(false);
       toast.success("Team name updated successfully");
@@ -66,10 +129,7 @@ export function Team({ team, members, isLoading, mutateTeam, mutateMembers, team
     }
 
     try {
-      const response = await fetch(`/api/teams/${teamId}`, {
-        method: "PUT",
-        body: JSON.stringify({ description: tempDescription }),
-      });
+      await updateTeam({ description: tempDescription });
       mutateTeam({ ...team, description: tempDescription });
       setIsEditingDescription(false);
       toast.success("Team description updated successfully");
@@ -94,15 +154,7 @@ export function Team({ team, members, isLoading, mutateTeam, mutateMembers, team
   const handleInviteMember = async () => {
     setIsSubmitting(true);
     try {
-      const response = await fetch(`/api/teams/${teamId}/members`, {
-        method: "POST",
-        body: JSON.stringify(emailList.map((email) => ({ email }))),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to send invitations");
-      }
-
+      await inviteMembers(emailList.map((email) => ({ email })));
       mutateMembers();
       setIsInviteDialogOpen(false);
       setEmailList([]);
@@ -118,15 +170,7 @@ export function Team({ team, members, isLoading, mutateTeam, mutateMembers, team
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
-      const response = await fetch(`/api/teams/${teamId}/members/${userId}`, {
-        method: "PUT",
-        body: JSON.stringify({ role: newRole }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update role");
-      }
-
+      await updateRole({ userId, role: newRole });
       mutateMembers();
       toast.success("Member role updated successfully");
     } catch (error) {
@@ -141,7 +185,6 @@ export function Team({ team, members, isLoading, mutateTeam, mutateMembers, team
       submitFunction();
     }
   };
-
   const acceptedMembers = members?.filter((member: any) => member.invitation_status === "accepted") || [];
   const pendingMembers = members?.filter((member: any) => member.invitation_status === "pending") || [];
 

@@ -21,6 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import useSWRMutation from "swr/mutation";
+import { Project } from "@/lib/types";
 
 interface ProjectCreateDialogProps {
   open: boolean;
