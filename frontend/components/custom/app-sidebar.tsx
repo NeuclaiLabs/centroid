@@ -128,17 +128,19 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
-  const user = session?.user;
-  const { teams, selectedTeamId, isLoading: teamsIsLoading } = useTeams();
+  const { selectedTeamId } = useTeams();
 
   // Retrieve chat history
   const {
-    data: history,
+    data: res,
     isLoading,
     mutate,
-  } = useSWR<Array<Chat>>(user ? "/api/history" : null, fetcher, {
-    fallbackData: [],
-  });
+  } = useSWR(
+    session?.user
+      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/?skip=0&limit=5`, session.user.accessToken]
+      : null,
+    ([url, token]) => fetcher(url, token as string)
+  );
 
   // Modify navMain data to include team ID from teams data
   const navMainWithTeamId = React.useMemo(() => {
@@ -169,7 +171,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain items={navMainWithTeamId} />
         {/* Pass chats to NavChats */}
-        <NavChats history={history || []} isLoading={isLoading} mutate={mutate} />
+        <NavChats history={res?.data} count={res?.count} isLoading={isLoading} mutate={mutate} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

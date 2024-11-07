@@ -12,7 +12,7 @@ export default function Page({ params }: { params: any }) {
   const { data: session } = useSession();
 
   const {
-    data: { data: members, count },
+    data: res,
     mutate: mutateMembers,
     isLoading: isLoadingMembers,
   } = useSWR(
@@ -38,7 +38,7 @@ export default function Page({ params }: { params: any }) {
   return (
     <Team
       team={team}
-      members={members}
+      members={res?.members}
       isLoading={isLoading}
       mutateTeam={mutateTeam}
       mutateMembers={mutateMembers}

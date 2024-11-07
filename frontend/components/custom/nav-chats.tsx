@@ -32,13 +32,16 @@ import {
 } from "@/components/ui/sidebar";
 import { Chat } from "@/db/schema";
 import { getTitleFromChat } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function NavChats({
   history,
+  count,
   isLoading,
   mutate,
 }: {
-  history: Chat[];
+  history: Chat[] | undefined;
+  count: number | undefined;
   isLoading: boolean;
   mutate: (history: Chat[]) => void;
 }) {
@@ -69,52 +72,62 @@ export function NavChats({
       <SidebarGroup className="group-data-[collapsible=icon]:hidden">
         <SidebarGroupLabel className="text-foreground/50 text-sm">Recent chats</SidebarGroupLabel>
         <SidebarMenu>
-          {!isLoading && history?.length === 0 ? (
+          {isLoading && count === undefined ? (
+            <>
+              {[...Array(3)].map((_, i) => (
+                <SidebarMenuItem key={`skeleton-${i}`}>
+                  <div className="flex items-center gap-2 p-2">
+                    <Skeleton className="h-4 w-[80%]" />
+                  </div>
+                </SidebarMenuItem>
+              ))}
+            </>
+          ) : count === 0 ? (
             <div className="text-foreground h-[30dvh] w-full flex flex-row justify-center items-center text-sm gap-2">
               <InfoIcon />
               <div>No chats found</div>
             </div>
-          ) : null}
-
-          {history?.map((chat) => (
-            <SidebarMenuItem key={chat.id}>
-              <SidebarMenuButton asChild className="hover:bg-sidebar-accent transition-colors">
-                <Link href={`/chat/${chat.id}`} className="flex items-center gap-2 p-2 rounded-md">
-                  <span className="overflow-hidden whitespace-nowrap" style={{ textOverflow: "clip" }}>
-                    {getTitleFromChat(chat)}
-                  </span>
-                </Link>
-              </SidebarMenuButton>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <SidebarMenuAction showOnHover className="hover:bg-sidebar-accent transition-colors rounded-md">
-                    <MoreHorizontal className="size-4 " />
-                    <span className="sr-only text-sm">More</span>
-                  </SidebarMenuAction>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-48" side="right" align="start">
-                  <DropdownMenuItem>
-                    <Folder className="mr-2 size-4 text-muted-foreground" />
-                    <span>View Project</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Share className="mr-2 size-4 text-muted-foreground" />
-                    <span>Share Project</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => {
-                      setDeleteId(chat.id);
-                      setShowDeleteDialog(true);
-                    }}
-                  >
-                    <Trash2 className="mr-2 size-4 text-muted-foreground" />
-                    <span>Delete Project</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </SidebarMenuItem>
-          ))}
+          ) : (
+            history?.map((chat) => (
+              <SidebarMenuItem key={chat.id}>
+                <SidebarMenuButton asChild className="hover:bg-sidebar-accent transition-colors">
+                  <Link href={`/chat/${chat.id}`} className="flex items-center gap-2 p-2 rounded-md">
+                    <span className="overflow-hidden whitespace-nowrap" style={{ textOverflow: "clip" }}>
+                      {getTitleFromChat(chat)}
+                    </span>
+                  </Link>
+                </SidebarMenuButton>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <SidebarMenuAction showOnHover className="hover:bg-sidebar-accent transition-colors rounded-md">
+                      <MoreHorizontal className="size-4 " />
+                      <span className="sr-only text-sm">More</span>
+                    </SidebarMenuAction>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-48" side="right" align="start">
+                    <DropdownMenuItem>
+                      <Folder className="mr-2 size-4 text-muted-foreground" />
+                      <span>View Project</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Share className="mr-2 size-4 text-muted-foreground" />
+                      <span>Share Project</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setDeleteId(chat.id);
+                        setShowDeleteDialog(true);
+                      }}
+                    >
+                      <Trash2 className="mr-2 size-4 text-muted-foreground" />
+                      <span>Delete Project</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </SidebarMenuItem>
+            ))
+          )}
 
           {/* Show "View More" link only if there are messages */}
           {history && history.length > 0 && (
