@@ -78,8 +78,8 @@ export function Team({ team, members, isLoading, mutateTeam, mutateMembers, team
   // State
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
-  const [tempTitle, setTempTitle] = useState(team.name);
-  const [tempDescription, setTempDescription] = useState(team.description);
+  const [tempTitle, setTempTitle] = useState("");
+  const [tempDescription, setTempDescription] = useState("");
   const [emailList, setEmailList] = useState<string[]>([]);
   const [currentEmail, setCurrentEmail] = useState("");
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
@@ -188,7 +188,7 @@ export function Team({ team, members, isLoading, mutateTeam, mutateMembers, team
   const acceptedMembers = members?.filter((member: any) => member.invitation_status === "accepted") || [];
   const pendingMembers = members?.filter((member: any) => member.invitation_status === "pending") || [];
 
-  if (isLoading) {
+  if (!team || !members) {
     return (
       <div className="p-6 max-w-4xl mx-auto">
         <Card className="border-none shadow-none">

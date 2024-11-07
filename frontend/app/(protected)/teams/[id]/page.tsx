@@ -5,14 +5,16 @@ import useSWR from "swr";
 import { fetcher } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { Team } from "@/components/custom/team";
+import { useTeams } from "@/components/custom/teams-provider";
 
 export default function Page({ params }: { params: any }) {
   const teamId = params.id;
   const { data: session } = useSession();
 
   const {
-    data: {data: members, count},
-    mutate: mutateMembers
+    data: { data: members, count },
+    mutate: mutateMembers,
+    isLoading: isLoadingMembers,
   } = useSWR(
     session?.user && teamId
       ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/teams/${teamId}/members`, session?.user?.accessToken]

@@ -14,9 +14,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { ProjectCreate } from "./project-create";
+import { ProjectCreate } from "@/components/custom/project-create";
 import { Project } from "@/lib/types";
-import { Skeleton } from "../ui/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ProjectsProps {
   data: Project[] | null;

@@ -15,10 +15,10 @@ interface Team {
 
 interface TeamsContextType {
   teams: Team[];
-  currentTeam: Team | null;
-  setCurrentTeam: (team: Team) => void;
+  selectedTeamId: string | null;
+  setSelectedTeamId: (teamId: string) => void;
+  mutateTeams: () => void;
   isLoading: boolean;
-  mutate: () => void;
 }
 
 const TeamsContext = createContext<TeamsContextType | undefined>(undefined);
@@ -29,48 +29,52 @@ const CURRENT_TEAM_KEY = "currentTeam";
 export function TeamsProvider({ children }: { children: ReactNode }) {
   const { data: session } = useSession();
 
-  const user = session?.user;
-
+  // 1. More specific cache key with API URL
   const {
-    data: teams = [],
+    data: { data: teams = [], count },
     isLoading,
-    mutate,
-  } = useSWR<Team[]>(session?.user ? "/api/teams" : null, fetcher, {
-    fallbackData: [],
-  });
-
-  const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
-
-  // Modified useEffect to prioritize first team on initial load
-  useEffect(() => {
-    if (teams.length && !currentTeam) {
-      const savedTeamId = localStorage.getItem(CURRENT_TEAM_KEY);
-      const savedTeam = savedTeamId ? teams.find((team) => team.id === savedTeamId) : null;
-
-      // If no saved team or saved team not found in current teams list, use first team
-      const teamToSet = savedTeam || teams[0];
-
-      if (teamToSet) {
-        setCurrentTeam(teamToSet);
-        localStorage.setItem(CURRENT_TEAM_KEY, teamToSet.id);
-      }
+    mutate: mutateTeams,  // Renamed for clarity
+  } = useSWR(
+    session?.user
+      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/teams/`, session.user?.accessToken]
+      : null,
+    ([url, token]) => fetcher(url, token),
+    {
+      fallbackData: [],
     }
-  }, [currentTeam, teams]);
+  );
 
-  // Wrapper for setCurrentTeam that also saves to localStorage
-  const handleSetCurrentTeam = (team: Team) => {
-    setCurrentTeam(team);
-    localStorage.setItem(CURRENT_TEAM_KEY, team.id);
+  // 3. Separate selected team ID from team data
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+
+  // 4. Modified useEffect to handle team selection
+  useEffect(() => {
+    if (teams.length && !selectedTeamId) {
+      const savedTeamId = localStorage.getItem(CURRENT_TEAM_KEY);
+      const validTeamId = savedTeamId && teams.some(team => team.id === savedTeamId)
+        ? savedTeamId
+        : teams[0].id;
+
+      setSelectedTeamId(validTeamId);
+      localStorage.setItem(CURRENT_TEAM_KEY, validTeamId);
+    }
+  }, [teams, selectedTeamId]);
+
+  // 5. Simplified team selection handler
+  const handleTeamSelection = (teamId: string) => {
+    setSelectedTeamId(teamId);
+    localStorage.setItem(CURRENT_TEAM_KEY, teamId);
   };
 
+  // 6. More focused context value
   return (
     <TeamsContext.Provider
       value={{
         teams,
-        currentTeam,
-        setCurrentTeam: handleSetCurrentTeam,
+        selectedTeamId,
+        setSelectedTeamId: handleTeamSelection,
+        mutateTeams,
         isLoading,
-        mutate,
       }}
     >
       {children}
@@ -78,10 +82,20 @@ export function TeamsProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// 7. Updated interface to match new structure
+interface TeamsContextType {
+  teams: Team[];
+  selectedTeamId: string | null;
+  setSelectedTeamId: (teamId: string) => void;
+  mutateTeams: () => void;
+  isLoading: boolean;
+}
+
+// 8. Updated hook with better error message
 export function useTeams() {
   const context = useContext(TeamsContext);
   if (context === undefined) {
-    throw new Error("useTeams must be used within a TeamsProvider");
+    throw new Error("useTeams must be used within a TeamsProvider. Please check your component hierarchy.");
   }
   return context;
 }

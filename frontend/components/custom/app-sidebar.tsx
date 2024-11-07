@@ -129,7 +129,7 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
   const user = session?.user;
-  const { teams, currentTeam, isLoading: teamsIsLoading } = useTeams();
+  const { teams, selectedTeamId, isLoading: teamsIsLoading } = useTeams();
 
   // Retrieve chat history
   const {
@@ -142,10 +142,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   // Modify navMain data to include team ID from teams data
   const navMainWithTeamId = React.useMemo(() => {
+    console.log("selectedTeamId", selectedTeamId);
     return data.navMain.map((item) =>
-      item.title === "Team" ? { ...item, url: item.url + "/" + (currentTeam?.id ?? "") } : item
+      item.title === "Team" ? { ...item, url: item.url + "/" + (selectedTeamId ?? "") } : item
     );
-  }, [currentTeam]);
+  }, [selectedTeamId]);
 
   return (
     <Sidebar className="group-data-[side=left]:border-r-0 bg-sidebar text-sidebar-foreground" {...props}>

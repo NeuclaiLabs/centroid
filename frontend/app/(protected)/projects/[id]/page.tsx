@@ -8,13 +8,13 @@ import { Project } from "@/components/custom/project";
 
 export default function Page({ params }: { params: { id: string } }) {
   const { data: session } = useSession();
-  const { currentTeam } = useTeams();
+  const { selectedTeamId } = useTeams();
 
   const { data, error, isLoading } = useSWR(
-    session?.user && currentTeam
+    session?.user && selectedTeamId
       ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/${params.id}`, session.user.accessToken]
       : null,
-    ([url, token]) => fetcher(url,  token)
+    ([url, token]) => fetcher(url, token)
   );
 
   return (

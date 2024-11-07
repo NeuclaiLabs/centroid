@@ -60,7 +60,7 @@ function useCreateProject(token: string | undefined) {
 
 export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) => {
   const { data: session } = useSession();
-  const { currentTeam } = useTeams();
+  const { selectedTeamId } = useTeams();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -70,9 +70,9 @@ export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) 
 
   // Key for projects list
   const projectsKey =
-    session?.user && currentTeam
-      // @ts-ignore
-      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/?team_id=${currentTeam.id}`, session.user.accessToken]
+    session?.user && selectedTeamId
+      ? // @ts-ignore
+        [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/?team_id=${selectedTeamId}`, session.user.accessToken]
       : null;
 
   // SWR hook for the projects list

@@ -8,15 +8,15 @@ import { fetcher } from "@/lib/utils";
 
 export default function Page() {
   const { data: session } = useSession();
-  const { currentTeam } = useTeams();
+  const { selectedTeamId } = useTeams();
 
   const {
     data: res,
     error,
     isLoading,
   } = useSWR(
-    session?.user && currentTeam
-      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/?team_id=${currentTeam.id}`, session.user.accessToken]
+    session?.user && selectedTeamId
+      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/?team_id=${selectedTeamId}`, session.user.accessToken]
       : null,
     ([url, token]) => fetcher(url, token)
   );
