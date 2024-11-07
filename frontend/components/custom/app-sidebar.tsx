@@ -142,7 +142,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   // Modify navMain data to include team ID from teams data
   const navMainWithTeamId = React.useMemo(() => {
-    console.log("selectedTeamId", selectedTeamId);
     return data.navMain.map((item) =>
       item.title === "Team" ? { ...item, url: item.url + "/" + (selectedTeamId ?? "") } : item
     );
