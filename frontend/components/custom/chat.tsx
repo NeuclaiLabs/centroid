@@ -5,7 +5,7 @@ import { useChat } from "ai/react";
 import { useState, useEffect, useRef } from "react";
 import useSWR from "swr";
 
-import { PreviewMessage } from "@/components/custom/message";
+import { PreviewMessage, ThinkingMessage } from "@/components/custom/message";
 import { MultimodalInput } from "@/components/custom/multimodal-input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -113,14 +113,10 @@ export function Chat({ id, initialMessages }: { id: string; initialMessages: Arr
                   key={`${message.id || `${id}-${index}`}`}
                   className="mb-4 break-words overflow-hidden message-container"
                 >
-                  <PreviewMessage
-                    isLoading={isLoading}
-                    message={message}
-                    chatId={id}
-                    vote={undefined}
-                  />
+                  <PreviewMessage isLoading={isLoading} message={message} chatId={id} vote={undefined} />
                 </div>
               ))}
+              {isLoading && messages.length > 0 && messages[messages.length - 1].role === "user" && <ThinkingMessage />}
               <div ref={messagesEndRef} />
             </div>
           </div>
