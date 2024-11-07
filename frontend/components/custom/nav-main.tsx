@@ -2,6 +2,7 @@
 
 import { ChevronRight, type LucideIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
@@ -44,10 +45,10 @@ export function NavMain({
           <Collapsible key={item.title} asChild defaultOpen={item.isActive}>
             <SidebarMenuItem>
               <SidebarMenuButton asChild tooltip={item.title} className="hover:bg-sidebar-accent transition-colors">
-                <a href={item.url} className="flex items-center gap-2 p-2 rounded-md">
+                <Link href={item.url} className="flex items-center gap-2 p-2 rounded-md">
                   <item.icon className="size-5" />
                   <span>{item.title}</span>
-                </a>
+                </Link>
               </SidebarMenuButton>
               {item.items?.length ? (
                 <>
@@ -62,9 +63,9 @@ export function NavMain({
                       {item.items?.map((subItem) => (
                         <SidebarMenuSubItem key={subItem.title}>
                           <SidebarMenuSubButton asChild className="hover:bg-sidebar-accent transition-colors">
-                            <a href={subItem.url} className="block px-3 py-2 rounded-md">
+                            <Link href={subItem.url} className="block px-3 py-2 rounded-md">
                               <span>{subItem.title}</span>
-                            </a>
+                            </Link>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
                       ))}

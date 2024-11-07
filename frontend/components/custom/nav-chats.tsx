@@ -1,5 +1,6 @@
 "use client";
 
+import React from 'react';
 import { ChevronRightIcon, Folder, InfoIcon, MoreHorizontal, Share, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";

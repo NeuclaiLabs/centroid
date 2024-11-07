@@ -38,7 +38,7 @@ export default function Page({ params }: { params: any }) {
   return (
     <Team
       team={team}
-      members={res?.members}
+      members={res?.data}
       isLoading={isLoading}
       mutateTeam={mutateTeam}
       mutateMembers={mutateMembers}
