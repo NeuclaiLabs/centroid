@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreHorizontal, PenLine, Plus, Timer, Upload, Bot, Sparkles } from "lucide-react";
+import { MoreHorizontal, PenLine, Plus, Timer, Upload, Bot, Sparkles, Trash2 } from "lucide-react";
 import * as React from "react";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
@@ -11,12 +11,27 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Project } from "@/lib/types";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useProject } from "./project-provider";
+
 interface ProjectProps {
   data?: Project;
   isLoading?: boolean;
 }
 
 export function Project({ isLoading, data }: ProjectProps) {
+  const { updateProject, deleteProject } = useProject();
+
   let threads = null;
 
   // Add state for editing
@@ -27,10 +42,36 @@ export function Project({ isLoading, data }: ProjectProps) {
     instructions: data?.instructions || "",
   });
 
+  // Add state for controlling the delete dialog visibility
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
   // Add handler for saving edits
-  const handleSave = (field: string) => {
-    // TODO: Implement save logic here
-    setEditingField(null);
+  const handleSave = async (field: string) => {
+    console.log("Saving", data, field, editedValues[field as keyof typeof editedValues]);
+    if (!data?.id) return;
+
+    try {
+      await updateProject(data.id, {
+        [field]: editedValues[field as keyof typeof editedValues]
+      });
+      setEditingField(null);
+    } catch (error) {
+      console.error(`Error saving ${field}:`, error);
+      // You might want to add error handling UI here
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!data?.id) return;
+
+    try {
+      await deleteProject(data.id);
+      setIsDeleteDialogOpen(false);
+      // The ProjectProvider will handle updating the UI after deletion
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      // You might want to add error handling UI here
+    }
   };
 
   if (isLoading) {
@@ -275,10 +316,29 @@ export function Project({ isLoading, data }: ProjectProps) {
               </ul>
             ) : (
               <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">0 of 5 free files uploaded</p>
-                <Button variant="secondary" className="w-full">
-                  Upgrade to Pro
-                </Button>
+                <p className="text-sm text-muted-foreground">No files uploaded</p>
+                <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="w-full">
+                      <Trash2 className="size-4 mr-2" />
+                      Delete Project
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete your project and all associated data.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             )}
           </div>

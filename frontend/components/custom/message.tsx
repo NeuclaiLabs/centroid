@@ -47,8 +47,8 @@ export const PreviewMessage = ({
         )}
       >
         {role === "assistant" && (
-          <div className="flex aspect-square size-8 items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700">
-            <OpenAstraIcon size={24} />
+          <div className="flex aspect-square size-6 items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700">
+            <OpenAstraIcon size={18} />
           </div>
         )}
         <div className="flex flex-col gap-2 w-full">

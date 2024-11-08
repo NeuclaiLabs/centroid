@@ -82,6 +82,7 @@ def update_project(
     project_in: ProjectUpdate,
 ) -> Any:
     """Update a project."""
+    print("Updating project", project_id, project_in)
     project = get_project(session, project_id)
     # Check if user has admin permissions in the team
     check_team_permissions(

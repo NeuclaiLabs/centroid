@@ -16,7 +16,6 @@ export default async function Page({ params }: { params: any }) {
   }
 
   try {
-    console.log(`Fetching chat with ID: ${id}`);
     const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/chats/${id}`, {
       method: "GET",
       headers: {

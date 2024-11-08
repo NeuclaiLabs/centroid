@@ -47,10 +47,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         [url, session.user?.accessToken],
         async () => {
           const response = await fetcher(url, session.user?.accessToken, {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            method: "PUT",
             body: JSON.stringify(updateData),
           });
           return response;
@@ -78,10 +75,6 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     try {
       await fetcher(url, session.user.accessToken, {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: ''
       });
 
       // Clear selected project if it's the one being deleted
