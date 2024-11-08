@@ -11,6 +11,7 @@ import { PreviewAttachment } from "./preview-attachment";
 import { Button } from "../ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Textarea } from "../ui/textarea";
+import { useProject } from './project-provider';
 
 const suggestedActions = [
   {
@@ -151,9 +152,7 @@ export function MultimodalInput({
     [setAttachments]
   );
 
-  const [selectedProject, setSelectedProject] = useState<string | null>(null);
-
-  const randomProjects = ["Cosmic Voyager", "Emerald Nexus", "Quantum Forge"];
+  const { projects, selectedProject, setSelectedProject } = useProject();
 
   return (
     <div className="relative w-full flex flex-col gap-2">
@@ -231,18 +230,23 @@ export function MultimodalInput({
               <Button
                 className="px-2 h-8 flex items-center space-x-1 dark:border-zinc-700"
                 variant="outline"
-                disabled={isLoading}
               >
-                <span>{selectedProject || "Project"}</span>
+                <span>{selectedProject?.title || "Select Project"}</span>
                 <ChevronDownIcon size={14} />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              {randomProjects.map((project) => (
-                <DropdownMenuItem key={project} onSelect={() => setSelectedProject(project)}>
-                  {project}
+            <DropdownMenuContent className="w-[200px]">
+              {projects.map((project) => (
+                <DropdownMenuItem
+                  key={project.id}
+                  onSelect={() => setSelectedProject(project)}
+                >
+                  {project.title}
                 </DropdownMenuItem>
               ))}
+              {projects.length === 0 && (
+                <div className="p-2 text-sm text-gray-500">No projects available</div>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

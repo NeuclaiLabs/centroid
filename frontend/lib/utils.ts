@@ -12,7 +12,7 @@ interface ApplicationError extends Error {
   status: number;
 }
 
-export const fetcher = async (url: string, token?: string) => {
+export const fetcher = async (url: string, token?: string, p0?: { method: string; headers: { 'Content-Type': string; }; body: string; }) => {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };

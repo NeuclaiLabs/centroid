@@ -1,5 +1,6 @@
 import { AppSidebar } from "@/components/custom/app-sidebar";
 import { TeamsProvider } from "@/components/custom/teams-provider";
+import { ProjectProvider } from "@/components/custom/project-provider";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -14,8 +15,9 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <TeamsProvider>
-      <SidebarProvider>
-        <AppSidebar />
+      <ProjectProvider>
+        <SidebarProvider>
+          <AppSidebar />
         <SidebarInset className="flex flex-col h-screen overflow-hidden">
           <header className="flex h-16 shrink-0 items-center gap-0 w-full z-50 border-0">
             <div className="flex items-center gap-2 px-4">
@@ -35,8 +37,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </header>
           <div className="flex-1 overflow-auto">{children}</div>
-        </SidebarInset>
-      </SidebarProvider>
+          </SidebarInset>
+        </SidebarProvider>
+      </ProjectProvider>
     </TeamsProvider>
   );
 }
