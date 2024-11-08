@@ -19,6 +19,7 @@ type ProjectContextType = {
   selectedProject: Project | null;
   setSelectedProject: (project: Project | null) => void;
   updateProject: (id: string, data: Partial<Project>) => Promise<void>;
+  deleteProject: (id: string) => Promise<void>;
 };
 
 export const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
@@ -70,6 +71,33 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const deleteProject = async (projectId: string) => {
+    if (!session?.user) return;
+
+    const url = `${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/${projectId}`;
+    try {
+      await fetcher(url, session.user.accessToken, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: ''
+      });
+
+      // Clear selected project if it's the one being deleted
+      if (selectedProject?.id === projectId) {
+        setSelectedProject(null);
+      }
+
+      // Revalidate the projects list
+      const projectsUrl = `${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/?team_id=${selectedTeamId}`;
+      await mutate([projectsUrl, session.user.accessToken]);
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      throw error;
+    }
+  };
+
   return (
     <ProjectContext.Provider
       value={{
@@ -78,6 +106,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         selectedProject,
         setSelectedProject,
         updateProject,
+        deleteProject,
       }}
     >
       {children}

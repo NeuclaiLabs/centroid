@@ -18,7 +18,6 @@ interface ProjectProps {
 
 export function Project({ isLoading, data }: ProjectProps) {
   let threads = null;
-  console.log(data);
 
   // Add state for editing
   const [editingField, setEditingField] = useState<string | null>(null);
