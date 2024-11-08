@@ -21,6 +21,6 @@ export interface Project {
   instructions: string;
   files: string[];
   threads: string[];
-  updated_at: string;
-  // add other project fields as needed
+  created_at: Date;
+  updated_at: Date;
 }

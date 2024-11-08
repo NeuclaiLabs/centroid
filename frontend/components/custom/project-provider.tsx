@@ -6,16 +6,12 @@ import { useSession } from "next-auth/react";
 import { useTeams } from "./teams-provider";
 import { fetcher } from "@/lib/utils";
 
-type Project = {
-  id: string;
-  title: string;
-  description?: string;
-  // ... other project properties
-};
+import { Project } from "@/lib/types";
 
 type ProjectContextType = {
   projects: Project[];
   isLoading: boolean;
+  count: number;
   selectedProject: Project | null;
   setSelectedProject: (project: Project | null) => void;
   updateProject: (id: string, data: Partial<Project>) => Promise<void>;
@@ -94,9 +90,10 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   return (
     <ProjectContext.Provider
       value={{
-        projects: projectsData?.data || [],
+        projects: projectsData?.data,
         isLoading,
         selectedProject,
+        count: projectsData?.count,
         setSelectedProject,
         updateProject,
         deleteProject,
