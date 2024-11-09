@@ -74,6 +74,20 @@ export function Project({ isLoading, data }: ProjectProps) {
     }
   };
 
+  // Update the editingField state handler to also update editedValues
+  const handleEditClick = (field: string) => {
+    if (editingField === field) {
+      setEditingField(null);
+    } else {
+      setEditingField(field);
+      // Update the edited values with current data when starting to edit
+      setEditedValues({
+        ...editedValues,
+        [field]: data?.[field as keyof Project] || ""
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen flex-col lg:flex-row p-6">
@@ -196,7 +210,7 @@ export function Project({ isLoading, data }: ProjectProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setEditingField(editingField === 'title' ? null : 'title')}
+                onClick={() => handleEditClick('title')}
               >
                 {editingField === 'title' ? 'Cancel' : 'Edit'}
               </Button>
@@ -226,7 +240,7 @@ export function Project({ isLoading, data }: ProjectProps) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setEditingField(editingField === 'description' ? null : 'description')}
+                    onClick={() => handleEditClick('description')}
                   >
                     {editingField === 'description' ? 'Cancel' : 'Edit'}
                   </Button>
@@ -271,7 +285,7 @@ export function Project({ isLoading, data }: ProjectProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setEditingField(editingField === 'instructions' ? null : 'instructions')}
+                onClick={() => handleEditClick('instructions')}
               >
                 {editingField === 'instructions' ? 'Cancel' : 'Edit'}
               </Button>

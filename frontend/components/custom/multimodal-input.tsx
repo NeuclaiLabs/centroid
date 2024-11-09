@@ -236,7 +236,7 @@ export function MultimodalInput({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[200px]">
-              {projects.map((project) => (
+              {projects?.map((project) => (
                 <DropdownMenuItem
                   key={project.id}
                   onSelect={() => setSelectedProject(project)}
@@ -244,7 +244,7 @@ export function MultimodalInput({
                   {project.title}
                 </DropdownMenuItem>
               ))}
-              {projects.length === 0 && (
+              {projects?.length === 0 && (
                 <div className="p-2 text-sm text-gray-500">No projects available</div>
               )}
             </DropdownMenuContent>

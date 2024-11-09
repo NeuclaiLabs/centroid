@@ -55,7 +55,11 @@ export const Projects = ({ data, count, isLoading }: ProjectsProps) => {
                 </>
               ) : (
                 <>
-                  <Card key="create" onClick={() => setOpen(true)}>
+                  <Card
+                    key="create"
+                    onClick={() => setOpen(true)}
+                    className="cursor-pointer hover:bg-secondary/50 transition-colors"
+                  >
                     <CardHeader className="p-6 flex flex-row items-center justify-between space-y-0">
                       <Button
                         variant="ghost"

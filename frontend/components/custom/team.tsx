@@ -190,96 +190,104 @@ export function Team({ team, members, isLoading, mutateTeam, mutateMembers, team
 
   if (!team || !members) {
     return (
-      <div className="p-6 max-w-4xl mx-auto">
-        <Card className="border-none shadow-none">
-          <CardHeader className="px-2 flex flex-col sm:flex-row justify-between items-start">
-            <div className="space-y-4 w-full sm:w-auto">
-              <Skeleton className="h-8 w-64" />
-              <Skeleton className="h-16 w-96" />
-            </div>
-            <div className="w-full sm:w-auto mt-4 sm:mt-0">
-              <Skeleton className="h-10 w-32" />
-            </div>
-          </CardHeader>
-
-          <CardContent className="px-2">
-            <Skeleton className="h-10 w-48 mb-4" />
-            <div className="space-y-2">
-              {[1, 2, 3].map((index) => (
-                <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <Skeleton className="size-8 rounded-full" />
-                    <div>
-                      <Skeleton className="h-4 w-32 mb-2" />
-                      <Skeleton className="h-3 w-48" />
-                    </div>
-                  </div>
-                  <Skeleton className="h-8 w-20" />
+      <div className="relative flex flex-col min-h-screen bg-background">
+        <div className="flex-1">
+          <div className="max-w-6xl mx-auto p-6 md:px-32">
+            <Card className="border-none shadow-none">
+              <CardHeader className="px-2 flex flex-col sm:flex-row justify-between items-start">
+                <div className="space-y-4 w-full sm:w-auto">
+                  <Skeleton className="h-8 w-64" />
+                  <Skeleton className="h-16 w-96" />
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                <div className="w-full sm:w-auto mt-4 sm:mt-0">
+                  <Skeleton className="h-10 w-32" />
+                </div>
+              </CardHeader>
+
+              <CardContent className="px-2">
+                <Skeleton className="h-10 w-48 mb-4" />
+                <div className="space-y-2">
+                  {[1, 2, 3].map((index) => (
+                    <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center space-x-4">
+                        <Skeleton className="size-8 rounded-full" />
+                        <div>
+                          <Skeleton className="h-4 w-32 mb-2" />
+                          <Skeleton className="h-3 w-48" />
+                        </div>
+                      </div>
+                      <Skeleton className="h-8 w-20" />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <Card className="border-none shadow-none">
-        <CardHeader className="px-2 flex flex-col sm:flex-row justify-between items-start">
-          <TeamHeader
-            team={team}
-            isEditingTitle={isEditingTitle}
-            isEditingDescription={isEditingDescription}
-            tempTitle={tempTitle}
-            tempDescription={tempDescription}
-            setIsEditingTitle={setIsEditingTitle}
-            setIsEditingDescription={setIsEditingDescription}
-            setTempTitle={setTempTitle}
-            setTempDescription={setTempDescription}
-            handleTitleSubmit={handleTitleSubmit}
-            handleDescriptionSubmit={handleDescriptionSubmit}
-            handleKeyPress={handleKeyPress}
-          />
-
-          <div className="w-full sm:w-auto mt-4 sm:mt-0">
-            <InviteMemberDialog
-              isOpen={isInviteDialogOpen}
-              setIsOpen={setIsInviteDialogOpen}
-              emailList={emailList}
-              currentEmail={currentEmail}
-              setCurrentEmail={setCurrentEmail}
-              handleAddEmail={handleAddEmail}
-              removeEmail={removeEmail}
-              handleInviteMember={handleInviteMember}
-              isSubmitting={isSubmitting}
-            />
-          </div>
-        </CardHeader>
-
-        <CardContent className="px-2">
-          <Tabs value={currentTab} onValueChange={setCurrentTab}>
-            <TabsList className="mb-4">
-              <TabsTrigger value="members">Members</TabsTrigger>
-              <TabsTrigger value="pendingInvites">Pending Invites</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="members">
-              <MembersList members={acceptedMembers} roles={roles} handleRoleChange={handleRoleChange} />
-            </TabsContent>
-
-            <TabsContent value="pendingInvites">
-              <MembersList
-                members={pendingMembers}
-                roles={roles}
-                handleRoleChange={handleRoleChange}
-                isPending={true}
+    <div className="relative flex flex-col min-h-screen bg-background">
+      <div className="flex-1">
+        <div className="max-w-6xl mx-auto p-6 md:px-32">
+          <Card className="border-none shadow-none">
+            <CardHeader className="px-2 flex flex-col sm:flex-row justify-between items-start">
+              <TeamHeader
+                team={team}
+                isEditingTitle={isEditingTitle}
+                isEditingDescription={isEditingDescription}
+                tempTitle={tempTitle}
+                tempDescription={tempDescription}
+                setIsEditingTitle={setIsEditingTitle}
+                setIsEditingDescription={setIsEditingDescription}
+                setTempTitle={setTempTitle}
+                setTempDescription={setTempDescription}
+                handleTitleSubmit={handleTitleSubmit}
+                handleDescriptionSubmit={handleDescriptionSubmit}
+                handleKeyPress={handleKeyPress}
               />
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+
+              <div className="w-full sm:w-auto mt-4 sm:mt-0">
+                <InviteMemberDialog
+                  isOpen={isInviteDialogOpen}
+                  setIsOpen={setIsInviteDialogOpen}
+                  emailList={emailList}
+                  currentEmail={currentEmail}
+                  setCurrentEmail={setCurrentEmail}
+                  handleAddEmail={handleAddEmail}
+                  removeEmail={removeEmail}
+                  handleInviteMember={handleInviteMember}
+                  isSubmitting={isSubmitting}
+                />
+              </div>
+            </CardHeader>
+
+            <CardContent className="px-2">
+              <Tabs value={currentTab} onValueChange={setCurrentTab}>
+                <TabsList className="mb-4">
+                  <TabsTrigger value="members">Members</TabsTrigger>
+                  <TabsTrigger value="pendingInvites">Pending Invites</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="members">
+                  <MembersList members={acceptedMembers} roles={roles} handleRoleChange={handleRoleChange} />
+                </TabsContent>
+
+                <TabsContent value="pendingInvites">
+                  <MembersList
+                    members={pendingMembers}
+                    roles={roles}
+                    handleRoleChange={handleRoleChange}
+                    isPending={true}
+                  />
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
