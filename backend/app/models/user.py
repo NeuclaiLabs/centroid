@@ -1,9 +1,12 @@
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 import nanoid
+from sqlalchemy import DateTime, func
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
+    from .chat import Chat
     from .item import Item
     from .setting import Setting
     from .team import TeamMember
@@ -36,12 +39,14 @@ class UserRegister(SQLModel):
 class UserUpdate(UserBase):
     email: str | None = None  # type: ignore
     password: str | None = None
+    updated_at: datetime = datetime.utcnow()
 
 
 # TODO replace email str with EmailStr when sqlmodel supports it
 class UserUpdateMe(SQLModel):
     full_name: str | None = None
     email: str | None = None
+    updated_at: datetime = datetime.utcnow()
 
 
 class UpdatePassword(SQLModel):
@@ -54,6 +59,18 @@ class User(UserBase, table=True):
     __tablename__ = "users"
     id: str | None = Field(default_factory=nanoid.generate, primary_key=True)
     hashed_password: str
+    created_at: datetime | None = Field(
+        default=None,
+        sa_type=DateTime(timezone=True),
+        sa_column_kwargs={
+            "server_default": func.now(),
+        },
+    )
+    updated_at: datetime | None = Field(
+        default=None,
+        sa_type=DateTime(timezone=True),
+        sa_column_kwargs={"onupdate": func.now(), "server_default": func.now()},
+    )
     items: list["Item"] = Relationship(back_populates="owner")
     settings: list["Setting"] = Relationship(
         cascade_delete=True, back_populates="owner"
@@ -64,11 +81,14 @@ class User(UserBase, table=True):
     team_memberships: list["TeamMember"] = Relationship(
         back_populates="user", cascade_delete=True
     )
+    chats: list["Chat"] = Relationship(back_populates="user")
 
 
 # Properties to return via API, id is always required
 class UserOut(UserBase):
     id: str
+    created_at: datetime
+    updated_at: datetime
 
 
 class UsersOut(SQLModel):

@@ -134,7 +134,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const {
     data: res,
     isLoading,
-    mutate,
+    mutate: mutateHistory,
   } = useSWR(
     session?.user
       ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/?skip=0&limit=5`, session.user.accessToken]
@@ -171,7 +171,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain items={navMainWithTeamId} />
         {/* Pass chats to NavChats */}
-        <NavChats history={res?.data} count={res?.count} isLoading={isLoading} mutate={mutate} />
+        <NavChats history={res?.data} count={res?.count} isLoading={isLoading} mutate={mutateHistory} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

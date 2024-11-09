@@ -98,7 +98,7 @@ export function NavChats({
                     </span>
                   </Link>
                 </SidebarMenuButton>
-                <DropdownMenu>
+                <DropdownMenu modal={false}>
                   <DropdownMenuTrigger asChild>
                     <SidebarMenuAction showOnHover className="hover:bg-sidebar-accent transition-colors rounded-md">
                       <MoreHorizontal className="size-4 " />

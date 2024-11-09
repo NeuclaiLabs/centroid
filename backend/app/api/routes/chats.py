@@ -68,8 +68,10 @@ def create_or_update_chat(
 
     # If the chat doesn't exist, create a new one
     if not existing_chat:
-        chat = Chat.model_validate(chat)
-        print("chat: ", chat)
+        # Set the user_id before validation to ensure it's included in the model
+        chat_dict = chat.model_dump()
+        chat_dict["user_id"] = str(current_user.id)
+        chat = Chat.model_validate(chat_dict)
         session.add(chat)
         session.commit()
         session.refresh(chat)

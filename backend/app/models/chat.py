@@ -1,10 +1,16 @@
 from datetime import datetime
+from enum import Enum
+from typing import TYPE_CHECKING, Optional
 
 import nanoid
 from sqlalchemy import Column, DateTime, event, func
-from sqlmodel import JSON, Field, SQLModel
+from sqlmodel import JSON, Field, Relationship, SQLModel
 
 from .base import CamelModel
+from .user import User
+
+if TYPE_CHECKING:
+    from .project import Project
 
 
 class ChatMessage(CamelModel):
@@ -18,15 +24,22 @@ class ChatMessage(CamelModel):
 
 
 class ChatBase(CamelModel):
-    title: str | None
-    path: str | None
+    title: str | None = None
+    path: str | None = None
+
+
+class ChatVisibility(str, Enum):
+    PRIVATE = "private"
+    SHARED = "shared"
+    PUBLIC = "public"
 
 
 # Shared properties
 class Chat(ChatBase, SQLModel, table=True):
     __tablename__ = "chats"
     id: str = Field(primary_key=True, default_factory=nanoid.generate)
-    user_id: str
+    user_id: str = Field(foreign_key="users.id")
+    project_id: Optional["str"] = Field(default=None, foreign_key="projects.id")
     messages: list[ChatMessage] | None = Field(sa_column=Column(JSON))
     created_at: datetime | None = Field(
         default=None,
@@ -38,6 +51,9 @@ class Chat(ChatBase, SQLModel, table=True):
         sa_type=DateTime(timezone=True),
         sa_column_kwargs={"onupdate": func.now(), "server_default": func.now()},
     )
+    visibility: ChatVisibility = Field(default=ChatVisibility.PRIVATE)
+    user: User = Relationship(back_populates="chats")
+    projects: Optional["Project"] = Relationship(back_populates="chats")
 
 
 class ChatUpdate(CamelModel):
@@ -50,6 +66,7 @@ class ChatOut(ChatBase):
     id: str
     user_id: str
     messages: list[ChatMessage] | None
+    visibility: ChatVisibility
 
 
 class ChatsOut(CamelModel):

@@ -4,6 +4,7 @@ import nanoid
 from sqlalchemy import Column, DateTime, func
 from sqlmodel import JSON, Field, Relationship, SQLModel
 
+from .chat import Chat
 from .team import Team
 
 
@@ -46,6 +47,7 @@ class Project(ProjectBase, table=True):
     )
     team_id: str = Field(foreign_key="teams.id", nullable=False)
     team: Team = Relationship(back_populates="projects")
+    chats: list[Chat] = Relationship(back_populates="projects")
 
 
 class ProjectOut(ProjectBase):

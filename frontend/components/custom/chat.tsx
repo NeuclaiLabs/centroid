@@ -9,6 +9,8 @@ import { PreviewMessage, ThinkingMessage } from "@/components/custom/message";
 import { MultimodalInput } from "@/components/custom/multimodal-input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useSession } from "next-auth/react";
+import { fetcher } from "@/lib/utils";
 
 // Hook for scrolling to the bottom of the chat
 const useScrollToBottom = () => {
@@ -22,8 +24,15 @@ const useScrollToBottom = () => {
 };
 
 export function Chat({ id, initialMessages }: { id: string; initialMessages: Array<Message> }) {
-  const { mutate: mutateHistory } = useSWR<Array<any>>("/api/history");
-
+  const { data: session } = useSession();
+  const {
+    mutate: mutateHistory,
+  } = useSWR(
+  session?.user
+    ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/?skip=0&limit=5`, session.user.accessToken]
+    : null,
+    ([url, token]) => fetcher(url, token as string)
+  );
   const { messages, handleSubmit, input, setInput, append, isLoading, stop } = useChat({
     body: { id },
     initialMessages,
@@ -47,11 +56,11 @@ export function Chat({ id, initialMessages }: { id: string; initialMessages: Arr
   // Move the history update logic outside useChat
   useEffect(() => {
     if (messages.length == 1) {
-      mutateHistory((currentHistory) => {
+      mutateHistory((currentHistory: { data: any; count: number }) => {
         if (!currentHistory) return currentHistory;
 
         // Check if chat already exists in history
-        const chatExists = currentHistory.some((chat) => chat.id === id);
+        const chatExists = currentHistory?.data?.some((chat) => chat.id === id);
         if (chatExists) return currentHistory;
 
         // Add new chat to history
@@ -62,7 +71,7 @@ export function Chat({ id, initialMessages }: { id: string; initialMessages: Arr
           updatedAt: new Date().toISOString(),
         };
 
-        return [newChat, ...currentHistory];
+        return { data: [newChat, ...currentHistory.data], count: currentHistory.count + 1 };
       }, false);
     }
   }, [id, messages, mutateHistory]);
