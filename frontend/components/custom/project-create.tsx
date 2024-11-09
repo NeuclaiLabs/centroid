@@ -84,12 +84,12 @@ export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // @ts-ignore
-    if (!session?.user?.accessToken || !currentTeam) return;
+    if (!session?.user?.accessToken || !selectedTeamId) return;
 
     try {
       const newProject = await createProject({
         ...formData,
-        team_id: currentTeam.id,
+        team_id: selectedTeamId,
       });
 
       await mutateProjects((currentData: any) => ({

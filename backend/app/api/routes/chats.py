@@ -49,8 +49,8 @@ def read_chats(
     return ChatsOut(data=chat_out_list, count=count)
 
 
-@router.get("/{id}", response_model=Chat)
-def read_chat(session: SessionDep, current_user: CurrentUser, id: str) -> Chat:
+@router.get("/{id}", response_model=ChatOut)
+def read_chat(session: SessionDep, current_user: CurrentUser, id: str) -> ChatOut:
     """
     Get item by ID.
     """

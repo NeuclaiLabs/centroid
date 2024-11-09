@@ -60,6 +60,7 @@ class Chat(ChatBase, SQLModel, table=True):
 class ChatUpdate(CamelModel):
     title: str | None
     messages: list[ChatMessage] | None
+    project_id: str | None
     updated_at: datetime = datetime.utcnow()
 
 

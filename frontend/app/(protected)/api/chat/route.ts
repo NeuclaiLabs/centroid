@@ -5,8 +5,8 @@ import { customModel } from "@/ai2";
 import { auth } from "@/app/(auth)/auth";
 
 export async function POST(request: Request) {
-  const { id, messages }: { id: string; messages: Array<Message> } = await request.json();
-
+  const { id, messages, projectId }: { id: string; messages: Array<Message>; projectId: string | null } = await request.json();
+  console.log("projectId", projectId);
   const session = await auth();
 
   if (!session) {
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
             body: JSON.stringify({
               id,
               messages: [...coreMessages, ...responseMessages],
-              userId: session.user.id,
+              project_id: projectId,
             }),
           });
 

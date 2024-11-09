@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { auth } from "@/app/(auth)/auth";
 import { Chat as PreviewChat } from "@/components/custom/chat";
-import { Chat } from "@/db/schema";
+import { Chat } from "@/lib/types";
 import { convertToUIMessages } from "@/lib/utils";
 
 export default async function Page({ params }: { params: any }) {
@@ -25,6 +25,7 @@ export default async function Page({ params }: { params: any }) {
       },
     });
 
+
     if (!response.ok) {
       if (response.status === 404) {
         console.log("Chat not found in API");
@@ -34,6 +35,7 @@ export default async function Page({ params }: { params: any }) {
     }
 
     const chatFromApi = await response.json();
+    console.log("chatFromApi", chatFromApi);
 
     // type casting
     const chat: Chat = {
@@ -49,7 +51,7 @@ export default async function Page({ params }: { params: any }) {
 
     return (
       <div className="flex flex-col h-[calc(100vh-4rem)]">
-        <PreviewChat id={chat.id} project={chat.project} initialMessages={chat.messages} />
+        <PreviewChat id={chat.id} project={chat.project} initialMessages={chat!.messages || []} />
       </div>
     );
   } catch (error) {

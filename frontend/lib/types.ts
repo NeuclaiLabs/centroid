@@ -33,7 +33,8 @@ export enum ChatVisibility {
 
 export interface Chat {
   id: string;
-  project_id?: string;
+  projectId?: string;
+  userId?: string;
   messages?: {
     id: string;
     role: string;
@@ -45,4 +46,5 @@ export interface Chat {
   created_at?: Date;
   updated_at?: Date;
   visibility?: ChatVisibility;
+  project?: Project;
 }
