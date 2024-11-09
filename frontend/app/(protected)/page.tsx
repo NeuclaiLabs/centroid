@@ -3,10 +3,9 @@ import { generateUUID } from "@/lib/utils";
 
 export default function Page() {
   const id = generateUUID();
-
   return (
     <div className="flex flex-col gap-4 p-4 h-full">
-      <Chat key={id} id={id} initialMessages={[]} />
+      <Chat key={id} project={undefined} id={id} initialMessages={[]} />
     </div>
   );
 }

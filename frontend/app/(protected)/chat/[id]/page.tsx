@@ -49,7 +49,7 @@ export default async function Page({ params }: { params: any }) {
 
     return (
       <div className="flex flex-col h-[calc(100vh-4rem)]">
-        <PreviewChat id={chat.id} initialMessages={chat.messages} />
+        <PreviewChat id={chat.id} project={chat.project} initialMessages={chat.messages} />
       </div>
     );
   } catch (error) {

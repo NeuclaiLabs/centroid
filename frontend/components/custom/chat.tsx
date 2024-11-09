@@ -4,6 +4,7 @@ import { Attachment, Message } from "ai";
 import { useChat } from "ai/react";
 import { useState, useEffect, useRef } from "react";
 import useSWR from "swr";
+import Link from 'next/link';
 
 import { PreviewMessage, ThinkingMessage } from "@/components/custom/message";
 import { MultimodalInput } from "@/components/custom/multimodal-input";
@@ -11,6 +12,15 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useSession } from "next-auth/react";
 import { fetcher } from "@/lib/utils";
+import { Project } from "@/lib/types";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
 
 // Hook for scrolling to the bottom of the chat
 const useScrollToBottom = () => {
@@ -23,7 +33,36 @@ const useScrollToBottom = () => {
   return [messagesEndRef, scrollToBottom] as const;
 };
 
-export function Chat({ id, initialMessages }: { id: string; initialMessages: Array<Message> }) {
+export function ChatBreadcrumbs({ project }: { project: Project | undefined }) {
+  return (
+    <>
+      <Separator orientation="vertical" className="mr-2 h-4" />
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem className="hidden md:block">
+            <Link href={project ? `/projects/${project.id}` : "#"} passHref>
+              {project ? project.title : "No Project Selected"}
+            </Link>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator className="hidden md:block" />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+    </>
+  );
+}
+
+export function Chat({
+  id,
+  project,
+  initialMessages,
+}: {
+  id: string;
+  project: Project | undefined;
+  initialMessages: Array<Message>;
+}) {
   const { data: session } = useSession();
   const { mutate: mutateHistory } = useSWR(
     session?.user
@@ -76,6 +115,10 @@ export function Chat({ id, initialMessages }: { id: string; initialMessages: Arr
 
   return (
     <div className="relative flex flex-col h-screen bg-background">
+      <div className="md:hidden"> {/* Mobile breadcrumbs */}
+        <ChatBreadcrumbs project={project} />
+      </div>
+
       {messages.length === 0 ? (
         <div className="flex-1 flex items-center justify-center p-4">
           <Card className="w-full max-w-3xl mx-auto p-4 md:p-8 space-y-6 md:space-y-8 bg-background border-none shadow-none">

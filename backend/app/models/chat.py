@@ -1,12 +1,13 @@
 from datetime import datetime
 from enum import Enum
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import nanoid
 from sqlalchemy import Column, DateTime, event, func
 from sqlmodel import JSON, Field, Relationship, SQLModel
 
 from .base import CamelModel
+from .project import Project
 from .user import User
 
 if TYPE_CHECKING:
@@ -39,7 +40,7 @@ class Chat(ChatBase, SQLModel, table=True):
     __tablename__ = "chats"
     id: str = Field(primary_key=True, default_factory=nanoid.generate)
     user_id: str = Field(foreign_key="users.id")
-    project_id: Optional["str"] = Field(default=None, foreign_key="projects.id")
+    project_id: str | None = Field(default=None, foreign_key="projects.id")
     messages: list[ChatMessage] | None = Field(sa_column=Column(JSON))
     created_at: datetime | None = Field(
         default=None,
@@ -53,7 +54,7 @@ class Chat(ChatBase, SQLModel, table=True):
     )
     visibility: ChatVisibility = Field(default=ChatVisibility.PRIVATE)
     user: User = Relationship(back_populates="chats")
-    projects: Optional["Project"] = Relationship(back_populates="chats")
+    project: Project | None = Relationship(back_populates="chats")
 
 
 class ChatUpdate(CamelModel):
@@ -67,6 +68,8 @@ class ChatOut(ChatBase):
     user_id: str
     messages: list[ChatMessage] | None
     visibility: ChatVisibility
+    project_id: str | None
+    project: Project | None = None
 
 
 class ChatsOut(CamelModel):

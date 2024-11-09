@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { ChatBreadcrumbs } from "@/components/custom/chat";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -33,7 +34,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 
 function Header() {
-  const { selectedProject } = useProject();
   const pathname = usePathname();
   const showBreadcrumbs = pathname.startsWith('/chat/');
 
@@ -41,24 +41,7 @@ function Header() {
     <header className="flex h-16 shrink-0 items-center gap-0 w-full z-50 border-0">
       <div className="flex items-center gap-2 px-4">
         <SidebarTrigger className="-ml-1" />
-        {showBreadcrumbs && (
-          <>
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <Breadcrumb>
-              <BreadcrumbList>
-              <BreadcrumbItem className="hidden md:block">
-                <Link href={selectedProject ? `/projects/${selectedProject.id}` : "#"} passHref>
-                  {selectedProject ? selectedProject.title : "No Project Selected"}
-                </Link>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-            </Breadcrumb>
-          </>
-        )}
+        {showBreadcrumbs && <ChatBreadcrumbs project={undefined} />}
       </div>
     </header>
   );
