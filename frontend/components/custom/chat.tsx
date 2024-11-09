@@ -18,16 +18,18 @@ import { useProject } from "@/components/custom/project-provider";
 const useScrollToBottom = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
+  const isInputting = useRef(false);
 
   const scrollToBottom = () => {
-    if (shouldAutoScroll) {
+    // Don't scroll if user is inputting while scrolled up
+    if (shouldAutoScroll && !isInputting.current) {
       messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
     }
   };
 
   useEffect(() => {
     const options = {
-      root: null, // viewport
+      root: null,
       rootMargin: '0px',
       threshold: 1.0
     };
@@ -44,7 +46,12 @@ const useScrollToBottom = () => {
     return () => observer.disconnect();
   }, []);
 
-  return [messagesEndRef, scrollToBottom] as const;
+  // Method to call when user starts/stops typing
+  const setIsInputting = (typing: boolean) => {
+    isInputting.current = typing;
+  };
+
+  return [messagesEndRef, scrollToBottom, setIsInputting] as const;
 };
 
 export function Chat({
@@ -72,7 +79,7 @@ export function Chat({
     },
   });
 
-  const [messagesEndRef, scrollToBottom] = useScrollToBottom();
+  const [messagesEndRef, scrollToBottom, setIsInputting] = useScrollToBottom();
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const suggestions = [
     "Generate a multi-step onboarding flow",
