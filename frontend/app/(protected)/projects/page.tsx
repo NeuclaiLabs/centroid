@@ -4,11 +4,11 @@ import { Projects } from "@/components/custom/projects";
 import { useProject } from "@/components/custom/project-provider";
 
 export default function Page() {
-  const { projects, isLoading } = useProject();
+  const { projects, count, isLoading } = useProject();
 
   return (
     <div className="flex flex-col gap-4 p-4">
-      <Projects data={projects} isLoading={isLoading} />
+      <Projects data={projects} count={count} isLoading={isLoading} />
     </div>
   );
 }

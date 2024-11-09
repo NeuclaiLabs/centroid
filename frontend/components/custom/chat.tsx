@@ -15,12 +15,29 @@ import { fetcher } from "@/lib/utils";
 // Hook for scrolling to the bottom of the chat
 const useScrollToBottom = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+    if (shouldAutoScroll) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+    }
   };
 
-  return [messagesEndRef, scrollToBottom] as const;
+  // Add scroll event listener
+  useEffect(() => {
+    const handleScroll = () => {
+      const threshold = 100; // pixels from bottom
+      const position = window.innerHeight + window.scrollY;
+      const height = document.documentElement.scrollHeight;
+
+      setShouldAutoScroll(height - position < threshold);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  return [messagesEndRef, scrollToBottom, shouldAutoScroll] as const;
 };
 
 export function Chat({ id, initialMessages }: { id: string; initialMessages: Array<Message> }) {
@@ -41,7 +58,7 @@ export function Chat({ id, initialMessages }: { id: string; initialMessages: Arr
     },
   });
 
-  const [messagesEndRef, scrollToBottom] = useScrollToBottom();
+  const [messagesEndRef, scrollToBottom, shouldAutoScroll] = useScrollToBottom();
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const suggestions = [
     "Generate a multi-step onboarding flow",
@@ -50,8 +67,10 @@ export function Chat({ id, initialMessages }: { id: string; initialMessages: Arr
   ];
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, scrollToBottom]);
+    if (shouldAutoScroll) {
+      scrollToBottom();
+    }
+  }, [messages, scrollToBottom, shouldAutoScroll]);
 
   // Move the history update logic outside useChat
   useEffect(() => {
