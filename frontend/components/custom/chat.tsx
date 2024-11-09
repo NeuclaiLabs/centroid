@@ -17,10 +17,32 @@ import { useProject } from "@/components/custom/project-provider";
 // Hook for scrolling to the bottom of the chat
 const useScrollToBottom = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+    if (shouldAutoScroll) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+    }
   };
+
+  useEffect(() => {
+    const options = {
+      root: null, // viewport
+      rootMargin: '0px',
+      threshold: 1.0
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      const [entry] = entries;
+      setShouldAutoScroll(entry.isIntersecting);
+    }, options);
+
+    if (messagesEndRef.current) {
+      observer.observe(messagesEndRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   return [messagesEndRef, scrollToBottom] as const;
 };
