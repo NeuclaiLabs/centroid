@@ -15,39 +15,20 @@ import { fetcher } from "@/lib/utils";
 // Hook for scrolling to the bottom of the chat
 const useScrollToBottom = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
 
   const scrollToBottom = () => {
-    if (shouldAutoScroll) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
   };
 
-  // Add scroll event listener
-  useEffect(() => {
-    const handleScroll = () => {
-      const threshold = 100; // pixels from bottom
-      const position = window.innerHeight + window.scrollY;
-      const height = document.documentElement.scrollHeight;
-
-      setShouldAutoScroll(height - position < threshold);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  return [messagesEndRef, scrollToBottom, shouldAutoScroll] as const;
+  return [messagesEndRef, scrollToBottom] as const;
 };
 
 export function Chat({ id, initialMessages }: { id: string; initialMessages: Array<Message> }) {
   const { data: session } = useSession();
-  const {
-    mutate: mutateHistory,
-  } = useSWR(
-  session?.user
-    ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/?skip=0&limit=5`, session.user.accessToken]
-    : null,
+  const { mutate: mutateHistory } = useSWR(
+    session?.user
+      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/?skip=0&limit=5`, session.user.accessToken]
+      : null,
     ([url, token]) => fetcher(url, token as string)
   );
   const { messages, handleSubmit, input, setInput, append, isLoading, stop } = useChat({
@@ -58,7 +39,7 @@ export function Chat({ id, initialMessages }: { id: string; initialMessages: Arr
     },
   });
 
-  const [messagesEndRef, scrollToBottom, shouldAutoScroll] = useScrollToBottom();
+  const [messagesEndRef, scrollToBottom] = useScrollToBottom();
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const suggestions = [
     "Generate a multi-step onboarding flow",
@@ -67,10 +48,8 @@ export function Chat({ id, initialMessages }: { id: string; initialMessages: Arr
   ];
 
   useEffect(() => {
-    if (shouldAutoScroll) {
-      scrollToBottom();
-    }
-  }, [messages, scrollToBottom, shouldAutoScroll]);
+    scrollToBottom();
+  }, [messages, scrollToBottom]);
 
   // Move the history update logic outside useChat
   useEffect(() => {
