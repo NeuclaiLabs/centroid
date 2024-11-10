@@ -22,30 +22,30 @@ def read_chats(
     """
     Retrieve chats.
     """
-    if current_user.is_superuser:
-        statement = select(func.count()).select_from(Chat)
-        count = session.exec(statement).one()
-        statement = (
-            select(Chat).order_by(Chat.created_at.desc()).offset(skip).limit(limit)
-        )
-        chats = session.exec(statement).all()
-    else:
-        statement = (
-            select(func.count())
-            .select_from(Chat)
-            .where(Chat.user_id == current_user.id)
-        )
-        count = session.exec(statement).one()
-        statement = (
-            select(Chat)
-            .where(Chat.user_id == current_user.id)
-            .order_by(Chat.created_at.desc())
-            .offset(skip)
-            .limit(limit)
-        )
-        chats = session.exec(statement).all()
-
-    chat_out_list = [ChatOut(**chat.dict()) for chat in chats]
+    # if current_user.is_superuser:
+    #     statement = select(func.count()).select_from(Chat)
+    #     count = session.exec(statement).one()
+    #     statement = (
+    #         select(Chat).order_by(Chat.created_at.desc()).offset(skip).limit(limit)
+    #     )
+    #     chats = session.exec(statement).all()
+    # else:
+    statement = (
+        select(func.count()).select_from(Chat).where(Chat.user_id == current_user.id)
+    )
+    count = session.exec(statement).one()
+    statement = (
+        select(Chat)
+        .where(Chat.user_id == current_user.id)
+        .order_by(Chat.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+    )
+    chats = session.exec(statement).all()
+    chat_out_list = [
+        ChatOut(**chat.dict(exclude={"project"}), project=chat.project)
+        for chat in chats
+    ]
     return ChatsOut(data=chat_out_list, count=count)
 
 

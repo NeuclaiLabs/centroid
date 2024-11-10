@@ -108,46 +108,46 @@ export async function DELETE(request: Request) {
   }
 }
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const id = searchParams.get("id");
+// export async function GET(request: Request) {
+//   const { searchParams } = new URL(request.url);
+//   const id = searchParams.get("id");
 
-  if (!id) {
-    return new Response("Not Found", { status: 404 });
-  }
+//   if (!id) {
+//     return new Response("Not Found", { status: 404 });
+//   }
 
-  const session = await auth();
+//   const session = await auth();
 
-  if (!session || !session.user) {
-    return new Response("Unauthorized", { status: 401 });
-  }
+//   if (!session || !session.user) {
+//     return new Response("Unauthorized", { status: 401 });
+//   }
 
-  try {
-    const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/chats/${id}`, {
-      method: "GET",
-      headers: {
-        accept: "application/json",
-        // @ts-ignore
-        Authorization: `Bearer ${session.user.accessToken}`,
-      },
-    });
+//   try {
+//     const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/chats/${id}`, {
+//       method: "GET",
+//       headers: {
+//         accept: "application/json",
+//         // @ts-ignore
+//         Authorization: `Bearer ${session.user.accessToken}`,
+//       },
+//     });
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        return new Response("Chat not found", { status: 404 });
-      }
-      return new Response("Unauthorized", { status: 401 });
-    }
+//     if (!response.ok) {
+//       if (response.status === 404) {
+//         return new Response("Chat not found", { status: 404 });
+//       }
+//       return new Response("Unauthorized", { status: 401 });
+//     }
 
-    const chatData = await response.json();
-    return new Response(JSON.stringify(chatData), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (error) {
-    console.error("Error fetching chat:", error);
-    return new Response("An error occurred while processing your request", {
-      status: 500,
-    });
-  }
-}
+//     const chatData = await response.json();
+//     return new Response(JSON.stringify(chatData), {
+//       status: 200,
+//       headers: { "Content-Type": "application/json" },
+//     });
+//   } catch (error) {
+//     console.error("Error fetching chat:", error);
+//     return new Response("An error occurred while processing your request", {
+//       status: 500,
+//     });
+//   }
+// }

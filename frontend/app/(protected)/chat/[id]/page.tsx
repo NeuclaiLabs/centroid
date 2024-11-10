@@ -35,7 +35,6 @@ export default async function Page({ params }: { params: any }) {
     }
 
     const chatFromApi = await response.json();
-    console.log("chatFromApi", chatFromApi);
 
     // type casting
     const chat: Chat = {

@@ -14,6 +14,7 @@ import { useSession } from "next-auth/react";
 import { fetcher } from "@/lib/utils";
 import { Project } from "@/lib/types";
 import { useProject } from "@/components/custom/project-provider";
+import { useChats } from "@/components/custom/chat-provider";
 // Hook for scrolling to the bottom of the chat
 const useScrollToBottom = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -64,6 +65,7 @@ export function Chat({
   initialMessages: Array<Message>;
 }) {
   const { data: session } = useSession();
+  const { setSelectedChat } = useChats();
   const { mutate: mutateHistory } = useSWR(
     session?.user
       ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/?skip=0&limit=5`, session.user.accessToken]
@@ -113,6 +115,17 @@ export function Chat({
       }, false);
     }
   }, [id, messages, mutateHistory]);
+
+  // Add effect to set selected chat when messages change
+  useEffect(() => {
+    if (messages.length > 0) {
+      setSelectedChat({
+        id,
+        messages,
+        project
+      });
+    }
+  }, [id, messages, setSelectedChat]);
 
   return (
     <div className="relative flex flex-col h-screen bg-background">

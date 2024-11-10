@@ -31,39 +31,24 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Chat } from "@/db/schema";
-import { getTitleFromChat } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useChats } from "./chat-provider";
+import { Skeleton } from '../ui/skeleton';
+import { getTitleFromChat } from '@/lib/utils';
 
-export function NavChats({
-  history,
-  count,
-  isLoading,
-  mutate,
-}: {
-  history: Chat[] | undefined;
-  count: number | undefined;
-  isLoading: boolean;
-  mutate: (history: Chat[]) => void;
-}) {
+export function NavChats() {
+  const { chats: history, count, isLoading, deleteChat } = useChats();
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleDelete = async () => {
-    const deletePromise = fetch(`/api/chat?id=${deleteId}`, {
-      method: "DELETE",
-    });
+    if (!deleteId) return;
 
-    toast.promise(deletePromise, {
-      loading: "Deleting chat...",
-      success: () => {
-        if (history) {
-          mutate(history.filter((h) => h.id !== deleteId));
-        }
-        return "Chat deleted successfully";
-      },
-      error: "Failed to delete chat",
-    });
+    try {
+      await deleteChat(deleteId);
+      toast.success("Chat deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete chat");
+    }
 
     setShowDeleteDialog(false);
   };

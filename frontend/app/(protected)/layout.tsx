@@ -14,6 +14,20 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import Link from "next/link";
+import { useChats } from "@/components/custom/chat-provider";
+
+function ProjectBreadcrumb() {
+  const { selectedProject } = useProject();
+  const { selectedChat } = useChats();
+  const project = selectedChat?.project ?? selectedProject;
+  return (
+    <BreadcrumbItem className="hidden md:block">
+      <Link href={`/projects/${project?.id}`} passHref>
+        {project?.title ?? "No Project Selected"}
+      </Link>
+    </BreadcrumbItem>
+  );
+}
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -28,11 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <Separator orientation="vertical" className="mr-2 h-4" />
                 <Breadcrumb>
                   <BreadcrumbList>
-                    <BreadcrumbItem className="hidden md:block">
-                      <Link href="#" passHref>
-                        No Project Selected
-                      </Link>
-                    </BreadcrumbItem>
+                    <ProjectBreadcrumb />
                     <BreadcrumbSeparator className="hidden md:block" />
                     <BreadcrumbItem>
                       <BreadcrumbPage>Data Fetching</BreadcrumbPage>
