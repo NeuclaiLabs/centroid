@@ -36,7 +36,7 @@ export const Projects = ({ data, count, isLoading }: ProjectsProps) => {
             <h1 className="text-2xl font-semibold mb-8">Projects</h1>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-              {isLoading || !data ? (
+              {isLoading || !count ? (
                 <>
                   {[1, 2, 3].map((i) => (
                     <Card key={i}>

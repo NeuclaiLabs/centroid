@@ -152,7 +152,7 @@ export function MultimodalInput({
     [setAttachments]
   );
 
-  const { projects, selectedProject, setSelectedProject } = useProject();
+  const { projects, selectedProject, setSelectedProjectId } = useProject();
 
   return (
     <div className="relative w-full flex flex-col gap-2">
@@ -239,7 +239,7 @@ export function MultimodalInput({
               {projects?.map((project) => (
                 <DropdownMenuItem
                   key={project.id}
-                  onSelect={() => setSelectedProject(project)}
+                  onSelect={() => setSelectedProjectId(project.id)}
                 >
                   {project.title}
                 </DropdownMenuItem>
