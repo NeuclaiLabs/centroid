@@ -40,6 +40,9 @@ export function NavChats() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
+  // Get only the first 5 chats
+  const recentChats = history?.slice(0, 5);
+
   const handleDelete = async () => {
     if (!deleteId) return;
 
@@ -74,7 +77,7 @@ export function NavChats() {
               <div>No chats found</div>
             </div>
           ) : (
-            history?.map((chat) => (
+            recentChats?.map((chat) => (
               <SidebarMenuItem key={chat.id}>
                 <SidebarMenuButton asChild className="hover:bg-sidebar-accent transition-colors">
                   <Link href={`/chat/${chat.id}`} className="flex items-center gap-2 p-2 rounded-md">
@@ -115,8 +118,8 @@ export function NavChats() {
             ))
           )}
 
-          {/* Show "View More" link only if there are messages */}
-          {history && history.length > 0 && (
+          {/* Show "View More" link if there are more than 5 chats */}
+          {history && history.length > 5 && (
             <SidebarMenuItem>
               <Link href="/chats" className="flex items-center gap-2 p-2 text-sm text-foreground/50 hover:underline">
                 <span>View More</span>
