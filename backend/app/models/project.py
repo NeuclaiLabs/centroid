@@ -4,10 +4,11 @@ import nanoid
 from sqlalchemy import Column, DateTime, func
 from sqlmodel import JSON, Field, Relationship, SQLModel
 
+from .base import CamelModel
 from .team import Team
 
 
-class ProjectBase(SQLModel):
+class ProjectBase(CamelModel):
     title: str
     description: str | None = None
     model: str | None = None
@@ -18,7 +19,7 @@ class ProjectCreate(ProjectBase):
     team_id: str
 
 
-class ProjectUpdate(SQLModel):
+class ProjectUpdate(CamelModel):
     title: str | None = None
     description: str | None = None
     model: str | None = None
@@ -27,7 +28,7 @@ class ProjectUpdate(SQLModel):
     updated_at: datetime = datetime.utcnow()
 
 
-class Project(ProjectBase, table=True):
+class Project(ProjectBase, SQLModel, table=True):
     __tablename__ = "projects"
     id: str = Field(default_factory=nanoid.generate, primary_key=True)
     files: list[str] | None = Field(default=[], sa_column=Column(JSON))
@@ -57,6 +58,6 @@ class ProjectOut(ProjectBase):
     updated_at: datetime
 
 
-class ProjectsOut(SQLModel):
+class ProjectsOut(CamelModel):
     data: list[ProjectOut]
     count: int

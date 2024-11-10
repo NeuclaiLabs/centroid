@@ -65,7 +65,7 @@ export function Chat({
   initialMessages: Array<Message>;
 }) {
   const { data: session } = useSession();
-  const { setSelectedChat } = useChats();
+  const { setSelectedChatId } = useChats();
   const { mutate: mutateHistory } = useSWR(
     session?.user
       ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/?skip=0&limit=5`, session.user.accessToken]
@@ -93,39 +93,37 @@ export function Chat({
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
-  // Move the history update logic outside useChat
+  // Update effect to use setSelectedChatId instead of setSelectedChat
   useEffect(() => {
-    if (messages.length == 1) {
+    if (messages.length > 0) {
+      setSelectedChatId(id);
+    }
+  }, [id, messages, setSelectedChatId]);
+
+  // Update history effect to include project information
+  useEffect(() => {
+    if (messages.length === 1) {
       mutateHistory((currentHistory: { data: any; count: number }) => {
         if (!currentHistory) return currentHistory;
 
-        // Check if chat already exists in history
         const chatExists = currentHistory?.data?.some((chat) => chat.id === id);
         if (chatExists) return currentHistory;
 
-        // Add new chat to history
-        const newChat: any = {
+        const newChat = {
           id,
-          messages: messages,
+          messages,
+          project,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
 
-        return { data: [newChat, ...currentHistory.data], count: currentHistory.count + 1 };
+        return {
+          data: [newChat, ...currentHistory.data],
+          count: currentHistory.count + 1
+        };
       }, false);
     }
-  }, [id, messages, mutateHistory]);
-
-  // Add effect to set selected chat when messages change
-  useEffect(() => {
-    if (messages.length > 0) {
-      setSelectedChat({
-        id,
-        messages,
-        project
-      });
-    }
-  }, [id, messages, setSelectedChat]);
+  }, [id, messages, project, mutateHistory]);
 
   return (
     <div className="relative flex flex-col h-screen bg-background">

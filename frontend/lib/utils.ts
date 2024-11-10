@@ -1,6 +1,7 @@
 import { CoreMessage, CoreToolMessage, generateId, Message, ToolInvocation } from "ai";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { Session } from "next-auth";
 
 import { Chat } from "@/lib/types";
 export function cn(...inputs: ClassValue[]) {
@@ -132,4 +133,8 @@ export function getTitleFromChat(chat: Chat) {
     return "Untitled";
   }
   return firstMessage.content;
+}
+
+export function getToken(session: Session | null) {
+  return (session?.user as any)?.accessToken as string;
 }

@@ -71,6 +71,8 @@ class ChatOut(ChatBase):
     visibility: ChatVisibility
     project_id: str | None
     project: Project | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
 class ChatsOut(CamelModel):

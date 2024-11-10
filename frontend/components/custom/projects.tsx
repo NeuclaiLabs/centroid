@@ -110,7 +110,7 @@ export const Projects = ({ data, count, isLoading }: ProjectsProps) => {
                       </CardContent>
                       <CardFooter className="px-6">
                         <p className="text-sm text-primary/50">
-                          Updated {formatDistanceToNow(new Date(project.updated_at), { addSuffix: true })}
+                          Updated {formatDistanceToNow(new Date(project!.updatedAt), { addSuffix: true })}
                         </p>
                       </CardFooter>
                     </Card>

@@ -1,0 +1,111 @@
+"use client";
+
+import { MessageSquare, MoreVertical, Plus, Trash } from "lucide-react";
+import * as React from "react";
+import { useRouter } from "next/navigation";
+
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Chat } from "@/lib/types";
+import { useChats } from "@/components/custom/chat-provider";
+import { getTitleFromChat } from "@/lib/utils";
+import { formatDistanceToNow } from "date-fns";
+
+
+interface ChatsProps {
+  data: Chat[] | null;
+  isLoading: boolean;
+  count: number | undefined;
+}
+
+export  function Chats({ data, count, isLoading }: ChatsProps) {
+  const router = useRouter();
+  const { deleteChat } = useChats();
+
+  const handleDelete = async (e: React.MouseEvent, chatId: string) => {
+    e.stopPropagation();
+    await deleteChat(chatId);
+  };
+
+  return (
+    <div className="relative flex flex-col min-h-screen bg-background">
+      <div className="flex-1">
+        <div className="max-w-6xl mx-auto p-6 md:px-32">
+          <h1 className="text-2xl font-semibold mb-8">Chats</h1>
+
+          <div className="space-y-4">
+            {isLoading || !count ? (
+              <>
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-center gap-4 p-4 rounded-lg border bg-card">
+                    <Skeleton className="size-10 rounded-full" />
+                    <div className="flex-1">
+                      <Skeleton className="h-5 w-[200px] mb-2" />
+                      <Skeleton className="h-4 w-[150px]" />
+                    </div>
+                  </div>
+                ))}
+              </>
+            ) : (
+              <>
+                <div className="text-sm text-muted-foreground">You have {count} conversations so far</div>
+                {data?.map((chat) => (
+                  <div
+                    key={chat.id}
+                    onClick={() => router.push(`/chat/${chat.id}`)}
+                    className="flex items-center gap-4 p-4 rounded-lg border bg-card hover:bg-secondary/50 transition-colors cursor-pointer group"
+                  >
+                    <div className="size-10 rounded-full bg-secondary flex items-center justify-center">
+                      <MessageSquare className="size-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-lg truncate">{getTitleFromChat(chat)}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Updated{" "}
+                        {chat.updatedAt
+                          ? formatDistanceToNow(new Date(chat.updatedAt), { addSuffix: true })
+                          : "Unknown"}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => handleDelete(e, chat.id)}
+                      >
+                        <Trash className="size-4" />
+                        <span className="sr-only">Delete chat</span>
+                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <MoreVertical className="size-4" />
+                            <span className="sr-only">More options</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={(e) => handleDelete(e, chat.id)}>Delete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

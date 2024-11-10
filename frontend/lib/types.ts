@@ -21,8 +21,8 @@ export interface Project {
   instructions: string;
   files: string[];
   threads: string[];
-  created_at: Date;
-  updated_at: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export enum ChatVisibility {
@@ -43,8 +43,8 @@ export interface Chat {
   }[];
   title?: string;
   path?: string;
-  created_at?: Date;
-  updated_at?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
   visibility?: ChatVisibility;
   project?: Project;
 }

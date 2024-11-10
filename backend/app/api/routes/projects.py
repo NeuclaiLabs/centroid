@@ -59,7 +59,21 @@ def read_projects(
 
     count = session.exec(select(func.count()).select_from(statement.subquery())).one()
     projects = session.exec(statement.offset(skip).limit(limit)).all()
-    return ProjectsOut(data=projects, count=count)
+    projects_out = [
+        ProjectOut(
+            id=p.id,
+            team_id=p.team_id,
+            title=p.title,
+            description=p.description,
+            model=p.model,
+            instructions=p.instructions,
+            files=p.files,
+            created_at=p.created_at,
+            updated_at=p.updated_at,
+        )
+        for p in projects
+    ]
+    return ProjectsOut(data=projects_out, count=count)
 
 
 @router.get("/{project_id}", response_model=ProjectOut)
