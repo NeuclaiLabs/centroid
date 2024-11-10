@@ -20,6 +20,12 @@ type ChatContextType = {
   fetchChatHistory: (skip?: number, limit?: number) => Promise<void>;
   updateChat: (id: string, data: Partial<Chat>) => Promise<void>;
   fetchChatById: (id: string) => Promise<Chat | null>;
+  pagination: {
+    skip: number;
+    limit: number;
+    hasMore: boolean;
+  };
+  loadMore: () => Promise<void>;
 };
 
 export const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -34,11 +40,16 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
   const [isLoadingChat, setIsLoadingChat] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [pagination, setPagination] = useState({
+    skip: 0,
+    limit: 10,
+    hasMore: true,
+  });
 
   // Fetch chat history
   const { data: chatsData, isLoading, error: swrError } = useSWR<{ data: Chat[]; count: number }>(
     session?.user
-      ? [getChatsUrl(), getToken(session)]
+      ? [getChatsUrl(pagination.skip, pagination.limit), getToken(session)]
       : null,
     ([url, token]) => fetcher(url, token as string)
   );
@@ -164,6 +175,42 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     };
   }, [selectedChatId, chatsData?.data]);
 
+  const loadMore = async () => {
+    if (!session?.user) return;
+
+    // Don't load more if we already have all chats
+    const totalLoaded = (chatsData?.data || []).length;
+    const totalCount = chatsData?.count || 0;
+
+    if (totalLoaded >= totalCount) {
+      setPagination(prev => ({ ...prev, hasMore: false }));
+      return;
+    }
+
+    const newSkip = pagination.skip + pagination.limit;
+    const response = await fetcher(
+      getChatsUrl(newSkip, pagination.limit),
+      getToken(session)
+    );
+
+    // Update pagination state
+    setPagination(prev => ({
+      ...prev,
+      skip: newSkip,
+      hasMore: totalLoaded + response.data.length < totalCount
+    }));
+
+    // Merge new data with existing data
+    await mutate(
+      [getChatsUrl(pagination.skip, pagination.limit), getToken(session)],
+      {
+        data: [...(chatsData?.data || []), ...response.data],
+        count: response.count,
+      },
+      false
+    );
+  };
+
   // Memoize context value
   const contextValue = useMemo(
     () => ({
@@ -178,8 +225,14 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       fetchChatHistory,
       updateChat,
       fetchChatById,
+      pagination: {
+        skip: pagination.skip,
+        limit: pagination.limit,
+        hasMore: pagination.hasMore,
+      },
+      loadMore,
     }),
-    [chatsData, isLoading, isLoadingChat, selectedChat, error, swrError]
+    [chatsData, isLoading, isLoadingChat, selectedChat, error, swrError, pagination]
   );
 
   return (

@@ -26,7 +26,33 @@ interface ChatsProps {
 
 export  function Chats({ data, count, isLoading }: ChatsProps) {
   const router = useRouter();
-  const { deleteChat } = useChats();
+  const { deleteChat, loadMore, pagination } = useChats();
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  // Intersection Observer for infinite scrolling
+  React.useEffect(() => {
+    if (!pagination.hasMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isLoading) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentContainer = containerRef.current;
+    if (currentContainer) {
+      observer.observe(currentContainer);
+    }
+
+    return () => {
+      if (currentContainer) {
+        observer.unobserve(currentContainer);
+      }
+    };
+  }, [loadMore, isLoading, pagination.hasMore]);
 
   const handleDelete = async (e: React.MouseEvent, chatId: string) => {
     e.stopPropagation();
@@ -40,7 +66,7 @@ export  function Chats({ data, count, isLoading }: ChatsProps) {
           <h1 className="text-2xl font-semibold mb-8">Chats</h1>
 
           <div className="space-y-4">
-            {isLoading || !count ? (
+            {isLoading && !data?.length ? (
               <>
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="flex items-center gap-4 p-4 rounded-lg border bg-card">
@@ -54,7 +80,9 @@ export  function Chats({ data, count, isLoading }: ChatsProps) {
               </>
             ) : (
               <>
-                <div className="text-sm text-muted-foreground">You have {count} conversations so far</div>
+                <div className="text-sm text-muted-foreground">
+                  You have {count} conversations so far
+                </div>
                 {data?.map((chat) => (
                   <div
                     key={chat.id}
@@ -83,7 +111,7 @@ export  function Chats({ data, count, isLoading }: ChatsProps) {
                         <Trash className="size-4" />
                         <span className="sr-only">Delete chat</span>
                       </Button>
-                      <DropdownMenu>
+                      {/* <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
                           <Button
                             variant="ghost"
@@ -97,10 +125,16 @@ export  function Chats({ data, count, isLoading }: ChatsProps) {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={(e) => handleDelete(e, chat.id)}>Delete</DropdownMenuItem>
                         </DropdownMenuContent>
-                      </DropdownMenu>
+                      </DropdownMenu> */}
                     </div>
                   </div>
                 ))}
+                {/* Loading indicator at the bottom */}
+                <div ref={containerRef} className="h-10 flex items-center justify-center">
+                  {isLoading && pagination.hasMore && (
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+                  )}
+                </div>
               </>
             )}
           </div>
