@@ -27,6 +27,7 @@ export default function ChatsPage() {
     data: pages,
     size,
     setSize,
+    mutate,
     isLoading,
     isValidating,
   } = useSWRInfinite<ChatResponse>(getKey, ([url, token]) => fetcher(url, token as string), {
@@ -46,6 +47,7 @@ export default function ChatsPage() {
       hasMore={hasMore}
       onLoadMore={() => setSize(size + 1)}
       isValidating={isValidating}
+      mutate={mutate}
     />
   );
 }

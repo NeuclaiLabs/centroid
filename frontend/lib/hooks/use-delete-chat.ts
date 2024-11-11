@@ -6,36 +6,24 @@ import { Chat } from "@/lib/types";
 
 export function useDeleteChat(onSuccess?: () => Promise<any>) {
   const { data: session } = useSession();
+  const token = getToken(session);
+
   const { trigger } = useSWRMutation(
-    '/api/v1/chats',
-    async (url: string, { arg }: { arg: string }) => {
-      const token = getToken(session);
+    [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats`, token],
+    async ([url, token], { arg }: { arg: string }) => {
       const response = await fetcher(
         `${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/${arg}`,
         token,
-        { method: 'DELETE' }
-      );
-      return response;
-    },
-    {
-      onSuccess: async (data, key, config) => {
-        await onSuccess?.();
-      },
-      populateCache: (result, currentData) => {
-        if (!currentData) return currentData;
-        return {
-          ...currentData,
-          items: currentData.items.filter((chat: Chat) => chat.id !== result.id),
-          count: currentData.count - 1
-        };
-      },
-      revalidate: false
-    }
-  );
+        { method: "DELETE" }
+    );
+
+    return response;
+  });
 
   const deleteWithConfirmation = async (chatId: string) => {
     try {
       await trigger(chatId);
+      await onSuccess?.();
       toast.success('Chat deleted successfully');
     } catch (error) {
       console.error('Error deleting chat:', error);

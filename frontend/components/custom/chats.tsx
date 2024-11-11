@@ -30,6 +30,7 @@ interface ChatsProps {
   onLoadMore: () => void;
   isValidating: boolean;
   count: number | undefined;
+  mutate?: () => Promise<any>;
 }
 
 export function Chats({
@@ -39,15 +40,13 @@ export function Chats({
   hasMore,
   onLoadMore,
   isValidating,
+  mutate,
   count
 }: ChatsProps) {
   const router = useRouter();
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  const { mutate } = useSWRConfig();
-  const { deleteChat } = useDeleteChat(() =>
-    mutate((key) => typeof key === 'string' && key.includes('/api/v1/chats'))
-  );
+  const { deleteChat } = useDeleteChat(mutate);
 
   // Simplified intersection observer
   useEffect(() => {
