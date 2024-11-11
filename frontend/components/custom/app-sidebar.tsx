@@ -137,7 +137,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     mutate: mutateHistory,
   } = useSWR(
     session?.user
-      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/?skip=0&limit=3`, getToken(session)]
+      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/`, getToken(session)]
       : null,
     ([url, token]) => fetcher(url, token as string)
   );
@@ -171,7 +171,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain items={navMainWithTeamId} />
         {/* Pass chats to NavChats */}
-        <NavChats history={res?.data} count={res?.count} isLoading={isLoading} mutate={mutateHistory} />
+        <NavChats history={res?.data.slice(0, 3)} count={res?.count} isLoading={isLoading} mutate={mutateHistory} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

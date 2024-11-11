@@ -9,6 +9,7 @@ import { TeamHeader } from "@/components/custom/team-header";
 import { InviteMemberDialog } from "@/components/custom/invite-member";
 import { MembersList } from "@/components/custom/team-members";
 import { useSession } from "next-auth/react";
+import { getToken } from "@/lib/utils";
 
 interface TeamProps {
   team: any;

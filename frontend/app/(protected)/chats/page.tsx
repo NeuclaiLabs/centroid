@@ -15,12 +15,11 @@ export default function ChatsPage() {
   const { data: session } = useSession();
 
   const getKey = (pageIndex: number, previousPageData: Chat[]) => {
-    if (previousPageData && !previousPageData.length) return null;
-    return session?.user ? [
-      `${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/?skip=${(pageIndex) * 10}&limit=10`,
-        getToken(session),
-      ]
-    : null;
+    if (!session?.user || previousPageData && !previousPageData.length) return null;
+    if (pageIndex === 0) {
+      return [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/`, getToken(session)];
+    }
+    return [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/?skip=${pageIndex * 10}&limit=10`, getToken(session)];
   };
 
   const {
@@ -35,7 +34,7 @@ export default function ChatsPage() {
     revalidateOnFocus: false,
   });
 
-  const chats = pages?.map(page => page.data).flat() || [];
+  const chats = pages?.map((page) => page.data).flat() || [];
   const isLoadingMore = isLoading;
   const hasMore = pages && pages[0] && pages[0].count > (pages.length || 0) * 10;
   return (
