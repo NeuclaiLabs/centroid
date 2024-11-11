@@ -14,7 +14,6 @@ import { useSession } from "next-auth/react";
 import { fetcher } from "@/lib/utils";
 import { Project } from "@/lib/types";
 import { useProject } from "@/components/custom/project-provider";
-import { useChats } from "@/components/custom/chat-provider";
 // Hook for scrolling to the bottom of the chat
 const useScrollToBottom = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -31,8 +30,8 @@ const useScrollToBottom = () => {
   useEffect(() => {
     const options = {
       root: null,
-      rootMargin: '0px',
-      threshold: 1.0
+      rootMargin: "0px",
+      threshold: 1.0,
     };
 
     const observer = new IntersectionObserver((entries) => {
@@ -65,7 +64,6 @@ export function Chat({
   initialMessages: Array<Message>;
 }) {
   const { data: session } = useSession();
-  const { setSelectedChatId } = useChats();
   const { mutate: mutateHistory } = useSWR(
     session?.user
       ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/?skip=0&limit=5`, session.user.accessToken]
@@ -93,37 +91,28 @@ export function Chat({
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
-  // Update effect to use setSelectedChatId instead of setSelectedChat
+  // Move the history update logic outside useChat
   useEffect(() => {
-    if (messages.length > 0) {
-      setSelectedChatId(id);
-    }
-  }, [id, messages, setSelectedChatId]);
-
-  // Update history effect to include project information
-  useEffect(() => {
-    if (messages.length === 1) {
+    if (messages.length == 1) {
       mutateHistory((currentHistory: { data: any; count: number }) => {
         if (!currentHistory) return currentHistory;
 
+        // Check if chat already exists in history
         const chatExists = currentHistory?.data?.some((chat) => chat.id === id);
         if (chatExists) return currentHistory;
 
-        const newChat = {
+        // Add new chat to history
+        const newChat: any = {
           id,
-          messages,
-          project,
+          messages: messages,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
 
-        return {
-          data: [newChat, ...currentHistory.data],
-          count: currentHistory.count + 1
-        };
+        return { data: [newChat, ...currentHistory.data], count: currentHistory.count + 1 };
       }, false);
     }
-  }, [id, messages, project, mutateHistory]);
+  }, [id, messages, mutateHistory]);
 
   return (
     <div className="relative flex flex-col h-screen bg-background">

@@ -14,12 +14,10 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import Link from "next/link";
-import { useChats } from "@/components/custom/chat-provider";
 
 function ProjectBreadcrumb() {
   const { selectedProject } = useProject();
-  const { selectedChat } = useChats();
-  const project = selectedChat?.project ?? selectedProject;
+  const project =  selectedProject;
   return (
     <BreadcrumbItem className="hidden md:block">
       <Link href={`/projects/${project?.id}`} passHref>

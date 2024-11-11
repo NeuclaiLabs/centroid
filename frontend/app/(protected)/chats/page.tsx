@@ -1,14 +1,18 @@
 "use client";
 
-import { Chats } from "@/components/custom/chats";
-import { useChats } from "@/components/custom/chat-provider";
-
+import { Chat } from "@/lib/types";
+import { fetcher } from "@/lib/utils";
+import useSWR from "swr";
 export default function Page() {
-  const { chats, count, isLoading } = useChats();
+  // const { chats, count, isLoading } = useChats();
+  const { data: chatsData, isLoading } = useSWR<{ data: Chat[]; count: number }>(
+    `${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/?skip=0&limit=5`,
+    fetcher
+  );
 
   return (
     <div className="flex flex-col gap-4 p-4">
-      <Chats data={chats} count={count} isLoading={isLoading} />
+      <Chats data={chatsData?.data} count={chatsData?.count} isLoading={isLoading} />
     </div>
   );
 }

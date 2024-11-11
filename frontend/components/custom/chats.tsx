@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Chat } from "@/lib/types";
-import { useChats } from "@/components/custom/chat-provider";
 import { getTitleFromChat } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 
@@ -26,16 +25,20 @@ interface ChatsProps {
 
 export  function Chats({ data, count, isLoading }: ChatsProps) {
   const router = useRouter();
-  const { deleteChat, loadMore, pagination } = useChats();
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   // Intersection Observer for infinite scrolling
   React.useEffect(() => {
+    const pagination = { hasMore: true }; // Define pagination object with hasMore property
     if (!pagination.hasMore) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && !isLoading) {
+          // Define the loadMore function
+          const loadMore = () => {
+            // Logic to load more data
+          };
           loadMore();
         }
       },
@@ -52,11 +55,11 @@ export  function Chats({ data, count, isLoading }: ChatsProps) {
         observer.unobserve(currentContainer);
       }
     };
-  }, [loadMore, isLoading, pagination.hasMore]);
+  }, [isLoading]);
 
   const handleDelete = async (e: React.MouseEvent, chatId: string) => {
     e.stopPropagation();
-    await deleteChat(chatId);
+    // await deleteChat(chatId);
   };
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React from "react";
 import { ChevronRightIcon, Folder, InfoIcon, MoreHorizontal, Share, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -31,27 +31,39 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useChats } from "./chat-provider";
-import { Skeleton } from '../ui/skeleton';
-import { getTitleFromChat } from '@/lib/utils';
+import { Chat } from "@/db/schema";
+import { getTitleFromChat } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export function NavChats() {
-  const { chats: history, count, isLoading, deleteChat } = useChats();
+export function NavChats({
+  history,
+  count,
+  isLoading,
+  mutate,
+}: {
+  history: Chat[] | undefined;
+  count: number | undefined;
+  isLoading: boolean;
+  mutate: (history: Chat[]) => void;
+}) {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  // Get only the first 5 chats
-  const recentChats = history?.slice(0, 5);
-
   const handleDelete = async () => {
-    if (!deleteId) return;
+    const deletePromise = fetch(`/api/chat?id=${deleteId}`, {
+      method: "DELETE",
+    });
 
-    try {
-      await deleteChat(deleteId);
-      toast.success("Chat deleted successfully");
-    } catch (error) {
-      toast.error("Failed to delete chat");
-    }
+    toast.promise(deletePromise, {
+      loading: "Deleting chat...",
+      success: () => {
+        if (history) {
+          mutate(history.filter((h) => h.id !== deleteId));
+        }
+        return "Chat deleted successfully";
+      },
+      error: "Failed to delete chat",
+    });
 
     setShowDeleteDialog(false);
   };
@@ -77,7 +89,7 @@ export function NavChats() {
               <div>No chats found</div>
             </div>
           ) : (
-            recentChats?.map((chat) => (
+            history?.map((chat) => (
               <SidebarMenuItem key={chat.id}>
                 <SidebarMenuButton asChild className="hover:bg-sidebar-accent transition-colors">
                   <Link href={`/chat/${chat.id}`} className="flex items-center gap-2 p-2 rounded-md">
@@ -118,10 +130,10 @@ export function NavChats() {
             ))
           )}
 
-          {/* Show "View More" link if there are more than 5 chats */}
-          {history && history.length > 5 && (
+          {/* Show "View More" link only if there are messages */}
+          {history && history.length > 0 && (
             <SidebarMenuItem>
-              <Link href="/chats" className="flex items-center gap-2 p-2 text-sm text-foreground/50 hover:underline">
+              <Link href="#" className="flex items-center gap-2 p-2 text-sm text-foreground/50 hover:underline">
                 <span>View More</span>
                 <ChevronRightIcon className="size-4" />
               </Link>

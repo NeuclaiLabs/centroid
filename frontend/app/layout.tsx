@@ -4,7 +4,6 @@ import { SessionProvider } from "next-auth/react";
 import { Toaster } from "sonner";
 
 import { ThemeProvider } from "@/components/custom/theme-provider";
-import { ChatProvider } from "@/components/custom/chat-provider";
 
 import "./globals.css";
 
@@ -45,10 +44,8 @@ export default async function RootLayout({
       <body className="antialiased">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <SessionProvider>
-            <ChatProvider>
               <Toaster position="top-center" />
               {children}
-            </ChatProvider>
           </SessionProvider>
         </ThemeProvider>
       </body>
