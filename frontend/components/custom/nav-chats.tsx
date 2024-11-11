@@ -5,6 +5,7 @@ import { ChevronRightIcon, Folder, InfoIcon, MoreHorizontal, Share, Trash2 } fro
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
+import useSWRMutation from "swr/mutation"
 
 import {
   AlertDialog,
@@ -32,39 +33,30 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { Chat } from "@/db/schema";
-import { getTitleFromChat } from "@/lib/utils";
+import { fetcher, getTitleFromChat, getToken } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSession } from "next-auth/react";
 
-export function NavChats({
-  history,
-  count,
-  isLoading,
-  mutate,
-}: {
-  history: Chat[] | undefined;
-  count: number | undefined;
-  isLoading: boolean;
-  mutate: (history: Chat[]) => void;
-}) {
+import { useDeleteChat } from "@/lib/hooks/use-delete-chat";
+
+interface NavChatsProps {
+  history?: Chat[]
+  count?: number
+  isLoading?: boolean
+  mutate?: () => Promise<any>
+}
+
+export function NavChats({ history, count, isLoading, mutate }: NavChatsProps) {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const { data: session } = useSession();
+  const token = getToken(session);
+  const { deleteChat } = useDeleteChat(mutate);
 
   const handleDelete = async () => {
-    const deletePromise = fetch(`/api/chat?id=${deleteId}`, {
-      method: "DELETE",
-    });
+    if (!deleteId) return;
 
-    toast.promise(deletePromise, {
-      loading: "Deleting chat...",
-      success: () => {
-        if (history) {
-          mutate(history.filter((h) => h.id !== deleteId));
-        }
-        return "Chat deleted successfully";
-      },
-      error: "Failed to delete chat",
-    });
-
+    await deleteChat(deleteId);
     setShowDeleteDialog(false);
   };
 
@@ -133,7 +125,7 @@ export function NavChats({
           {/* Show "View More" link only if there are messages */}
           {history && history.length > 0 && (
             <SidebarMenuItem>
-              <Link href="#" className="flex items-center gap-2 p-2 text-sm text-foreground/50 hover:underline">
+              <Link href="/chats" className="flex items-center gap-2 p-2 text-sm text-foreground/50 hover:underline">
                 <span>View More</span>
                 <ChevronRightIcon className="size-4" />
               </Link>

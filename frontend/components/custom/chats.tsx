@@ -3,6 +3,9 @@
 import { MessageSquare, MoreVertical, Plus, Trash } from "lucide-react";
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import useSWR, { mutate, useSWRConfig } from "swr";
+import useSWRMutation from 'swr/mutation'
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -13,33 +16,47 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Chat } from "@/lib/types";
-import { getTitleFromChat } from "@/lib/utils";
+import { fetcher, getTitleFromChat } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
+import { useEffect } from "react";
 
+import { useDeleteChat } from "@/lib/hooks/use-delete-chat";
 
 interface ChatsProps {
-  data: Chat[] | null;
+  data: Chat[];
   isLoading: boolean;
+  isLoadingMore: boolean;
+  hasMore: boolean;
+  onLoadMore: () => void;
+  isValidating: boolean;
   count: number | undefined;
 }
 
-export  function Chats({ data, count, isLoading }: ChatsProps) {
+export function Chats({
+  data,
+  isLoading,
+  isLoadingMore,
+  hasMore,
+  onLoadMore,
+  isValidating,
+  count
+}: ChatsProps) {
   const router = useRouter();
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  // Intersection Observer for infinite scrolling
-  React.useEffect(() => {
-    const pagination = { hasMore: true }; // Define pagination object with hasMore property
-    if (!pagination.hasMore) return;
+  const { mutate } = useSWRConfig();
+  const { deleteChat } = useDeleteChat(() =>
+    mutate((key) => typeof key === 'string' && key.includes('/api/v1/chats'))
+  );
+
+  // Simplified intersection observer
+  useEffect(() => {
+    if (!hasMore) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && !isLoading) {
-          // Define the loadMore function
-          const loadMore = () => {
-            // Logic to load more data
-          };
-          loadMore();
+        if (entries[0].isIntersecting && !isValidating) {
+          onLoadMore();
         }
       },
       { threshold: 0.1 }
@@ -55,11 +72,11 @@ export  function Chats({ data, count, isLoading }: ChatsProps) {
         observer.unobserve(currentContainer);
       }
     };
-  }, [isLoading]);
+  }, [hasMore, isValidating, onLoadMore]);
 
   const handleDelete = async (e: React.MouseEvent, chatId: string) => {
     e.stopPropagation();
-    // await deleteChat(chatId);
+    await deleteChat(chatId);
   };
 
   return (
@@ -69,7 +86,7 @@ export  function Chats({ data, count, isLoading }: ChatsProps) {
           <h1 className="text-2xl font-semibold mb-8">Chats</h1>
 
           <div className="space-y-4">
-            {isLoading && !data?.length ? (
+            {isLoading || !count ? (
               <>
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="flex items-center gap-4 p-4 rounded-lg border bg-card">
@@ -132,9 +149,8 @@ export  function Chats({ data, count, isLoading }: ChatsProps) {
                     </div>
                   </div>
                 ))}
-                {/* Loading indicator at the bottom */}
                 <div ref={containerRef} className="h-10 flex items-center justify-center">
-                  {isLoading && pagination.hasMore && (
+                  {isLoadingMore && hasMore && (
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
                   )}
                 </div>

@@ -3,7 +3,7 @@
 import useSWR from "swr";
 import { useSession } from "next-auth/react";
 import { useTeams } from "@/components/custom/teams-provider";
-import { fetcher } from "@/lib/utils";
+import { fetcher, getToken } from "@/lib/utils";
 import { Project } from "@/components/custom/project";
 
 export default function Page({ params }: { params: { id: string } }) {
@@ -12,7 +12,7 @@ export default function Page({ params }: { params: { id: string } }) {
 
   const { data, error, isLoading } = useSWR(
     session?.user && selectedTeamId
-      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/${params.id}`, session.user.accessToken]
+      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/${params.id}`, getToken(session)]
       : null,
     ([url, token]) => fetcher(url, token)
   );

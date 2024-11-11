@@ -2,7 +2,7 @@
 
 import { notFound } from "next/navigation";
 import useSWR from "swr";
-import { fetcher } from "@/lib/utils";
+import { fetcher, getToken } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { Team } from "@/components/custom/team";
 import { useTeams } from "@/components/custom/teams-provider";
@@ -17,7 +17,7 @@ export default function Page({ params }: { params: any }) {
     isLoading: isLoadingMembers,
   } = useSWR(
     session?.user && teamId
-      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/teams/${teamId}/members`, session?.user?.accessToken]
+      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/teams/${teamId}/members`, getToken(session)]
       : null,
     ([url, token]) => fetcher(url, token),
     { fallbackData: [] }
@@ -29,7 +29,7 @@ export default function Page({ params }: { params: any }) {
     mutate: mutateTeam,
   } = useSWR(
     session?.user && teamId
-      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/teams/${teamId}`, session?.user?.accessToken]
+      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/teams/${teamId}`, getToken(session)]
       : null,
     ([url, token]) => fetcher(url, token),
     { fallbackData: {} }

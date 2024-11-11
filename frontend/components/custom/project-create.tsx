@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import useSWR from "swr";
 import { useSession } from "next-auth/react";
 import { useTeams } from "@/components/custom/teams-provider";
-import { fetcher } from "@/lib/utils";
+import { fetcher, getToken } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -71,20 +71,17 @@ export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) 
   // Key for projects list
   const projectsKey =
     session?.user && selectedTeamId
-      ? // @ts-ignore
-        [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/?team_id=${selectedTeamId}`, session.user.accessToken]
+      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/?team_id=${selectedTeamId}`, getToken(session)]
       : null;
 
   // SWR hook for the projects list
   const { mutate: mutateProjects } = useSWR(projectsKey, ([url, token]) => fetcher(url, token));
 
-  // @ts-ignore
-  const { trigger: createProject, isMutating: isLoading } = useCreateProject(session?.user?.accessToken);
+  const { trigger: createProject, isMutating: isLoading } = useCreateProject(getToken(session));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // @ts-ignore
-    if (!session?.user?.accessToken || !selectedTeamId) return;
+    if (!getToken(session) || !selectedTeamId) return;
 
     try {
       const newProject = await createProject({

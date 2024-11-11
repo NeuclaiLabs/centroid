@@ -1,18 +1,51 @@
 "use client";
 
+import useSWRInfinite from "swr/infinite";
+import { Chats } from "@/components/custom/chats";
+import { fetcher, getToken } from "@/lib/utils";
 import { Chat } from "@/lib/types";
-import { fetcher } from "@/lib/utils";
-import useSWR from "swr";
-export default function Page() {
-  // const { chats, count, isLoading } = useChats();
-  const { data: chatsData, isLoading } = useSWR<{ data: Chat[]; count: number }>(
-    `${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/?skip=0&limit=5`,
-    fetcher
-  );
+import { useSession } from "next-auth/react";
 
+interface ChatResponse {
+  data: Chat[];
+  count: number;
+}
+
+export default function ChatsPage() {
+  const { data: session } = useSession();
+
+  const getKey = (pageIndex: number, previousPageData: Chat[]) => {
+    if (previousPageData && !previousPageData.length) return null;
+    return session?.user ? [
+      `${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/?skip=${(pageIndex) * 10}&limit=10`,
+        getToken(session),
+      ]
+    : null;
+  };
+
+  const {
+    data: pages,
+    size,
+    setSize,
+    isLoading,
+    isValidating,
+  } = useSWRInfinite<ChatResponse>(getKey, ([url, token]) => fetcher(url, token as string), {
+    revalidateFirstPage: false,
+    revalidateOnFocus: false,
+  });
+
+  const chats = pages?.map(page => page.data).flat() || [];
+  const isLoadingMore = isLoading;
+  const hasMore = pages && pages[0] && pages[0].count > (pages.length || 0) * 10;
   return (
-    <div className="flex flex-col gap-4 p-4">
-      <Chats data={chatsData?.data} count={chatsData?.count} isLoading={isLoading} />
-    </div>
+    <Chats
+      data={chats}
+      count={pages && pages[0] ? pages[0].count : 0}
+      isLoading={isLoading}
+      isLoadingMore={isLoadingMore}
+      hasMore={hasMore}
+      onLoadMore={() => setSize(size + 1)}
+      isValidating={isValidating}
+    />
   );
 }

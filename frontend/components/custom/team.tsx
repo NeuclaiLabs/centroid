@@ -98,11 +98,11 @@ export function Team({ team, members, isLoading, mutateTeam, mutateMembers, team
 
   // Mutation hooks
   // @ts-ignore
-  const { trigger: updateTeam } = useUpdateTeam(teamId, session?.user?.accessToken);
+  const { trigger: updateTeam } = useUpdateTeam(teamId, getToken(session));
   // @ts-ignore
-  const { trigger: inviteMembers } = useInviteMembers(teamId, session?.user?.accessToken);
+  const { trigger: inviteMembers } = useInviteMembers(teamId, getToken(session));
   // @ts-ignore
-  const { trigger: updateRole } = useUpdateMemberRole(teamId, session?.user?.accessToken);
+  const { trigger: updateRole } = useUpdateMemberRole(teamId, getToken(session));
 
   // Handlers
   const handleTitleSubmit = async () => {

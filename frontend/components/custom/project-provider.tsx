@@ -4,7 +4,7 @@ import { createContext, useContext, useState, useMemo, useEffect } from "react";
 import useSWR, { mutate } from "swr";
 import { useSession } from "next-auth/react";
 import { useTeams } from "./teams-provider";
-import { fetcher } from "@/lib/utils";
+import { fetcher, getToken } from "@/lib/utils";
 
 import { Project } from "@/lib/types";
 
@@ -34,7 +34,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   // Optimize SWR configuration with key factory
   const projectsKey = useMemo(() => {
     if (!session?.user || !selectedTeamId) return null;
-    return [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/?team_id=${selectedTeamId}`, session.user.accessToken];
+    return [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/?team_id=${selectedTeamId}`, getToken(session)];
   }, [session?.user, selectedTeamId]);
 
   // Use the memoized key
@@ -89,9 +89,9 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     try {
       setError(null);
       const result = await mutate(
-        [url, session.user?.accessToken],
+        [url, getToken(session)],
         async () => {
-          const response = await fetcher(url, session.user?.accessToken, {
+          const response = await fetcher(url, getToken(session), {
             method: "PUT",
             body: JSON.stringify(updateData),
           });
@@ -123,7 +123,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       const url = `${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/${projectId}`;
 
-      await fetcher(url, session.user.accessToken, {
+      await fetcher(url, getToken(session), {
         method: "DELETE",
       });
 
@@ -147,7 +147,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
     const url = `${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/${projectId}`;
     try {
-      const response = await fetcher(url, session.user.accessToken);
+      const response = await fetcher(url, getToken(session));
       return response.data;
     } catch (error) {
       console.error("Error fetching project:", error);

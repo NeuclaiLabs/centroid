@@ -21,7 +21,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { Chat } from "@/db/schema";
-import { fetcher } from "@/lib/utils";
+import { fetcher, getToken } from "@/lib/utils";
 
 import { OpenAstraIcon } from "./icons";
 
@@ -137,7 +137,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     mutate: mutateHistory,
   } = useSWR(
     session?.user
-      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/?skip=0&limit=5`, session.user.accessToken]
+      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/?skip=0&limit=3`, getToken(session)]
       : null,
     ([url, token]) => fetcher(url, token as string)
   );

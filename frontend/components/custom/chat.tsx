@@ -11,7 +11,7 @@ import { MultimodalInput } from "@/components/custom/multimodal-input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useSession } from "next-auth/react";
-import { fetcher } from "@/lib/utils";
+import { fetcher, getToken } from "@/lib/utils";
 import { Project } from "@/lib/types";
 import { useProject } from "@/components/custom/project-provider";
 // Hook for scrolling to the bottom of the chat
@@ -66,7 +66,7 @@ export function Chat({
   const { data: session } = useSession();
   const { mutate: mutateHistory } = useSWR(
     session?.user
-      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/?skip=0&limit=5`, session.user.accessToken]
+      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/?skip=0&limit=5`, getToken(session)]
       : null,
     ([url, token]) => fetcher(url, token as string)
   );

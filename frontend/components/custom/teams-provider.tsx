@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { createContext, useContext, ReactNode, useState, useEffect } from "react";
 import useSWR from "swr";
 
-import { fetcher } from "@/lib/utils";
+import { fetcher, getToken } from "@/lib/utils";
 
 interface Team {
   id: string;
@@ -36,7 +36,7 @@ export function TeamsProvider({ children }: { children: ReactNode }) {
     mutate: mutateTeams,  // Renamed for clarity
   } = useSWR(
     session?.user
-      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/teams/`, session.user?.accessToken]
+      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/teams/`, getToken(session)]
       : null,
     ([url, token]) => fetcher(url, token),
     {

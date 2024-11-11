@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/app/(auth)/auth";
 import { Chat as PreviewChat } from "@/components/custom/chat";
 import { Chat } from "@/lib/types";
-import { convertToUIMessages } from "@/lib/utils";
+import { convertToUIMessages, getToken } from "@/lib/utils";
 
 export default async function Page({ params }: { params: any }) {
   const { id } = params;
@@ -20,8 +20,7 @@ export default async function Page({ params }: { params: any }) {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        // @ts-ignore
-        Authorization: `Bearer ${session.user.accessToken}`,
+        Authorization: `Bearer ${getToken(session)}`,
       },
     });
 
