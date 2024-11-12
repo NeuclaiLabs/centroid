@@ -70,7 +70,7 @@ export function Chat({
       : null,
     ([url, token]) => fetcher(url, token as string)
   );
-  const { selectedProject } = useProject();
+  const { selectedProject, setSelectedProjectId } = useProject();
   const { messages, handleSubmit, input, setInput, append, isLoading, stop } = useChat({
     body: { id, projectId: project?.id || selectedProject?.id },
     initialMessages,
@@ -113,6 +113,13 @@ export function Chat({
       }, false);
     }
   }, [id, messages, mutateHistory]);
+
+  useEffect(() => {
+    if (project) {
+      // Update the current project when the chat loads
+      setSelectedProjectId(project.id);
+    }
+  }, [project]);
 
   return (
     <div className="relative flex flex-col h-screen bg-background">

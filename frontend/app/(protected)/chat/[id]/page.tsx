@@ -11,7 +11,6 @@ export default async function Page({ params }: { params: any }) {
   const session = await auth();
 
   if (!session || !session.user) {
-    console.log("No session or user found");
     return notFound();
   }
 
@@ -27,7 +26,6 @@ export default async function Page({ params }: { params: any }) {
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.log("Chat not found in API");
         return notFound();
       }
       throw new Error("Failed to fetch chat");
@@ -42,8 +40,6 @@ export default async function Page({ params }: { params: any }) {
     };
 
     if (session.user.id !== chat.userId) {
-      // @ts-ignore
-      console.log("User ID mismatch", session.user.id, chat.userId);
       return notFound();
     }
 

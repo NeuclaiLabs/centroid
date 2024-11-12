@@ -17,11 +17,11 @@ import Link from "next/link";
 
 function ProjectBreadcrumb() {
   const { selectedProject } = useProject();
-  const project =  selectedProject;
+
   return (
     <BreadcrumbItem className="hidden md:block">
-      <Link href={`/projects/${project?.id}`} passHref>
-        {project?.title ?? "No Project Selected"}
+      <Link href={`/projects/${selectedProject?.id}`} passHref>
+        {selectedProject ? `${selectedProject.title}` : "No Project Selected"}
       </Link>
     </BreadcrumbItem>
   );

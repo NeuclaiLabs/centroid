@@ -47,7 +47,6 @@ export function Project({ isLoading, data }: ProjectProps) {
 
   // Add handler for saving edits
   const handleSave = async (field: string) => {
-    console.log("Saving", data, field, editedValues[field as keyof typeof editedValues]);
     if (!data?.id) return;
 
     try {

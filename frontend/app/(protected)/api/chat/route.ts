@@ -7,7 +7,6 @@ import { getToken } from "@/lib/utils";
 
 export async function POST(request: Request) {
   const { id, messages, projectId }: { id: string; messages: Array<Message>; projectId: string | null } = await request.json();
-  console.log("projectId", projectId);
   const session = await auth();
 
   if (!session) {

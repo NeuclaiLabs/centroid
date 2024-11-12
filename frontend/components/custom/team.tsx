@@ -32,7 +32,6 @@ function useUpdateTeam(teamId: string, token: string | undefined) {
         },
         body: JSON.stringify(arg),
       });
-      console.log(response);
       if (!response.ok) throw new Error("Failed to update team");
       return response.json();
     }
@@ -98,11 +97,8 @@ export function Team({ team, members, isLoading, mutateTeam, mutateMembers, team
   }, [team]);
 
   // Mutation hooks
-  // @ts-ignore
   const { trigger: updateTeam } = useUpdateTeam(teamId, getToken(session));
-  // @ts-ignore
   const { trigger: inviteMembers } = useInviteMembers(teamId, getToken(session));
-  // @ts-ignore
   const { trigger: updateRole } = useUpdateMemberRole(teamId, getToken(session));
 
   // Handlers
