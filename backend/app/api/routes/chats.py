@@ -17,31 +17,36 @@ router = APIRouter()
 
 @router.get("/", response_model=ChatsOut)
 def read_chats(
-    session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
+    session: SessionDep,
+    current_user: CurrentUser,
+    project_id: str | None = None,
+    skip: int = 0,
+    limit: int = 100,
 ) -> Any:
     """
-    Retrieve chats.
+    Retrieve chats. Optionally filter by project_id.
     """
-    # if current_user.is_superuser:
-    #     statement = select(func.count()).select_from(Chat)
-    #     count = session.exec(statement).one()
-    #     statement = (
-    #         select(Chat).order_by(Chat.created_at.desc()).offset(skip).limit(limit)
-    #     )
-    #     chats = session.exec(statement).all()
-    # else:
-    statement = (
-        select(func.count()).select_from(Chat).where(Chat.user_id == current_user.id)
-    )
+    # Base query conditions
+    conditions = [Chat.user_id == current_user.id]
+
+    # Add project filter if provided
+    if project_id:
+        conditions.append(Chat.project_id == project_id)
+
+    # Get count
+    statement = select(func.count()).select_from(Chat).where(*conditions)
     count = session.exec(statement).one()
+
+    # Get chats
     statement = (
         select(Chat)
-        .where(Chat.user_id == current_user.id)
+        .where(*conditions)
         .order_by(Chat.created_at.desc())
         .offset(skip)
         .limit(limit)
     )
     chats = session.exec(statement).all()
+
     chat_out_list = [
         ChatOut(**chat.dict(exclude={"project"}), project=chat.project)
         for chat in chats

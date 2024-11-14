@@ -6,7 +6,8 @@ import { auth } from "@/app/(auth)/auth";
 import { getToken } from "@/lib/utils";
 
 export async function POST(request: Request) {
-  const { id, messages, projectId }: { id: string; messages: Array<Message>; projectId: string | null } = await request.json();
+  const { id, messages, projectId }: { id: string; messages: Array<Message>; projectId: string | null } =
+    await request.json();
   const session = await auth();
 
   if (!session) {
