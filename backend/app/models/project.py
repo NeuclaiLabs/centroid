@@ -53,7 +53,7 @@ class Project(ProjectBase, SQLModel, table=True):
 class ProjectOut(ProjectBase):
     id: str
     team_id: str
-    files: list[str] | None
+    files: list[str] | None = []
     created_at: datetime
     updated_at: datetime
 

@@ -109,7 +109,8 @@ def update_project(
     session.add(project)
     session.commit()
     session.refresh(project)
-    return ProjectOut.model_validate(project)
+
+    return ProjectOut.model_validate(project.model_dump())
 
 
 @router.delete("/{project_id}", response_model=Message)
