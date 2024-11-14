@@ -64,46 +64,10 @@ export async function POST(request: Request) {
       }
     },
     experimental_telemetry: {
-      isEnabled: true,
+      isEnabled: false,
       functionId: "stream-text",
     },
   });
 
   return result.toDataStreamResponse({});
-}
-
-export async function DELETE(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const id = searchParams.get("id");
-
-  if (!id) {
-    return new Response("Not Found", { status: 404 });
-  }
-
-  const session = await auth();
-
-  if (!session || !session.user) {
-    return new Response("Unauthorized", { status: 401 });
-  }
-
-  try {
-    const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/chats/${id}`, {
-      method: "DELETE",
-      headers: {
-        accept: "application/json",
-        // @ts-ignore
-        Authorization: `Bearer ${getToken(session)}`,
-      },
-    });
-
-    if (!response.ok) {
-      return new Response("Unauthorized", { status: 401 });
-    }
-
-    return new Response("Chat deleted", { status: 200 });
-  } catch (error) {
-    return new Response("An error occurred while processing your request", {
-      status: 500,
-    });
-  }
 }
