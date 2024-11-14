@@ -12,8 +12,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useSession } from "next-auth/react";
 import { fetcher, getToken } from "@/lib/utils";
-import { Project } from "@/lib/types";
+import type { Project as ProjectType } from "@/lib/types";
 import { useProject } from "@/components/custom/project-provider";
+import { usePathname } from "next/navigation";
+import { Project } from "./project";
+import ProjectChats from "./project-chats";
 // Hook for scrolling to the bottom of the chat
 const useScrollToBottom = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -60,14 +63,12 @@ export function Chat({
   initialMessages,
 }: {
   id: string;
-  project: Project | undefined;
+  project: ProjectType | undefined;
   initialMessages: Array<Message>;
 }) {
   const { data: session } = useSession();
   const { mutate: mutateHistory } = useSWR(
-    session?.user
-      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/`, getToken(session)]
-      : null,
+    session?.user ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/`, getToken(session)] : null,
     ([url, token]) => fetcher(url, token as string)
   );
   const { selectedProject, setSelectedProjectId } = useProject();
@@ -121,9 +122,12 @@ export function Chat({
     }
   }, [project]);
 
+  const path = usePathname();
+  const isOnProjectPage = path.includes("/projects");
+
   return (
     <div className="relative flex flex-col h-screen bg-background">
-      {messages.length === 0 ? (
+      {messages.length === 0 && !isOnProjectPage ? (
         <div className="flex-1 flex items-center justify-center p-4">
           <Card className="w-full max-w-3xl mx-auto p-4 md:p-8 space-y-6 md:space-y-8 bg-background border-none shadow-none">
             <h1 className="text-3xl md:text-5xl font-bold text-center break-words">What can I help you with?</h1>
@@ -158,6 +162,33 @@ export function Chat({
             </form>
           </Card>
         </div>
+      ) : messages.length === 0 && isOnProjectPage ? (
+        <>
+          <div className="flex flex-col md:flex-row w-full max-w-5xl mx-auto p-4">
+            <Card className="w-full md:w-[65%] p-4 md:p-8 md:pt-0 space-y-6 md:space-y-8 bg-background border-none shadow-none">
+              <form className="flex flex-col w-full space-y-4" onSubmit={handleSubmit}>
+                <div className="w-full">
+                  <MultimodalInput
+                    input={input}
+                    setInput={setInput}
+                    handleSubmit={handleSubmit}
+                    isLoading={isLoading}
+                    stop={stop}
+                    attachments={attachments}
+                    setAttachments={setAttachments}
+                    messages={messages}
+                    append={append}
+                  />
+                </div>
+                <ProjectChats projectId={project?.id} />
+              </form>
+
+            </Card>
+            <div className="w-full md:w-[35%] pl-0 mt-0">
+              <Project isLoading={isLoading} data={selectedProject} />
+            </div>
+          </div>
+        </>
       ) : (
         <>
           <div className="flex-1 ">

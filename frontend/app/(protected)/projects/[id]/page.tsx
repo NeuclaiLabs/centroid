@@ -1,10 +1,13 @@
-'use client';
+"use client";
 
 import useSWR from "swr";
 import { useSession } from "next-auth/react";
 import { useTeams } from "@/components/custom/teams-provider";
-import { fetcher, getToken } from "@/lib/utils";
+import { fetcher, generateUUID, getToken } from "@/lib/utils";
 import { Project } from "@/components/custom/project";
+import { Chat } from "@/components/custom/chat";
+import { usePathname } from "next/navigation";
+import { cx } from "class-variance-authority";
 
 export default function Page({ params }: { params: { id: string } }) {
   const { data: session } = useSession();
@@ -18,8 +21,8 @@ export default function Page({ params }: { params: { id: string } }) {
   );
 
   return (
-    <div className="flex flex-col gap-4 p-4">
-      <Project isLoading={isLoading} data={data} />
+    <div className="flex flex-col gap-4 p-4 h-full">
+      <Chat id={generateUUID()} project={data} initialMessages={[]} />
     </div>
   );
 }

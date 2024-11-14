@@ -11,7 +11,7 @@ interface ChatResponse {
   count: number;
 }
 
-export default function ChatsPage() {
+export default function ProjectChats({ projectId }: { projectId: string }) {
   const { data: session } = useSession();
 
   const getKey = (pageIndex: number, previousPageData: Chat[]) => {
@@ -38,21 +38,15 @@ export default function ChatsPage() {
   const isLoadingMore = isLoading;
   const hasMore = pages && pages[0] && pages[0].count > (pages.length || 0) * 10;
   return (
-    <div className="relative flex flex-col min-h-screen bg-background">
-      <div className="flex-1">
-        <div className="max-w-6xl mx-auto p-6 md:px-32">
-          <Chats
-            data={chats}
-            count={pages && pages[0] ? pages[0].count : 0}
-            isLoading={isLoading}
-            isLoadingMore={isLoadingMore}
-            hasMore={hasMore}
-            onLoadMore={() => setSize(size + 1)}
-            isValidating={isValidating}
-            mutate={mutate}
-          />
-        </div>
-      </div>
-    </div>
+    <Chats
+      data={chats}
+      count={pages && pages[0] ? pages[0].count : 0}
+      isLoading={isLoading}
+      isLoadingMore={isLoadingMore}
+      hasMore={hasMore}
+      onLoadMore={() => setSize(size + 1)}
+      isValidating={isValidating}
+      mutate={mutate}
+    />
   );
 }

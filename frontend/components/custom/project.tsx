@@ -2,7 +2,7 @@
 
 import { MoreHorizontal, PenLine, Plus, Timer, Upload, Bot, Sparkles, Trash2 } from "lucide-react";
 import * as React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -89,42 +89,74 @@ export function Project({ isLoading, data }: ProjectProps) {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen flex-col lg:flex-row p-6">
-        {/* Main Content Skeleton */}
-        <div className="flex-1 p-6 border-r">
-          {/* Title skeleton */}
-          <Skeleton className="h-8 w-48 mb-8" />
-
-          {/* New thread input skeleton */}
-          <Skeleton className="h-32 mb-8" />
-
-          {/* Threads skeleton */}
+      <div className="flex min-h-screen flex-col lg:flex-row p-6 pt-0">
+        <div className="w-full p-6 bg-muted/30 border-l overflow-y-auto">
           <div className="space-y-6">
-            <Skeleton className="h-6 w-24" />
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="p-4 space-y-4 border rounded-lg">
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-4 w-full" />
-                  <div className="flex justify-between">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-4 w-8" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Sidebar Skeleton */}
-        <div className="w-full lg:w-80 p-6 bg-muted/30">
-          <div className="space-y-8">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="space-y-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-4 w-full" />
+            {/* Title Skeleton */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-6 w-20" />
+                <Skeleton className="h-8 w-16" />
               </div>
-            ))}
+              <Skeleton className="h-4 w-3/4" />
+            </div>
+
+            <Separator />
+
+            {/* Description Skeleton */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-6 w-24" />
+                <Skeleton className="h-8 w-16" />
+              </div>
+              <Skeleton className="h-20 w-full" />
+            </div>
+
+            <Separator />
+
+            {/* Model Skeleton */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-4 w-4" />
+                <Skeleton className="h-6 w-20" />
+              </div>
+              <Skeleton className="h-4 w-1/4" />
+            </div>
+
+            <Separator />
+
+            {/* Instructions Skeleton */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-4 w-4" />
+                  <Skeleton className="h-6 w-24" />
+                </div>
+                <Skeleton className="h-8 w-16" />
+              </div>
+              <Skeleton className="h-20 w-full" />
+            </div>
+
+            <Separator />
+
+            {/* Files Skeleton */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-4 w-4" />
+                  <Skeleton className="h-6 w-16" />
+                </div>
+                <Skeleton className="h-8 w-8" />
+              </div>
+              <div className="space-y-2">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-center justify-between">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-8 w-8" />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -132,132 +164,60 @@ export function Project({ isLoading, data }: ProjectProps) {
   }
 
   return (
-    <div className="flex min-h-screen flex-col lg:flex-row p-6">
-      {/* Main Content */}
-      <div className="flex-1 p-6 border-r overflow-y-auto">
-        <h1 className="text-3xl font-semibold mb-8">{data?.title}</h1>
-
-        {/* New Thread Input */}
-        <Card className="p-4 mb-8">
-          <div className="space-y-4">
-            <Input className="text-lg border-0 px-0 focus-visible:ring-0" placeholder="New Thread" />
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Button variant="ghost" size="sm">
-                  None
-                </Button>
-                <Button variant="ghost" size="sm">
-                  <Upload className="size-4 mr-2" />
-                  Attach
-                </Button>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 bg-muted p-1 rounded-full">
-                  <Bot className="size-5" />
-                  <Sparkles className="size-5" />
-                </div>
-                <div className="flex items-center gap-2">
-                  {/* <Switch /> */}
-                  <span>Pro</span>
-                </div>
-                <Button size="sm">
-                  <PenLine className="size-4 mr-2" />
-                  Start
-                </Button>
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        {/* Threads Section */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-2">
-            <PenLine className="size-4" />
-            <h2 className="text-lg font-semibold">Threads</h2>
-          </div>
-
-          {threads?.map((thread) => (
-            <Card key={thread.id} className="p-4">
-              <div className="space-y-4">
-                <div className="font-medium">{thread.content}</div>
-                <div className="pl-4 border-l-2">{thread.response}</div>
-                <div className="flex items-center justify-between text-sm text-muted-foreground">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1">
-                      <Timer className="size-4" />
-                      <span>{thread.timestamp}</span>
-                    </div>
-                    <span>{thread.status}</span>
-                  </div>
-                  <Button variant="ghost" size="icon">
-                    <MoreHorizontal className="size-4" />
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </div>
-
+    <div className="flex min-h-screen flex-col lg:flex-row p-2 pt-0">
       {/* Right Sidebar */}
-      <div className="w-full lg:w-80 p-6 bg-muted/30 border-t lg:border-t-0">
+      <div className="w-full p-6 bg-secondary  overflow-y-auto">
         <div className="space-y-6">
           {/* Title Section */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <h2 className="font-semibold">Title</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleEditClick('title')}
-              >
-                {editingField === 'title' ? 'Cancel' : 'Edit'}
+              <Button variant="ghost" size="sm" onClick={() => handleEditClick("title")}>
+                {editingField === "title" ? "Cancel" : "Edit"}
               </Button>
             </div>
-            {editingField === 'title' ? (
+            {editingField === "title" ? (
               <div className="flex gap-2">
                 <Input
                   value={editedValues.title}
                   onChange={(e) => setEditedValues({ ...editedValues, title: e.target.value })}
                   className="text-sm"
                 />
-                <Button size="sm" onClick={() => handleSave('title')}>Save</Button>
+                <Button size="sm" onClick={() => handleSave("title")}>
+                  Save
+                </Button>
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">{data?.title}</p>
             )}
           </div>
-
-          <Separator />
-
+          <Separator className="bg-primary/20" />
           {/* Description Section */}
-          {(data?.description || editingField === 'description') && (
+          {(data?.description || editingField === "description") && (
             <>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <h2 className="font-semibold">Description</h2>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleEditClick('description')}
-                  >
-                    {editingField === 'description' ? 'Cancel' : 'Edit'}
+                  <Button variant="ghost" size="sm" onClick={() => handleEditClick("description")}>
+                    {editingField === "description" ? "Cancel" : "Edit"}
                   </Button>
                 </div>
-                {editingField === 'description' ? (
+                {editingField === "description" ? (
                   <div className="flex flex-col gap-2">
                     <Textarea
                       value={editedValues.description}
                       onChange={(e) => setEditedValues({ ...editedValues, description: e.target.value })}
                       className="text-sm"
                     />
-                    <Button size="sm" onClick={() => handleSave('description')}>Save</Button>
+                    <Button size="sm" onClick={() => handleSave("description")}>
+                      Save
+                    </Button>
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">{data?.description}</p>
                 )}
               </div>
-              <Separator />
+              <Separator className="bg-primary/20" />
             </>
           )}
 
@@ -272,7 +232,7 @@ export function Project({ isLoading, data }: ProjectProps) {
             <p className="text-sm text-muted-foreground">{data?.model || "Default"}</p>
           </div>
 
-          <Separator />
+          <Separator className="bg-primary/20" />
 
           {/* Instructions Section */}
           <div className="space-y-2">
@@ -281,29 +241,27 @@ export function Project({ isLoading, data }: ProjectProps) {
                 <PenLine className="size-4" />
                 <h2 className="font-semibold">Instructions</h2>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleEditClick('instructions')}
-              >
-                {editingField === 'instructions' ? 'Cancel' : 'Edit'}
+              <Button variant="ghost" size="sm" onClick={() => handleEditClick("instructions")}>
+                {editingField === "instructions" ? "Cancel" : "Edit"}
               </Button>
             </div>
-            {editingField === 'instructions' ? (
+            {editingField === "instructions" ? (
               <div className="flex flex-col gap-2">
                 <Textarea
                   value={editedValues.instructions}
                   onChange={(e) => setEditedValues({ ...editedValues, instructions: e.target.value })}
                   className="text-sm"
                 />
-                <Button size="sm" onClick={() => handleSave('instructions')}>Save</Button>
+                <Button size="sm" onClick={() => handleSave("instructions")}>
+                  Save
+                </Button>
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">{data?.instructions || "No custom instructions added."}</p>
             )}
           </div>
 
-          <Separator />
+          <Separator className="bg-primary/20" />
 
           {/* Files Section */}
           <div className="space-y-4">
@@ -346,7 +304,10 @@ export function Project({ isLoading, data }: ProjectProps) {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      <AlertDialogAction
+                        onClick={handleDelete}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
                         Delete
                       </AlertDialogAction>
                     </AlertDialogFooter>
