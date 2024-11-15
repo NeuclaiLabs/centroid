@@ -1,7 +1,8 @@
 "use client";
 
 import { createContext, useContext, useState, useMemo, useEffect } from "react";
-import useSWR, { mutate } from "swr";
+import useSWR, { mutate, useSWRConfig } from "swr";
+import useSWRMutation from "swr/mutation";
 import { useSession } from "next-auth/react";
 import { useTeams } from "./teams-provider";
 import { fetcher, getToken } from "@/lib/utils";
@@ -30,24 +31,94 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isLoadingProject, setIsLoadingProject] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const url = `${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/`;
+  const token = getToken(session);
 
-  // Optimize SWR configuration with key factory
+  // Add memoized key for projects
   const projectsKey = useMemo(() => {
-    if (!session?.user || !selectedTeamId) return null;
-    return [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/?team_id=${selectedTeamId}`, getToken(session)];
-  }, [session?.user, selectedTeamId]);
+    if (!token || !selectedTeamId) return null;
+    return [url, token];
+  }, [url, token, selectedTeamId]);
 
-  // Use the memoized key
   const { data: projectsData, isLoading } = useSWR(
     projectsKey,
-    ([url, token]) => fetcher(url, token),
+    ([url, token]) => fetcher(url + `?team_id=${selectedTeamId}`, token),
     {
-      revalidateOnFocus: false,  // Optimize by preventing unnecessary revalidation
-      dedupingInterval: 5000,    // Dedupe requests within 5 seconds
+      revalidateOnFocus: false,
+      dedupingInterval: 5000,
     }
   );
 
-  // Effect to update selected project when ID changes
+  // Add SWR mutation hooks for update and delete
+  const updateProjectMutation = useSWRMutation(
+    [url, token],
+    async ([url, token], { arg: { id, data } }: { arg: { id: string; data: Partial<Project> } }) => {
+      return fetcher(url + id, token, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      });
+    }
+  );
+
+  const deleteProjectMutation = useSWRMutation(
+    [url, token],
+    async ([url, token], { arg: id }: { arg: string }) => {
+      return fetcher(url + id, token, {
+        method: "DELETE",
+      });
+    }
+  );
+
+  // Replace existing updateProject function
+  const updateProject = async (projectId: string, updateData: Partial<Project>) => {
+    if (!session?.user) throw new Error('No active session');
+
+    try {
+      setError(null);
+      await updateProjectMutation.trigger({ id: projectId, data: updateData });
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Failed to update project'));
+      throw err;
+    }
+  };
+
+  // Replace existing deleteProject function
+  const deleteProject = async (projectId: string) => {
+    if (!session?.user) throw new Error('No active session');
+
+    try {
+      setError(null);
+      await deleteProjectMutation.trigger(projectId);
+
+      // Clear selected project if it's the one being deleted
+      if (selectedProject?.id === projectId) {
+        setSelectedProjectId(null);
+      }
+
+      // Revalidate the projects list
+      // await mutate(url);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Failed to delete project'));
+      throw err;
+    }
+  };
+
+  // Replace existing fetchProjectById with useSWR hook
+  const getProjectByIdKey = useMemo(() => {
+    if (!session?.user || !selectedProjectId) return null;
+    return [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/${selectedProjectId}`, getToken(session)];
+  }, [session?.user, selectedProjectId]);
+
+  const { data: singleProjectData } = useSWR(
+    getProjectByIdKey,
+    ([url, token]) => fetcher(url + selectedProjectId, token),
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 5000,
+    }
+  );
+
+  // Update the useEffect to use singleProjectData
   useEffect(() => {
     const updateSelectedProject = async () => {
       setError(null);
@@ -66,94 +137,14 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // If not in list, fetch it directly
-      setIsLoadingProject(true);
-      try {
-        const fetchedProject = await fetchProjectById(selectedProjectId);
-        setSelectedProject(fetchedProject);
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to fetch project'));
-      } finally {
-        setIsLoadingProject(false);
+      // Use the data from singleProjectData
+      if (singleProjectData?.data) {
+        setSelectedProject(singleProjectData.data);
       }
     };
 
     updateSelectedProject();
-  }, [selectedProjectId, projectsData?.data]);
-
-  const updateProject = async (projectId: string, updateData: Partial<Project>) => {
-    if (!session?.user) throw new Error('No active session');
-
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/${projectId}`;
-
-    try {
-      setError(null);
-      const result = await mutate(
-        [url, getToken(session)],
-        async () => {
-          const response = await fetcher(url, getToken(session), {
-            method: "PUT",
-            body: JSON.stringify(updateData),
-          });
-          return response;
-        },
-        {
-          revalidate: true,
-          populateCache: true,
-          rollbackOnError: true, // Rollback on error
-        }
-      );
-
-      // Revalidate the projects list after successful update
-      if (projectsKey) {
-        await mutate(projectsKey);
-      }
-
-      return result;
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to update project'));
-      throw err;
-    }
-  };
-
-  const deleteProject = async (projectId: string) => {
-    if (!session?.user) throw new Error('No active session');
-
-    try {
-      setError(null);
-      const url = `${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/${projectId}`;
-
-      await fetcher(url, getToken(session), {
-        method: "DELETE",
-      });
-
-      // Clear selected project if it's the one being deleted
-      if (selectedProject?.id === projectId) {
-        setSelectedProjectId(null);
-      }
-
-      // Revalidate the projects list
-      if (projectsKey) {
-        await mutate(projectsKey);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to delete project'));
-      throw err;
-    }
-  };
-
-  const fetchProjectById = async (projectId: string): Promise<Project | null> => {
-    if (!session?.user) return null;
-
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/${projectId}`;
-    try {
-      const response = await fetcher(url, getToken(session));
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching project:", error);
-      return null;
-    }
-  };
+  }, [selectedProjectId, projectsData?.data, singleProjectData]);
 
   return (
     <ProjectContext.Provider
@@ -167,7 +158,18 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         setSelectedProjectId,
         updateProject,
         deleteProject,
-        fetchProjectById,
+        fetchProjectById: async (projectId: string): Promise<Project | null> => {
+          if (!session?.user) return null;
+
+          const url = `${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/${projectId}`;
+          try {
+            const response = await fetcher(url, getToken(session));
+            return response.data;
+          } catch (error) {
+            console.error("Error fetching project:", error);
+            return null;
+          }
+        },
       }}
     >
       {children}

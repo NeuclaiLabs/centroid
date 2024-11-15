@@ -12,7 +12,7 @@ export function useDeleteChat(onSuccess?: () => Promise<any>) {
     [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats`, token],
     async ([url, token], { arg }: { arg: string }) => {
       const response = await fetcher(
-        `${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/${arg}`,
+        url + arg,
         token,
         { method: "DELETE" }
     );
