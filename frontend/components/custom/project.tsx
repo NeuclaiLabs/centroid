@@ -2,7 +2,7 @@
 
 import { MoreHorizontal, PenLine, Plus, Timer, Upload, Bot, Sparkles, Trash2 } from "lucide-react";
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -23,6 +23,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useProject } from "./project-provider";
+import { toast } from "sonner";
 
 interface ProjectProps {
   data?: Project;
@@ -31,6 +32,9 @@ interface ProjectProps {
 
 export function Project({ isLoading, data }: ProjectProps) {
   const { updateProject, deleteProject } = useProject();
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   let threads = null;
 
@@ -51,7 +55,7 @@ export function Project({ isLoading, data }: ProjectProps) {
 
     try {
       await updateProject(data.id, {
-        [field]: editedValues[field as keyof typeof editedValues]
+        [field]: editedValues[field as keyof typeof editedValues],
       });
       setEditingField(null);
     } catch (error) {
@@ -82,10 +86,69 @@ export function Project({ isLoading, data }: ProjectProps) {
       // Update the edited values with current data when starting to edit
       setEditedValues({
         ...editedValues,
-        [field]: data?.[field as keyof Project] || ""
+        [field]: data?.[field as keyof Project] || "",
       });
     }
   };
+
+  const uploadFile = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch(`/api/files/upload`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const { pathname } = data;
+        return pathname;
+      } else {
+        const { error } = await response.json();
+        toast.error(error);
+      }
+    } catch (error) {
+      toast.error("Failed to upload file, please try again!");
+    }
+  };
+
+  const handleFileChange = useCallback(
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(event.target.files || []);
+      const currentFileCount = data?.files?.length || 0;
+
+      if (currentFileCount + files.length > 5) {
+        toast.error("You can only upload a maximum of 5 files");
+        return;
+      }
+
+      setUploadQueue(files.map((file) => file.name));
+
+      try {
+        const uploadPromises = files.map((file) => uploadFile(file));
+        const uploadedFiles = await Promise.all(uploadPromises);
+        const successfulUploads = uploadedFiles.filter((file): file is string => file !== undefined);
+
+        if (successfulUploads.length > 0) {
+          await updateProject(data!.id, {
+            files: [...(data?.files || []), ...successfulUploads]
+          });
+          toast.success("Files uploaded successfully");
+        }
+      } catch (error) {
+        console.error("Error uploading files!", error);
+        toast.error("Failed to update project with new files");
+      } finally {
+        setUploadQueue([]);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      }
+    },
+    [data?.files, data?.id, updateProject]
+  );
 
   if (isLoading) {
     return (
@@ -265,18 +328,49 @@ export function Project({ isLoading, data }: ProjectProps) {
 
           {/* Files Section */}
           <div className="space-y-4">
+            <input
+              type="file"
+              className="hidden"
+              ref={fileInputRef}
+              multiple
+              onChange={handleFileChange}
+              accept="application/pdf,text/*,image/*"
+            />
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Upload className="size-4" />
                 <h2 className="font-semibold">Files</h2>
+                <span className="text-xs text-muted-foreground">
+                  ({data?.files?.length || 0}/5)
+                </span>
               </div>
-              <Button size="icon" variant="ghost">
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadQueue.length > 0 || (data?.files?.length || 0) >= 5}
+              >
                 <Plus className="size-4" />
               </Button>
             </div>
-            {data?.files && data?.files.length > 0 ? (
+
+            {uploadQueue.length > 0 && (
+              <div className="space-y-2">
+                {uploadQueue.map((filename) => (
+                  <div
+                    key={filename}
+                    className="text-sm text-muted-foreground flex items-center gap-2"
+                  >
+                    <Timer className="size-4 animate-spin" />
+                    <span>Uploading {filename}...</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {data?.files && data.files.length > 0 ? (
               <ul className="space-y-2">
-                {data?.files.map((file, index) => (
+                {data.files.map((file, index) => (
                   <li key={index} className="text-sm flex items-center justify-between">
                     <span>{file}</span>
                     <Button variant="ghost" size="icon">
