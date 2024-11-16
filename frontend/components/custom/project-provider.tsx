@@ -103,15 +103,22 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Replace existing fetchProjectById with useSWR hook
+  // Modify getProjectByIdKey to check projectsData first
   const getProjectByIdKey = useMemo(() => {
     if (!session?.user || !selectedProjectId) return null;
+
+    // If project exists in the list, don't fetch
+    const projectInList = projectsData?.data?.find(
+      (p: Project) => p.id === selectedProjectId
+    );
+    if (projectInList) return null;
+
     return [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/${selectedProjectId}`, getToken(session)];
-  }, [session?.user, selectedProjectId]);
+  }, [session?.user, selectedProjectId, projectsData?.data]);
 
   const { data: singleProjectData } = useSWR(
     getProjectByIdKey,
-    ([url, token]) => fetcher(url + selectedProjectId, token),
+    ([url, token]) => fetcher(url, token),
     {
       revalidateOnFocus: false,
       dedupingInterval: 5000,

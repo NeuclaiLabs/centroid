@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
@@ -5,6 +6,7 @@ from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
 from app.api.routes.teams import check_team_permissions
+from app.core.config import settings
 from app.models import (
     Message,
     Project,
@@ -127,3 +129,34 @@ def delete_project(
     session.delete(project)
     session.commit()
     return Message(message="Project deleted successfully")
+
+
+@router.get("/{project_id}/prompt", response_model=Message)
+def get_project_prompt(
+    *, session: SessionDep, current_user: CurrentUser, project_id: str
+) -> Any:
+    """Get project prompt with file contents."""
+    project = get_project(session, project_id)
+    # Check if user has access to this project's team
+    check_team_permissions(session, project.team_id, current_user.id)
+
+    all_content = []
+
+    # Add any files content if they exist
+    if project.files:
+        for file_path in project.files:
+            full_path = Path(settings.UPLOAD_DIR) / file_path
+            try:
+                if full_path.exists():
+                    with open(full_path, encoding="utf-8") as f:
+                        content = f.read()
+                        all_content.append(f"### File: {file_path}\n{content}\n")
+            except Exception as e:
+                print(f"Error reading file {file_path}: {str(e)}")
+                continue
+
+    # Combine project prompt with file contents
+    file_contents = "\n".join(all_content)
+    full_prompt = f"\nProject Files:\n{file_contents}" if all_content else ""
+
+    return Message(message=full_prompt)

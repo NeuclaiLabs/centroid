@@ -8,6 +8,7 @@ import { getToken } from "@/lib/utils";
 export async function POST(request: Request) {
   const { id, messages, projectId }: { id: string; messages: Array<Message>; projectId: string | null } =
     await request.json();
+
   const session = await auth();
 
   if (!session) {
@@ -16,9 +17,31 @@ export async function POST(request: Request) {
 
   const coreMessages = convertToCoreMessages(messages);
 
+  // Fetch project prompt if projectId is provided
+  let systemPrompt =
+    "You are a helpful assistant. You should use the project files to help you answer the question. If you can't answer the question without the project files, say so.";
+  if (projectId) {
+    try {
+      const promptResponse = await fetch(`${process.env.BACKEND_HOST}/api/v1/projects/${projectId}/prompt`, {
+        headers: {
+          Authorization: `Bearer ${getToken(session)}`,
+        },
+      });
+
+      if (promptResponse.ok) {
+        const { message } = await promptResponse.json();
+        systemPrompt += message;
+      }
+    } catch (error) {
+      console.error("Failed to fetch project prompt:", error);
+    }
+  }
+
+  console.log(systemPrompt);
+
   const result = await streamText({
     model: customModel,
-    system: "you are a friendly assistant! keep your responses concise and helpful.",
+    system: systemPrompt,
     messages: coreMessages,
     maxSteps: 5,
     tools: {
