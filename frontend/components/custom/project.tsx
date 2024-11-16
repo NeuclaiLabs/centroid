@@ -193,9 +193,9 @@ export function Project({ isLoading, data }: ProjectProps) {
   // ... (keeping the loading skeleton JSX as is)
 
   return (
-    <div className="flex  flex-col lg:flex-row p-2 pt-0">
+    <div className="flex flex-col lg:flex-row p-2 pt-0">
       {/* Right Sidebar */}
-      <div className="w-full p-6 bg-secondary  overflow-y-auto">
+      <Card className="w-full p-6 bg-secondary overflow-y-auto rounded-lg">
         <div className="space-y-6">
           {/* Title Section */}
           <div className="space-y-2">
@@ -210,9 +210,9 @@ export function Project({ isLoading, data }: ProjectProps) {
                 <Input
                   value={editedValues.title}
                   onChange={(e) => setEditedValues({ ...editedValues, title: e.target.value })}
-                  className="text-sm"
+                  className="text-sm rounded-md"
                 />
-                <Button size="sm" onClick={() => handleSave("title")}>
+                <Button size="sm" onClick={() => handleSave("title")} className="rounded-md">
                   Save
                 </Button>
               </div>
@@ -236,9 +236,9 @@ export function Project({ isLoading, data }: ProjectProps) {
                     <Textarea
                       value={editedValues.description}
                       onChange={(e) => setEditedValues({ ...editedValues, description: e.target.value })}
-                      className="text-sm"
+                      className="text-sm rounded-md"
                     />
-                    <Button size="sm" onClick={() => handleSave("description")}>
+                    <Button size="sm" onClick={() => handleSave("description")} className="rounded-md">
                       Save
                     </Button>
                   </div>
@@ -279,9 +279,9 @@ export function Project({ isLoading, data }: ProjectProps) {
                 <Textarea
                   value={editedValues.instructions}
                   onChange={(e) => setEditedValues({ ...editedValues, instructions: e.target.value })}
-                  className="text-sm"
+                  className="text-sm rounded-md"
                 />
-                <Button size="sm" onClick={() => handleSave("instructions")}>
+                <Button size="sm" onClick={() => handleSave("instructions")} className="rounded-md">
                   Save
                 </Button>
               </div>
@@ -313,6 +313,7 @@ export function Project({ isLoading, data }: ProjectProps) {
                 variant="ghost"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploading || (data?.files?.length || 0) >= 5}
+                className="rounded-full"
               >
                 <Plus className="size-4" />
               </Button>
@@ -341,6 +342,7 @@ export function Project({ isLoading, data }: ProjectProps) {
                           size="icon"
                           onClick={() => setFileToDelete(file)}
                           disabled={isDeletingFile === file}
+                          className="rounded-full"
                         >
                           {isDeletingFile === file ? (
                             <Timer className="size-4 animate-spin" />
@@ -349,7 +351,7 @@ export function Project({ isLoading, data }: ProjectProps) {
                           )}
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent>
+                      <AlertDialogContent className="rounded-lg">
                         <AlertDialogHeader>
                           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                           <AlertDialogDescription>
@@ -357,8 +359,11 @@ export function Project({ isLoading, data }: ProjectProps) {
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => fileToDelete && handleFileDelete(fileToDelete)}>
+                          <AlertDialogCancel className="rounded-md">Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => fileToDelete && handleFileDelete(fileToDelete)}
+                            className="rounded-md"
+                          >
                             Delete
                           </AlertDialogAction>
                         </AlertDialogFooter>
@@ -370,7 +375,7 @@ export function Project({ isLoading, data }: ProjectProps) {
             )}
           </div>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
