@@ -33,11 +33,9 @@ export function TeamsProvider({ children }: { children: ReactNode }) {
   const {
     data: { data: teams = [], count },
     isLoading,
-    mutate: mutateTeams,  // Renamed for clarity
+    mutate: mutateTeams, // Renamed for clarity
   } = useSWR(
-    session?.user
-      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/teams/`, getToken(session)]
-      : null,
+    session?.user ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/teams/`, getToken(session)] : null,
     ([url, token]) => fetcher(url, token),
     {
       fallbackData: [],
@@ -51,9 +49,8 @@ export function TeamsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (teams.length && !selectedTeamId) {
       const savedTeamId = localStorage.getItem(CURRENT_TEAM_KEY);
-      const validTeamId = savedTeamId && teams.some((team: Team) => team.id === savedTeamId)
-        ? savedTeamId
-        : teams[0].id;
+      const validTeamId =
+        savedTeamId && teams.some((team: Team) => team.id === savedTeamId) ? savedTeamId : teams[0].id;
 
       setSelectedTeamId(validTeamId);
       localStorage.setItem(CURRENT_TEAM_KEY, validTeamId);

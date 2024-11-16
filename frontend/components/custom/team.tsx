@@ -1,14 +1,14 @@
+import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Skeleton } from "@/components/ui/skeleton";
 import useSWRMutation from "swr/mutation";
 
-import { TeamHeader } from "@/components/custom/team-header";
 import { InviteMemberDialog } from "@/components/custom/invite-member";
+import { TeamHeader } from "@/components/custom/team-header";
 import { MembersList } from "@/components/custom/team-members";
-import { useSession } from "next-auth/react";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { getToken } from "@/lib/utils";
 
 interface TeamProps {
@@ -22,7 +22,7 @@ interface TeamProps {
 
 function useUpdateTeam(teamId: string, token: string | undefined) {
   return useSWRMutation(
-    token ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/teams/${teamId}`, token]: null,
+    token ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/teams/${teamId}`, token] : null,
     async ([url, token], { arg }: { arg: { name?: string; description?: string } }) => {
       const response = await fetch(url, {
         method: "PUT",

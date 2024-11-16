@@ -28,7 +28,7 @@ export interface Project {
 export enum ChatVisibility {
   PRIVATE = "private",
   SHARED = "shared",
-  PUBLIC = "public"
+  PUBLIC = "public",
 }
 
 export interface Chat {

@@ -1,7 +1,8 @@
 import { Pencil } from "lucide-react";
+
+import { CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { CardTitle, CardDescription } from "@/components/ui/card";
 
 interface TeamHeaderProps {
   team: any;

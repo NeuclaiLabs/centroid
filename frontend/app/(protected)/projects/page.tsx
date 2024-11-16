@@ -1,7 +1,7 @@
 "use client";
 
-import { Projects } from "@/components/custom/projects";
 import { useProject } from "@/components/custom/project-provider";
+import { Projects } from "@/components/custom/projects";
 
 export default function Page() {
   const { projects, count, isLoading } = useProject();

@@ -1,10 +1,11 @@
 "use client";
 
-import useSWRInfinite from "swr/infinite";
-import { Chats } from "@/components/custom/chats";
-import { fetcher, getToken } from "@/lib/utils";
-import { Chat } from "@/lib/types";
 import { useSession } from "next-auth/react";
+import useSWRInfinite from "swr/infinite";
+
+import { Chats } from "@/components/custom/chats";
+import { Chat } from "@/lib/types";
+import { fetcher, getToken } from "@/lib/utils";
 
 interface ChatResponse {
   data: Chat[];

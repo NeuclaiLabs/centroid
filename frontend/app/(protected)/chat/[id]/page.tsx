@@ -23,7 +23,6 @@ export default async function Page({ params }: { params: any }) {
       },
     });
 
-
     if (!response.ok) {
       if (response.status === 404) {
         return notFound();

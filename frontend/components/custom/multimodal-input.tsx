@@ -8,10 +8,10 @@ import { useLocalStorage } from "usehooks-ts";
 
 import { ArrowUpIcon, StopIcon } from "./icons";
 import { PreviewAttachment } from "./preview-attachment";
+import { useProject } from "./project-provider";
 import { Button } from "../ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Textarea } from "../ui/textarea";
-import { useProject } from './project-provider';
 
 const suggestedActions = [
   {
@@ -227,26 +227,18 @@ export function MultimodalInput({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                className="px-2 h-8 flex items-center space-x-1 dark:border-zinc-700"
-                variant="outline"
-              >
+              <Button className="px-2 h-8 flex items-center space-x-1 dark:border-zinc-700" variant="outline">
                 <span>{selectedProject?.title || "Select Project"}</span>
                 <ChevronDownIcon size={14} />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[200px]">
               {projects?.map((project) => (
-                <DropdownMenuItem
-                  key={project.id}
-                  onSelect={() => setSelectedProjectId(project.id)}
-                >
+                <DropdownMenuItem key={project.id} onSelect={() => setSelectedProjectId(project.id)}>
                   {project.title}
                 </DropdownMenuItem>
               ))}
-              {projects?.length === 0 && (
-                <div className="p-2 text-sm text-gray-500">No projects available</div>
-              )}
+              {projects?.length === 0 && <div className="p-2 text-sm text-gray-500">No projects available</div>}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

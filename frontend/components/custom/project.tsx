@@ -1,21 +1,11 @@
 "use client";
 
-import { MoreHorizontal, PenLine, Plus, Timer, Upload, Bot, Sparkles, Trash2 } from "lucide-react";
+import { PenLine, Plus, Timer, Upload, Bot, Trash2 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import * as React from "react";
-import { useState, useEffect, useRef, useCallback } from "react";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
-import type { Project } from "@/lib/types";
+import { useState, useRef, useCallback } from "react";
+import { toast } from "sonner";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,11 +17,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { getToken } from "@/lib/utils";
 
 import { useProject } from "./project-provider";
-import { toast } from "sonner";
-import { useSession } from "next-auth/react";
-import { getToken } from "@/lib/utils";
+
+import type { Project } from "@/lib/types";
 
 interface ProjectProps {
   data?: Project;

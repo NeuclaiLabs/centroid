@@ -3,15 +3,14 @@
 import { Message } from "ai";
 import cx from "classnames";
 import { motion } from "framer-motion";
-import { Sparkles } from "lucide-react";
-import { Dispatch, ReactNode, SetStateAction } from "react";
 
+import { Vote } from "@/lib/types";
+
+import { OpenAstraIcon } from "./icons";
 import { Markdown } from "./markdown";
+import { MessageActions } from "./message-actions";
 import { PreviewAttachment } from "./preview-attachment";
 import { Weather } from "./weather";
-import { OpenAstraIcon } from "./icons";
-import { MessageActions } from "./message-actions";
-import { Vote } from "@/lib/types";
 
 export const PreviewMessage = ({
   message,

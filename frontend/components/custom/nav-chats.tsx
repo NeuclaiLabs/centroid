@@ -1,11 +1,9 @@
 "use client";
 
-import React from "react";
 import { ChevronRightIcon, Folder, InfoIcon, MoreHorizontal, Share, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
-import { toast } from "sonner";
-import useSWRMutation from "swr/mutation"
+import { useSession } from "next-auth/react";
+import React, { useState } from "react";
 
 import {
   AlertDialog,
@@ -32,18 +30,16 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Chat } from "@/db/schema";
-import { fetcher, getTitleFromChat, getToken } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useSession } from "next-auth/react";
-
+import { Chat } from "@/db/schema";
 import { useDeleteChat } from "@/lib/hooks/use-delete-chat";
+import { getTitleFromChat, getToken } from "@/lib/utils";
 
 interface NavChatsProps {
-  history?: Chat[]
-  count?: number
-  isLoading?: boolean
-  mutate?: () => Promise<any>
+  history?: Chat[];
+  count?: number;
+  isLoading?: boolean;
+  mutate?: () => Promise<any>;
 }
 
 export function NavChats({ history, count, isLoading, mutate }: NavChatsProps) {
@@ -70,7 +66,7 @@ export function NavChats({ history, count, isLoading, mutate }: NavChatsProps) {
               {[...Array(3)].map((_, i) => (
                 <SidebarMenuItem key={`skeleton-${i}`}>
                   <div className="flex items-center gap-2 p-2">
-                    <Skeleton className="h-4 w-[80%]" />
+                    <Skeleton className="h-4 w-4/5" />
                   </div>
                 </SidebarMenuItem>
               ))}

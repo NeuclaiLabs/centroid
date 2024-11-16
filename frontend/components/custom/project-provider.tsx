@@ -1,13 +1,14 @@
 "use client";
 
-import { createContext, useContext, useState, useMemo, useEffect } from "react";
-import useSWR, { mutate, useSWRConfig } from "swr";
-import useSWRMutation from "swr/mutation";
 import { useSession } from "next-auth/react";
-import { useTeams } from "./teams-provider";
-import { fetcher, getToken } from "@/lib/utils";
+import { createContext, useContext, useState, useMemo, useEffect } from "react";
+import useSWR from "swr";
+import useSWRMutation from "swr/mutation";
 
 import { Project } from "@/lib/types";
+import { fetcher, getToken } from "@/lib/utils";
+
+import { useTeams } from "./teams-provider";
 
 type ProjectContextType = {
   projects: Project[];
@@ -60,31 +61,28 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     }
   );
 
-  const deleteProjectMutation = useSWRMutation(
-    [url, token],
-    async ([url, token], { arg: id }: { arg: string }) => {
-      return fetcher(url + id, token, {
-        method: "DELETE",
-      });
-    }
-  );
+  const deleteProjectMutation = useSWRMutation([url, token], async ([url, token], { arg: id }: { arg: string }) => {
+    return fetcher(url + id, token, {
+      method: "DELETE",
+    });
+  });
 
   // Replace existing updateProject function
   const updateProject = async (projectId: string, updateData: Partial<Project>) => {
-    if (!session?.user) throw new Error('No active session');
+    if (!session?.user) throw new Error("No active session");
 
     try {
       setError(null);
       await updateProjectMutation.trigger({ id: projectId, data: updateData });
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to update project'));
+      setError(err instanceof Error ? err : new Error("Failed to update project"));
       throw err;
     }
   };
 
   // Replace existing deleteProject function
   const deleteProject = async (projectId: string) => {
-    if (!session?.user) throw new Error('No active session');
+    if (!session?.user) throw new Error("No active session");
 
     try {
       setError(null);
@@ -98,7 +96,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       // Revalidate the projects list
       // await mutate(url);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to delete project'));
+      setError(err instanceof Error ? err : new Error("Failed to delete project"));
       throw err;
     }
   };
@@ -108,22 +106,16 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     if (!session?.user || !selectedProjectId) return null;
 
     // If project exists in the list, don't fetch
-    const projectInList = projectsData?.data?.find(
-      (p: Project) => p.id === selectedProjectId
-    );
+    const projectInList = projectsData?.data?.find((p: Project) => p.id === selectedProjectId);
     if (projectInList) return null;
 
     return [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/${selectedProjectId}`, getToken(session)];
   }, [session?.user, selectedProjectId, projectsData?.data]);
 
-  const { data: singleProjectData } = useSWR(
-    getProjectByIdKey,
-    ([url, token]) => fetcher(url, token),
-    {
-      revalidateOnFocus: false,
-      dedupingInterval: 5000,
-    }
-  );
+  const { data: singleProjectData } = useSWR(getProjectByIdKey, ([url, token]) => fetcher(url, token), {
+    revalidateOnFocus: false,
+    dedupingInterval: 5000,
+  });
 
   // Update the useEffect to use singleProjectData
   useEffect(() => {
@@ -135,9 +127,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const projectInList = projectsData?.data?.find(
-        (p: Project) => p.id === selectedProjectId
-      );
+      const projectInList = projectsData?.data?.find((p: Project) => p.id === selectedProjectId);
 
       if (projectInList) {
         setSelectedProject(projectInList);
@@ -156,11 +146,11 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   return (
     <ProjectContext.Provider
       value={{
-        projects: projectsData?.data ?? [],  // Provide default empty array
+        projects: projectsData?.data ?? [], // Provide default empty array
         isLoading,
         isLoadingProject,
         selectedProject,
-        count: projectsData?.count ?? 0,     // Provide default count
+        count: projectsData?.count ?? 0, // Provide default count
         error,
         setSelectedProjectId,
         updateProject,

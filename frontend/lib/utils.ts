@@ -1,7 +1,7 @@
 import { CoreMessage, CoreToolMessage, generateId, Message, ToolInvocation } from "ai";
 import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
 import { Session } from "next-auth";
+import { twMerge } from "tailwind-merge";
 
 import { Chat } from "@/lib/types";
 export function cn(...inputs: ClassValue[]) {
@@ -18,7 +18,7 @@ export const fetcher = async (
   token?: string,
   options?: {
     method: string;
-    headers?: { 'Content-Type': string; };
+    headers?: { "Content-Type": string };
     body?: string;
   }
 ) => {
@@ -31,7 +31,7 @@ export const fetcher = async (
   }
 
   const res = await fetch(url, {
-    method: options?.method || 'GET',
+    method: options?.method || "GET",
     headers,
     ...(options?.body && { body: options.body }),
   });

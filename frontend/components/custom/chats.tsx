@@ -1,26 +1,16 @@
 "use client";
 
-import { MessageSquare, MoreVertical, Plus, Trash } from "lucide-react";
-import * as React from "react";
-import { useRouter } from "next/navigation";
-import useSWR, { mutate, useSWRConfig } from "swr";
-import useSWRMutation from 'swr/mutation'
-import { toast } from "sonner";
-
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Chat } from "@/lib/types";
-import { fetcher, getTitleFromChat } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
+import { MessageSquare, Trash } from "lucide-react";
+import { useRouter } from "next/navigation";
+import * as React from "react";
 import { useEffect } from "react";
 
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useDeleteChat } from "@/lib/hooks/use-delete-chat";
+import { Chat } from "@/lib/types";
+import { getTitleFromChat } from "@/lib/utils";
 
 interface ChatsProps {
   data: Chat[];
@@ -41,7 +31,7 @@ export function Chats({
   onLoadMore,
   isValidating,
   mutate,
-  count
+  count,
 }: ChatsProps) {
   const router = useRouter();
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -144,7 +134,7 @@ export function Chats({
             ))}
             <div ref={containerRef} className="h-10 flex items-center justify-center">
               {isLoadingMore && hasMore && (
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+                <div className="animate-spin rounded-full size-6 border-b-2 border-primary" />
               )}
             </div>
           </>

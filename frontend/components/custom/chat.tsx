@@ -2,21 +2,23 @@
 
 import { Attachment, Message } from "ai";
 import { useChat } from "ai/react";
+import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useState, useEffect, useRef } from "react";
 import useSWR from "swr";
-import Link from "next/link";
 
 import { PreviewMessage, ThinkingMessage } from "@/components/custom/message";
 import { MultimodalInput } from "@/components/custom/multimodal-input";
+import { useProject } from "@/components/custom/project-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useSession } from "next-auth/react";
 import { fetcher, getToken } from "@/lib/utils";
-import type { Project as ProjectType } from "@/lib/types";
-import { useProject } from "@/components/custom/project-provider";
-import { usePathname } from "next/navigation";
+
 import { Project } from "./project";
 import ProjectChats from "./project-chats";
+
+import type { Project as ProjectType } from "@/lib/types";
+
 // Hook for scrolling to the bottom of the chat
 const useScrollToBottom = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -182,7 +184,6 @@ export function Chat({
                 </div>
                 <ProjectChats projectId={project?.id} />
               </form>
-
             </Card>
             <div className="w-full md:w-[35%] pl-0 mt-0">
               <Project isLoading={isLoading} data={selectedProject} />

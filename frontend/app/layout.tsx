@@ -13,8 +13,8 @@ export const viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://chat.vercel.ai"),
-  title: "Next.js Chatbot Template",
-  description: "Next.js chatbot template using the AI SDK.",
+  title: "OpenAstra Chat",
+  description: "OpenAstra Chat",
 };
 
 export default async function RootLayout({
@@ -44,8 +44,8 @@ export default async function RootLayout({
       <body className="antialiased">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <SessionProvider>
-              <Toaster position="top-center" />
-              {children}
+            <Toaster position="top-center" />
+            {children}
           </SessionProvider>
         </ThemeProvider>
       </body>

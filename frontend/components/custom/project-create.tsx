@@ -1,11 +1,11 @@
 import { Upload, X } from "lucide-react";
+import { useSession } from "next-auth/react";
 import * as React from "react";
 import { useRef, useState } from "react";
 import useSWR from "swr";
-import { useSession } from "next-auth/react";
-import { useTeams } from "@/components/custom/teams-provider";
-import { fetcher, getToken } from "@/lib/utils";
+import useSWRMutation from "swr/mutation";
 
+import { useTeams } from "@/components/custom/teams-provider";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,8 +20,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import useSWRMutation from "swr/mutation";
 import { Project } from "@/lib/types";
+import { fetcher, getToken } from "@/lib/utils";
 
 interface ProjectCreateDialogProps {
   open: boolean;
@@ -156,10 +156,7 @@ export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) 
 
           <div>
             <Label htmlFor="model">AI Model</Label>
-            <Select
-              value={formData.model}
-              onValueChange={(value) => setFormData({ ...formData, model: value })}
-            >
+            <Select value={formData.model} onValueChange={(value) => setFormData({ ...formData, model: value })}>
               <SelectTrigger className="mt-2">
                 <SelectValue placeholder="Select a model" />
               </SelectTrigger>

@@ -1,13 +1,11 @@
 "use client";
 
-import useSWR from "swr";
 import { useSession } from "next-auth/react";
+import useSWR from "swr";
+
+import { Chat } from "@/components/custom/chat";
 import { useTeams } from "@/components/custom/teams-provider";
 import { fetcher, generateUUID, getToken } from "@/lib/utils";
-import { Project } from "@/components/custom/project";
-import { Chat } from "@/components/custom/chat";
-import { usePathname } from "next/navigation";
-import { cx } from "class-variance-authority";
 
 export default function Page({ params }: { params: { id: string } }) {
   const { data: session } = useSession();

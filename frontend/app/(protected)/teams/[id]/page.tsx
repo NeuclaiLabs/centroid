@@ -1,11 +1,10 @@
 "use client";
 
-import { notFound } from "next/navigation";
-import useSWR from "swr";
-import { fetcher, getToken } from "@/lib/utils";
 import { useSession } from "next-auth/react";
+import useSWR from "swr";
+
 import { Team } from "@/components/custom/team";
-import { useTeams } from "@/components/custom/teams-provider";
+import { fetcher, getToken } from "@/lib/utils";
 
 export default function Page({ params }: { params: any }) {
   const teamId = params.id;

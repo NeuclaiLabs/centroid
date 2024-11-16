@@ -1,4 +1,5 @@
 import { Attachment, Message } from "ai";
+
 import { MultimodalInput } from "@/components/custom/multimodal-input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -26,7 +27,6 @@ export function ChatHome({
   messages,
   append,
 }: ChatHomeProps) {
-
   const suggestions = [
     "Generate a multi-step onboarding flow",
     "How can I schedule cron jobs?",
