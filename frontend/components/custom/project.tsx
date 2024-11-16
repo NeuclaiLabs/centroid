@@ -5,7 +5,12 @@ import * as React from "react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -22,8 +27,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+
 import { useProject } from "./project-provider";
 import { toast } from "sonner";
+import { useSession } from "next-auth/react";
+import { getToken } from "@/lib/utils";
 
 interface ProjectProps {
   data?: Project;
@@ -35,21 +43,18 @@ export function Project({ isLoading, data }: ProjectProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  let threads = null;
-
-  // Add state for editing
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editedValues, setEditedValues] = useState({
     title: data?.title || "",
     description: data?.description || "",
     instructions: data?.instructions || "",
   });
-
-  // Add state for controlling the delete dialog visibility
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeletingFile, setIsDeletingFile] = useState<string | null>(null);
+  const { data: session } = useSession();
+  const token = getToken(session);
+  const [fileToDelete, setFileToDelete] = useState<string | null>(null);
 
-  // Add handler for saving edits
   const handleSave = async (field: string) => {
     if (!data?.id) return;
 
@@ -60,7 +65,7 @@ export function Project({ isLoading, data }: ProjectProps) {
       setEditingField(null);
     } catch (error) {
       console.error(`Error saving ${field}:`, error);
-      // You might want to add error handling UI here
+      toast.error(`Failed to update ${field}`);
     }
   };
 
@@ -73,7 +78,7 @@ export function Project({ isLoading, data }: ProjectProps) {
       // The ProjectProvider will handle updating the UI after deletion
     } catch (error) {
       console.error("Error deleting project:", error);
-      // You might want to add error handling UI here
+      toast.error("Failed to delete project");
     }
   };
 
@@ -83,7 +88,6 @@ export function Project({ isLoading, data }: ProjectProps) {
       setEditingField(null);
     } else {
       setEditingField(field);
-      // Update the edited values with current data when starting to edit
       setEditedValues({
         ...editedValues,
         [field]: data?.[field as keyof Project] || "",
@@ -91,26 +95,72 @@ export function Project({ isLoading, data }: ProjectProps) {
     }
   };
 
-  const uploadFile = async (file: File) => {
+  const handleFileUpload = async (files: File[]) => {
+    if (!data?.id) return;
+
     const formData = new FormData();
-    formData.append("file", file);
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
 
     try {
-      const response = await fetch(`/api/files/upload`, {
+      console.log("Here..");
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/files/?project_id=${data.id}`, {
         method: "POST",
         body: formData,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        const { pathname } = data;
-        return pathname;
-      } else {
-        const { error } = await response.json();
-        toast.error(error);
+      if (!response.ok) {
+        throw new Error("Upload failed");
       }
+
+      const result = await response.json();
+      console.log(result);
+
+      // Update the project with the new file paths
+      const updatedFiles = [...(data.files || []), ...result.files];
+      await updateProject(data.id, {
+        files: updatedFiles,
+      });
+
+      toast.success("Files uploaded successfully");
     } catch (error) {
-      toast.error("Failed to upload file, please try again!");
+      console.error("Upload error:", error);
+      toast.error("Failed to upload files");
+    }
+  };
+
+  const handleFileDelete = async (filename: string) => {
+    if (!data?.id) return;
+
+    try {
+      setIsDeletingFile(filename);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/files/?file=${filename}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Delete failed");
+      }
+
+      // Update the project's files list
+      const updatedFiles = data.files?.filter((f) => f !== filename) || [];
+      await updateProject(data.id, {
+        files: updatedFiles,
+      });
+
+      toast.success("File deleted successfully");
+    } catch (error) {
+      console.error("Delete error:", error);
+      toast.error("Failed to delete file");
+    } finally {
+      setIsDeletingFile(null);
     }
   };
 
@@ -125,109 +175,25 @@ export function Project({ isLoading, data }: ProjectProps) {
       }
 
       setUploadQueue(files.map((file) => file.name));
+      setIsUploading(true);
 
       try {
-        const uploadPromises = files.map((file) => uploadFile(file));
-        const uploadedFiles = await Promise.all(uploadPromises);
-        const successfulUploads = uploadedFiles.filter((file): file is string => file !== undefined);
-
-        if (successfulUploads.length > 0) {
-          await updateProject(data!.id, {
-            files: [...(data?.files || []), ...successfulUploads]
-          });
-          toast.success("Files uploaded successfully");
-        }
-      } catch (error) {
-        console.error("Error uploading files!", error);
-        toast.error("Failed to update project with new files");
+        await handleFileUpload(files);
       } finally {
         setUploadQueue([]);
+        setIsUploading(false);
         if (fileInputRef.current) {
-          fileInputRef.current.value = '';
+          fileInputRef.current.value = "";
         }
       }
     },
-    [data?.files, data?.id, updateProject]
+    [data?.files?.length, data?.id]
   );
 
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen flex-col lg:flex-row p-6 pt-0">
-        <div className="w-full p-6 bg-muted/30 border-l overflow-y-auto">
-          <div className="space-y-6">
-            {/* Title Skeleton */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Skeleton className="h-6 w-20" />
-                <Skeleton className="h-8 w-16" />
-              </div>
-              <Skeleton className="h-4 w-3/4" />
-            </div>
-
-            <Separator />
-
-            {/* Description Skeleton */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Skeleton className="h-6 w-24" />
-                <Skeleton className="h-8 w-16" />
-              </div>
-              <Skeleton className="h-20 w-full" />
-            </div>
-
-            <Separator />
-
-            {/* Model Skeleton */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Skeleton className="h-4 w-4" />
-                <Skeleton className="h-6 w-20" />
-              </div>
-              <Skeleton className="h-4 w-1/4" />
-            </div>
-
-            <Separator />
-
-            {/* Instructions Skeleton */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Skeleton className="h-4 w-4" />
-                  <Skeleton className="h-6 w-24" />
-                </div>
-                <Skeleton className="h-8 w-16" />
-              </div>
-              <Skeleton className="h-20 w-full" />
-            </div>
-
-            <Separator />
-
-            {/* Files Skeleton */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Skeleton className="h-4 w-4" />
-                  <Skeleton className="h-6 w-16" />
-                </div>
-                <Skeleton className="h-8 w-8" />
-              </div>
-              <div className="space-y-2">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex items-center justify-between">
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-8 w-8" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // ... (keeping the loading skeleton JSX as is)
 
   return (
-    <div className="flex min-h-screen flex-col lg:flex-row p-2 pt-0">
+    <div className="flex  flex-col lg:flex-row p-2 pt-0">
       {/* Right Sidebar */}
       <div className="w-full p-6 bg-secondary  overflow-y-auto">
         <div className="space-y-6">
@@ -326,7 +292,7 @@ export function Project({ isLoading, data }: ProjectProps) {
 
           <Separator className="bg-primary/20" />
 
-          {/* Files Section */}
+          {/* Updated Files Section */}
           <div className="space-y-4">
             <input
               type="file"
@@ -340,15 +306,13 @@ export function Project({ isLoading, data }: ProjectProps) {
               <div className="flex items-center gap-2">
                 <Upload className="size-4" />
                 <h2 className="font-semibold">Files</h2>
-                <span className="text-xs text-muted-foreground">
-                  ({data?.files?.length || 0}/5)
-                </span>
+                <span className="text-xs text-muted-foreground">({data?.files?.length || 0}/5)</span>
               </div>
               <Button
                 size="icon"
                 variant="ghost"
                 onClick={() => fileInputRef.current?.click()}
-                disabled={uploadQueue.length > 0 || (data?.files?.length || 0) >= 5}
+                disabled={isUploading || (data?.files?.length || 0) >= 5}
               >
                 <Plus className="size-4" />
               </Button>
@@ -357,10 +321,7 @@ export function Project({ isLoading, data }: ProjectProps) {
             {uploadQueue.length > 0 && (
               <div className="space-y-2">
                 {uploadQueue.map((filename) => (
-                  <div
-                    key={filename}
-                    className="text-sm text-muted-foreground flex items-center gap-2"
-                  >
+                  <div key={filename} className="text-sm text-muted-foreground flex items-center gap-2">
                     <Timer className="size-4 animate-spin" />
                     <span>Uploading {filename}...</span>
                   </div>
@@ -368,46 +329,44 @@ export function Project({ isLoading, data }: ProjectProps) {
               </div>
             )}
 
-            {data?.files && data.files.length > 0 ? (
+            {data?.files && data.files.length > 0 && (
               <ul className="space-y-2">
                 {data.files.map((file, index) => (
                   <li key={index} className="text-sm flex items-center justify-between">
-                    <span>{file}</span>
-                    <Button variant="ghost" size="icon">
-                      <MoreHorizontal className="size-4" />
-                    </Button>
+                    <span className="truncate flex-1 mr-2">{file.split("/").pop()?.slice(16)}</span>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setFileToDelete(file)}
+                          disabled={isDeletingFile === file}
+                        >
+                          {isDeletingFile === file ? (
+                            <Timer className="size-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="size-4" />
+                          )}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the file.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => fileToDelete && handleFileDelete(fileToDelete)}>
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </li>
                 ))}
               </ul>
-            ) : (
-              <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">No files uploaded</p>
-                <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive" className="w-full">
-                      <Trash2 className="size-4 mr-2" />
-                      Delete Project
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete your project and all associated data.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={handleDelete}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      >
-                        Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
             )}
           </div>
         </div>

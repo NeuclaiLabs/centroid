@@ -55,6 +55,22 @@ class Settings(BaseSettings):
     DOMAIN: str = "localhost"
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
 
+    UPLOAD_DIR: str = "uploads"
+    MAX_UPLOAD_SIZE: int = 10_000_000  # 10MB in bytes
+    ALLOWED_EXTENSIONS: set = {
+        ".txt",
+        ".json",
+        # ".png",
+        # ".jpg",
+        # ".jpeg",
+        # ".gif",
+        # ".doc",
+        # ".docx",
+        # ".xls",
+        # ".xlsx",
+        ".csv",
+    }
+
     @computed_field  # type: ignore[misc]
     @property
     def server_host(self) -> str:

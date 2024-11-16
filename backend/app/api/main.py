@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from app.api.routes import (
     chats,
+    files,
     items,
     login,
     projects,
@@ -22,3 +23,4 @@ api_router.include_router(tool_calls.router, prefix="/tool-calls", tags=["tool-c
 api_router.include_router(settings.router, prefix="/settings", tags=["settings"])
 api_router.include_router(teams.router, prefix="/teams", tags=["teams"])
 api_router.include_router(projects.router, prefix="/projects", tags=["projects"])
+api_router.include_router(files.router, prefix="/files", tags=["files"])

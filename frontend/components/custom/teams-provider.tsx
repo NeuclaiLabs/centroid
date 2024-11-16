@@ -51,7 +51,7 @@ export function TeamsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (teams.length && !selectedTeamId) {
       const savedTeamId = localStorage.getItem(CURRENT_TEAM_KEY);
-      const validTeamId = savedTeamId && teams.some(team => team.id === savedTeamId)
+      const validTeamId = savedTeamId && teams.some((team: Team) => team.id === savedTeamId)
         ? savedTeamId
         : teams[0].id;
 
