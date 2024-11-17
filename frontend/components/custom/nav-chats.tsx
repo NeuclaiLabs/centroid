@@ -39,7 +39,7 @@ interface NavChatsProps {
   history?: Chat[];
   count?: number;
   isLoading?: boolean;
-  mutate?: () => Promise<any>;
+  mutate: () => Promise<any>;
 }
 
 export function NavChats({ history, count, isLoading, mutate }: NavChatsProps) {
@@ -98,19 +98,20 @@ export function NavChats({ history, count, isLoading, mutate }: NavChatsProps) {
                       <Folder className="mr-2 size-4 text-muted-foreground" />
                       <span>View Project</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    {/* <DropdownMenuItem>
                       <Share className="mr-2 size-4 text-muted-foreground" />
                       <span>Share Project</span>
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator /> */}
                     <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
                       onClick={() => {
                         setDeleteId(chat.id);
                         setShowDeleteDialog(true);
                       }}
                     >
-                      <Trash2 className="mr-2 size-4 text-muted-foreground" />
-                      <span>Delete Project</span>
+                      <Trash2 className="mr-2 size-4" />
+                      <span>Delete Chat</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -119,7 +120,7 @@ export function NavChats({ history, count, isLoading, mutate }: NavChatsProps) {
           )}
 
           {/* Show "View More" link only if there are messages */}
-          {history && history.length > 0 && (
+          {history && count && count > 3 && (
             <SidebarMenuItem>
               <Link href="/chats" className="flex items-center gap-2 p-2 text-sm text-foreground/50 hover:underline">
                 <span>View More</span>

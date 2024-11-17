@@ -37,7 +37,6 @@ export async function POST(request: Request) {
     }
   }
 
-  console.log(systemPrompt);
 
   const result = await streamText({
     model: customModel,

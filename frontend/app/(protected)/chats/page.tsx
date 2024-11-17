@@ -6,6 +6,7 @@ import useSWRInfinite from "swr/infinite";
 import { Chats } from "@/components/custom/chats";
 import { Chat } from "@/lib/types";
 import { fetcher, getToken } from "@/lib/utils";
+import useSWR from "swr";
 
 interface ChatResponse {
   data: Chat[];
@@ -35,7 +36,8 @@ export default function ChatsPage() {
     revalidateOnFocus: false,
   });
 
-  const chats = pages?.map((page) => page.data).flat() || [];
+
+  const chats = pages?.map((page) => page?.data).flat() || [];
   const isLoadingMore = isLoading;
   const hasMore = pages && pages[0] && pages[0].count > (pages.length || 0) * 10;
   return (
@@ -44,7 +46,7 @@ export default function ChatsPage() {
         <div className="max-w-6xl mx-auto p-6 md:px-32">
           <Chats
             data={chats}
-            count={pages && pages[0] ? pages[0].count : 0}
+            count={pages && pages[0] && pages[0].count}
             isLoading={isLoading}
             isLoadingMore={isLoadingMore}
             hasMore={hasMore}

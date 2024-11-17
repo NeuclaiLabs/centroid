@@ -37,7 +37,6 @@ export function Chats({
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   const { deleteChat } = useDeleteChat(mutate);
-
   // Simplified intersection observer
   useEffect(() => {
     if (!hasMore) return;
@@ -73,7 +72,7 @@ export function Chats({
       <h1 className="text-2xl font-semibold mb-8">Chats</h1>
 
       <div className="space-y-4">
-        {isLoading || !count ? (
+        {isLoading || count === undefined ? (
           <>
             {[1, 2, 3].map((i) => (
               <div key={i} className="flex items-center gap-4 p-4 rounded-lg border bg-card">
