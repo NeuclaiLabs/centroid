@@ -69,6 +69,7 @@
     "@types/node": "^20",
     "@types/pdf-parse": "^1.1.4",
     "@types/react": "^18",
+    "@types/react-copy-to-clipboard": "^5.0.7",
     "@types/react-dom": "^18",
     "@types/react-syntax-highlighter": "^15.5.13",
     "@typescript-eslint/parser": "^8.12.2",

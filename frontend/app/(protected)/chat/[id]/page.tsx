@@ -12,7 +12,6 @@ type PageProps = {
   params: Promise<{ id: string }>; // Promise type to signify asynchronous resolution
 };
 
-
 export default async function Page({ params }: PageProps) {
   const resolvedParams = await params; // Await params
   const { id } = resolvedParams;

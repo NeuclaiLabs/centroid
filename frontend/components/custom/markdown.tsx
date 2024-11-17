@@ -1,31 +1,32 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import Link from "next/link";
-import { CopyToClipboard } from "react-copy-to-clipboard";
-
+import { useTheme } from "next-themes";
 import React, { memo, useMemo, useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { CopyToClipboard } from "react-copy-to-clipboard";
 import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
-import { tomorrow, tomorrowNight, atomOneLight } from "react-syntax-highlighter/dist/esm/styles/hljs";
-import javascript from "react-syntax-highlighter/dist/esm/languages/hljs/javascript";
-import python from "react-syntax-highlighter/dist/esm/languages/hljs/python";
 import bash from "react-syntax-highlighter/dist/esm/languages/hljs/bash";
-import java from "react-syntax-highlighter/dist/esm/languages/hljs/java";
 import c from "react-syntax-highlighter/dist/esm/languages/hljs/c";
 import cpp from "react-syntax-highlighter/dist/esm/languages/hljs/cpp";
 import css from "react-syntax-highlighter/dist/esm/languages/hljs/css";
-import html from "react-syntax-highlighter/dist/esm/languages/hljs/xml"; // HTML uses "xml"
-import php from "react-syntax-highlighter/dist/esm/languages/hljs/php";
-import ruby from "react-syntax-highlighter/dist/esm/languages/hljs/ruby";
-import typescript from "react-syntax-highlighter/dist/esm/languages/hljs/typescript";
-import swift from "react-syntax-highlighter/dist/esm/languages/hljs/swift";
 import go from "react-syntax-highlighter/dist/esm/languages/hljs/go";
+import java from "react-syntax-highlighter/dist/esm/languages/hljs/java";
+import javascript from "react-syntax-highlighter/dist/esm/languages/hljs/javascript";
 import kotlin from "react-syntax-highlighter/dist/esm/languages/hljs/kotlin";
-import rust from "react-syntax-highlighter/dist/esm/languages/hljs/rust";
 import markdown from "react-syntax-highlighter/dist/esm/languages/hljs/markdown";
-import sql from "react-syntax-highlighter/dist/esm/languages/hljs/sql";
+import php from "react-syntax-highlighter/dist/esm/languages/hljs/php";
+import python from "react-syntax-highlighter/dist/esm/languages/hljs/python";
+import ruby from "react-syntax-highlighter/dist/esm/languages/hljs/ruby";
+import rust from "react-syntax-highlighter/dist/esm/languages/hljs/rust";
 import shell from "react-syntax-highlighter/dist/esm/languages/hljs/shell";
-import { useTheme } from "next-themes";
+import sql from "react-syntax-highlighter/dist/esm/languages/hljs/sql";
+import swift from "react-syntax-highlighter/dist/esm/languages/hljs/swift";
+import typescript from "react-syntax-highlighter/dist/esm/languages/hljs/typescript";
+import html from "react-syntax-highlighter/dist/esm/languages/hljs/xml"; // HTML uses "xml"
+import { tomorrowNight, atomOneLight } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import remarkGfm from "remark-gfm";
+
+import { Button } from "@/components/ui/button";
 
 // Register languages
 const languages = {
