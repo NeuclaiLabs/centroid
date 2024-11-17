@@ -38,7 +38,7 @@ export const PreviewMessage = ({
     >
       <div
         className={cx(
-          "flex gap-4 group-data-[role=user]/message:px-3 w-full group-data-[role=user]/message:w-fit group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:py-2 rounded-xl",
+          "flex gap-4 group-data-[role=user]/message:px-3 w-full group-data-[role=user]/message:w-fit group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:py-2 rounded-xl overflow-hidden",
           {
             "group-data-[role=user]/message:bg-muted": !canvas,
             "group-data-[role=user]/message:bg-zinc-300 dark:group-data-[role=user]/message:bg-zinc-800": canvas,
@@ -50,9 +50,9 @@ export const PreviewMessage = ({
             <OpenAstraIcon size={18} />
           </div>
         )}
-        <div className="flex flex-col gap-2 w-full">
+        <div className="flex flex-col gap-2 w-full overflow-hidden">
           {content && (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 overflow-hidden">
               <Markdown>{content as string}</Markdown>
             </div>
           )}

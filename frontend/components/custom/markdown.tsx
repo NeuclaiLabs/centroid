@@ -102,11 +102,11 @@ const MarkdownComponents = {
 
     const handleCopy = () => {
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000); // Reset "Copied!" after 2 seconds
+      setTimeout(() => setCopied(false), 2000);
     };
 
     return !inline && match ? (
-      <div className="relative group text-sm overflow-x-scroll rounded-lg mt-2">
+      <div className="relative group text-sm rounded-lg mt-2 w-full">
         {/* Header */}
         <div className="flex items-center justify-between px-3 py-1 text-xs font-mono rounded-t-lg bg-zinc-100 dark:bg-zinc-700">
           <span>{match[1]}</span>
@@ -117,18 +117,23 @@ const MarkdownComponents = {
           </CopyToClipboard>
         </div>
         {/* Code Block */}
-        <SyntaxHighlighter
-          {...props}
-          language={match[1]}
-          style={style}
-          showLineNumbers={true}
-          customStyle={{
-            margin: 0,
-            padding: "1rem",
-          }}
-        >
-          {String(children).trim()}
-        </SyntaxHighlighter>
+        <div className="overflow-x-auto w-full scrollbar-thin" style={{ maxWidth: 'calc(100vw - 4rem)' }}>
+          <SyntaxHighlighter
+            {...props}
+            language={match[1]}
+            style={style}
+            showLineNumbers={true}
+            customStyle={{
+              margin: 0,
+              padding: "1rem",
+              minWidth: "100%",
+              width: "fit-content",
+            }}
+            wrapLongLines={false}
+          >
+            {String(children).trim()}
+          </SyntaxHighlighter>
+        </div>
       </div>
     ) : (
       <code className={`${className} text-sm bg-zinc-100 dark:bg-zinc-800 py-0.5 px-1 rounded-md`} {...props}>
