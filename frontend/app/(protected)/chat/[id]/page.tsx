@@ -6,8 +6,16 @@ import { Chat as PreviewChat } from "@/components/custom/chat";
 import { Chat } from "@/lib/types";
 import { convertToUIMessages, getToken } from "@/lib/utils";
 
-export default async function Page({ params }: { params: any }) {
-  const { id } = params;
+// Add proper typing for the params
+// Add proper typing for the async `params` resolution
+type PageProps = {
+  params: Promise<{ id: string }>; // Promise type to signify asynchronous resolution
+};
+
+
+export default async function Page({ params }: PageProps) {
+  const resolvedParams = await params; // Await params
+  const { id } = resolvedParams;
   const session = await auth();
 
   if (!session || !session.user) {
