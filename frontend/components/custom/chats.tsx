@@ -16,7 +16,7 @@ interface ChatsProps {
   data: Chat[];
   isLoading: boolean;
   isLoadingMore: boolean;
-  hasMore: boolean;
+  hasMore: boolean | undefined;
   onLoadMore: () => void;
   isValidating: boolean;
   count: number | undefined;

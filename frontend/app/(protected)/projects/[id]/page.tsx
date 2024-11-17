@@ -7,13 +7,15 @@ import { Chat } from "@/components/custom/chat";
 import { useTeams } from "@/components/custom/teams-provider";
 import { fetcher, generateUUID, getToken } from "@/lib/utils";
 
-export default function Page({ params }: { params: { id: string } }) {
+export default function Page({ params }: { params: any }) {
+  const { id } = params;
+
   const { data: session } = useSession();
   const { selectedTeamId } = useTeams();
 
   const { data, error, isLoading } = useSWR(
     session?.user && selectedTeamId
-      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/${params.id}`, getToken(session)]
+      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/${id}`, getToken(session)]
       : null,
     ([url, token]) => fetcher(url, token)
   );

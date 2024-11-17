@@ -1,4 +1,4 @@
-import { CoreMessage } from "ai";
+import { CoreMessage, Message } from "ai";
 import { notFound } from "next/navigation";
 
 import { auth } from "@/app/(auth)/auth";
@@ -44,7 +44,7 @@ export default async function Page({ params }: { params: any }) {
 
     return (
       <div className="flex flex-col h-[calc(100vh-4rem)]">
-        <PreviewChat id={chat.id} project={chat.project} initialMessages={chat!.messages || []} />
+        <PreviewChat id={chat.id} project={chat.project} initialMessages={(chat!.messages as Array<Message>) || []} />
       </div>
     );
   } catch (error) {

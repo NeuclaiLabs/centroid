@@ -1,8 +1,8 @@
 import { convertToCoreMessages, Message, streamText } from "ai";
 import { z } from "zod";
 
-import { customModel } from "@/ai2";
 import { auth } from "@/app/(auth)/auth";
+import { customModel } from "@/lib/ai";
 import { getToken } from "@/lib/utils";
 
 export async function POST(request: Request) {
@@ -36,7 +36,6 @@ export async function POST(request: Request) {
       console.error("Failed to fetch project prompt:", error);
     }
   }
-
 
   const result = await streamText({
     model: customModel,

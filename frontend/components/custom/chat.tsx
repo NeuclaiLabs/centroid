@@ -101,7 +101,7 @@ export function Chat({
         if (!currentHistory) return currentHistory;
 
         // Check if chat already exists in history
-        const chatExists = currentHistory?.data?.some((chat) => chat.id === id);
+        const chatExists = currentHistory?.data?.some((chat: any) => chat.id === id);
         if (chatExists) return currentHistory;
 
         // Add new chat to history
@@ -182,11 +182,11 @@ export function Chat({
                     append={append}
                   />
                 </div>
-                <ProjectChats projectId={project?.id} />
+                <ProjectChats projectId={project?.id ?? ""} />
               </form>
             </Card>
             <div className="w-full md:w-[35%] pl-0 mt-0">
-              <Project isLoading={isLoading} data={selectedProject} />
+              <Project isLoading={isLoading} data={selectedProject ?? undefined} />
             </div>
           </div>
         </>
