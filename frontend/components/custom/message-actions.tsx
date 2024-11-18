@@ -55,16 +55,16 @@ export function MessageActions({
               onClick={async () => {
                 const messageId = message.id;
 
-                const upvote = fetch("/api/vote", {
-                  method: "PATCH",
-                  body: JSON.stringify({
-                    chatId,
-                    messageId,
-                    type: "up",
-                  }),
-                });
+                // const upvote = fetch("/api/vote", {
+                //   method: "PATCH",
+                //   body: JSON.stringify({
+                //     chatId,
+                //     messageId,
+                //     type: "up",
+                //   }),
+                // });
 
-                toast.promise(upvote, {
+                toast.promise(Promise.resolve("Upvoted Response!"), {
                   loading: "Upvoting Response...",
                   success: () => {
                     // mutate<Array<Vote>>(
@@ -107,16 +107,16 @@ export function MessageActions({
               onClick={async () => {
                 const messageId = message.id;
 
-                const downvote = fetch("/api/vote", {
-                  method: "PATCH",
-                  body: JSON.stringify({
-                    chatId,
-                    messageId,
-                    type: "down",
-                  }),
-                });
+                // const downvote = fetch("/api/vote", {
+                //   method: "PATCH",
+                //   body: JSON.stringify({
+                //     chatId,
+                //     messageId,
+                //     type: "down",
+                //   }),
+                // });
 
-                toast.promise(downvote, {
+                toast.promise(Promise.resolve("Downvoted Response!"), {
                   loading: "Downvoting Response...",
                   success: () => {
                     // mutate<Array<Vote>>(

@@ -2,9 +2,11 @@
 
 import { Attachment, ChatRequestOptions, CreateMessage, Message } from "ai";
 import { Paperclip, ChevronDownIcon } from "lucide-react";
-import React, { useRef, useEffect, useState, useCallback, Dispatch, SetStateAction, ChangeEvent } from "react";
+import { usePathname } from "next/navigation";
+import { useRef, useEffect, useState, useCallback, Dispatch, SetStateAction, ChangeEvent } from "react";
 import { toast } from "sonner";
 import { useLocalStorage } from "usehooks-ts";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 
 import { ArrowUpIcon, StopIcon } from "./icons";
 import { PreviewAttachment } from "./preview-attachment";
@@ -154,6 +156,9 @@ export function MultimodalInput({
 
   const { projects, selectedProject, setSelectedProjectId } = useProject();
 
+  const pathname = usePathname();
+  const shouldShowProjectDropdown = !pathname?.includes("chat") && !pathname?.includes("project");
+
   return (
     <div className="relative w-full flex flex-col gap-2">
       <input
@@ -213,34 +218,45 @@ export function MultimodalInput({
       {/* Action bar */}
       <div className="absolute bottom-0 inset-x-0 flex justify-between items-center py-2 px-4 bg-muted rounded-b-lg">
         <div className="flex space-x-2">
-          <Button
-            className="p-1.5 size-8 flex items-center justify-center dark:border-zinc-700"
-            onClick={(event) => {
-              event.preventDefault();
-              fileInputRef.current?.click();
-            }}
-            variant="outline"
-            disabled={isLoading}
-          >
-            <Paperclip size={14} />
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="inline-block">
+                  {" "}
+                  {/* Wrapper to allow tooltip on disabled button */}
+                  <Button
+                    className="p-1.5 size-8 flex items-center justify-center dark:border-zinc-700"
+                    variant="outline"
+                    disabled={true}
+                  >
+                    <Paperclip size={14} />
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Coming soon</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button className="px-2 h-8 flex items-center space-x-1 dark:border-zinc-700" variant="outline">
-                <span>{selectedProject?.title || "Select Project"}</span>
-                <ChevronDownIcon size={14} />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-[200px]">
-              {projects?.map((project) => (
-                <DropdownMenuItem key={project.id} onSelect={() => setSelectedProjectId(project.id)}>
-                  {project.title}
-                </DropdownMenuItem>
-              ))}
-              {projects?.length === 0 && <div className="p-2 text-sm text-gray-500">No projects available</div>}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {shouldShowProjectDropdown && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button className="px-2 h-8 flex items-center space-x-1 dark:border-zinc-700" variant="outline">
+                  <span>{selectedProject?.title || "Select Project"}</span>
+                  <ChevronDownIcon size={14} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-[200px]">
+                {projects?.map((project) => (
+                  <DropdownMenuItem key={project.id} onSelect={() => setSelectedProjectId(project.id)}>
+                    {project.title}
+                  </DropdownMenuItem>
+                ))}
+                {projects?.length === 0 && <div className="p-2 text-sm text-gray-500">No projects available</div>}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
 
         {isLoading ? (

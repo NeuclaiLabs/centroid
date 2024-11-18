@@ -106,7 +106,7 @@ const MarkdownComponents = {
     };
 
     return !inline && match ? (
-      <div className="relative group text-sm rounded-lg mt-2 w-full mb-2">
+      <div className="relative group text-sm rounded-lg my-2 w-full">
         {/* Header */}
         <div className="flex items-center justify-between px-3 py-1 text-xs font-mono rounded-t-lg bg-zinc-100 dark:bg-zinc-700">
           <span>{match[1]}</span>

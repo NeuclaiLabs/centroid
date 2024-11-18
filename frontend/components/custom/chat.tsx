@@ -122,7 +122,7 @@ export function Chat({
       // Update the current project when the chat loads
       setSelectedProjectId(project.id);
     }
-  }, [project]);
+  }, [project, setSelectedProjectId]);
 
   const path = usePathname();
   const isOnProjectPage = path.includes("/projects");

@@ -48,3 +48,7 @@ export interface Chat {
   visibility?: ChatVisibility;
   project?: Project;
 }
+
+export interface PageProps {
+  params: Promise<{ id: string }>; // Promise type to signify asynchronous resolution
+}

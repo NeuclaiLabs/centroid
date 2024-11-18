@@ -1,5 +1,6 @@
 "use client";
 
+import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import useSWR from "swr";
 
@@ -7,8 +8,8 @@ import { Chat } from "@/components/custom/chat";
 import { useTeams } from "@/components/custom/teams-provider";
 import { fetcher, generateUUID, getToken } from "@/lib/utils";
 
-export default function Page({ params }: { params: any }) {
-  const { id } = params;
+export default function Page() {
+  const { id } = useParams();
 
   const { data: session } = useSession();
   const { selectedTeamId } = useTeams();

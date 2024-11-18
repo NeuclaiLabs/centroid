@@ -1,13 +1,14 @@
 "use client";
 
+import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import useSWR from "swr";
 
 import { Team } from "@/components/custom/team";
 import { fetcher, getToken } from "@/lib/utils";
 
-export default function Page({ params }: { params: any }) {
-  const teamId = params.id;
+export default function Page() {
+  const { id: teamId } = useParams();
   const { data: session } = useSession();
 
   const {
@@ -41,7 +42,7 @@ export default function Page({ params }: { params: any }) {
       isLoading={isLoading}
       mutateTeam={mutateTeam}
       mutateMembers={mutateMembers}
-      teamId={teamId}
+      teamId={teamId as string}
     />
   );
 }
