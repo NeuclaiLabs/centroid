@@ -106,7 +106,7 @@ const MarkdownComponents = {
     };
 
     return !inline && match ? (
-      <div className="relative group text-sm rounded-lg mt-2 w-full">
+      <div className="relative group text-sm rounded-lg mt-2 w-full mb-2">
         {/* Header */}
         <div className="flex items-center justify-between px-3 py-1 text-xs font-mono rounded-t-lg bg-zinc-100 dark:bg-zinc-700">
           <span>{match[1]}</span>
@@ -117,7 +117,7 @@ const MarkdownComponents = {
           </CopyToClipboard>
         </div>
         {/* Code Block */}
-        <div className="overflow-x-auto w-full scrollbar-thin" style={{ maxWidth: 'calc(100vw - 4rem)' }}>
+        <div className="overflow-x-auto w-full scrollbar-thin" style={{ maxWidth: "calc(100vw - 4rem)" }}>
           <SyntaxHighlighter
             {...props}
             language={match[1]}
@@ -144,6 +144,53 @@ const MarkdownComponents = {
   pre({ children }: any) {
     // Ensure that <pre> is rendered directly, without wrapping in <p>
     return <div className="relative">{children}</div>;
+  },
+  table({ children, ...props }: any) {
+    return (
+      <div className="overflow-x-auto scrollbar-thin my-4">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 border-collapse" {...props}>
+          {children}
+        </table>
+      </div>
+    );
+  },
+  thead({ children, ...props }: any) {
+    return (
+      <thead className="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600" {...props}>
+        {children}
+      </thead>
+    );
+  },
+  tbody({ children, ...props }: any) {
+    return (
+      <tbody className="divide-y divide-gray-200 dark:divide-gray-700 " {...props}>
+        {children}
+      </tbody>
+    );
+  },
+  tr({ children, ...props }: any) {
+    return (
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-600" {...props}>
+        {children}
+      </tr>
+    );
+  },
+  th({ children, ...props }: any) {
+    return (
+      <th
+        className="px-6 py-3 text-left text-xs  border border-gray-300 dark:border-gray-600 font-bold uppercase tracking-wider"
+        {...props}
+      >
+        {children}
+      </th>
+    );
+  },
+  td({ children, ...props }: any) {
+    return (
+      <td className="px-6 py-4 whitespace-nowrap text-sm  border border-gray-300 dark:border-gray-600 " {...props}>
+        {children}
+      </td>
+    );
   },
 };
 
