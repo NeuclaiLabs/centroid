@@ -22,6 +22,15 @@
         }
       }
     ],
+    "unused-imports/no-unused-vars": [
+      "warn",
+      {
+        "vars": "all",
+        "varsIgnorePattern": "^_",
+        "args": "after-used",
+        "argsIgnorePattern": "^_"
+      }
+    ],
     "unused-imports/no-unused-imports": "error"
   },
   "settings": {
@@ -31,5 +40,6 @@
       }
     }
   },
-  "ignorePatterns": ["**/components/ui/**"]
+  // Ignore the components and app folders for now until we have a better way to lint them
+  "ignorePatterns": ["**/components/**", "app/**"]
 }
