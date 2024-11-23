@@ -3,7 +3,9 @@ import { experimental_wrapLanguageModel as wrapLanguageModel } from "ai";
 
 import { customMiddleware } from "./custom-middleware";
 
-export const customModel = wrapLanguageModel({
-  model: openai("gpt-4o"),
-  middleware: customMiddleware,
-});
+export const customModel = (apiIdentifier: string) => {
+  return wrapLanguageModel({
+    model: openai(apiIdentifier),
+    middleware: customMiddleware,
+  });
+};

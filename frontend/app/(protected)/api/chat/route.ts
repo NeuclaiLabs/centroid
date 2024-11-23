@@ -38,7 +38,7 @@ export async function POST(request: Request) {
   }
 
   const result = await streamText({
-    model: customModel,
+    model: customModel("gpt-4o-mini"),
     system: systemPrompt,
     messages: coreMessages,
     maxSteps: 5,
@@ -125,7 +125,11 @@ export async function POST(request: Request) {
             const url = new URL(endpoint);
             if (queryParams) {
               Object.entries(queryParams).forEach(([key, value]) => {
-                url.searchParams.append(key, value);
+                if (typeof value === "string") {
+                  url.searchParams.append(key, value);
+                } else {
+                  throw new Error(`Query parameter value for ${key} is not a string`);
+                }
               });
             }
 

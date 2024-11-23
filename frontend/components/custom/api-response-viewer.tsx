@@ -63,9 +63,14 @@ export function ApiResponseViewer({
   const getCurrentContent = () => {
     switch (activeTab) {
       case "json":
-        return typeof response.data === "string"
-          ? JSON.stringify({ ...response, data: JSON.parse(response.data) }, null, 2)
-          : JSON.stringify(response, null, 2);
+        try {
+          return typeof response.data === "string"
+            ? JSON.stringify({ ...response, data: JSON.parse(response.data) }, null, 2)
+            : JSON.stringify(response, null, 2);
+        } catch (e) {
+          // If JSON parsing fails, return the raw data
+          return JSON.stringify({ ...response, data: response.data }, null, 2);
+        }
       case "headers":
         return Object.entries(response.headers)
           .map(([key, value]) => `${key}: ${value}`)
@@ -107,9 +112,15 @@ export function ApiResponseViewer({
               }}
               wrapLongLines={true}
             >
-              {typeof response.data === "string"
-                ? JSON.stringify({ ...response, data: JSON.parse(response.data) }, null, 2)
-                : JSON.stringify(response, null, 2)}
+              {(() => {
+                try {
+                  return typeof response.data === "string"
+                    ? JSON.stringify({ ...response, data: JSON.parse(response.data) }, null, 2)
+                    : JSON.stringify(response, null, 2);
+                } catch (e) {
+                  return JSON.stringify({ ...response, data: response.data }, null, 2);
+                }
+              })()}
             </SyntaxHighlighter>
           </pre>
         );
