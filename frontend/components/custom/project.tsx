@@ -295,7 +295,7 @@ export function Project({ isLoading, data }: ProjectProps) {
               ref={fileInputRef}
               multiple
               onChange={handleFileChange}
-              accept="application/pdf,text/*,image/*"
+              accept="application/pdf,text/*,image/*,application/json"
             />
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">

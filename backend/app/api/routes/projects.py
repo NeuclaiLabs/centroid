@@ -157,6 +157,18 @@ def get_project_prompt(
 
     # Combine project prompt with file contents
     file_contents = "\n".join(all_content)
-    full_prompt = f"\nProject Files:\n{file_contents}" if all_content else ""
+    full_prompt = (
+        f"{SYSTEM_PROMPT}\nAPI Collection Files:\n{file_contents}"
+        if all_content
+        else SYSTEM_PROMPT
+    )
 
     return Message(message=full_prompt)
+
+
+SYSTEM_PROMPT = """
+You are an assistant for interacting with API collections.
+Users will upload their API collection, and your role is to help them explore and interact with it.
+Provide concise, precise responses to their queries about the API, including endpoint details, parameters, and usage examples.
+When executing API endpoints, always return responses in well-formatted JSON. Ensure clarity, accuracy, and relevance in all interactions.
+"""
