@@ -129,6 +129,8 @@ export async function POST(request: Request) {
               });
             }
 
+            const startTime = Date.now();
+
             // Retry logic
             const makeRequest = async (attempt: number = 0): Promise<any> => {
               try {
@@ -144,11 +146,26 @@ export async function POST(request: Request) {
 
                 clearTimeout(timeoutId);
 
-                if (!response.ok) {
-                  throw new Error(`API call failed with status ${response.status}`);
-                }
+                const responseData = await response.json();
+                const endTime = Date.now();
+                const responseSize = JSON.stringify(responseData).length;
 
-                return await response.json();
+                return {
+                  response: {
+                    method,
+                    args: {
+                      ...queryParams,
+                      ...(body && { body }),
+                    },
+                    data: responseData,
+                    headers: Object.fromEntries(response.headers.entries()),
+                  },
+                  meta: {
+                    status: response.status,
+                    time: `${endTime - startTime}ms`,
+                    size: `${(responseSize / 1024).toFixed(1)}KB`,
+                  },
+                };
               } catch (error) {
                 if (retry && attempt < retry.attempts) {
                   await new Promise((resolve) => setTimeout(resolve, retry.delay));
@@ -158,13 +175,20 @@ export async function POST(request: Request) {
               }
             };
 
-            const result = await makeRequest();
-            return result;
+            return await makeRequest();
           } catch (error) {
-            console.error("Dynamic API call error:", error);
             return {
-              error: error instanceof Error ? error.message : "Failed to fetch data from the specified API.",
-              details: error instanceof Error ? error.stack : undefined,
+              response: {
+                method,
+                args: {},
+                data: error instanceof Error ? error.message : "Failed to fetch data",
+                headers: {},
+              },
+              meta: {
+                status: 500,
+                time: "0ms",
+                size: "0KB",
+              },
             };
           }
         },

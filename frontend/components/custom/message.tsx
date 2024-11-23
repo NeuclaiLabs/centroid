@@ -11,6 +11,7 @@ import { Markdown } from "./markdown";
 import { MessageActions } from "./message-actions";
 import { PreviewAttachment } from "./preview-attachment";
 import { Weather } from "./weather";
+import { ApiResponseViewer } from "./api-response-viewer";
 
 export const PreviewMessage = ({
   message,
@@ -61,6 +62,11 @@ export const PreviewMessage = ({
             <div className="flex flex-col gap-4">
               {toolInvocations.map((toolInvocation) => {
                 const { toolName, toolCallId, state, args } = toolInvocation;
+                const metaInfo = {
+                  status: 200,
+                  time: "869 ms",
+                  size: "1.03 KB",
+                };
 
                 if (state === "result") {
                   const { result } = toolInvocation;
@@ -70,7 +76,7 @@ export const PreviewMessage = ({
                       {toolName === "getWeather" ? (
                         <Weather weatherAtLocation={result} />
                       ) : (
-                        <Markdown>{`\`\`\`json\n${JSON.stringify(result, null, 2)}\n\`\`\``}</Markdown>
+                        <ApiResponseViewer response={result.response} meta={metaInfo} />
                       )}
                     </div>
                   );
