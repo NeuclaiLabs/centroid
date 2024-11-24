@@ -62,11 +62,6 @@ export const PreviewMessage = ({
             <div className="flex flex-col gap-4">
               {toolInvocations.map((toolInvocation) => {
                 const { toolName, toolCallId, state, args } = toolInvocation;
-                const metaInfo = {
-                  status: 200,
-                  time: "869 ms",
-                  size: "1.03 KB",
-                };
 
                 if (state === "result") {
                   const { result } = toolInvocation;
@@ -76,7 +71,7 @@ export const PreviewMessage = ({
                       {toolName === "getWeather" ? (
                         <Weather weatherAtLocation={result} />
                       ) : (
-                        <ApiResponseViewer response={result.response} meta={metaInfo} />
+                        <ApiResponseViewer response={result.response} meta={result.meta} loading={false} />
                       )}
                     </div>
                   );
@@ -88,7 +83,11 @@ export const PreviewMessage = ({
                         skeleton: ["getWeather"].includes(toolName),
                       })}
                     >
-                      {toolName === "getWeather" ? <Weather /> : null}
+                      {toolName === "getWeather" ? (
+                        <Weather />
+                      ) : (
+                        <ApiResponseViewer response={undefined} meta={undefined} loading={true} />
+                      )}
                     </div>
                   );
                 }

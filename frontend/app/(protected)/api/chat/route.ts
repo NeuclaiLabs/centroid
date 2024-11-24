@@ -92,6 +92,7 @@ export async function POST(request: Request) {
         }),
         execute: async ({ endpoint, method, headers, body, auth, queryParams, timeout, retry, allowedDomains }) => {
           try {
+            console.log("Executing API call", { endpoint, method, headers, body, auth, queryParams, timeout, retry, allowedDomains });
             // Domain validation
             if (allowedDomains?.length) {
               const url = new URL(endpoint);

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -10,7 +10,6 @@ import { tomorrowNight } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import { useTheme } from "next-themes";
 import { Markdown } from "@/components/custom/markdown";
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import { useState } from 'react';
 import { toast } from 'sonner';
 
 // Types
@@ -45,19 +44,57 @@ const SAMPLE: { response: ApiResponse; meta: MetaInfo } = {
   },
 };
 
+interface Props {
+  response?: ApiResponse;
+  meta?: MetaInfo;
+  loading?: boolean;
+}
+
 // Component
 export function ApiResponseViewer({
   response = SAMPLE.response,
   meta = SAMPLE.meta,
-}: {
-  response?: ApiResponse;
-  meta?: MetaInfo;
-}) {
+  loading = true,
+}: Props) {
   const { theme } = useTheme();
+  const [clientTheme, setClientTheme] = useState<"light" | "dark" | undefined>(undefined);
   const [activeTab, setActiveTab] = useState<"json" | "headers" | "test-results">("json");
   const [copied, setCopied] = useState(false);
 
-  const style = theme === "dark" ? tomorrowNight : atomOneLight;
+  // Ensure the theme is available on the client side
+  useEffect(() => {
+    setClientTheme(theme as "light" | "dark" | undefined);
+  }, [theme]);
+
+  const style = clientTheme === "dark" ? tomorrowNight : atomOneLight;
+
+  if (loading) {
+    return (
+      <Card className="text-sm animate-pulse">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <div className="flex gap-4">
+              <div className="flex items-center">
+                <div className="h-4 w-16 bg-muted rounded" />
+              </div>
+              <div className="flex items-center">
+                <div className="h-4 w-16 bg-muted rounded" />
+              </div>
+              <div className="flex items-center">
+                <div className="h-4 w-16 bg-muted rounded" />
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="space-y-2">
+            <div className="h-8 w-32 bg-muted rounded" />
+            <div className="h-[200px] bg-muted rounded" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   // Get current content for copying
   const getCurrentContent = () => {
