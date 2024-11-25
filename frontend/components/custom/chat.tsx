@@ -13,6 +13,7 @@ import { useProject } from "@/components/custom/project-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { fetcher, getToken } from "@/lib/utils";
+import { ChevronDown } from "lucide-react";
 
 import { Project } from "./project";
 import ProjectChats from "./project-chats";
@@ -127,6 +128,29 @@ export function Chat({
   const path = usePathname();
   const isOnProjectPage = path.includes("/projects");
 
+  // Add new state to track if user is at bottom
+  const [isAtBottom, setIsAtBottom] = useState(true);
+
+  // Add scroll event listener to check scroll position
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsAtBottom(entry.isIntersecting);
+      },
+      {
+        root: null,
+        rootMargin: "100px", // This creates a margin around the target
+        threshold: 0 // Trigger as soon as even one pixel is visible
+      }
+    );
+    console.log("Is at bottom", isAtBottom);
+    if (messagesEndRef.current) {
+      observer.observe(messagesEndRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className="relative flex flex-col h-screen bg-background">
       {messages.length === 0 && !isOnProjectPage ? (
@@ -207,8 +231,18 @@ export function Chat({
             </div>
           </div>
 
-          <div className="sticky bottom-0 w-full bg-background/80 backdrop-blur-sm border-t">
+          <div className="sticky bottom-0 w-full  ">
             <div className="max-w-3xl mx-auto p-4 md:p-6">
+              {messages.length !== 0 && !isAtBottom && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="relative  left-1/2 -translate-x-1/2 bottom-1 rounded-full z-10 bg-background/80 backdrop-blur-sm"
+                  onClick={() => messagesEndRef.current?.scrollIntoView({ behavior: "auto" })}
+                >
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              )}
               <form className="flex flex-col sm:flex-row gap-2 relative items-end w-full">
                 <MultimodalInput
                   input={input}
