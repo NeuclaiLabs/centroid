@@ -35,8 +35,23 @@ services:
 
   backend:
     build:
-      context: ./backend
+      context: ./
       dockerfile: Dockerfile
+    environment:
+      - PROJECT_NAME=OpenAstra
+      - POSTGRES_SERVER=db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - FIRST_SUPERUSER=admin@openastra.com
+      - FIRST_SUPERUSER_PASSWORD=openastra123
+      - DOMAIN=api.openastra.com
+      - ENVIRONMENT=production
+      - BACKEND_CORS_ORIGINS=https://api.openastra.com
+      - SECRET_KEY=yBUzteofjwxyj4b3RLGJGntojhb8B_i0mt2Oy7T-gIU
+      - USERS_OPEN_REGISTRATION=False
+      - DB_TYPE=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=app
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=Host(`api.openastra.com`)"
