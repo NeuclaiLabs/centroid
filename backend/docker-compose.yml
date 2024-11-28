@@ -49,7 +49,7 @@ services:
       - BACKEND_CORS_ORIGINS=https://api.openastra.com
       - SECRET_KEY=yBUzteofjwxyj4b3RLGJGntojhb8B_i0mt2Oy7T-gIU
       - USERS_OPEN_REGISTRATION=False
-      - DB_TYPE=postgres
+      - DB_TYPE=sqlite
       - POSTGRES_PORT=5432
       - POSTGRES_DB=app
     labels:
