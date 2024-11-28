@@ -78,13 +78,15 @@ services:
 
   frontend:
     build:
-      context: ../frontend  # Adjust this path based on your directory structure
+      context: ./frontend  # Adjust this path based on your directory structure
       dockerfile: Dockerfile
     environment:
       - NEXT_PUBLIC_API_URL=https://api.openastra.com
       - OPENAI_API_KEY=sk-proj-eXrQS0396lcpeLw9SeYFT3BlbkFJi3KJa72kdsyXcurQ3AHm
       - NEXT_TELEMETRY_DISABLED=1
       - NEXT_PUBLIC_DISABLE_TELEMETRY=false
+      - NEXTAUTH_URL=https://openastra.com/
+      - NEXTAUTH_SECRET=yBUzteofjwxyj4b3RLGJGntojhb8B_i0mt2Oy7T-gIU
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=Host(`openastra.com`)"  # Your main domain
