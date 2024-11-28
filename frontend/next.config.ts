@@ -5,13 +5,5 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [],
   },
-  async rewrites() {
-    return [
-      {
-        source: "/api/:path*",
-        destination: "https://api.openastra.com/api/:path*",
-      },
-    ];
-  },
 };
 export default nextConfig;
