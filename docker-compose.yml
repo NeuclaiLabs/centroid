@@ -89,6 +89,7 @@ services:
       - NEXTAUTH_SECRET=yBUzteofjwxyj4b3RLGJGntojhb8B_i0mt2Oy7T-gIU
       - NEXTAUTH_URL_INTERNAL=http://frontend:3000
       - NEXT_PUBLIC_APP_URL=https://openastra.com
+      - BACKEND_HOST=https://api.openastra.com
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=Host(`openastra.com`)"  # Your main domain
