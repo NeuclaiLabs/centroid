@@ -43,7 +43,7 @@ services:
 
   backend:
     build:
-      context: ./
+      context: ./backend
       dockerfile: Dockerfile
     environment:
       - PROJECT_NAME=OpenAstra
@@ -73,6 +73,28 @@ services:
       - "traefik.http.routers.backend-http.middlewares=redirect-to-https"
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
+    networks:
+      - traefik-public
+
+  frontend:
+    build:
+      context: ../frontend  # Adjust this path based on your directory structure
+      dockerfile: Dockerfile
+    environment:
+      - NEXT_PUBLIC_API_URL=https://api.openastra.com
+      - OPENAI_API_KEY=sk-proj-eXrQS0396lcpeLw9SeYFT3BlbkFJi3KJa72kdsyXcurQ3AHm
+      - NEXT_TELEMETRY_DISABLED=1
+      - NEXT_PUBLIC_DISABLE_TELEMETRY=false
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`openastra.com`)"  # Your main domain
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+      # HTTP to HTTPS redirect
+      - "traefik.http.routers.frontend-http.rule=Host(`openastra.com`)"
+      - "traefik.http.routers.frontend-http.entrypoints=web"
+      - "traefik.http.routers.frontend-http.middlewares=redirect-to-https"
     networks:
       - traefik-public
 
