@@ -38,8 +38,12 @@ services:
       - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
       # Apply the redirect middleware
       - "traefik.http.routers.dashboard-http.middlewares=https-redirect"
+      # Add constraint label for better control
+      - "traefik.docker.network=traefik-public"
+      - "traefik.constraint-label=traefik-public"
     networks:
       - traefik-public
+    restart: always
 
   backend:
     build:
@@ -75,8 +79,12 @@ services:
       - "traefik.http.routers.backend-http.middlewares=redirect-to-https"
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
+      # Add network and constraint labels
+      - "traefik.docker.network=traefik-public"
+      - "traefik.constraint-label=traefik-public"
     networks:
       - traefik-public
+    restart: always
 
   frontend:
     build:
@@ -102,8 +110,18 @@ services:
       - "traefik.http.routers.frontend-http.rule=Host(`openastra.com`)"
       - "traefik.http.routers.frontend-http.entrypoints=web"
       - "traefik.http.routers.frontend-http.middlewares=redirect-to-https"
+      # Add network and constraint labels
+      - "traefik.docker.network=traefik-public"
+      - "traefik.constraint-label=traefik-public"
+      # Enhance www handling
+      - "traefik.http.middlewares.frontend-www-redirect.redirectregex.regex=^http(s)?://www.(openastra.com)/(.*)$"
+      - "traefik.http.middlewares.frontend-www-redirect.redirectregex.replacement=http$${1}://openastra.com/$${3}"
+      # Apply www redirect middleware
+      - "traefik.http.routers.frontend.middlewares=frontend-www-redirect"
+      - "traefik.http.routers.frontend-http.middlewares=https-redirect,frontend-www-redirect"
     networks:
       - traefik-public
+    restart: always
 
 networks:
   traefik-public:
