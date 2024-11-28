@@ -39,7 +39,7 @@ services:
       # Apply the redirect middleware
       - "traefik.http.routers.dashboard-http.middlewares=https-redirect"
     networks:
-      - web
+      - traefik-public
 
   backend:
     build:
@@ -74,11 +74,10 @@ services:
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
     networks:
-      - web
+      - traefik-public
 
 networks:
-  web:
-    external: true
+  traefik-public:
     name: traefik-public
 
 volumes:
