@@ -60,6 +60,8 @@ services:
       - DB_TYPE=sqlite
       - POSTGRES_PORT=5432
       - POSTGRES_DB=app
+    volumes:
+      - ~/.openastra:/root/.openastra
     ports:
       - "8000:8000"
     labels:
