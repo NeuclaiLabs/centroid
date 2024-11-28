@@ -1,19 +1,45 @@
-name: Deploy
+name: Deploy to Remote Machine
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v3
-    - uses: astappiev/docker-compose-remote-action@master
-      name: Docker-Compose Remote Deployment
-      with:
-        ssh_host: 13.235.134.195
-        ssh_user: ${{ secrets.DEPLOY_USERNAME }}
-        ssh_private_key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
-        ssh_host_public_key: ${{ secrets.DEPLOY_PUBLIC_KEY }}
-        docker_compose_prefix: openastra
+      # Check out the repository to access files (if needed)
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Set up SSH agent and add the private key
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      # SSH into the remote server and execute the commands
+      - name: Deploy to Remote Server
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          REMOTE_PROJECT_PATH: ${{ secrets.REMOTE_PROJECT_PATH }}
+        run: |
+          ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST << 'EOF'
+            set -e
+
+            echo "Pulling latest changes from main branch..."
+            cd $REMOTE_PROJECT_PATH
+            git pull origin main
+
+            echo "Building Docker images..."
+            sudo docker-compose build
+
+            echo "Restarting Docker containers..."
+            sudo docker-compose down
+            sudo docker-compose up -d
+
+            echo "Deployment successful!"
+          EOF
