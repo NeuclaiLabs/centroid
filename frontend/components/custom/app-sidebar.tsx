@@ -135,7 +135,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     isLoading,
     mutate: mutateHistory,
   } = useSWR(
-    session?.user ? [`${process.env.NEXT_PUBLIC_API_URLhats/`, getToken(session)] : null,
+    session?.user ? [`${process.env.NEXT_PUBLIC_API_URL}/api/v1/chats/`, getToken(session)] : null,
     ([url, token]) => fetcher(url, token as string)
   );
 
