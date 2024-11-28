@@ -31,7 +31,7 @@ jobs:
             set -e
 
             echo "Pulling latest changes from main branch..."
-            cd $REMOTE_PROJECT_PATH
+            cd openastra
             git pull origin main
 
             echo "Building Docker images..."
