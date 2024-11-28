@@ -29,7 +29,7 @@ services:
       - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
       - "traefik.http.routers.dashboard.middlewares=auth"
       # Basic auth middleware
-      - "traefik.http.middlewares.auth.basicauth.users=admin:$apr1$zhsv7RzN$sS6t73YKjNbudbRCuE2oF0"  # Replace with your hash
+      - "traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$zhsv7RzN$$sS6t73YKjNbudbRCuE2oF0"  # Replace with your hash
     networks:
       - web
 
