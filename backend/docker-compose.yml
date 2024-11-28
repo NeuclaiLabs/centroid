@@ -52,6 +52,8 @@ services:
       - DB_TYPE=sqlite
       - POSTGRES_PORT=5432
       - POSTGRES_DB=app
+    ports:
+      - "8000:8000"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=Host(`api.openastra.com`)"
@@ -62,6 +64,7 @@ services:
       - "traefik.http.routers.backend-http.entrypoints=web"
       - "traefik.http.routers.backend-http.middlewares=redirect-to-https"
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.services.backend.loadbalancer.server.port=8000"
     networks:
       - web
 
