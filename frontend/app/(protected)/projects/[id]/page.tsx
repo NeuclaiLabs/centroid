@@ -16,7 +16,7 @@ export default function Page() {
 
   const { data, error, isLoading } = useSWR(
     session?.user && selectedTeamId
-      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/${id}`, getToken(session)]
+      ? [`${process.env.NEXT_PUBLIC_API_URL}/api/v1/projects/${id}`, getToken(session)]
       : null,
     ([url, token]) => fetcher(url, token)
   );

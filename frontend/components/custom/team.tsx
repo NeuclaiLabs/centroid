@@ -22,7 +22,7 @@ interface TeamProps {
 
 function useUpdateTeam(teamId: string, token: string | undefined) {
   return useSWRMutation(
-    token ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/teams/${teamId}`, token] : null,
+    token ? [`${process.env.NEXT_PUBLIC_API_URL}/api/v1/teams/${teamId}`, token] : null,
     async ([url, token], { arg }: { arg: { name?: string; description?: string } }) => {
       const response = await fetch(url, {
         method: "PUT",
@@ -40,7 +40,7 @@ function useUpdateTeam(teamId: string, token: string | undefined) {
 
 function useInviteMembers(teamId: string, token: string | undefined) {
   return useSWRMutation(
-    token ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/teams/${teamId}/members`, token] : null,
+    token ? [`${process.env.NEXT_PUBLIC_API_URL}/api/v1/teams/${teamId}/members`, token] : null,
     async ([url, token], { arg }: { arg: { email: string }[] }) => {
       const response = await fetch(url, {
         method: "POST",
@@ -58,7 +58,7 @@ function useInviteMembers(teamId: string, token: string | undefined) {
 
 function useUpdateMemberRole(teamId: string, token: string | undefined) {
   return useSWRMutation(
-    token ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/teams/${teamId}/members`, token] : null,
+    token ? [`${process.env.NEXT_PUBLIC_API_URL}/api/v1/teams/${teamId}/members`, token] : null,
     async ([url, token], { arg }: { arg: { userId: string; role: string } }) => {
       const response = await fetch(`${url}/${arg.userId}`, {
         method: "PUT",

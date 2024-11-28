@@ -35,7 +35,7 @@ export function TeamsProvider({ children }: { children: ReactNode }) {
     isLoading,
     mutate: mutateTeams, // Renamed for clarity
   } = useSWR(
-    session?.user ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/teams/`, getToken(session)] : null,
+    session?.user ? [`${process.env.NEXT_PUBLIC_API_URL}/api/v1/teams/`, getToken(session)] : null,
     ([url, token]) => fetcher(url, token),
     {
       fallbackData: [],

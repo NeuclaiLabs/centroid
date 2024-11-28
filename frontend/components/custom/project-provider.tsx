@@ -32,7 +32,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isLoadingProject, setIsLoadingProject] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const url = `${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/`;
+  const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/projects/`;
   const token = getToken(session);
 
   // Add memoized key for projects
@@ -109,7 +109,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     const projectInList = projectsData?.data?.find((p: Project) => p.id === selectedProjectId);
     if (projectInList) return null;
 
-    return [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/${selectedProjectId}`, getToken(session)];
+    return [`${process.env.NEXT_PUBLIC_API_URL}/api/v1/projects/${selectedProjectId}`, getToken(session)];
   }, [session?.user, selectedProjectId, projectsData?.data]);
 
   const { data: singleProjectData } = useSWR(getProjectByIdKey, ([url, token]) => fetcher(url, token), {
@@ -158,7 +158,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         fetchProjectById: async (projectId: string): Promise<Project | null> => {
           if (!session?.user) return null;
 
-          const url = `${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/${projectId}`;
+          const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/projects/${projectId}`;
           try {
             const response = await fetcher(url, getToken(session));
             return response.data;

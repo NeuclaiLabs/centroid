@@ -71,7 +71,7 @@ export function Chat({
 }) {
   const { data: session } = useSession();
   const { mutate: mutateHistory } = useSWR(
-    session?.user ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/`, getToken(session)] : null,
+    session?.user ? [`${process.env.NEXT_PUBLIC_API_URL}/api/v1/chats/`, getToken(session)] : null,
     ([url, token]) => fetcher(url, token as string)
   );
   const { selectedProject, setSelectedProjectId } = useProject();
@@ -140,7 +140,7 @@ export function Chat({
       {
         root: null,
         rootMargin: "100px", // This creates a margin around the target
-        threshold: 0 // Trigger as soon as even one pixel is visible
+        threshold: 0, // Trigger as soon as even one pixel is visible
       }
     );
     console.log("Is at bottom", isAtBottom);

@@ -38,7 +38,7 @@ interface CreateProjectData {
 
 function useCreateProject(token: string | undefined) {
   return useSWRMutation(
-    token ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/`, token] : null,
+    token ? [`${process.env.NEXT_PUBLIC_API_URL}/api/v1/projects/`, token] : null,
     async ([url, token], { arg: data }: { arg: CreateProjectData }) => {
       const response = await fetch(url, {
         method: "POST",
@@ -71,7 +71,7 @@ export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) 
   // Key for projects list
   const projectsKey =
     session?.user && selectedTeamId
-      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/projects/?team_id=${selectedTeamId}`, getToken(session)]
+      ? [`${process.env.NEXT_PUBLIC_API_URL}/api/v1/projects/?team_id=${selectedTeamId}`, getToken(session)]
       : null;
 
   // SWR hook for the projects list

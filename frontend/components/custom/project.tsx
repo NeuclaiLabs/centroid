@@ -100,7 +100,7 @@ export function Project({ isLoading, data }: ProjectProps) {
 
     try {
       console.log("Here..");
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/files/?project_id=${data.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/files/?project_id=${data.id}`, {
         method: "POST",
         body: formData,
         headers: {
@@ -133,7 +133,7 @@ export function Project({ isLoading, data }: ProjectProps) {
 
     try {
       setIsDeletingFile(filename);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/files/?file=${filename}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/files/?file=${filename}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

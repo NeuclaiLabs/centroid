@@ -17,7 +17,7 @@ export default function Page() {
     isLoading: isLoadingMembers,
   } = useSWR(
     session?.user && teamId
-      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/teams/${teamId}/members`, getToken(session)]
+      ? [`${process.env.NEXT_PUBLIC_API_URL}/api/v1/teams/${teamId}/members`, getToken(session)]
       : null,
     ([url, token]) => fetcher(url, token),
     { fallbackData: [] }
@@ -28,9 +28,7 @@ export default function Page() {
     isLoading,
     mutate: mutateTeam,
   } = useSWR(
-    session?.user && teamId
-      ? [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/teams/${teamId}`, getToken(session)]
-      : null,
+    session?.user && teamId ? [`${process.env.NEXT_PUBLIC_API_URL}/api/v1/teams/${teamId}`, getToken(session)] : null,
     ([url, token]) => fetcher(url, token),
     { fallbackData: {} }
   );

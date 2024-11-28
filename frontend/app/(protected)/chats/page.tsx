@@ -18,9 +18,9 @@ export default function ChatsPage() {
   const getKey = (pageIndex: number, previousPageData: Chat[]) => {
     if (!session?.user || (previousPageData && !previousPageData.length)) return null;
     if (pageIndex === 0) {
-      return [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/`, getToken(session)];
+      return [`${process.env.NEXT_PUBLIC_API_URL}/api/v1/chats/`, getToken(session)];
     }
-    return [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/?skip=${pageIndex * 10}&limit=10`, getToken(session)];
+    return [`${process.env.NEXT_PUBLIC_API_URL}/api/v1/chats/?skip=${pageIndex * 10}&limit=10`, getToken(session)];
   };
 
   const {

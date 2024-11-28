@@ -9,7 +9,7 @@ export function useDeleteChat(onSuccess?: () => Promise<any>) {
   const token = getToken(session);
 
   const { trigger } = useSWRMutation(
-    [`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/v1/chats/`, token],
+    [`${process.env.NEXT_PUBLIC_API_URL}/api/v1/chats/`, token],
     async ([url, token], { arg }: { arg: string }) => {
       const response = await fetcher(url + arg, token, { method: "DELETE" });
 
