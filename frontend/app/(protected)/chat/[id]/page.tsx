@@ -16,7 +16,7 @@ export default async function Page({ params }: PageProps) {
   }
 
   try {
-    const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/chats/${id}`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/chats/${id}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

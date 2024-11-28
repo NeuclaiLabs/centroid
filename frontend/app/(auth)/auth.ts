@@ -22,7 +22,7 @@ export const {
         // if (users.length === 0) return null;
         // let passwordsMatch = await compare(password, users[0].password!);
         // if (passwordsMatch) return users[0] as any;
-        const res = await fetch(`${process.env.BACKEND_HOST}/api/v1/login/access-token`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/login/access-token`, {
           method: "POST",
           body: new URLSearchParams({
             username: email,

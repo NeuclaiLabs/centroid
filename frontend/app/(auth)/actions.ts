@@ -47,7 +47,7 @@ export const register = async (_: RegisterActionState, formData: FormData): Prom
       password: formData.get("password"),
     });
 
-    const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/users/signup`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/signup`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

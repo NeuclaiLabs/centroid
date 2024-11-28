@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     "You are a helpful assistant. You should use the project files to help you answer the question. If you can't answer the question without the project files, say so.";
   if (projectId) {
     try {
-      const promptResponse = await fetch(`${process.env.BACKEND_HOST}/api/v1/projects/${projectId}/prompt`, {
+      const promptResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/projects/${projectId}/prompt`, {
         headers: {
           Authorization: `Bearer ${getToken(session)}`,
         },
@@ -202,7 +202,7 @@ export async function POST(request: Request) {
     onFinish: async ({ responseMessages }) => {
       if (session.user && session.user.id) {
         try {
-          const response = await fetch(`${process.env.BACKEND_HOST}/api/v1/chats/`, {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/chats/`, {
             method: "POST",
             headers: {
               accept: "application/json",
