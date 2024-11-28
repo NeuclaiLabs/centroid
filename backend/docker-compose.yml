@@ -16,9 +16,20 @@ services:
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.dashboard.address=:8080"
       - "--certificatesresolvers.letsencrypt.acme.email=admin@openaastra.com"
       - "--certificatesresolvers.letsencrypt.acme.storage=/acme.json"
       - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+    labels:
+      # Dashboard
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`dashboard.api.openastra.com`)"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dashboard.middlewares=auth"
+      # Basic auth middleware
+      - "traefik.http.middlewares.auth.basicauth.users=admin:$apr1$zhsv7RzN$sS6t73YKjNbudbRCuE2oF0"  # Replace with your hash
     networks:
       - web
 
