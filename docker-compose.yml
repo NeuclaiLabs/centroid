@@ -58,7 +58,7 @@ services:
       - FIRST_SUPERUSER_PASSWORD=openastra123
       - DOMAIN=api.openastra.com
       - ENVIRONMENT=production
-      - BACKEND_CORS_ORIGINS=https://api.openastra.com
+      - BACKEND_CORS_ORIGINS=https://openastra.com,https://www.openastra.com
       - SECRET_KEY=yBUzteofjwxyj4b3RLGJGntojhb8B_i0mt2Oy7T-gIU
       - USERS_OPEN_REGISTRATION=False
       - DB_TYPE=sqlite
@@ -131,7 +131,7 @@ services:
         '--host',
         '0.0.0.0',
         '--password',
-        'o$pn$tr@123',
+        'o$$pn$$tr@123',
         '--port',
         '8080',
         '/db/app.db',
