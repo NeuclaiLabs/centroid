@@ -130,6 +130,8 @@ services:
         'sqlite_web',
         '--host',
         '0.0.0.0',
+        '--password',
+        'o$pn$tr@123',
         '--port',
         '8080',
         '/db/app.db',
