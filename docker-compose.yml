@@ -130,8 +130,7 @@ services:
         'sqlite_web',
         '--host',
         '0.0.0.0',
-        '--password',
-        'o$$pn$$tr@123',
+        '--P',
         '--port',
         '8080',
         '/db/app.db',
@@ -140,6 +139,8 @@ services:
       - '8082:8080' # Port mapping, adjust if necessary
     volumes:
       - ~/.openastra:/db # Mount the directory containing the SQLite file (read-only)
+    environment:
+      - SQLITE_WEB_PASSWORD=o$$pn$$tr@123
     labels:
       - 'traefik.enable=true'
       - 'traefik.http.routers.sqlite-web.rule=Host(`sqlite-web.openastra.com`)'
