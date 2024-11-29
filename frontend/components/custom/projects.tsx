@@ -62,13 +62,13 @@ export const Projects = ({ data, count, isLoading }: ProjectsProps) => {
 
   return (
     <>
-      <div className="relative flex flex-col min-h-screen bg-background">
+      <div className="flex flex-col h-full bg-background">
         <div className="flex-1">
           <div className="max-w-6xl mx-auto p-6 md:px-32">
             <h1 className="text-2xl font-semibold mb-8">Projects</h1>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-              {isLoading || !count ? (
+              {isLoading || count === undefined ? (
                 <>
                   {[1, 2, 3].map((i) => (
                     <Card key={i}>
