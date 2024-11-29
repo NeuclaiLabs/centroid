@@ -4,43 +4,43 @@ services:
   traefik:
     image: traefik:v2.10
     ports:
-      - "80:80"
-      - "443:443"
-      - "8080:8080"  # Dashboard
+      - '80:80'
+      - '443:443'
+      - '8080:8080' # Dashboard
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - traefik-certificates:/certificates
     command:
-      - "--api.dashboard=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--entrypoints.dashboard.address=:8080"
-      - "--certificatesresolvers.letsencrypt.acme.email=admin@openaastra.com"
-      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
-      - "--certificatesresolvers.letsencrypt.acme.storage=/certificates/acme.json"
-      - "--accesslog=true"
-      - "--log=true"
+      - '--api.dashboard=true'
+      - '--providers.docker=true'
+      - '--providers.docker.exposedbydefault=false'
+      - '--entrypoints.web.address=:80'
+      - '--entrypoints.websecure.address=:443'
+      - '--entrypoints.dashboard.address=:8080'
+      - '--certificatesresolvers.letsencrypt.acme.email=admin@openaastra.com'
+      - '--certificatesresolvers.letsencrypt.acme.tlschallenge=true'
+      - '--certificatesresolvers.letsencrypt.acme.storage=/certificates/acme.json'
+      - '--accesslog=true'
+      - '--log=true'
     labels:
       # Dashboard
-      - "traefik.enable=true"
-      - "traefik.http.routers.dashboard.rule=Host(`dashboard.api.openastra.com`)"
-      - "traefik.http.routers.dashboard.service=api@internal"
-      - "traefik.http.routers.dashboard.entrypoints=websecure"
-      - "traefik.http.routers.dashboard.tls=true"
-      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.dashboard.middlewares=auth"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.dashboard.rule=Host(`dashboard.api.openastra.com`)'
+      - 'traefik.http.routers.dashboard.service=api@internal'
+      - 'traefik.http.routers.dashboard.entrypoints=websecure'
+      - 'traefik.http.routers.dashboard.tls=true'
+      - 'traefik.http.routers.dashboard.tls.certresolver=letsencrypt'
+      - 'traefik.http.routers.dashboard.middlewares=auth'
       # Basic auth middleware
-      - "traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$zhsv7RzN$$sS6t73YKjNbudbRCuE2oF0"  # Replace with your hash
+      - 'traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$zhsv7RzN$$sS6t73YKjNbudbRCuE2oF0' # Replace with your hash
       # Add HTTPS redirect middleware
-      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
+      - 'traefik.http.middlewares.https-redirect.redirectscheme.scheme=https'
+      - 'traefik.http.middlewares.https-redirect.redirectscheme.permanent=true'
       # Apply the redirect middleware
-      - "traefik.http.routers.dashboard-http.middlewares=https-redirect"
+      - 'traefik.http.routers.dashboard-http.middlewares=https-redirect'
       # Add constraint label for better control
-      - "traefik.docker.network=traefik-public"
-      - "traefik.constraint-label=traefik-public"
+      - 'traefik.docker.network=traefik-public'
+      - 'traefik.constraint-label=traefik-public'
     networks:
       - traefik-public
     restart: always
@@ -67,21 +67,21 @@ services:
     volumes:
       - ~/.openastra:/root/.openastra
     ports:
-      - "8000:8000"
+      - '8000:8000'
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`api.openastra.com`)"
-      - "traefik.http.routers.backend.entrypoints=websecure"
-      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.backend.rule=Host(`api.openastra.com`)'
+      - 'traefik.http.routers.backend.entrypoints=websecure'
+      - 'traefik.http.routers.backend.tls.certresolver=letsencrypt'
       # HTTP to HTTPS redirect
-      - "traefik.http.routers.backend-http.rule=Host(`api.openastra.com`)"
-      - "traefik.http.routers.backend-http.entrypoints=web"
-      - "traefik.http.routers.backend-http.middlewares=redirect-to-https"
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-      - "traefik.http.services.backend.loadbalancer.server.port=8000"
+      - 'traefik.http.routers.backend-http.rule=Host(`api.openastra.com`)'
+      - 'traefik.http.routers.backend-http.entrypoints=web'
+      - 'traefik.http.routers.backend-http.middlewares=redirect-to-https'
+      - 'traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https'
+      - 'traefik.http.services.backend.loadbalancer.server.port=8000'
       # Add network and constraint labels
-      - "traefik.docker.network=traefik-public"
-      - "traefik.constraint-label=traefik-public"
+      - 'traefik.docker.network=traefik-public'
+      - 'traefik.constraint-label=traefik-public'
     networks:
       - traefik-public
     restart: always
@@ -101,24 +101,40 @@ services:
       - NEXT_PUBLIC_APP_URL=https://openastra.com
       - BACKEND_HOST=https://api.openastra.com
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`openastra.com`)"  # Your main domain
-      - "traefik.http.routers.frontend.entrypoints=websecure"
-      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
-      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.frontend.rule=Host(`openastra.com`)' # Your main domain
+      - 'traefik.http.routers.frontend.entrypoints=websecure'
+      - 'traefik.http.routers.frontend.tls.certresolver=letsencrypt'
+      - 'traefik.http.services.frontend.loadbalancer.server.port=3000'
       # HTTP to HTTPS redirect
-      - "traefik.http.routers.frontend-http.rule=Host(`openastra.com`)"
-      - "traefik.http.routers.frontend-http.entrypoints=web"
-      - "traefik.http.routers.frontend-http.middlewares=redirect-to-https"
+      - 'traefik.http.routers.frontend-http.rule=Host(`openastra.com`)'
+      - 'traefik.http.routers.frontend-http.entrypoints=web'
+      - 'traefik.http.routers.frontend-http.middlewares=redirect-to-https'
       # Add network and constraint labels
-      - "traefik.docker.network=traefik-public"
-      - "traefik.constraint-label=traefik-public"
+      - 'traefik.docker.network=traefik-public'
+      - 'traefik.constraint-label=traefik-public'
       # Enhance www handling
-      - "traefik.http.middlewares.frontend-www-redirect.redirectregex.regex=^http(s)?://www.(openastra.com)/(.*)$"
-      - "traefik.http.middlewares.frontend-www-redirect.redirectregex.replacement=http$${1}://openastra.com/$${3}"
+      - 'traefik.http.middlewares.frontend-www-redirect.redirectregex.regex=^http(s)?://www.(openastra.com)/(.*)$'
+      - 'traefik.http.middlewares.frontend-www-redirect.redirectregex.replacement=http$${1}://openastra.com/$${3}'
       # Apply www redirect middleware
-      - "traefik.http.routers.frontend.middlewares=frontend-www-redirect"
-      - "traefik.http.routers.frontend-http.middlewares=https-redirect,frontend-www-redirect"
+      - 'traefik.http.routers.frontend.middlewares=frontend-www-redirect'
+      - 'traefik.http.routers.frontend-http.middlewares=https-redirect,frontend-www-redirect'
+    networks:
+      - traefik-public
+    restart: always
+
+  sqlite-web:
+    image: coleifer/sqlite-web:latest
+    command: --readonly --host 0.0.0.0 --port 8080 /db/app.db
+    ports:
+      - '8082:8080'
+    volumes:
+      - ~/.openastra:/db
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.sqlite-web.rule=Host(`sqlite-web.openastra.com`)'
+      - 'traefik.http.routers.sqlite-web.entrypoints=websecure'
+      - 'traefik.http.routers.sqlite-web.tls.certresolver=letsencrypt'
     networks:
       - traefik-public
     restart: always
