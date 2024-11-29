@@ -9,7 +9,7 @@ COPY package.json pnpm-lock.yaml ./
 
 ARG NEXT_PUBLIC_API_URL
 
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=https://api.openastra.com
 
 # Install pnpm globally and add Python
 RUN apk add --no-cache python3 make g++ \
