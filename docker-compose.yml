@@ -125,11 +125,20 @@ services:
 
   sqlite-web:
     image: coleifer/sqlite-web:latest
-    command: --readonly --host 0.0.0.0 --port 8080 /db/app.db
+    command:
+      [
+        'sqlite_web',
+        '--readonly',
+        '--host',
+        '0.0.0.0',
+        '--port',
+        '8080',
+        '/db/app.db',
+      ]
     ports:
-      - '8082:8080'
+      - '8082:8080' # Port mapping, adjust if necessary
     volumes:
-      - ~/.openastra:/db
+      - ~/.openastra:/db:ro # Mount the directory containing the SQLite file (read-only)
     labels:
       - 'traefik.enable=true'
       - 'traefik.http.routers.sqlite-web.rule=Host(`sqlite-web.openastra.com`)'
