@@ -220,7 +220,7 @@ export async function POST(request: Request) {
             throw new Error("Failed to save chat");
           }
         } catch (error) {
-          console.error("Failed to save chat");
+          console.error("Failed to save chat", error);
         }
       }
     },

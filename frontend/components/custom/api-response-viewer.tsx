@@ -9,8 +9,8 @@ import { atomOneLight } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import { tomorrowNight } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import { useTheme } from "next-themes";
 import { Markdown } from "@/components/custom/markdown";
-import { CopyToClipboard } from 'react-copy-to-clipboard';
-import { toast } from 'sonner';
+import { CopyToClipboard } from "react-copy-to-clipboard";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 // Types
 interface ApiResponse {
@@ -51,15 +51,12 @@ interface Props {
 }
 
 // Component
-export function ApiResponseViewer({
-  response = SAMPLE.response,
-  meta = SAMPLE.meta,
-  loading = true,
-}: Props) {
+export function ApiResponseViewer({ response, meta, loading = true }: Props) {
   const { theme } = useTheme();
   const [clientTheme, setClientTheme] = useState<"light" | "dark" | undefined>(undefined);
   const [activeTab, setActiveTab] = useState<"json" | "headers" | "test-results">("json");
   const [copied, setCopied] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Ensure the theme is available on the client side
   useEffect(() => {
@@ -68,48 +65,20 @@ export function ApiResponseViewer({
 
   const style = clientTheme === "dark" ? tomorrowNight : atomOneLight;
 
-  if (loading) {
-    return (
-      <Card className="text-sm animate-pulse">
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <div className="flex gap-4">
-              <div className="flex items-center">
-                <div className="h-4 w-16 bg-muted rounded" />
-              </div>
-              <div className="flex items-center">
-                <div className="h-4 w-16 bg-muted rounded" />
-              </div>
-              <div className="flex items-center">
-                <div className="h-4 w-16 bg-muted rounded" />
-              </div>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="space-y-2">
-            <div className="h-8 w-32 bg-muted rounded" />
-            <div className="h-[200px] bg-muted rounded" />
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   // Get current content for copying
   const getCurrentContent = () => {
     switch (activeTab) {
       case "json":
         try {
-          return typeof response.data === "string"
-            ? JSON.stringify({ ...response, data: JSON.parse(response.data) }, null, 2)
+          return typeof response!.data === "string"
+            ? JSON.stringify({ ...response, data: JSON.parse(response!.data) }, null, 2)
             : JSON.stringify(response, null, 2);
         } catch (e) {
           // If JSON parsing fails, return the raw data
-          return JSON.stringify({ ...response, data: response.data }, null, 2);
+          return JSON.stringify({ ...response, data: response!.data }, null, 2);
         }
       case "headers":
-        return Object.entries(response.headers)
+        return Object.entries(response!.headers)
           .map(([key, value]) => `${key}: ${value}`)
           .join('\n');
       default:
@@ -151,11 +120,11 @@ export function ApiResponseViewer({
             >
               {(() => {
                 try {
-                  return typeof response.data === "string"
-                    ? JSON.stringify({ ...response, data: JSON.parse(response.data) }, null, 2)
+                  return typeof response!.data === "string"
+                    ? JSON.stringify({ ...response, data: JSON.parse(response!.data) }, null, 2)
                     : JSON.stringify(response, null, 2);
                 } catch (e) {
-                  return JSON.stringify({ ...response, data: response.data }, null, 2);
+                  return JSON.stringify({ ...response, data: response!.data }, null, 2);
                 }
               })()}
             </SyntaxHighlighter>
@@ -164,7 +133,7 @@ export function ApiResponseViewer({
       case "headers":
         const markdownTable = `| Header | Value |
 |-|-|
-${Object.entries(response.headers)
+${Object.entries(response!.headers)
   .map(([key, value]) => `| ${key} | ${value} |`)
   .join("\n")}`;
 
@@ -178,54 +147,75 @@ ${Object.entries(response.headers)
 
   return (
     <Card className="text-sm">
-      <CardHeader className="pb-2">
+      <CardHeader className="pt-2 pb-2">
         <div className="flex items-center justify-between">
           <div className="flex gap-4">
-            <div className="flex items-center">
-              <span className="font-medium mr-1">Status:</span>
-              <span className="text-green-600">{meta.status}</span>
-            </div>
-            <div className="flex items-center">
-              <span className="font-medium mr-1">Time:</span>
-              <span className="text-muted-foreground">{meta.time}</span>
-            </div>
-            <div className="flex items-center">
-              <span className="font-medium mr-1">Size:</span>
-              <span className="text-muted-foreground">{meta.size}</span>
-            </div>
+            {loading ? (
+              <div className="flex items-center gap-2">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                <span className="text-muted-foreground">Executing request...</span>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center">
+                  <span className="font-medium mr-1">Status:</span>
+                  <span className={`${meta!.status < 400 ? "text-green-600" : "text-red-600"}`}>{meta!.status}</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="font-medium mr-1">Time:</span>
+                  <span className="text-muted-foreground">{meta!.time}</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="font-medium mr-1">Size:</span>
+                  <span className="text-muted-foreground">{meta!.size}</span>
+                </div>
+              </>
+            )}
           </div>
+          <Button variant="ghost" size="sm" onClick={() => setIsExpanded(!isExpanded)} aria-expanded={isExpanded}>
+            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </Button>
         </div>
       </CardHeader>
-      <CardContent className="pt-0">
-        <Tabs defaultValue="json" onValueChange={(value) => setActiveTab(value as typeof activeTab)}>
-          <div className="flex items-center justify-between">
-            <TabsList>
-              <TabsTrigger value="json">JSON</TabsTrigger>
-              <TabsTrigger value="headers">Headers</TabsTrigger>
-              <TabsTrigger value="test-results">Test Results</TabsTrigger>
-            </TabsList>
-            <div className="flex items-center space-x-2">
-              <CopyToClipboard
-                text={getCurrentContent()}
-                onCopy={() => {
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
-                }}
-              >
-                <Button variant="ghost" size="sm">
-                  {copied ? "Copied!" : "Copy"}
-                </Button>
-              </CopyToClipboard>
-              <Button variant="ghost" size="sm" onClick={handleSave}>
-                Save
-              </Button>
+      {isExpanded && (
+        <CardContent className="pt-0">
+          {loading ? (
+            <div className="space-y-2 animate-pulse">
+              <div className="h-8 w-32 bg-muted rounded" />
+              <div className="h-[200px] bg-muted rounded" />
             </div>
-          </div>
-          <TabsContent value="json">{renderContent("json")}</TabsContent>
-          <TabsContent value="headers">{renderContent("headers")}</TabsContent>
-          <TabsContent value="test-results">{renderContent("test-results")}</TabsContent>
-        </Tabs>
-      </CardContent>
+          ) : (
+            <Tabs defaultValue="json" onValueChange={(value) => setActiveTab(value as typeof activeTab)}>
+              <div className="flex items-center justify-between">
+                <TabsList>
+                  <TabsTrigger value="json">JSON</TabsTrigger>
+                  <TabsTrigger value="headers">Headers</TabsTrigger>
+                  <TabsTrigger value="test-results">Test Results</TabsTrigger>
+                </TabsList>
+                <div className="flex items-center space-x-2">
+                  <CopyToClipboard
+                    text={getCurrentContent()}
+                    onCopy={() => {
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    }}
+                  >
+                    <Button variant="ghost" size="sm">
+                      {copied ? "Copied!" : "Copy"}
+                    </Button>
+                  </CopyToClipboard>
+                  <Button variant="ghost" size="sm" onClick={handleSave}>
+                    Save
+                  </Button>
+                </div>
+              </div>
+              <TabsContent value="json">{renderContent("json")}</TabsContent>
+              <TabsContent value="headers">{renderContent("headers")}</TabsContent>
+              <TabsContent value="test-results">{renderContent("test-results")}</TabsContent>
+            </Tabs>
+          )}
+        </CardContent>
+      )}
     </Card>
   );
 }
