@@ -91,9 +91,9 @@ export function Chat({
     "Write code to implement a min heap",
   ];
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, scrollToBottom]);
+  // useEffect(() => {
+  //   scrollToBottom();
+  // }, [messages, scrollToBottom]);
 
   // Move the history update logic outside useChat
   useEffect(() => {
@@ -143,13 +143,13 @@ export function Chat({
         threshold: 0, // Trigger as soon as even one pixel is visible
       }
     );
-    console.log("Is at bottom", isAtBottom);
+
     if (messagesEndRef.current) {
       observer.observe(messagesEndRef.current);
     }
 
     return () => observer.disconnect();
-  }, []);
+  }, [messages]);
 
   return (
     <div className="relative flex flex-col h-screen bg-background">
