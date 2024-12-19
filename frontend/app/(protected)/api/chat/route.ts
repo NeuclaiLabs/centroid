@@ -144,7 +144,7 @@ export async function POST(request: Request) {
 
                 const response = await fetch(url.toString(), {
                   method,
-                  headers: { ...headers, ...authHeaders },
+                  headers: { ...headers, ...authHeaders, "Content-Type": "application/json" },
                   body: body ? JSON.stringify(body) : undefined,
                   signal: controller.signal,
                 });
