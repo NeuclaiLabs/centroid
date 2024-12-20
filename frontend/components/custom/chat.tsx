@@ -23,27 +23,16 @@ import type { Project as ProjectType } from "@/lib/types";
 // Hook for scrolling to the bottom of the chat
 const useScrollToBottom = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
-  const isInputting = useRef(false);
 
   const scrollToBottom = () => {
-    // Don't scroll if user is inputting while scrolled up
-    if (shouldAutoScroll && !isInputting.current) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
   };
 
+  // Add ResizeObserver to handle content changes
   useEffect(() => {
-    const options = {
-      root: null,
-      rootMargin: "0px",
-      threshold: 1.0,
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      const [entry] = entries;
-      setShouldAutoScroll(entry.isIntersecting);
-    }, options);
+    const observer = new ResizeObserver(() => {
+        scrollToBottom();
+    });
 
     if (messagesEndRef.current) {
       observer.observe(messagesEndRef.current);
@@ -52,12 +41,8 @@ const useScrollToBottom = () => {
     return () => observer.disconnect();
   }, []);
 
-  // Method to call when user starts/stops typing
-  const setIsInputting = (typing: boolean) => {
-    isInputting.current = typing;
-  };
 
-  return [messagesEndRef, scrollToBottom, setIsInputting] as const;
+  return [messagesEndRef, scrollToBottom] as const;
 };
 
 export function Chat({
@@ -83,7 +68,7 @@ export function Chat({
     },
   });
 
-  const [messagesEndRef, scrollToBottom, setIsInputting] = useScrollToBottom();
+  const [messagesEndRef, scrollToBottom] = useScrollToBottom();
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const suggestions = [
     "Generate a multi-step onboarding flow",
@@ -91,9 +76,9 @@ export function Chat({
     "Write code to implement a min heap",
   ];
 
-  // useEffect(() => {
-  //   scrollToBottom();
-  // }, [messages, scrollToBottom]);
+  useEffect(() => {
+    scrollToBottom();
+  }, []);
 
   // Move the history update logic outside useChat
   useEffect(() => {
@@ -150,6 +135,13 @@ export function Chat({
 
     return () => observer.disconnect();
   }, [messages]);
+
+  // Update scroll effect to consider loading state
+  useEffect(() => {
+    if (!isLoading && messages.length > 0) {
+      scrollToBottom();
+    }
+  }, [messages, isLoading]);
 
   return (
     <div className="relative flex flex-col h-screen bg-background">
