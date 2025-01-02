@@ -42,7 +42,7 @@ def create_project(
     session.commit()
     session.refresh(project)
 
-    return ProjectOut.model_validate(project)
+    return ProjectOut.model_validate(project.model_dump())
 
 
 @router.get("/", response_model=ProjectsOut)
