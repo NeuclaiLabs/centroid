@@ -103,7 +103,11 @@ export function MultimodalInput({
 
     setAttachments([]);
     setLocalStorageInput("");
-  }, [attachments, handleSubmit, setAttachments, setLocalStorageInput]);
+    setInput("");
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+    }
+  }, [attachments, handleSubmit, setAttachments, setLocalStorageInput, setInput]);
 
   const uploadFile = async (file: File) => {
     const formData = new FormData();
