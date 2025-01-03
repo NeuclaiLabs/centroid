@@ -1,4 +1,3 @@
-import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -10,6 +9,9 @@ from jinja2 import Template
 from jwt.exceptions import InvalidTokenError
 
 from app.core.config import settings
+from app.core.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -32,23 +34,40 @@ def send_email(
     subject: str = "",
     html_content: str = "",
 ) -> None:
-    assert settings.emails_enabled, "no provided configuration for email variables"
-    message = emails.Message(
-        subject=subject,
-        html=html_content,
-        mail_from=(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL),
-    )
-    smtp_options = {"host": settings.SMTP_HOST, "port": settings.SMTP_PORT}
-    if settings.SMTP_TLS:
-        smtp_options["tls"] = True
-    elif settings.SMTP_SSL:
-        smtp_options["ssl"] = True
-    if settings.SMTP_USER:
-        smtp_options["user"] = settings.SMTP_USER
-    if settings.SMTP_PASSWORD:
-        smtp_options["password"] = settings.SMTP_PASSWORD
-    response = message.send(to=email_to, smtp=smtp_options)
-    logging.info(f"send email result: {response}")
+    try:
+        assert settings.emails_enabled, "no provided configuration for email variables"
+        message = emails.Message(
+            subject=subject,
+            html=html_content,
+            mail_from=(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL),
+        )
+        smtp_options = {"host": settings.SMTP_HOST, "port": settings.SMTP_PORT}
+        if settings.SMTP_TLS:
+            smtp_options["tls"] = True
+        elif settings.SMTP_SSL:
+            smtp_options["ssl"] = True
+        if settings.SMTP_USER:
+            smtp_options["user"] = settings.SMTP_USER
+        if settings.SMTP_PASSWORD:
+            smtp_options["password"] = settings.SMTP_PASSWORD
+        response = message.send(to=email_to, smtp=smtp_options)
+
+        logger.info(
+            "Email sent successfully",
+            extra={
+                "email_to": email_to,
+                "subject": subject,
+                "smtp_host": settings.SMTP_HOST,
+                "response": str(response),
+            },
+        )
+    except Exception as e:
+        logger.error(
+            "Failed to send email",
+            extra={"email_to": email_to, "subject": subject, "error": str(e)},
+            exc_info=True,
+        )
+        raise
 
 
 def generate_test_email(email_to: str) -> EmailData:

@@ -55,7 +55,13 @@ class Settings(BaseSettings):
     DOMAIN: str = "localhost"
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
 
-    UPLOAD_DIR: str = "uploads"
+    @computed_field  # type: ignore[misc]
+    @property
+    def UPLOAD_DIR(self) -> str:
+        upload_path = Path.home() / ".openastra" / "uploads"
+        upload_path.mkdir(parents=True, exist_ok=True)
+        return str(upload_path)
+
     MAX_UPLOAD_SIZE: int = 10_000_000  # 10MB in bytes
     ALLOWED_EXTENSIONS: set = {
         ".txt",
@@ -96,11 +102,9 @@ class Settings(BaseSettings):
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> PostgresDsn | Any:
         if self.DB_TYPE == "sqlite":
-            home_dir = Path.home()
-            openastra_dir = home_dir / ".openastra"
-            openastra_dir.mkdir(parents=True, exist_ok=True)
-            db = openastra_dir / "app.db"
-            return f"sqlite:///{db}"
+            db_path = Path.home() / ".openastra" / "app.db"
+            db_path.parent.mkdir(parents=True, exist_ok=True)
+            return f"sqlite:///{db_path}"
 
         return MultiHostUrl.build(
             scheme="postgresql+psycopg",

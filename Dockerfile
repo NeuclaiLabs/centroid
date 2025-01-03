@@ -65,7 +65,19 @@ ENV BACKEND_CORS_ORIGINS=http://localhost:3000
 ENV SECRET_KEY=dev_secret_key
 ENV USERS_OPEN_REGISTRATION=True
 ENV DB_TYPE=sqlite
+
+# Add logging configuration
+ENV LOG_LEVEL=INFO
+ENV LOG_FORMAT="%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s"
+ENV LOG_DIR=logs
+ENV LOG_FILE=app.log
+ENV LOG_ROTATION_INTERVAL=midnight
+ENV LOG_BACKUP_COUNT=7
+
 RUN npm install -g pnpm
+
+# Create logs directory with appropriate permissions
+RUN mkdir -p /app/logs && chmod 755 /app/logs
 
 # Add environment variable for migrations
 ENV RUN_MIGRATIONS=true

@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
 
-from app.api.main import api_router
+from app.api.main import LoggingMiddleware, api_router
 from app.core.config import settings
 
 # Suppress specific Pydantic warnings
@@ -39,4 +39,5 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_headers=["*"],
     )
 
+app.add_middleware(LoggingMiddleware)
 app.include_router(api_router, prefix=settings.API_V1_STR)
