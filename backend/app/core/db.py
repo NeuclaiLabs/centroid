@@ -2,7 +2,7 @@ from sqlmodel import Session, create_engine, select
 
 from app import crud
 from app.core.config import settings
-from app.models import User, UserCreate
+from app.models import TeamCreate, User, UserCreate
 
 engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 
@@ -34,3 +34,10 @@ def init_db(session: Session) -> None:
                 is_superuser=True,
             )
             user = crud.create_user(session=session, user_create=user_in)
+            team_in = TeamCreate(
+                name="Default",
+                description="Default team",
+            )
+            team = crud.create_team(  # noqa: F841
+                session=session, team_create=team_in, owner_id=user.id
+            )

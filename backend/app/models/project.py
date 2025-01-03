@@ -16,7 +16,7 @@ class ProjectBase(CamelModel):
 
 
 class ProjectCreate(ProjectBase):
-    team_id: str
+    team_id: str | None = None
 
 
 class ProjectUpdate(CamelModel):
@@ -45,7 +45,7 @@ class Project(ProjectBase, SQLModel, table=True):
         sa_type=DateTime(timezone=True),
         sa_column_kwargs={"onupdate": func.now(), "server_default": func.now()},
     )
-    team_id: str = Field(foreign_key="teams.id", nullable=False)
+    team_id: str = Field(foreign_key="teams.id", nullable=True)
     team: Team = Relationship(back_populates="projects")
     chats: list["Chat"] = Relationship(back_populates="project")  # noqa: F821
 

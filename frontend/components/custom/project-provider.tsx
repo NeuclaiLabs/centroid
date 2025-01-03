@@ -27,7 +27,7 @@ export const ProjectContext = createContext<ProjectContextType | undefined>(unde
 
 export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
-  const { selectedTeamId } = useTeams();
+  // const { selectedTeamId } = useTeams();
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isLoadingProject, setIsLoadingProject] = useState(false);
@@ -37,13 +37,13 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
   // Add memoized key for projects
   const projectsKey = useMemo(() => {
-    if (!token || !selectedTeamId) return null;
+    if (!token) return null;
     return [url, token];
-  }, [url, token, selectedTeamId]);
+  }, [url, token]);
 
   const { data: projectsData, isLoading } = useSWR(
     projectsKey,
-    ([url, token]) => fetcher(url + `?team_id=${selectedTeamId}`, token),
+    ([url, token]) => fetcher(url, token),
     {
       revalidateOnFocus: false,
       dedupingInterval: 5000,

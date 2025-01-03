@@ -5,17 +5,15 @@ import { useSession } from "next-auth/react";
 import useSWR from "swr";
 
 import { Chat } from "@/components/custom/chat";
-import { useTeams } from "@/components/custom/teams-provider";
 import { fetcher, generateUUID, getToken } from "@/lib/utils";
 
 export default function Page() {
   const { id } = useParams();
 
   const { data: session } = useSession();
-  const { selectedTeamId } = useTeams();
 
   const { data, error, isLoading } = useSWR(
-    session?.user && selectedTeamId
+    session?.user
       ? [`${process.env.NEXT_PUBLIC_API_URL}/api/v1/projects/${id}`, getToken(session)]
       : null,
     ([url, token]) => fetcher(url, token)

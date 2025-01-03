@@ -14,6 +14,7 @@ from app.models import (
     ProjectOut,
     ProjectsOut,
     ProjectUpdate,
+    Team,
     TeamRole,
 )
 
@@ -28,15 +29,14 @@ def get_project(session: SessionDep, project_id: str) -> Project:
 
 
 @router.post("/", response_model=ProjectOut)
-def create_project(
-    *, session: SessionDep, current_user: CurrentUser, project_in: ProjectCreate
-) -> Any:
+def create_project(*, session: SessionDep, project_in: ProjectCreate) -> Any:
     """Create new project."""
     # Check if user has permission to create project in this team
-    check_team_permissions(
-        session, project_in.team_id, current_user.id, [TeamRole.OWNER, TeamRole.ADMIN]
-    )
-
+    # check_team_permissions(
+    #     session, project_in.team_id, current_user.id, [TeamRole.OWNER, TeamRole.ADMIN]
+    # )
+    team_id = session.exec(select(Team.id)).one()
+    project_in.team_id = team_id
     project = Project.model_validate(project_in)
     session.add(project)
     session.commit()
@@ -48,15 +48,15 @@ def create_project(
 @router.get("/", response_model=ProjectsOut)
 def read_projects(
     session: SessionDep,
-    current_user: CurrentUser,
-    team_id: str,
+    team_id: str | None = None,
     skip: int = 0,
     limit: int = 100,
 ) -> Any:
     """Retrieve projects."""
 
     # Check team permissions first
-    check_team_permissions(session, team_id, current_user.id)
+    # check_team_permissions(session, team_id, current_user.id)
+    team_id = session.exec(select(Team.id)).one()
     statement = select(Project).where(Project.team_id == team_id)
 
     count = session.exec(select(func.count()).select_from(statement.subquery())).one()
@@ -93,17 +93,15 @@ def read_project(
 def update_project(
     *,
     session: SessionDep,
-    current_user: CurrentUser,
     project_id: str,
     project_in: ProjectUpdate,
 ) -> Any:
     """Update a project."""
     project = get_project(session, project_id)
     # Check if user has admin permissions in the team
-    check_team_permissions(
-        session, project.team_id, current_user.id, [TeamRole.OWNER, TeamRole.ADMIN]
-    )
-
+    # check_team_permissions(
+    #     session, project.team_id, current_user.id, [TeamRole.OWNER, TeamRole.ADMIN]
+    # )
     update_data = project_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(project, field, value)
@@ -167,7 +165,7 @@ def get_project_prompt(
 
 
 SYSTEM_PROMPT = """
-ou are an API Collection Assistant that helps users explore and test their APIs. Your role is to provide clear communication and execution guidance throughout the API testing process.
+You are an API Collection Assistant that helps users explore and test their APIs. Your role is to provide clear communication and execution guidance throughout the API testing process.
 
 Core Responsibilities:
 

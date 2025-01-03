@@ -10,7 +10,7 @@ import { NavChats } from "@/components/custom/nav-chats";
 import { NavMain } from "@/components/custom/nav-main";
 import { NavSecondary } from "@/components/custom/nav-secondary";
 import { NavUser } from "@/components/custom/nav-user";
-import { useTeams } from "@/components/custom/teams-provider";
+// import { useTeams } from "@/components/custom/teams-provider";
 import {
   Sidebar,
   SidebarContent,
@@ -31,26 +31,12 @@ const data = {
     avatar: "/avatars/shadcn.jpg",
   },
   navMain: [
-    {
-      title: "Team",
-      url: "/teams",
-      icon: Users,
-      isActive: false,
-      // items: [
-      //   {
-      //     title: "History",
-      //     url: "#",
-      //   },
-      //   {
-      //     title: "Starred",
-      //     url: "#",
-      //   },
-      //   {
-      //     title: "Settings",
-      //     url: "#",
-      //   },
-      // ],
-    },
+    // {
+    //   title: "Team",
+    //   url: "/teams",
+    //   icon: Users,
+    //   isActive: false,
+    // },
     {
       title: "Projects",
       url: "/projects",
@@ -127,7 +113,7 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
-  const { selectedTeamId } = useTeams();
+  // const { selectedTeamId } = useTeams();
 
   // Retrieve chat history
   const {
@@ -140,11 +126,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   );
 
   // Modify navMain data to include team ID from teams data
-  const navMainWithTeamId = React.useMemo(() => {
-    return data.navMain.map((item) =>
-      item.title === "Team" ? { ...item, url: item.url + "/" + (selectedTeamId ?? "") } : item
-    );
-  }, [selectedTeamId]);
+  // const navMainWithTeamId = React.useMemo(() => {
+  //   return data.navMain.map((item) =>
+  //     item.title === "Team" ? { ...item, url: item.url + "/" + (selectedTeamId ?? "") } : item
+  //   );
+  // }, [selectedTeamId]);
 
   return (
     <Sidebar className="group-data-[side=left]:border-r-0 bg-sidebar text-sidebar-foreground" {...props}>
@@ -166,7 +152,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={navMainWithTeamId} />
+        <NavMain items={data.navMain} />
         {/* Pass chats to NavChats */}
         <NavChats history={res?.data.slice(0, 3)} count={res?.count} isLoading={isLoading} mutate={mutateHistory} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />

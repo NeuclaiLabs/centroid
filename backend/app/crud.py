@@ -9,8 +9,11 @@ from app.models import (
     ItemCreate,
     Setting,
     SettingCreate,
-    ToolCall,
-    ToolCallCreate,
+    Team,
+    TeamCreate,
+    TeamInvitationStatus,
+    TeamMember,
+    TeamRole,
     User,
     UserCreate,
     UserUpdate,
@@ -83,16 +86,22 @@ def create_setting(
     return db_setting
 
 
-def create_action(
-    *, session: Session, tool_call_create: ToolCallCreate, owner_id: str
-) -> ToolCall:
-    db_tool_call = ToolCall.model_validate(
-        tool_call_create, update={"owner_id": owner_id}
-    )
-    session.add(db_tool_call)
+def create_team(*, session: Session, team_create: TeamCreate, owner_id: str) -> Team:
+    team = Team.model_validate(team_create)
+    session.add(team)
     session.commit()
-    session.refresh(db_tool_call)
-    return db_tool_call
+    session.refresh(team)
+    # Create a TeamMember entry for the owner
+    team_member = TeamMember(
+        team_id=team.id,
+        user_id=owner_id,
+        role=TeamRole.OWNER,
+        invitation_status=TeamInvitationStatus.ACCEPTED,
+    )
+    session.add(team_member)
+    session.commit()
+    session.refresh(team)
+    return team
 
 
 def get_chats(session: Session, user_id: str) -> list[Chat]:

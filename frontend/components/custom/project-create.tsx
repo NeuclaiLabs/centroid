@@ -33,7 +33,7 @@ interface CreateProjectData {
   description: string;
   model: string;
   instructions: string;
-  team_id: string;
+  team_id?: string;
 }
 
 function useCreateProject(token: string | undefined) {
@@ -60,7 +60,7 @@ function useCreateProject(token: string | undefined) {
 
 export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) => {
   const { data: session } = useSession();
-  const { selectedTeamId } = useTeams();
+  // const { selectedTeamId } = useTeams();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -70,8 +70,8 @@ export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) 
 
   // Key for projects list
   const projectsKey =
-    session?.user && selectedTeamId
-      ? [`${process.env.NEXT_PUBLIC_API_URL}/api/v1/projects/?team_id=${selectedTeamId}`, getToken(session)]
+    session?.user
+      ? [`${process.env.NEXT_PUBLIC_API_URL}/api/v1/projects/`, getToken(session)]
       : null;
 
   // SWR hook for the projects list
@@ -81,12 +81,11 @@ export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!getToken(session) || !selectedTeamId) return;
+    if (!getToken(session)) return;
 
     try {
       const newProject = await createProject({
         ...formData,
-        team_id: selectedTeamId,
       });
 
       await mutateProjects((currentData: any) => ({

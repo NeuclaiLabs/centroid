@@ -4,7 +4,7 @@ import Link from "next/link";
 
 import { AppSidebar } from "@/components/custom/app-sidebar";
 import { ProjectProvider, useProject } from "@/components/custom/project-provider";
-import { TeamsProvider } from "@/components/custom/teams-provider";
+// import { TeamsProvider } from "@/components/custom/teams-provider";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -29,7 +29,7 @@ function ProjectBreadcrumb() {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <TeamsProvider>
+    // <TeamsProvider>
       <ProjectProvider>
         <SidebarProvider>
           <AppSidebar />
@@ -53,6 +53,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </SidebarInset>
         </SidebarProvider>
       </ProjectProvider>
-    </TeamsProvider>
+    // </TeamsProvider>
   );
 }
