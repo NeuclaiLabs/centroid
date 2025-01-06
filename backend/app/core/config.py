@@ -1,3 +1,4 @@
+import os
 import secrets
 import warnings
 from pathlib import Path
@@ -144,6 +145,11 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER: str
     FIRST_SUPERUSER_PASSWORD: str
     USERS_OPEN_REGISTRATION: bool = False
+
+    AMPLITUDE_API_KEY: str = os.getenv(
+        "AMPLITUDE_API_KEY", "IMYUycFvjwsDJZDqIHa9xLVhwmfaZ4xy"
+    )
+    TELEMETRY_ENABLED: bool = os.getenv("TELEMETRY_ENABLED", "true").lower() == "true"
 
     def _check_default_secret(self, var_name: str, value: str | None) -> None:
         if value == "changethis":

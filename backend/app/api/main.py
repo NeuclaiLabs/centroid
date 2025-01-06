@@ -18,6 +18,10 @@ from app.api.routes import (
     utils,
 )
 from app.core.logger import get_logger
+from app.services.analytics import AnalyticsService
+
+# Initialize analytics service
+analytics_service = AnalyticsService()
 
 # Setup logger using custom logger
 logger = get_logger(__name__)
@@ -143,6 +147,29 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                         }
                     },
                 )
+
+            # Track analytics only for chat-related endpoints and when telemetry is enabled
+            if request.url.path.startswith("/chat") and settings.TELEMETRY_ENABLED:
+                # Get or generate anonymous_id
+                anonymous_id = request.cookies.get("anonymous_id", str(uuid.uuid4()))
+
+                analytics_service.track_api_event(
+                    request=request,
+                    response_status=response.status_code,
+                    duration_ms=duration_ms,
+                    user_id=anonymous_id,
+                )
+
+                # Set anonymous_id cookie if not present and telemetry is enabled
+                if "anonymous_id" not in request.cookies:
+                    response.set_cookie(
+                        key="anonymous_id",
+                        value=anonymous_id,
+                        httponly=True,
+                        secure=True,
+                        samesite="strict",
+                        max_age=31536000,  # 1 year
+                    )
 
         except Exception as e:
             duration_ms = int((time.time() - start_time) * 1000)

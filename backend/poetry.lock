@@ -21,6 +21,18 @@ typing-extensions = ">=4"
 tz = ["backports.zoneinfo"]
 
 [[package]]
+name = "amplitude-analytics"
+version = "1.1.4"
+description = "The official Amplitude backend Python SDK for server-side instrumentation."
+category = "main"
+optional = false
+python-versions = ">=3.6, <4"
+files = [
+    {file = "amplitude-analytics-1.1.4.tar.gz", hash = "sha256:9f05dc461459cfef15df8795895971745193fb74ab4e8a561e96bb208f11860e"},
+    {file = "amplitude_analytics-1.1.4-py3-none-any.whl", hash = "sha256:802d9b3a20d095d49074610dcd7e8834e5fcaff5c99d25d3153c03a163d73889"},
+]
+
+[[package]]
 name = "annotated-types"
 version = "0.7.0"
 description = "Reusable constraint types to use with typing.Annotated"
@@ -2464,4 +2476,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "cfe0fee1fa864a5e5831433a0cfe4131e85095d80f64d6720da074c86b2cd8a1"
+content-hash = "e347df91a7c2ccd99495b75c4a505ccf9a997e6360d2be13a5876422fabc325a"
