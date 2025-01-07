@@ -147,7 +147,7 @@ class Settings(BaseSettings):
     USERS_OPEN_REGISTRATION: bool = False
 
     AMPLITUDE_API_KEY: str = os.getenv(
-        "AMPLITUDE_API_KEY", "IMYUycFvjwsDJZDqIHa9xLVhwmfaZ4xy"
+        "AMPLITUDE_API_KEY", "ef5489b99fbbb64c53c7dc722ddc1d4e"
     )
     TELEMETRY_ENABLED: bool = os.getenv("TELEMETRY_ENABLED", "true").lower() == "true"
 

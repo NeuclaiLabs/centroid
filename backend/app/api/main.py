@@ -6,6 +6,7 @@ from fastapi import APIRouter, Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 
+from app.analytics import AnalyticsService
 from app.api.routes import (
     chats,
     files,
@@ -18,7 +19,6 @@ from app.api.routes import (
     utils,
 )
 from app.core.logger import get_logger
-from app.services.analytics import AnalyticsService
 
 # Initialize analytics service
 analytics_service = AnalyticsService()
@@ -149,7 +149,11 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                 )
 
             # Track analytics only for chat-related endpoints and when telemetry is enabled
-            if request.url.path.startswith("/chat") and settings.TELEMETRY_ENABLED:
+            if request.url.path.startswith("/api/v1/chats") and request.method in [
+                "POST",
+                "PUT",
+                "DELETE",
+            ]:
                 # Get or generate anonymous_id
                 anonymous_id = request.cookies.get("anonymous_id", str(uuid.uuid4()))
 

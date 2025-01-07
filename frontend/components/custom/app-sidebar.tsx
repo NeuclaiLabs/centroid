@@ -138,13 +138,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild className="hover:bg-sidebar-accent transition-colors">
-              <Link href="#">
+              <Link href="/">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700">
                   <OpenAstraIcon size={24} />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">OpenAstra</span>
-                  <span className="truncate text-xs">Teams</span>
+                  <span className="truncate text-xs">API Assistant</span>
                 </div>
               </Link>
             </SidebarMenuButton>

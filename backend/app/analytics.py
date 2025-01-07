@@ -1,6 +1,6 @@
 from typing import Any
 
-from amplitude import Amplitude
+from amplitude import Amplitude, BaseEvent
 from fastapi import Request
 
 from app.core.config import settings
@@ -24,10 +24,10 @@ class AnalyticsService:
         if not self.client or not settings.TELEMETRY_ENABLED:
             return
 
-        # Extract endpoint category from path (e.g., /chats/123 -> chats)
-        category = (
-            request.url.path.split("/")[1] if len(request.url.path) > 1 else "root"
-        )
+        if "chat" in request.url.path:
+            category = "chat"
+        else:
+            return
 
         # Build event name: category_action (e.g., chats_create)
         event_name = f"{category}_{self._get_action_from_method(request.method, request.url.path)}"
@@ -48,9 +48,13 @@ class AnalyticsService:
         if additional_properties:
             properties.update(additional_properties)
 
-        self.client.track(
+        event = BaseEvent(
             event_type=event_name, user_id=user_id, event_properties=properties
         )
+        try:
+            self.client.track(event)
+        except Exception as e:
+            print("Error tracking event", e)
 
     def _get_action_from_method(self, method: str, path: str) -> str:
         """Determine the action based on HTTP method and path"""
