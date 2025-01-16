@@ -1,68 +1,81 @@
 name: Feedback
 description: Provide feedback or report an issue for OpenAstra
-title: '[Feedback] '
-labels: ['feedback']
+title: "[Feedback]: "
+labels: ["feedback"]
 body:
-  - type: checkboxes
-    id: feedback_type
+  - type: dropdown
+    id: feedback-type
     attributes:
       label: Type of Feedback
       description: Please check one of the following
       options:
-        - label: Bug Report
-        - label: Feature Request
-        - label: General Feedback
-        - label: Question
+        - Bug Report
+        - Feature Request
+        - General Feedback
+        - Question
+    validations:
+      required: true
 
   - type: textarea
     id: description
     attributes:
       label: Description
-      description: Provide a clear and concise description of your feedback
+      description: Please provide a clear and concise description of your feedback
+      placeholder: Tell us what's on your mind...
     validations:
       required: true
 
   - type: textarea
-    id: expected_behavior
+    id: expected
     attributes:
       label: Expected Behavior
-      description: If reporting a bug, describe what you expected to happen
+      description: If reporting a bug, what did you expect to happen?
+      placeholder: I expected that...
 
   - type: textarea
-    id: current_behavior
+    id: current
     attributes:
       label: Current Behavior
-      description: If reporting a bug, describe what actually happened
+      description: If reporting a bug, what actually happened?
+      placeholder: Instead, what happened was...
 
   - type: textarea
-    id: steps_to_reproduce
+    id: reproduction
     attributes:
-      label: Steps to Reproduce (if applicable)
-      description: If reporting a bug, provide steps to reproduce the issue
+      label: Steps to Reproduce
+      description: If reporting a bug, how can we reproduce this issue?
       placeholder: |
-        1.
-        2.
-        3.
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
 
   - type: input
-    id: screenshots
+    id: browser
     attributes:
-      label: Screenshots
-      description: If applicable, add screenshots to help explain your feedback
-      placeholder: Add a link to your screenshot
+      label: Browser
+      description: What browser are you using?
+      placeholder: Chrome, Safari, Firefox, etc.
 
   - type: input
-    id: environment
+    id: version
     attributes:
-      label: Environment (if applicable)
-      description: Provide details about your environment
-      placeholder: |
-        - Browser: [e.g. Chrome, Safari]
-        - OS: [e.g. Windows, MacOS]
-        - Version: [e.g. 22]
+      label: Version
+      description: What version of the browser are you using?
+      placeholder: 22
 
   - type: textarea
-    id: additional_context
+    id: additional
     attributes:
       label: Additional Context
       description: Add any other context about your feedback here
+      placeholder: Any other details you'd like to share...
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our Code of Conduct
+      options:
+        - label: I agree to follow OpenAstra's Code of Conduct
+          required: true
