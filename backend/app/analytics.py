@@ -12,6 +12,14 @@ class AnalyticsService:
         if settings.TELEMETRY_ENABLED and settings.AMPLITUDE_API_KEY:
             self.client = Amplitude(settings.AMPLITUDE_API_KEY)
 
+    def should_track_request(self, request: Request) -> bool:
+        """Determine if the request should be tracked"""
+        return request.url.path.startswith("/api/v1/chats") and request.method in [
+            "POST",
+            "PUT",
+            "DELETE",
+        ]
+
     def track_api_event(
         self,
         request: Request,
@@ -24,11 +32,11 @@ class AnalyticsService:
         if not self.client or not settings.TELEMETRY_ENABLED:
             return
 
-        if "chat" in request.url.path:
-            category = "chat"
-        else:
+        # Skip if not a trackable request
+        if not self.should_track_request(request):
             return
 
+        category = "chat"
         # Build event name: category_action (e.g., chats_create)
         event_name = f"{category}_{self._get_action_from_method(request.method, request.url.path)}"
 

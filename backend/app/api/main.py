@@ -20,8 +20,9 @@ from app.api.routes import (
 )
 from app.core.logger import get_logger
 
-# Initialize analytics service
+# Initialize analytics service and generate instance ID
 analytics_service = AnalyticsService()
+INSTANCE_ID = str(uuid.uuid4())  # Generate once at startup
 
 # Setup logger using custom logger
 logger = get_logger(__name__)
@@ -148,32 +149,13 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                     },
                 )
 
-            # Track analytics only for chat-related endpoints and when telemetry is enabled
-            if request.url.path.startswith("/api/v1/chats") and request.method in [
-                "POST",
-                "PUT",
-                "DELETE",
-            ]:
-                # Get or generate anonymous_id
-                anonymous_id = request.cookies.get("anonymous_id", str(uuid.uuid4()))
-
-                analytics_service.track_api_event(
-                    request=request,
-                    response_status=response.status_code,
-                    duration_ms=duration_ms,
-                    user_id=anonymous_id,
-                )
-
-                # Set anonymous_id cookie if not present and telemetry is enabled
-                if "anonymous_id" not in request.cookies:
-                    response.set_cookie(
-                        key="anonymous_id",
-                        value=anonymous_id,
-                        httponly=True,
-                        secure=True,
-                        samesite="strict",
-                        max_age=31536000,  # 1 year
-                    )
+            # Track analytics with instance ID instead of request ID
+            analytics_service.track_api_event(
+                request=request,
+                response_status=response.status_code,
+                duration_ms=duration_ms,
+                user_id=INSTANCE_ID,  # Use the instance ID instead of generating new UUID
+            )
 
         except Exception as e:
             duration_ms = int((time.time() - start_time) * 1000)
