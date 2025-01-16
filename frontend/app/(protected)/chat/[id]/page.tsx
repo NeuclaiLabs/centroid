@@ -1,5 +1,6 @@
 import { CoreMessage, Message } from "ai";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { signOut } from "next-auth/react";
 
 import { auth } from "@/app/(auth)/auth";
 import { Chat as PreviewChat } from "@/components/custom/chat";
@@ -27,6 +28,10 @@ export default async function Page({ params }: PageProps) {
     if (!response.ok) {
       if (response.status === 404) {
         return notFound();
+      } else if (response.status === 401) {
+        // Sign out and redirect to sign-in page
+        await signOut({ redirect: false });
+        redirect("/sign-in");
       }
       throw new Error("Failed to fetch chat");
     }

@@ -1,6 +1,8 @@
 import { CoreMessage, CoreToolMessage, generateId, Message, ToolInvocation } from "ai";
 import { clsx, type ClassValue } from "clsx";
+import { redirect } from "next/navigation";
 import { Session } from "next-auth";
+import { signOut } from "next-auth/react";
 import { twMerge } from "tailwind-merge";
 
 import { Chat } from "@/lib/types";
@@ -37,11 +39,15 @@ export const fetcher = async (
   });
 
   if (!res.ok) {
-    const error = new Error("An error occurred while fetching the data.") as ApplicationError;
+    if (res.status === 401) {
+      // Sign out and redirect to sign-in page
+      await signOut({ redirect: false });
+      redirect("/sign-in");
+    }
 
+    const error = new Error("An error occurred while fetching the data.") as ApplicationError;
     error.info = await res.json();
     error.status = res.status;
-
     throw error;
   }
 

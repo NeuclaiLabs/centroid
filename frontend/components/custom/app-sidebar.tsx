@@ -31,30 +31,10 @@ const data = {
     avatar: "/avatars/shadcn.jpg",
   },
   navMain: [
-    // {
-    //   title: "Team",
-    //   url: "/teams",
-    //   icon: Users,
-    //   isActive: false,
-    // },
     {
       title: "Projects",
       url: "/projects",
       icon: Shapes,
-      // items: [
-      //   {
-      //     title: "Genesis",
-      //     url: "#",
-      //   },
-      //   {
-      //     title: "Explorer",
-      //     url: "#",
-      //   },
-      //   {
-      //     title: "Quantum",
-      //     url: "#",
-      //   },
-      // ],
     },
     {
       title: "Feedback",
@@ -113,7 +93,6 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
-  // const { selectedTeamId } = useTeams();
 
   // Retrieve chat history
   const {
@@ -124,13 +103,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     session?.user ? [`${process.env.NEXT_PUBLIC_API_URL}/api/v1/chats/`, getToken(session)] : null,
     ([url, token]) => fetcher(url, token as string)
   );
-
-  // Modify navMain data to include team ID from teams data
-  // const navMainWithTeamId = React.useMemo(() => {
-  //   return data.navMain.map((item) =>
-  //     item.title === "Team" ? { ...item, url: item.url + "/" + (selectedTeamId ?? "") } : item
-  //   );
-  // }, [selectedTeamId]);
 
   return (
     <Sidebar className="group-data-[side=left]:border-r-0 bg-sidebar text-sidebar-foreground" {...props}>
