@@ -61,14 +61,14 @@ const data = {
     },
   ],
   navSecondary: [
-    {
-      title: "Support",
-      url: "#",
-      icon: LifeBuoy,
-    },
+    // {
+    //   title: "Support",
+    //   url: "#",
+    //   icon: LifeBuoy,
+    // },
     {
       title: "Feedback",
-      url: "#",
+      url: "https://github.com/srikanth235/openastra/issues/new?template=feedback.yml",
       icon: Send,
     },
   ],
