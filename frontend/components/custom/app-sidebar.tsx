@@ -38,7 +38,7 @@ const data = {
     },
     {
       title: "Feedback",
-      url: "https://github.com/srikanth235/openastra/issues/new?template=feedback.md&labels=feedback",
+      url: "https://github.com/srikanth235/openastra/issues/new?template=feedback.yml",
       icon: Flag,
       // items: [
       //   {

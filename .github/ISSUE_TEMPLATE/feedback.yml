@@ -1,7 +1,7 @@
 name: Feedback
 description: Provide feedback or report an issue for OpenAstra
-title: "[Feedback]: "
-labels: ["feedback"]
+title: '[Feedback]: '
+labels: ['feedback']
 body:
   - type: dropdown
     id: feedback-type
@@ -62,7 +62,7 @@ body:
     attributes:
       label: Version
       description: What version of the browser are you using?
-      placeholder: 22
+      placeholder: '22'
 
   - type: textarea
     id: additional
