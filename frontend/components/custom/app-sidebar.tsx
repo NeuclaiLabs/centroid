@@ -40,6 +40,7 @@ const data = {
       title: "Feedback",
       url: "https://github.com/srikanth235/openastra/issues/new?template=feedback.yml",
       icon: Flag,
+      target: "_blank",
       // items: [
       //   {
       //     title: "Introduction",
@@ -70,6 +71,7 @@ const data = {
       title: "Feedback",
       url: "https://github.com/srikanth235/openastra/issues/new?template=feedback.yml",
       icon: Send,
+      target: "_blank",
     },
   ],
   projects: [
