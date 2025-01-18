@@ -13,7 +13,7 @@ import { login, LoginActionState } from "../actions";
 export default function Page() {
   const router = useRouter();
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(process.env.NEXT_PUBLIC_DEFAULT_USER_EMAIL || "");
 
   const [state, formAction] = useActionState<LoginActionState, FormData>(login, {
     status: "idle",
@@ -33,6 +33,7 @@ export default function Page() {
     setEmail(formData.get("email") as string);
     formAction(formData);
   };
+  console.log("Email", process.env.NEXT_PUBLIC_DEFAULT_USER_EMAIL);
 
   return (
     <div className="flex h-dvh w-screen items-start pt-12 md:pt-0 md:items-center justify-center bg-background">
@@ -41,7 +42,11 @@ export default function Page() {
           <h3 className="text-xl font-semibold dark:text-zinc-50">Sign In</h3>
           <p className="text-sm text-gray-500 dark:text-zinc-400">Use your email and password to sign in</p>
         </div>
-        <AuthForm action={handleSubmit} defaultEmail={email}>
+        <AuthForm
+          action={handleSubmit}
+          defaultEmail={email}
+          defaultPassword={process.env.NEXT_PUBLIC_DEFAULT_USER_PASSWORD || ""}
+        >
           <SubmitButton>Sign in</SubmitButton>
           <p className="text-center text-sm text-gray-600 mt-4 dark:text-zinc-400">
             {"Don't have an account? "}

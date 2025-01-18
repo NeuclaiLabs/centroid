@@ -6,11 +6,13 @@ import { Label } from "../ui/label";
 export function AuthForm({
   action,
   children,
-  defaultEmail = "",
+  defaultEmail,
+  defaultPassword,
 }: {
   action: any;
   children: React.ReactNode;
   defaultEmail?: string;
+  defaultPassword?: string;
 }) {
   return (
     <Form action={action} className="flex flex-col gap-4 px-4 sm:px-16">
@@ -35,7 +37,14 @@ export function AuthForm({
           Password
         </Label>
 
-        <Input id="password" name="password" className="bg-muted text-md md:text-sm" type="password" required />
+        <Input
+          id="password"
+          name="password"
+          className="bg-muted text-md md:text-sm"
+          type="password"
+          required
+          defaultValue={defaultPassword}
+        />
       </div>
 
       {children}
