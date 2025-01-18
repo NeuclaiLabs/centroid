@@ -99,7 +99,6 @@ export function Project({ isLoading, data }: ProjectProps) {
     });
 
     try {
-      console.log("Here..");
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/files/?project_id=${data.id}`, {
         method: "POST",
         body: formData,

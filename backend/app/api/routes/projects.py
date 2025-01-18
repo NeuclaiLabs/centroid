@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
@@ -10,7 +10,6 @@ from app.core.config import settings
 from app.models import (
     Message,
     Project,
-    ProjectCreate,
     ProjectOut,
     ProjectsOut,
     ProjectUpdate,
@@ -29,20 +28,58 @@ def get_project(session: SessionDep, project_id: str) -> Project:
 
 
 @router.post("/", response_model=ProjectOut)
-def create_project(*, session: SessionDep, project_in: ProjectCreate) -> Any:
-    """Create new project."""
-    # Check if user has permission to create project in this team
-    # check_team_permissions(
-    #     session, project_in.team_id, current_user.id, [TeamRole.OWNER, TeamRole.ADMIN]
-    # )
-    team_id = session.exec(select(Team.id)).one()
-    project_in.team_id = team_id
-    project = Project.model_validate(project_in)
-    session.add(project)
-    session.commit()
-    session.refresh(project)
+async def create_project(
+    *,
+    session: SessionDep,
+    title: str = Form(...),
+    description: str | None = Form(None),
+    model: str = Form(...),
+    instructions: str | None = Form(None),
+    files: list[UploadFile] = File(None),
+) -> Any:
+    """Create new project with optional file uploads."""
+    try:
+        # Get team_id
+        team_id = session.exec(select(Team.id)).one()
 
-    return ProjectOut.model_validate(project.model_dump())
+        # Create project first without files
+        project_data = {
+            "title": title,
+            "description": description,
+            "model": model,
+            "instructions": instructions,
+            "team_id": team_id,
+            "files": [],  # Initialize empty files list
+        }
+
+        # Create and save project to get project_id
+        project = Project.model_validate(project_data)
+        session.add(project)
+        session.commit()
+        session.refresh(project)
+
+        # Handle file uploads if present by delegating to the files endpoint
+        if files:
+            from app.api.routes.files import upload_files
+
+            # Call the upload_files function directly
+            upload_response = await upload_files(
+                project_id=str(project.id), files=files
+            )
+
+            # Update project with the uploaded file paths
+            project.files = upload_response.files
+            session.add(project)
+            session.commit()
+            session.refresh(project)
+
+        return ProjectOut.model_validate(project.model_dump())
+
+    except Exception as e:
+        # No need for manual cleanup as it's handled by the files endpoint
+        raise HTTPException(
+            status_code=500, detail=f"Failed to create project: {str(e)}"
+        )
 
 
 @router.get("/", response_model=ProjectsOut)

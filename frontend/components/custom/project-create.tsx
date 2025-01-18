@@ -4,8 +4,6 @@ import * as React from "react";
 import { useRef, useState } from "react";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
-
-import { useTeams } from "@/components/custom/teams-provider";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,6 +20,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Project } from "@/lib/types";
 import { fetcher, getToken } from "@/lib/utils";
+import { useProject } from "./project-provider";
 
 interface ProjectCreateDialogProps {
   open: boolean;
@@ -34,19 +33,19 @@ interface CreateProjectData {
   model: string;
   instructions: string;
   team_id?: string;
+  files?: string[];
 }
 
 function useCreateProject(token: string | undefined) {
   return useSWRMutation(
     token ? [`${process.env.NEXT_PUBLIC_API_URL}/api/v1/projects/`, token] : null,
-    async ([url, token], { arg: data }: { arg: CreateProjectData }) => {
+    async ([url, token], { arg }: { arg: { formData: FormData } }) => {
       const response = await fetch(url, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: arg.formData,
       });
 
       if (!response.ok) {
@@ -60,46 +59,17 @@ function useCreateProject(token: string | undefined) {
 
 export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) => {
   const { data: session } = useSession();
-  // const { selectedTeamId } = useTeams();
-  const [formData, setFormData] = useState({
+  const { updateProject } = useProject();
+  const [formData, setFormData] = useState<CreateProjectData>({
     title: "",
     description: "",
     model: "default",
     instructions: "",
   });
 
-  // Key for projects list
-  const projectsKey =
-    session?.user
-      ? [`${process.env.NEXT_PUBLIC_API_URL}/api/v1/projects/`, getToken(session)]
-      : null;
-
-  // SWR hook for the projects list
+  const projectsKey = session?.user ? [`${process.env.NEXT_PUBLIC_API_URL}/api/v1/projects/`, getToken(session)] : null;
   const { mutate: mutateProjects } = useSWR(projectsKey, ([url, token]) => fetcher(url, token));
-
   const { trigger: createProject, isMutating: isLoading } = useCreateProject(getToken(session));
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!getToken(session)) return;
-
-    try {
-      const newProject = await createProject({
-        ...formData,
-      });
-
-      await mutateProjects((currentData: any) => ({
-        ...currentData,
-        data: [...(currentData?.data || []), newProject],
-        count: (currentData?.count || 0) + 1,
-      }));
-
-      onOpenChange(false);
-      setFormData({ title: "", description: "", model: "default", instructions: "" });
-    } catch (error) {
-      console.error("Error creating project:", error);
-    }
-  };
 
   const [files, setFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -117,6 +87,49 @@ export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) 
   const handleUploadClick = (e: React.MouseEvent) => {
     e.preventDefault();
     fileInputRef.current?.click();
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const token = getToken(session);
+    if (!token) return;
+
+    try {
+      // Create FormData and append all fields from the formData state
+      const submitFormData = new FormData();
+      submitFormData.append("title", formData.title);
+      submitFormData.append("description", formData.description || "");
+      submitFormData.append("model", formData.model);
+      submitFormData.append("instructions", formData.instructions || "");
+
+      // Append all files
+      files.forEach((file) => {
+        submitFormData.append("files", file);
+      });
+
+      // Create project with files in a single request
+      const newProject = await createProject({ formData: submitFormData });
+
+      // Update local projects list
+      await mutateProjects((currentData: any) => ({
+        ...currentData,
+        data: [...(currentData?.data || []), newProject],
+        count: (currentData?.count || 0) + 1,
+      }));
+
+      // Reset form state
+      onOpenChange(false);
+      setFormData({
+        title: "",
+        description: "",
+        model: "default",
+        instructions: "",
+      });
+      setFiles([]);
+    } catch (error) {
+      console.error("Error creating project:", error);
+      // You might want to add some error notification here
+    }
   };
 
   return (
@@ -174,6 +187,8 @@ export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) 
             </DialogDescription>
             <Textarea
               id="instructions"
+              value={formData.instructions}
+              onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
               placeholder="Always respond in a formal tone and prioritize data-driven insights..."
               className="mt-2"
             />

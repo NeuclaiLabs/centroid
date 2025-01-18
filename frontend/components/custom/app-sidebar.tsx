@@ -41,24 +41,6 @@ const data = {
       url: "https://github.com/srikanth235/openastra/issues/new?template=feedback.yml",
       icon: Flag,
       target: "_blank",
-      // items: [
-      //   {
-      //     title: "Introduction",
-      //     url: "#",
-      //   },
-      //   {
-      //     title: "Get Started",
-      //     url: "#",
-      //   },
-      //   {
-      //     title: "Tutorials",
-      //     url: "#",
-      //   },
-      //   {
-      //     title: "Changelog",
-      //     url: "#",
-      //   },
-      // ],
     },
   ],
   navSecondary: [
