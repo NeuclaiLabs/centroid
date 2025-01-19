@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from sqlmodel import Session, select
@@ -9,26 +10,26 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def is_db_empty(session: Session) -> bool:
+async def is_db_empty(session: Session) -> bool:
     # Check if any users exist - adjust this based on your needs
     result = session.exec(select(User)).first()
     return result is None
 
 
-def init() -> None:
+async def init() -> None:
     with Session(engine) as session:
-        if is_db_empty(session):
+        if await is_db_empty(session):
             logger.info("Database is empty, initializing with seed data...")
-            init_db(session)
+            await init_db(session)
         else:
             logger.info("Database already contains data, skipping initialization")
 
 
-def main() -> None:
+async def main() -> None:
     logger.info("Checking initial data")
-    init()
+    await init()
     logger.info("Initial data check completed")
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

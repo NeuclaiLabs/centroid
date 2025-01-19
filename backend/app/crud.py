@@ -7,6 +7,8 @@ from app.models import (
     Chat,
     Item,
     ItemCreate,
+    Project,
+    ProjectCreate,
     Setting,
     SettingCreate,
     Team,
@@ -107,3 +109,11 @@ def create_team(*, session: Session, team_create: TeamCreate, owner_id: str) -> 
 def get_chats(session: Session, user_id: str) -> list[Chat]:
     statement = select(Chat).where(Chat.user_id == user_id)
     return session.exec(statement).all()
+
+
+def create_project(*, session: Session, project_create: ProjectCreate) -> Project:
+    db_project = Project.model_validate(project_create)
+    session.add(db_project)
+    session.commit()
+    session.refresh(db_project)
+    return db_project

@@ -1,8 +1,12 @@
+from pathlib import Path
+
+from fastapi import UploadFile
 from sqlmodel import Session, create_engine, select
 
 from app import crud
+from app.api.routes.files import upload_files
 from app.core.config import settings
-from app.models import TeamCreate, User, UserCreate
+from app.models import ProjectCreate, TeamCreate, User, UserCreate
 
 engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 
@@ -12,7 +16,7 @@ engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 # for more details: https://github.com/tiangolo/full-stack-fastapi-template/issues/28
 
 
-def init_db(session: Session) -> None:
+async def init_db(session: Session) -> None:
     # Tables should be created with Alembic migrations
     # But if you don't want to use migrations, create
     # the tables un-commenting the next lines
@@ -41,3 +45,34 @@ def init_db(session: Session) -> None:
             team = crud.create_team(  # noqa: F841
                 session=session, team_create=team_in, owner_id=user.id
             )
+
+            # Create default project
+            project_in = ProjectCreate(
+                title="Welcome Project",
+                description="This is your first project with a sample API collection.",
+                model="default",
+                instructions="I am an AI assistant that helps with API testing. Feel free to ask me questions about the APIs or request changes.",
+                team_id=team.id,
+            )
+            project = crud.create_project(session=session, project_create=project_in)
+
+            # Read the collection file
+            collection_path = Path("./result_api_collection.json")
+
+            # Create upload file
+            upload_file = UploadFile(
+                filename="result_api_collection.json", file=open(collection_path, "rb")
+            )
+
+            try:
+                # Upload the collection file
+                response = await upload_files(
+                    project_id=project.id, files=[upload_file]
+                )
+
+                # Update project with file path
+                project.files = response.files
+                session.add(project)
+                session.commit()
+            finally:
+                upload_file.file.close()

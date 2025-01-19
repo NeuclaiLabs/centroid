@@ -100,7 +100,9 @@ export function Chats({
                   <h3 className="font-semibold text-lg truncate">{getTitleFromChat(chat)}</h3>
                   <p className="text-sm text-muted-foreground">
                     Updated{" "}
-                    {chat.updatedAt ? formatDistanceToNow(new Date(chat.updatedAt), { addSuffix: true }) : "Unknown"}
+                    {chat.updatedAt
+                      ? formatDistanceToNow(new Date(chat.updatedAt + "Z"), { addSuffix: true })
+                      : "Unknown"}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
