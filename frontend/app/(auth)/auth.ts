@@ -16,35 +16,44 @@ export const {
   ...authConfig,
   providers: [
     Credentials({
-      credentials: {},
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
       async authorize({ email, password }: any) {
-        // let users = await getUser(email);
-        // if (users.length === 0) return null;
-        // let passwordsMatch = await compare(password, users[0].password!);
-        // if (passwordsMatch) return users[0] as any;
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/login/access-token`, {
-          method: "POST",
-          body: new URLSearchParams({
-            username: email,
-            password: password,
-          }),
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            Accept: "application/json",
-          },
-        });
-        if (!res.ok) {
-          // credentials are invalid
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/login/access-token`, {
+            method: "POST",
+            body: new URLSearchParams({
+              username: email,
+              password: password,
+            }),
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+              Accept: "application/json",
+            },
+          });
+
+          if (!res.ok) {
+            throw new Error("Authentication failed");
+          }
+
+          const response = await res.json();
+
+          if (!response.user) {
+            return null;
+          }
+
+          return {
+            id: String(response.user.id),
+            email: response.user.email,
+            name: response.user.name,
+            token: response.access_token,
+          };
+        } catch (error) {
+          console.error("Auth error:", error);
           return null;
         }
-        const response = await res.json();
-        const user = response.user as User;
-
-        response.user.id = String(response.user.id);
-        response.user.token = response.access_token;
-
-        if (!user) return null;
-        return { ...user };
       },
     }),
   ],
