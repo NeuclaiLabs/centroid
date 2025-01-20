@@ -1,17 +1,16 @@
-// import { openai } from "@ai-sdk/openai";
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import { createOpenAI } from "@ai-sdk/openai";
 import { experimental_wrapLanguageModel as wrapLanguageModel } from "ai";
 
 import { customMiddleware } from "./custom-middleware";
 
-const ollama = createOpenAICompatible({
-  name: "ollama",
-  baseURL: "http://localhost:11434/v1/",
+const openai_compatible = createOpenAI({
+  baseURL: process.env.LLM_BASE_URL,
+  apiKey: process.env.LLM_API_KEY,
 });
 
 export const customModel = (apiIdentifier: string) => {
   return wrapLanguageModel({
-    model: ollama("llama3.1:latest"),
+    model: openai_compatible(apiIdentifier),
     middleware: customMiddleware,
   });
 };

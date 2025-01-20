@@ -12,7 +12,6 @@ from app.models import (
     Project,
     ProjectOut,
     ProjectsOut,
-    ProjectUpdate,
     Team,
     TeamRole,
 )
@@ -127,21 +126,38 @@ def read_project(
 
 
 @router.put("/{project_id}", response_model=ProjectOut)
-def update_project(
+async def update_project(
     *,
     session: SessionDep,
     project_id: str,
-    project_in: ProjectUpdate,
+    title: str | None = Form(None),
+    description: str | None = Form(None),
+    model: str | None = Form(None),
+    instructions: str | None = Form(None),
+    files: list[UploadFile] | None = File(None),
 ) -> Any:
     """Update a project."""
     project = get_project(session, project_id)
-    # Check if user has admin permissions in the team
-    # check_team_permissions(
-    #     session, project.team_id, current_user.id, [TeamRole.OWNER, TeamRole.ADMIN]
-    # )
-    update_data = project_in.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(project, field, value)
+
+    # Update basic fields if provided
+    if title is not None:
+        project.title = title
+    if description is not None:
+        project.description = description
+    if model is not None:
+        project.model = model
+    if instructions is not None:
+        project.instructions = instructions
+
+    # Handle file uploads if present
+    if files:
+        from app.api.routes.files import upload_files
+
+        # Upload new files
+        upload_response = await upload_files(project_id=str(project.id), files=files)
+
+        # Update project with the new file paths
+        project.files = upload_response.files
 
     session.add(project)
     session.commit()

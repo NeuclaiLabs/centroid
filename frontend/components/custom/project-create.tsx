@@ -21,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Project } from "@/lib/types";
 import { fetcher, getToken } from "@/lib/utils";
 import { useProject } from "./project-provider";
+import { toast } from "sonner";
 
 interface ProjectCreateDialogProps {
   open: boolean;
@@ -63,7 +64,7 @@ export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) 
   const [formData, setFormData] = useState<CreateProjectData>({
     title: "",
     description: "",
-    model: "default",
+    model: "",
     instructions: "",
   });
 
@@ -74,13 +75,41 @@ export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) 
   const [files, setFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const { data: modelsData } = useSWR(
+    session?.user ? [`${process.env.NEXT_PUBLIC_API_URL}/api/v1/llm/models`, getToken(session)] : null,
+    ([url, token]) => fetcher(url, token)
+  );
+
+  const MAX_FILE_SIZE = 500 * 1024; // 500KB in bytes
+  const MAX_FILES = 5;
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
-      setFiles((prevFiles) => [...prevFiles, ...Array.from(event.target.files as FileList)]);
+      const newFiles = Array.from(event.target.files);
+
+      // Check if adding new files would exceed the limit
+      if (files.length + newFiles.length > MAX_FILES) {
+        toast.error(`Maximum ${MAX_FILES} files allowed`);
+        return;
+      }
+
+      // Check each file's size
+      const oversizedFiles = newFiles.filter((file) => file.size > MAX_FILE_SIZE);
+
+      if (oversizedFiles.length > 0) {
+        toast.error(`Files must be under 500KB. Skipping: ${oversizedFiles.map((f) => f.name).join(", ")}`);
+        // Only add files that are under the size limit
+        const validFiles = newFiles.filter((file) => file.size <= MAX_FILE_SIZE);
+        setFiles((prevFiles) => [...prevFiles, ...validFiles]);
+      } else {
+        setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+      }
     }
   };
 
   const handleRemoveFile = (fileToRemove: File) => {
+    // Stop event propagation to prevent modal from closing
+    event?.stopPropagation();
     setFiles((prevFiles) => prevFiles.filter((file) => file !== fileToRemove));
   };
 
@@ -93,6 +122,11 @@ export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) 
     e.preventDefault();
     const token = getToken(session);
     if (!token) return;
+
+    if (!formData.model) {
+      toast.error("Please select an AI model to continue.");
+      return;
+    }
 
     try {
       // Create FormData and append all fields from the formData state
@@ -122,13 +156,16 @@ export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) 
       setFormData({
         title: "",
         description: "",
-        model: "default",
+        model: "",
         instructions: "",
       });
       setFiles([]);
     } catch (error) {
-      console.error("Error creating project:", error);
-      // You might want to add some error notification here
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create project. Please try again.",
+      });
     }
   };
 
@@ -173,9 +210,11 @@ export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) 
                 <SelectValue placeholder="Select a model" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="default">Default</SelectItem>
-                <SelectItem value="gpt-4">GPT-4</SelectItem>
-                <SelectItem value="claude">Claude</SelectItem>
+                {modelsData?.data.map((model: { id: string; label: string }) => (
+                  <SelectItem key={model.id} value={model.id}>
+                    {model.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -195,8 +234,18 @@ export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) 
           </div>
           <div className="space-y-2">
             <Label>Knowledge</Label>
+            <DialogDescription className="mt-1">
+              Upload up to 5 files (max 500KB each) to provide context for the AI.
+            </DialogDescription>
             <div>
-              <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" multiple />
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+                accept="application/pdf,text/*,image/*,application/json"
+                multiple
+              />
               <Button variant="outline" onClick={handleUploadClick}>
                 <Upload className="mr-2 size-4" />
                 Upload files
@@ -207,7 +256,15 @@ export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) 
                 {files.map((file, index) => (
                   <li key={index} className="flex items-center justify-between text-sm">
                     <span>{file.name}</span>
-                    <Button variant="ghost" size="sm" onClick={() => handleRemoveFile(file)}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveFile(file);
+                      }}
+                    >
                       <X className="size-4" />
                       <span className="sr-only">Remove</span>
                     </Button>

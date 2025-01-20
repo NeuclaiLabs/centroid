@@ -11,6 +11,7 @@ from app.api.routes import (
     chats,
     files,
     items,
+    llm,
     login,
     projects,
     settings,
@@ -190,3 +191,4 @@ api_router.include_router(settings.router, prefix="/settings", tags=["settings"]
 api_router.include_router(teams.router, prefix="/teams", tags=["teams"])
 api_router.include_router(projects.router, prefix="/projects", tags=["projects"])
 api_router.include_router(files.router, prefix="/files", tags=["files"])
+api_router.include_router(llm.router, prefix="/llm", tags=["llm"])

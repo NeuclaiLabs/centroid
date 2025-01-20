@@ -55,6 +55,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
     DOMAIN: str = "localhost"
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
+    LLM_BASE_URL: str = "http://localhost:11434/v1"
+    LLM_API_KEY: str = "dummyapikey"
 
     @computed_field  # type: ignore[misc]
     @property
