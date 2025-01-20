@@ -41,14 +41,14 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     return [url, token];
   }, [url, token]);
 
-  const { data: projectsData, isLoading } = useSWR(
-    projectsKey,
-    ([url, token]) => fetcher(url, token),
-    {
-      revalidateOnFocus: false,
-      dedupingInterval: 5000,
-    }
-  );
+  const {
+    data: projectsData,
+    isLoading,
+    mutate,
+  } = useSWR(projectsKey, ([url, token]) => fetcher(url, token), {
+    revalidateOnFocus: false,
+    dedupingInterval: 5000,
+  });
 
   // Add SWR mutation hooks for update and delete
   const updateProjectMutation = useSWRMutation(
