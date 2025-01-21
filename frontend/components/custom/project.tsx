@@ -133,7 +133,9 @@ export function Project({ isLoading, data }: ProjectProps) {
                 <PenLine className="size-4" />
               </Button>
             </div>
-            <p className="text-sm text-muted-foreground">{data?.model || "Default"}</p>
+            <p className="text-sm text-muted-foreground">
+              {modelsData?.data.find((model: any) => model.id === data?.model)?.label || "Default"}
+            </p>
           </div>
           <Separator className="bg-primary/20" />
 
