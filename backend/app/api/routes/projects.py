@@ -127,18 +127,35 @@ def read_project(
 
 
 @router.put("/{project_id}", response_model=ProjectOut)
-def update_project(
+async def update_project(
     *,
     session: SessionDep,
     project_id: str,
     project_in: ProjectUpdate,
+    new_files: list[UploadFile] | None = None,
 ) -> Any:
     """Update a project."""
     project = get_project(session, project_id)
-    # Check if user has admin permissions in the team
-    # check_team_permissions(
-    #     session, project.team_id, current_user.id, [TeamRole.OWNER, TeamRole.ADMIN]
-    # )
+
+    # Handle files update if provided
+    if project_in.files is not None or new_files:
+        current_files = project.files or []
+        # Keep only the files specified in project_in.files
+        kept_files = [f for f in current_files if f in (project_in.files or [])]
+
+        # Handle new file uploads if present
+        if new_files:
+            from app.api.routes.files import upload_files
+
+            upload_response = await upload_files(
+                project_id=str(project.id), files=new_files
+            )
+            kept_files.extend(upload_response.files)
+
+        # Update project's files list
+        project.files = kept_files
+
+    # Update other fields
     update_data = project_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(project, field, value)
@@ -146,6 +163,7 @@ def update_project(
     session.add(project)
     session.commit()
     session.refresh(project)
+    print("Project updated:", project)
 
     return ProjectOut.model_validate(project.model_dump())
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { PenLine, Plus, Timer, Upload, Bot, Trash2, X } from "lucide-react";
+import { PenLine, Plus, Timer, Upload, Bot, Trash2, X, FileIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import * as React from "react";
 import { useState, useRef, useCallback } from "react";
@@ -39,6 +39,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { ProjectForm } from "./project-form";
 
 interface ProjectProps {
   data?: Project;
@@ -51,6 +52,7 @@ export function Project({ isLoading, data }: ProjectProps) {
   const token = getToken(session);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [activeField, setActiveField] = useState<string | null>(null);
   const [editedValues, setEditedValues] = useState<CreateProjectData>({
     title: "",
     description: "",
@@ -71,10 +73,17 @@ export function Project({ isLoading, data }: ProjectProps) {
     }
   }, [isEditDialogOpen, data]);
 
-  // Reset form when modal closes
+  // Handle opening the edit dialog with specific field focused
+  const handleEditClick = (field: string) => {
+    setActiveField(field);
+    setIsEditDialogOpen(true);
+  };
+
+  // Reset when dialog closes
   const handleOpenChange = (open: boolean) => {
     setIsEditDialogOpen(open);
     if (!open) {
+      setActiveField(null);
       setFiles([]);
     }
   };
@@ -119,22 +128,20 @@ export function Project({ isLoading, data }: ProjectProps) {
     fileInputRef.current?.click();
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (formData: FormData) => {
     if (!data?.id) return;
 
     try {
-      const formData = new FormData();
-      formData.append("title", editedValues.title);
-      formData.append("description", editedValues.description || "");
-      formData.append("model", editedValues.model);
-      formData.append("instructions", editedValues.instructions || "");
-
-      files.forEach((file) => {
-        formData.append("files", file);
+      await updateProject(data.id, {
+        title: formData.get("title") as string,
+        description: formData.get("description") as string,
+        model: formData.get("model") as string,
+        instructions: formData.get("instructions") as string,
+        // Handle files if needed
+        // files: JSON.parse(formData.get("files") as string),
+        // new_files: formData.getAll("newFiles") as File[],
       });
 
-      await updateProject(data.id, editedValues);
       setIsEditDialogOpen(false);
       toast.success("Project updated successfully");
     } catch (error) {
@@ -147,27 +154,29 @@ export function Project({ isLoading, data }: ProjectProps) {
     <div className="flex flex-col lg:flex-row p-2 pt-0">
       <Card className="w-full p-6 bg-secondary overflow-y-auto rounded-lg">
         <div className="space-y-6">
-          {/* Add Edit Button at the top */}
-          <div className="flex justify-end">
-            <Button onClick={() => setIsEditDialogOpen(true)}>Edit Project</Button>
-          </div>
-
-          {/* Display-only sections */}
+          {/* Title Section */}
           <div className="space-y-2">
-            <h2 className="font-semibold">Title</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold">Title</h2>
+              <Button variant="ghost" size="icon" onClick={() => handleEditClick("title")}>
+                <PenLine className="size-4" />
+              </Button>
+            </div>
             <p className="text-sm text-muted-foreground">{data?.title}</p>
           </div>
           <Separator className="bg-primary/20" />
 
-          {data?.description && (
-            <>
-              <div className="space-y-2">
-                <h2 className="font-semibold">Description</h2>
-                <p className="text-sm text-muted-foreground">{data?.description}</p>
-              </div>
-              <Separator className="bg-primary/20" />
-            </>
-          )}
+          {/* Description Section */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold">Description</h2>
+              <Button variant="ghost" size="icon" onClick={() => handleEditClick("description")}>
+                <PenLine className="size-4" />
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">{data?.description}</p>
+          </div>
+          <Separator className="bg-primary/20" />
 
           {/* Model Section */}
           <div className="space-y-2">
@@ -176,10 +185,12 @@ export function Project({ isLoading, data }: ProjectProps) {
                 <Bot className="size-4" />
                 <h2 className="font-semibold">AI Model</h2>
               </div>
+              <Button variant="ghost" size="icon" onClick={() => handleEditClick("model")}>
+                <PenLine className="size-4" />
+              </Button>
             </div>
             <p className="text-sm text-muted-foreground">{data?.model || "Default"}</p>
           </div>
-
           <Separator className="bg-primary/20" />
 
           {/* Instructions Section */}
@@ -189,11 +200,38 @@ export function Project({ isLoading, data }: ProjectProps) {
                 <PenLine className="size-4" />
                 <h2 className="font-semibold">Instructions</h2>
               </div>
+              <Button variant="ghost" size="icon" onClick={() => handleEditClick("instructions")}>
+                <PenLine className="size-4" />
+              </Button>
             </div>
             <p className="text-sm text-muted-foreground">{data?.instructions || "No custom instructions added."}</p>
           </div>
-
           <Separator className="bg-primary/20" />
+
+          {/* Files Section */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Upload className="size-4" />
+                <h2 className="font-semibold">Files</h2>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => handleEditClick("files")}>
+                <PenLine className="size-4" />
+              </Button>
+            </div>
+            {data?.files && data.files.length > 0 ? (
+              <div className="space-y-2">
+                {data.files.map((file, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <FileIcon className="size-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">{file.split("/").pop()?.slice(16)}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">No files added.</p>
+            )}
+          </div>
 
           {/* Edit Dialog */}
           <Dialog open={isEditDialogOpen} onOpenChange={handleOpenChange}>
@@ -204,108 +242,27 @@ export function Project({ isLoading, data }: ProjectProps) {
                 </div>
                 <Separator className="my-4" />
               </DialogHeader>
-              <form id="edit-project-form" className="space-y-6" onSubmit={handleSave}>
-                <div className="flex gap-4">
-                  <div className="flex-1">
-                    <Label htmlFor="title">Title</Label>
-                    <Input
-                      id="title"
-                      value={editedValues.title}
-                      onChange={(e) => setEditedValues({ ...editedValues, title: e.target.value })}
-                      className="mt-2"
-                    />
-                  </div>
-                </div>
 
-                <div>
-                  <Label htmlFor="description">Description (optional)</Label>
-                  <Textarea
-                    id="description"
-                    value={editedValues.description}
-                    onChange={(e) => setEditedValues({ ...editedValues, description: e.target.value })}
-                    className="mt-2"
-                  />
-                </div>
+              <ProjectForm
+                onSubmit={handleSubmit}
+                isLoading={isLoading}
+                modelsData={modelsData}
+                mode="edit"
+                initialData={{
+                  title: data?.title || "",
+                  description: data?.description || "",
+                  model: data?.model || "",
+                  instructions: data?.instructions || "",
+                  files: data?.files || [],
+                }}
+                focusField={activeField}
+              />
 
-                <div>
-                  <Label htmlFor="model">AI Model</Label>
-                  <Select
-                    value={editedValues.model}
-                    onValueChange={(value) => setEditedValues({ ...editedValues, model: value })}
-                  >
-                    <SelectTrigger className="mt-2">
-                      <SelectValue placeholder="Select a model" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {modelsData?.data.map((model: { id: string; label: string }) => (
-                        <SelectItem key={model.id} value={model.id}>
-                          {model.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="instructions">Custom Instructions (optional)</Label>
-                  <DialogDescription className="mt-1">
-                    Give instructions to the AI that affects every thread in this space.
-                  </DialogDescription>
-                  <Textarea
-                    id="instructions"
-                    value={editedValues.instructions}
-                    onChange={(e) => setEditedValues({ ...editedValues, instructions: e.target.value })}
-                    className="mt-2"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Knowledge</Label>
-                  <DialogDescription className="mt-1">
-                    Upload up to 5 files (max 500KB each) to provide context for the AI.
-                  </DialogDescription>
-                  <div>
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={handleFileChange}
-                      className="hidden"
-                      accept="application/pdf,text/*,image/*,application/json"
-                      multiple
-                    />
-                    <Button variant="outline" onClick={handleUploadClick}>
-                      <Upload className="mr-2 size-4" />
-                      Upload files
-                    </Button>
-                  </div>
-                  {files.length > 0 && (
-                    <ul className="mt-2 space-y-1">
-                      {files.map((file, index) => (
-                        <li key={index} className="flex items-center justify-between text-sm">
-                          <span>{file.name}</span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleRemoveFile(file);
-                            }}
-                          >
-                            <X className="size-4" />
-                            <span className="sr-only">Remove</span>
-                          </Button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </form>
               <DialogFooter className="gap-2 sm:gap-0">
                 <Button variant="secondary" onClick={() => setIsEditDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" form="edit-project-form">
+                <Button type="submit" form="create-project-form">
                   Save Changes
                 </Button>
               </DialogFooter>

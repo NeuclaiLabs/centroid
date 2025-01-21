@@ -52,3 +52,21 @@ export interface Chat {
 export interface PageProps {
   params: Promise<{ id: string }>; // Promise type to signify asynchronous resolution
 }
+
+export interface CreateProjectData {
+  title: string;
+  description: string;
+  model: string;
+  instructions: string;
+  team_id?: string;
+  files?: string[];
+}
+
+export interface UpdateProjectData {
+  title?: string;
+  description?: string;
+  model?: string;
+  instructions?: string;
+  files?: string[];
+  new_files?: File[];
+}
