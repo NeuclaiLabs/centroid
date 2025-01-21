@@ -54,19 +54,10 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const updateProjectMutation = useSWRMutation(
     [url, token],
     async ([url, token], { arg: { id, data } }: { arg: { id: string; data: FormData } }) => {
-       const response = await fetch(url + id, {
-         method: "PUT",
-         headers: {
-           Authorization: `Bearer ${token}`,
-         },
-         body: data,
-       });
-
-       if (!response.ok) {
-         throw new Error("Failed to update project");
-       }
-
-       return response.json() as Promise<Project>;
+      return fetcher(url + id, token, {
+        method: "PUT",
+        body: data,
+      });
     }
   );
 
@@ -77,7 +68,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   });
 
   // Replace existing updateProject function
-  const updateProject = async (projectId: string, updateData:  FormData) => {
+  const updateProject = async (projectId: string, updateData: FormData) => {
     if (!session?.user) throw new Error("No active session");
 
     try {

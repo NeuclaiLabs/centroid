@@ -20,19 +20,10 @@ function useCreateProject(token: string | undefined) {
   return useSWRMutation(
     token ? [`${process.env.NEXT_PUBLIC_API_URL}/api/v1/projects/`, token] : null,
     async ([url, token], { arg }: { arg: { formData: FormData } }) => {
-      const response = await fetch(url, {
+      return fetcher(url, token, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
         body: arg.formData,
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to create project");
-      }
-
-      return response.json() as Promise<Project>;
     }
   );
 }

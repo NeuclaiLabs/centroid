@@ -24,9 +24,12 @@ export const fetcher = async (
     body?: any;
   }
 ) => {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
+  const headers: Record<string, string> = {};
+
+  // Only set Content-Type if the body is not FormData
+  if (!(options?.body instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
+  }
 
   if (token) {
     headers.Authorization = `Bearer ${token}`;
@@ -35,7 +38,7 @@ export const fetcher = async (
   const res = await fetch(url, {
     method: options?.method || "GET",
     headers,
-    ...(options?.body && { body: options.body }),
+    body: options?.body instanceof FormData ? options.body : options?.body ? JSON.stringify(options.body) : undefined,
   });
 
   if (!res.ok) {
