@@ -19,7 +19,8 @@ export interface Project {
   description: string;
   model: string;
   instructions: string;
-  files: string[];
+  files: string[] | string;
+  new_files?: File[];
   threads: string[];
   createdAt: Date;
   updatedAt: Date;

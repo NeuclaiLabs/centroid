@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 
 import nanoid
 from sqlalchemy import Column, DateTime, func
@@ -25,7 +26,8 @@ class ProjectUpdate(CamelModel):
     model: str | None = None
     instructions: str | None = None
     files: list[str] | None = None
-    updated_at: datetime = datetime.utcnow()
+    new_files: Any | None = None
+    # updated_at: datetime = datetime.utcnow()
 
 
 class Project(ProjectBase, SQLModel, table=True):

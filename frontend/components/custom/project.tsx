@@ -5,26 +5,12 @@ import { useSession } from "next-auth/react";
 import * as React from "react";
 import { useState, useRef, useCallback } from "react";
 import { toast } from "sonner";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import useSWR from "swr";
 import { fetcher } from "@/lib/utils";
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
 import { getToken } from "@/lib/utils";
 
 import { useProject } from "./project-provider";
@@ -38,7 +24,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { ProjectForm } from "./project-form";
 
 interface ProjectProps {
@@ -94,53 +79,12 @@ export function Project({ isLoading, data }: ProjectProps) {
     ([url, token]) => fetcher(url, token)
   );
 
-  const MAX_FILE_SIZE = 500 * 1024; // 500KB in bytes
-  const MAX_FILES = 5;
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      const newFiles = Array.from(event.target.files);
-
-      if (files.length + newFiles.length > MAX_FILES) {
-        toast.error(`Maximum ${MAX_FILES} files allowed`);
-        return;
-      }
-
-      const oversizedFiles = newFiles.filter((file) => file.size > MAX_FILE_SIZE);
-
-      if (oversizedFiles.length > 0) {
-        toast.error(`Files must be under 500KB. Skipping: ${oversizedFiles.map((f) => f.name).join(", ")}`);
-        const validFiles = newFiles.filter((file) => file.size <= MAX_FILE_SIZE);
-        setFiles((prevFiles) => [...prevFiles, ...validFiles]);
-      } else {
-        setFiles((prevFiles) => [...prevFiles, ...newFiles]);
-      }
-    }
-  };
-
-  const handleRemoveFile = (fileToRemove: File) => {
-    event?.stopPropagation();
-    setFiles((prevFiles) => prevFiles.filter((file) => file !== fileToRemove));
-  };
-
-  const handleUploadClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    fileInputRef.current?.click();
-  };
-
   const handleSubmit = async (formData: FormData) => {
     if (!data?.id) return;
 
     try {
-      await updateProject(data.id, {
-        title: formData.get("title") as string,
-        description: formData.get("description") as string,
-        model: formData.get("model") as string,
-        instructions: formData.get("instructions") as string,
-        // Handle files if needed
-        // files: JSON.parse(formData.get("files") as string),
-        // new_files: formData.getAll("newFiles") as File[],
-      });
+      console.log("Form data:", formData);
+      await updateProject(data.id, formData);
 
       setIsEditDialogOpen(false);
       toast.success("Project updated successfully");

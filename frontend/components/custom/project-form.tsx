@@ -144,19 +144,14 @@ export const ProjectForm = ({
       submitFormData.append("description", formData.description || "");
       submitFormData.append("model", formData.model);
       submitFormData.append("instructions", formData.instructions || "");
-
-      // Add existing files as a JSON string
-      // existingFiles.forEach((file) => {
-      //   submitFormData.append("files", file);
-      // });
+      submitFormData.append("files", existingFiles.join(","));
 
       // Add new files
-      // newFiles.forEach((file) => {
-      //   submitFormData.append("new_files", file);
-      // });
+      newFiles.forEach((file) => {
+        submitFormData.append("new_files", file);
+      });
     }
 
-    console.log("Form data:", Object.fromEntries(submitFormData.entries()));
     await onSubmit(submitFormData);
   };
 

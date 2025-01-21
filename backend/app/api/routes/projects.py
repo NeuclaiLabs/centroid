@@ -12,7 +12,6 @@ from app.models import (
     Project,
     ProjectOut,
     ProjectsOut,
-    ProjectUpdate,
     Team,
     TeamRole,
 )
@@ -131,17 +130,31 @@ async def update_project(
     *,
     session: SessionDep,
     project_id: str,
-    project_in: ProjectUpdate,
-    new_files: list[UploadFile] | None = None,
+    title: str = Form(...),
+    description: str | None = Form(None),
+    model: str = Form(...),
+    instructions: str | None = Form(None),
+    files: str = Form(None),
+    new_files: list[UploadFile] = File(None),
 ) -> Any:
     """Update a project."""
     project = get_project(session, project_id)
 
+    # Create update data dictionary from form fields
+    update_data = {
+        "title": title,
+        "description": description,
+        "model": model,
+        "instructions": instructions,
+    }
+
     # Handle files update if provided
-    if project_in.files is not None or new_files:
+    if files is not None or new_files:
         current_files = project.files or []
-        # Keep only the files specified in project_in.files
-        kept_files = [f for f in current_files if f in (project_in.files or [])]
+        # Split the comma-separated string into a list if files is provided
+        files_list = files.split(",") if files else []
+        # Keep only the files specified in the files parameter
+        kept_files = [f for f in current_files if f in files_list]
 
         # Handle new file uploads if present
         if new_files:
@@ -156,14 +169,12 @@ async def update_project(
         project.files = kept_files
 
     # Update other fields
-    update_data = project_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(project, field, value)
 
     session.add(project)
     session.commit()
     session.refresh(project)
-    print("Project updated:", project)
 
     return ProjectOut.model_validate(project.model_dump())
 

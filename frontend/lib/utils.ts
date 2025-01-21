@@ -21,7 +21,7 @@ export const fetcher = async (
   options?: {
     method: string;
     headers?: { "Content-Type": string };
-    body?: string;
+    body?: any;
   }
 ) => {
   const headers: Record<string, string> = {
