@@ -7,14 +7,9 @@ from typing import Any
 import yaml
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from pydantic import BaseModel
-from sqlmodel import Session, select, text
 
 from app.core.config import settings
-from app.db.session import engine
-from app.models import (
-    APIEndpoint,
-    Message,
-)
+from app.models import Message
 
 router = APIRouter()
 
@@ -161,58 +156,3 @@ async def get_file_content(file: str) -> Any:
         raise HTTPException(
             status_code=500, detail=f"Error reading file content: {str(e)}"
         )
-
-
-@router.get("/search", response_model=SearchResponse)
-async def search_endpoints(
-    project_id: str, query: str, folder_path: str | None = None
-) -> Any:
-    """
-    Search API endpoints based on a query string using SQLite FTS.
-    Results are scoped to the specified project.
-    """
-    with Session(engine) as session:
-        try:
-            # Base query with project isolation
-            statement = select(APIEndpoint).where(APIEndpoint.project_id == project_id)
-
-            # Add FTS search condition
-            if query:
-                statement = statement.where(text("endpoints_fts MATCH :query")).params(
-                    query=f"{query}*"
-                )
-
-            # Add folder filter if specified
-            if folder_path:
-                statement = statement.where(APIEndpoint.folder_path == folder_path)
-
-            # Execute query
-            results = session.exec(statement).all()
-
-            return SearchResponse(
-                success=True,
-                query=query,
-                results=[
-                    {
-                        "name": endpoint.name,
-                        "request": {
-                            "method": endpoint.method,
-                            "url": {"raw": endpoint.path},
-                            "header": endpoint.headers,
-                            "body": endpoint.body,
-                            "description": endpoint.description,
-                        },
-                        "folder_path": endpoint.folder_path,
-                    }
-                    for endpoint in results
-                ],
-                metadata={
-                    "totalEndpoints": len(results),
-                    "searchMethod": "fts",
-                    "timestamp": datetime.utcnow().isoformat(),
-                    "searchParameters": {"includeExamples": False, "limit": 50},
-                },
-            )
-
-        except Exception as e:
-            return SearchResponse(success=False, query=query, error=str(e))

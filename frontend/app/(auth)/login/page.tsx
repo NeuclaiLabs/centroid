@@ -31,7 +31,7 @@ export default function Page() {
       setIsRedirecting(true);
       updateSession()
         .then(() => {
-          router.refresh()
+          router.refresh();
         })
         .catch((error) => {
           console.error("Session update failed:", error);
