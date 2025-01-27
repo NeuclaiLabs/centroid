@@ -147,26 +147,19 @@ async def update_project(
         "model": model,
         "instructions": instructions,
     }
+    current_files = project.files or []
+    files_list = files.split(",") if files and files.strip() else []
+    project.files = [f for f in current_files if f in files_list]
 
-    # Handle files update if provided
-    if files is not None or new_files:
+    # Handle new file uploads
+    if new_files:
+        from app.api.routes.files import upload_files
+
+        upload_response = await upload_files(
+            project_id=str(project.id), files=new_files
+        )
         current_files = project.files or []
-        # Split the comma-separated string into a list if files is provided
-        files_list = files.split(",") if files else []
-        # Keep only the files specified in the files parameter
-        kept_files = [f for f in current_files if f in files_list]
-
-        # Handle new file uploads if present
-        if new_files:
-            from app.api.routes.files import upload_files
-
-            upload_response = await upload_files(
-                project_id=str(project.id), files=new_files
-            )
-            kept_files.extend(upload_response.files)
-
-        # Update project's files list
-        project.files = kept_files
+        project.files = current_files + upload_response.files
 
     # Update other fields
     for field, value in update_data.items():

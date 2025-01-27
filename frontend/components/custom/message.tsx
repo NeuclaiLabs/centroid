@@ -71,7 +71,7 @@ export const PreviewMessage = ({
                     <div key={toolCallId}>
                       {toolName === "getWeather" ? (
                         <Weather weatherAtLocation={result} />
-                      ) : toolName === "listAPICalls" ? (
+                      ) : toolName === "searchAPICollections" ? (
                         <APISearchViewer result={result} />
                       ) : (
                         <ApiResponseViewer response={result.response} meta={result.meta} loading={false} />
@@ -88,7 +88,7 @@ export const PreviewMessage = ({
                     >
                       {toolName === "getWeather" ? (
                         <Weather />
-                      ) : toolName === "listAPICalls" ? (
+                      ) : toolName === "searchAPICollections" ? (
                         <APISearchViewer loading={true} />
                       ) : (
                         <ApiResponseViewer response={undefined} meta={undefined} loading={true} />

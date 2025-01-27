@@ -169,7 +169,9 @@ export function Project({ isLoading, data }: ProjectProps) {
               ? data.files.map((file, index) => (
                   <div key={index} className="flex items-center gap-2">
                     <FileIcon className="size-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">{file}</span>
+                    <span className="text-sm text-muted-foreground">
+                     {file.split("/").pop()?.slice(16)}
+                    </span>
                   </div>
                 ))
               : null}

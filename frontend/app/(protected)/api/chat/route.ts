@@ -95,7 +95,7 @@ export async function POST(request: Request) {
     messages: [
       {
         role: "system",
-        content: `You are an API documentation assistant. When using the listAPICalls function, respond with ONLY the message field from the response, which contains the success/failure status and time taken. Do not add any additional commentary or explanations.`,
+        content: `You are an API documentation assistant. When using the searchAPICollections function, respond with ONLY the message field from the response, which contains the success/failure status and time taken. Do not add any additional commentary or explanations.`,
       },
       ...coreMessages,
     ],
@@ -116,7 +116,7 @@ export async function POST(request: Request) {
           return weatherData;
         },
       },
-      listAPICalls: {
+      searchAPICollections: {
         description:
           "Search and retrieve relevant API endpoints from the collection using natural language. Returns raw results without requiring additional commentary.",
         parameters: z.object({
