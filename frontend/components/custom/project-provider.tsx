@@ -18,7 +18,7 @@ type ProjectContextType = {
   count: number;
   error: Error | null;
   setSelectedProjectId: (id: string | null) => void;
-  updateProject: (id: string, data: Partial<Project> | FormData) => Promise<void>;
+  updateProject: (id: string, data: FormData) => Promise<void>;
   deleteProject: (id: string) => Promise<void>;
   fetchProjectById: (id: string) => Promise<Project | null>;
 };
@@ -68,12 +68,11 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   });
 
   // Replace existing updateProject function
-  const updateProject = async (projectId: string, updateData: FormData) => {
+  const updateProject = async (projectId: string, data: FormData) => {
     if (!session?.user) throw new Error("No active session");
-
     try {
       setError(null);
-      await updateProjectMutation.trigger({ id: projectId, data: updateData });
+      await updateProjectMutation.trigger({ id: projectId, data });
     } catch (err) {
       setError(err instanceof Error ? err : new Error("Failed to update project"));
       throw err;

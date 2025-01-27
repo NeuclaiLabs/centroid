@@ -9,7 +9,7 @@ export const authConfig = {
   pages: {
     signIn: "/login",
     newUser: "/",
-    error: '/login',
+    error: "/login",
   },
   providers: [
     // added later in auth.ts since it requires bcrypt which is only compatible with Node.js
@@ -36,7 +36,8 @@ export const authConfig = {
       }
 
       if (isLoggedIn) {
-        return Response.redirect(new URL("/", nextUrl));
+        console.log("redirecting to /");
+        return Response.redirect(new URL("/", nextUrl as unknown as URL));
       }
 
       return true;

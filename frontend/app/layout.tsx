@@ -41,7 +41,7 @@ export default async function RootLayout({
           `}
         </Script> */}
       </head>
-      <body className="antialiased">
+      <body className="antialiased" suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <SessionProvider>
             <Toaster position="top-center" />

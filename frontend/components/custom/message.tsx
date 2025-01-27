@@ -12,6 +12,7 @@ import { MessageActions } from "./message-actions";
 import { PreviewAttachment } from "./preview-attachment";
 import { Weather } from "./weather";
 import { ApiResponseViewer } from "./api-response-viewer";
+import { APISearchViewer } from "./api-search-viewer";
 
 export const PreviewMessage = ({
   message,
@@ -70,6 +71,8 @@ export const PreviewMessage = ({
                     <div key={toolCallId}>
                       {toolName === "getWeather" ? (
                         <Weather weatherAtLocation={result} />
+                      ) : toolName === "listAPICalls" ? (
+                        <APISearchViewer result={result} />
                       ) : (
                         <ApiResponseViewer response={result.response} meta={result.meta} loading={false} />
                       )}
@@ -85,6 +88,8 @@ export const PreviewMessage = ({
                     >
                       {toolName === "getWeather" ? (
                         <Weather />
+                      ) : toolName === "listAPICalls" ? (
+                        <APISearchViewer loading={true} />
                       ) : (
                         <ApiResponseViewer response={undefined} meta={undefined} loading={true} />
                       )}

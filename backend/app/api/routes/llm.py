@@ -1,5 +1,3 @@
-from urllib.parse import urljoin
-
 import httpx
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, computed_field
@@ -35,17 +33,16 @@ async def get_models():
     Fetch available models from the LLM service
     """
     try:
-        headers = {}
-        if settings.LLM_API_KEY:
-            headers["Authorization"] = f"Bearer {settings.LLM_API_KEY}"
+        headers = {"Authorization": f"Bearer {settings.LLM_API_KEY}"}
+        # Ensure the base URL doesn't end with a slash and append v1/models
+        models_url = f"{settings.LLM_BASE_URL.rstrip('/')}/models"
 
         async with httpx.AsyncClient() as client:
-            response = await client.get(
-                urljoin(settings.LLM_BASE_URL, "models"), headers=headers
-            )
+            response = await client.get(models_url, headers=headers)
             response.raise_for_status()
             return response.json()
     except httpx.HTTPError as e:
+        print(e)
         raise HTTPException(
             status_code=500, detail=f"Failed to fetch models from LLM service: {str(e)}"
         )

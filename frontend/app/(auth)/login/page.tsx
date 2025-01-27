@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useSession } from "next-auth/react";
 
 import { AuthForm } from "@/components/custom/auth-form";
 import { SubmitButton } from "@/components/custom/submit-button";
@@ -12,6 +13,8 @@ import { login, LoginActionState } from "../actions";
 
 export default function Page() {
   const router = useRouter();
+  const { update: updateSession } = useSession();
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const [email, setEmail] = useState(process.env.NEXT_PUBLIC_DEFAULT_USER_EMAIL || "");
 
@@ -24,16 +27,24 @@ export default function Page() {
       toast.error("Invalid credentials!");
     } else if (state.status === "invalid_data") {
       toast.error("Failed validating your submission!");
-    } else if (state.status === "success") {
-      router.refresh();
+    } else if (state.status === "success" && !isRedirecting) {
+      setIsRedirecting(true);
+      updateSession()
+        .then(() => {
+          router.refresh()
+        })
+        .catch((error) => {
+          console.error("Session update failed:", error);
+          setIsRedirecting(false);
+          toast.error("Failed to initialize session");
+        });
     }
-  }, [state.status, router]);
+  }, [state.status, router, updateSession, isRedirecting]);
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get("email") as string);
     formAction(formData);
   };
-  console.log("Email", process.env.NEXT_PUBLIC_DEFAULT_USER_EMAIL);
 
   return (
     <div className="flex h-dvh w-screen items-start pt-12 md:pt-0 md:items-center justify-center bg-background">

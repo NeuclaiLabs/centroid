@@ -165,18 +165,14 @@ export function Project({ isLoading, data }: ProjectProps) {
                 <PenLine className="size-4" />
               </Button>
             </div>
-            {data?.files && data.files.length > 0 ? (
-              <div className="space-y-2">
-                {data.files.map((file, index) => (
+            {Array.isArray(data?.files)
+              ? data.files.map((file, index) => (
                   <div key={index} className="flex items-center gap-2">
                     <FileIcon className="size-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">{file.split("/").pop()?.slice(16)}</span>
+                    <span className="text-sm text-muted-foreground">{file}</span>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No files added.</p>
-            )}
+                ))
+              : null}
           </div>
 
           {/* Edit Dialog */}
@@ -199,7 +195,7 @@ export function Project({ isLoading, data }: ProjectProps) {
                   description: data?.description || "",
                   model: data?.model || "",
                   instructions: data?.instructions || "",
-                  files: data?.files || [],
+                  files: Array.isArray(data?.files) ? data.files : [],
                 }}
                 focusField={activeField}
               />

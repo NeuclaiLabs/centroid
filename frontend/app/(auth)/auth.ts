@@ -1,10 +1,11 @@
+// frontend/app/(auth)/auth.ts
 import NextAuth, { User, Session } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
 import { authConfig } from "./auth.config";
 
 interface ExtendedSession extends Session {
-  user: User;
+  user: User & { id: string; token: string };
 }
 
 export const {
@@ -21,8 +22,11 @@ export const {
         password: { label: "Password", type: "password" },
       },
       async authorize({ email, password }: any) {
+        const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/login/access-token`;
+        console.log("Attempting login to:", apiUrl);
+
         try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/login/access-token`, {
+          const res = await fetch(apiUrl, {
             method: "POST",
             body: new URLSearchParams({
               username: email,
@@ -34,13 +38,23 @@ export const {
             },
           });
 
+          const contentType = res.headers.get("content-type");
+          if (!contentType?.includes("application/json")) {
+            console.error("Received non-JSON response:", await res.text());
+            throw new Error("Invalid API response format");
+          }
+
           if (!res.ok) {
-            throw new Error("Authentication failed");
+            const errorData = await res.json();
+            console.error("API error response:", errorData);
+            throw new Error(errorData.detail || "Authentication failed");
           }
 
           const response = await res.json();
+          console.log("Login response:", response);
 
           if (!response.user) {
+            console.error("No user data in response:", response);
             return null;
           }
 
@@ -59,6 +73,7 @@ export const {
   ],
   callbacks: {
     async jwt({ token, user }) {
+      console.log("jwt", token, user);
       if (user) {
         // @ts-ignore
         token = { ...token, accessToken: (user as User).token, id: user.id };
@@ -67,6 +82,7 @@ export const {
       return token;
     },
     async session({ session, token }) {
+      console.log("session", session, token);
       if (token) {
         const { id, accessToken } = token as { id: string; accessToken: string };
         const { user } = session;

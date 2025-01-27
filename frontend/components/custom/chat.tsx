@@ -70,7 +70,7 @@ export function Chat({
   );
   const { selectedProject, setSelectedProjectId } = useProject();
   const { messages, handleSubmit, input, setInput, append, isLoading, stop } = useChat({
-    body: { id, projectId: project?.id || selectedProject?.id },
+    body: { id, project: project || selectedProject },
     initialMessages,
     onFinish: () => {
       window.history.replaceState({}, "", `/chat/${id}`);
@@ -149,8 +149,8 @@ export function Chat({
   // Update scroll effect to consider loading state and message type
   useEffect(() => {
     const lastMessage = messages[messages.length - 1];
-    if (lastMessage?.role === 'assistant') {
-      const messageLength = lastMessage.content.split('\n').length;
+    if (lastMessage?.role === "assistant") {
+      const messageLength = lastMessage.content.split("\n").length;
       if (messageLength <= 10) {
         scrollPartially();
       }
