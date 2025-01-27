@@ -386,7 +386,7 @@ async def get_file_content(file: str) -> Any:
 
 
 @router.get("/search", response_model=SearchResponse)
-async def search_endpoints(
+async def search_api_collections(
     project_id: str,
     query: str,
     limit: int = 10,

@@ -1,7 +1,6 @@
-import { convertToCoreMessages, Message, streamText, generateObject, generateText } from "ai";
+import { convertToCoreMessages, Message, streamText } from "ai";
 import { z } from "zod";
-import fs from "fs/promises";
-import { homedir } from "os";
+
 
 import { auth } from "@/app/(auth)/auth";
 import { customModel } from "@/lib/ai";
@@ -47,35 +46,6 @@ const RequestSchema = z.object({
   url: URLSchema,
 });
 
-const ItemSchema = z.object({
-  name: z.string(),
-  request: RequestSchema,
-  response: z.array(ResponseSchema).optional(),
-});
-
-const CollectionSchema = z.object({
-  info: z.object({
-    name: z.string(),
-    schema: z.string().optional(),
-  }),
-  item: z.array(ItemSchema),
-});
-
-// Define the schema outside for better reusability
-const APIMatchSchema = z.object({
-  endpoint: z.string().describe("The full endpoint path"),
-  method: z.string().describe("HTTP method (GET, POST, etc.)"),
-  description: z.string().describe("Clear description of what the endpoint does"),
-  relevanceScore: z.number().min(0).max(1).describe("Match relevance score between 0 and 1"),
-  matchReasoning: z.string().describe("Explanation of why this endpoint matches the query"),
-  requiredParameters: z.record(z.string()).describe("Map of parameter names to their descriptions"),
-  examples: z
-    .object({
-      request: z.any().describe("Example request payload"),
-      response: z.any().describe("Example response"),
-    })
-    .optional(),
-});
 
 export async function POST(request: Request) {
   const { id, messages, project }: { id: string; messages: Array<Message>; project: Project | null } =
@@ -122,132 +92,35 @@ export async function POST(request: Request) {
         parameters: z.object({
           query: z.string().describe("Natural language description of the API endpoints you're looking for"),
           limit: z.number().min(1).max(20).default(5).describe("Maximum number of API definitions to return"),
-          includeExamples: z.boolean().default(true).describe("Whether to include example requests and responses"),
-          categories: z.array(z.string()).optional().describe("Optional categories to filter by"),
         }),
-        execute: async ({ query, limit, includeExamples, categories }) => {
+        execute: async ({ query, limit }) => {
           const startTime = performance.now();
-          console.log("Start processing request");
-
           try {
-            if (!project || !project.files) {
-              throw new Error("No project or API definition files available");
-            }
-
-            // Filter for API definition files
-            const apiFiles = Array.isArray(project.files)
-              ? project.files.filter(
-                  (file) => file.endsWith(".json") || file.endsWith(".yaml") || file.endsWith(".yml")
-                )
-              : [];
-
-            if (apiFiles.length === 0) {
-              throw new Error("No API definition files found in the project");
-            }
-
-            // Read content of each API definition file from .openastra/uploads
-            const apiDefinitions = await Promise.all(
-              apiFiles.map(async (file) => {
-                try {
-                  const content = await fs.readFile(`${homedir()}/.openastra/uploads/${file}`, "utf8");
-                  return {
-                    file,
-                    content: JSON.parse(content),
-                  };
-                } catch (error) {
-                  console.error(`Failed to read content for file: ${file}`, error);
-                  return null;
-                }
-              })
+            const response = await fetch(
+              `${process.env.NEXT_PUBLIC_API_URL}/api/v1/files/search?project_id=${project!.id}&query=${encodeURIComponent(query)}&limit=${limit}`,
+              {
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${getToken(session)}`,
+                },
+              }
             );
 
-            // Filter out any failed fetches and combine all definitions
-            const combinedDefinitions = apiDefinitions
-              .filter((def) => def !== null)
-              .map((def) => def.content)
-              .flat();
+            if (!response.ok) {
+              throw new Error(`Search failed with status: ${response.status}`);
+            }
 
-            const generateTextStartTime = performance.now(); // Start time for generateText
-
-            const { text } = await generateText({
-              model: llm,
-              prompt: `You are a precise API documentation tool. Analyze the following API endpoints and assign relevance scores based on the search query. Return the endpoints with their scores and reasoning.
-
-Search criteria: "${query}"
-
-Instructions:
-1. Only include endpoints that exist in the collection
-2. Assign a relevance score (0-1) to each endpoint
-3. Provide brief reasoning for each score
-4. Sort by relevance score descending
-5. Return up to ${limit} matches
-
-API Collection:
-${JSON.stringify(combinedDefinitions, null, 2)}`,
-              temperature: 0.0,
-              maxTokens: 2000,
-            });
-
-            const generateTextEndTime = performance.now(); // End time for generateText
-            console.log(`generateText call took ${Math.round(generateTextEndTime - generateTextStartTime)}ms`);
-
-            const generateStartTime = performance.now(); // Start time for generateObject
-
-            // Calculate relevance scores for each endpoint
-            const { object: searchResult } = await generateObject({
-              model: llm,
-              schema: z.object({
-                info: CollectionSchema.shape.info,
-                item: z.array(
-                  z.object({
-                    ...ItemSchema.shape,
-                    relevanceScore: z.number().min(0).max(1),
-                    matchReasoning: z.string(),
-                  })
-                ),
-              }),
-              prompt: `You are a precise API documentation tool. Analyze the following API endpoints and assign relevance scores based on the search query. Return the endpoints with their scores and reasoning.
-
-Search criteria: "${query}"
-
-Instructions:
-1. Only include endpoints that exist in the collection
-2. Assign a relevance score (0-1) to each endpoint
-3. Provide brief reasoning for each score
-4. Sort by relevance score descending
-5. Return up to ${limit} matches
-
-API Collection:
-${JSON.stringify(combinedDefinitions, null, 2)}`,
-              temperature: 0.0,
-              maxTokens: 2000,
-            });
-
-            const generateEndTime = performance.now(); // End time for generateObject
-            console.log(`generateObject call took ${Math.round(generateEndTime - generateStartTime)}ms`);
-
-            // Filter endpoints with relevance score > 0.9
-            const filteredItems = searchResult.item.filter((endpoint) => endpoint.relevanceScore > 0.9);
-
+            const searchResult = await response.json();
             const endTime = performance.now();
             const duration = Math.round(endTime - startTime);
             console.log(`Total processing time: ${duration}ms`);
 
             return {
-              message: `Successfully found ${filteredItems.length} matching endpoints in ${duration}ms`,
-              results: { ...searchResult, item: filteredItems },
+              results: searchResult,
               success: true,
               query,
-              metadata: {
-                totalEndpoints: filteredItems.length,
-                searchMethod: "Semantic search with relevance scoring",
-                timestamp: new Date().toISOString(),
-                searchParameters: {
-                  includeExamples,
-                  categories,
-                  limit,
-                },
-              },
+              metadata: searchResult.metadata,
             };
           } catch (error) {
             const endTime = performance.now();
@@ -260,8 +133,6 @@ ${JSON.stringify(combinedDefinitions, null, 2)}`,
                 searchMethod: "Failed search",
                 timestamp: new Date().toISOString(),
                 searchParameters: {
-                  includeExamples,
-                  categories,
                   limit,
                 },
               },

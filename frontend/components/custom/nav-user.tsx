@@ -69,14 +69,14 @@ export function NavUser() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
+            {/* <DropdownMenuGroup>
               <DropdownMenuItem className="cursor-pointer">
                 <Sparkles className="mr-2 size-4" />
                 Upgrade to Pro
               </DropdownMenuItem>
             </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
+            <DropdownMenuSeparator /> */}
+            {/* <DropdownMenuGroup>
               <DropdownMenuItem className="cursor-pointer">
                 <BadgeCheck className="mr-2 size-4" />
                 Account
@@ -123,8 +123,8 @@ export function NavUser() {
                   </ToggleGroup>
                 </div>
               </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
+            </DropdownMenuGroup> */}
+            {/* <DropdownMenuSeparator /> */}
             <DropdownMenuItem
               onSelect={(e) => {
                 e.preventDefault();
