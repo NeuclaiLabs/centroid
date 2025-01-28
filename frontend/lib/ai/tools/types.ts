@@ -85,4 +85,5 @@ export interface SearchResult {
     };
   };
   error?: string;
+  message?: string;
 }

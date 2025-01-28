@@ -3,7 +3,9 @@ import { Session } from "next-auth";
 import { z } from "zod";
 
 import type { Project } from "@/lib/types";
+
 import { getToken } from "@/lib/utils";
+import { SearchResult } from "@/lib/ai/tools/types";
 
 export const searchAPICollections = (project: Project, session: Session) =>
   tool({
@@ -70,7 +72,7 @@ export const searchAPICollections = (project: Project, session: Session) =>
           "Optional metadata filter conditions that will be inferred from your query. You can explicitly filter by HTTP method (GET, POST, etc.), URL patterns, authentication requirements, and request body requirements. Examples: 'Find all GET endpoints', 'Show authenticated endpoints', 'List endpoints that require a request body'"
         ),
     }),
-    execute: async ({ query, limit, where }) => {
+    execute: async ({ query, limit, where }): Promise<SearchResult> => {
       const startTime = performance.now();
       try {
         const searchParams = new URLSearchParams({
@@ -109,6 +111,7 @@ export const searchAPICollections = (project: Project, session: Session) =>
         });
 
         return {
+          message: `Found ${searchResult.metadata?.totalEndpoints} API definitions in ${duration}ms`,
           results: searchResult.results,
           success: true,
           query,
@@ -118,8 +121,10 @@ export const searchAPICollections = (project: Project, session: Session) =>
         const endTime = performance.now();
         const duration = Math.round(endTime - startTime);
         return {
-          message: `Failed to search API definitions in ${duration}ms: ${error instanceof Error ? error.message : "Unknown error"}`,
           success: false,
+          query,
+          results: [],
+          message: `Failed to search API definitions in ${duration}ms: ${error instanceof Error ? error.message : "Unknown error"}`,
           metadata: {
             totalEndpoints: 0,
             searchMethod: "Failed search",
