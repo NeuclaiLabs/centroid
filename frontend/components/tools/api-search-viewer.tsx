@@ -1,110 +1,25 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-interface URLVariable {
-  key: string;
-  value?: string;
-}
-
-interface URL {
-  raw: string;
-  protocol?: string;
-  host?: string[];
-  path?: string[];
-  variable?: URLVariable[];
-}
-
-interface Header {
-  key: string;
-  value: string;
-}
-
-interface Request {
-  method: string;
-  header?: Header[];
-  body?: {
-    mode?: string;
-    raw?: string;
-  };
-  url: URL;
-}
-
-interface Response {
-  name?: string;
-  status?: number;
-  code?: number;
-  body?: string;
-  header?: Header[];
-}
-
-interface Item {
-  name: string;
-  request: Request;
-  response?: Response[];
-  relevanceScore?: number;
-  matchReasoning?: string;
-}
-
-interface Collection {
-  info: {
-    name: string;
-    schema?: string;
-  };
-  item: Item[];
-}
-
-interface Endpoint {
-  name: string;
-  folder_path: string;
-  method: string;
-  url: string;
-  description?: string;
-  headers?: Header[];
-  body?: {
-    mode?: string;
-    raw?: string;
-  };
-}
-
-interface SearchResultItem {
-  endpoint: Endpoint;
-  metadata: {
-    file_id: string;
-    folder_path: string;
-    has_auth: boolean;
-    has_body: boolean;
-    has_examples: boolean;
-    method: string;
-    name: string;
-    url: string;
-  };
-  score: number;
-}
-
-interface SearchResult {
-  success: boolean;
-  query: string;
-  results: SearchResultItem[];
-  metadata?: {
-    totalEndpoints: number;
-    searchMethod: string;
-    timestamp: string;
-    searchParameters: {
-      limit: number;
-    };
-  };
-  error?: string;
-}
+import { Button } from "@/components/ui/button";
+import { ChevronUp, ChevronDown } from "lucide-react";
+import type { SearchResult } from "@/lib/ai/tools/types";
 
 interface APISearchViewerProps {
   result?: SearchResult;
   loading?: boolean;
 }
 
+// Add isExpanded state for each result card
+interface ResultCardState {
+  [key: string]: boolean;
+}
+
 export const APISearchViewer: FC<APISearchViewerProps> = ({ result, loading }) => {
+  const [expandedCards, setExpandedCards] = useState<ResultCardState>({});
+
   if (loading) {
     return (
       <Card className="w-full animate-pulse">
@@ -164,80 +79,128 @@ export const APISearchViewer: FC<APISearchViewerProps> = ({ result, loading }) =
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-[400px] pr-4">
-          {results.map((item, index) => (
-            <Card key={`${item.endpoint.method}-${item.endpoint.url}-${index}`} className="mb-4">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      className={
-                        item.endpoint.method === "GET"
-                          ? "bg-emerald-500 hover:bg-emerald-600"
-                          : item.endpoint.method === "POST"
-                            ? "bg-amber-500 hover:bg-amber-600"
-                            : item.endpoint.method === "PUT"
-                              ? "bg-blue-500 hover:bg-blue-600"
-                              : item.endpoint.method === "PATCH"
-                                ? "bg-purple-500 hover:bg-purple-600"
-                                : item.endpoint.method === "DELETE"
-                                  ? "bg-red-500 hover:bg-red-600"
-                                  : ""
-                      }
-                    >
-                      {item.endpoint.method}
-                    </Badge>
-                    <code className="text-sm font-mono">{item.endpoint.url}</code>
-                  </div>
-                  {item.score !== undefined && (
-                    <Badge variant="secondary" className="ml-2">
-                      {Math.round((1 - Math.abs(item.score)) * 100)}% match
-                    </Badge>
-                  )}
-                </div>
-                <CardDescription>
-                  <div>{item.endpoint.name}</div>
-                  {item.endpoint.description && (
-                    <div className="text-xs text-muted-foreground mt-1">{item.endpoint.description}</div>
-                  )}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Tabs defaultValue="details">
-                  <TabsList>
-                    <TabsTrigger value="details">Details</TabsTrigger>
-                    {item.endpoint.body && <TabsTrigger value="request">Request</TabsTrigger>}
-                  </TabsList>
-                  <TabsContent value="details">
-                    <div className="space-y-4">
-                      {item.endpoint.headers && item.endpoint.headers.length > 0 && (
-                        <div>
-                          <h4 className="font-medium mb-2">Headers</h4>
-                          <div className="grid grid-cols-2 gap-2">
-                            {item.endpoint.headers.map((header) => (
-                              <div key={header.key} className="text-sm">
-                                <code className="text-xs">{header.key}</code>
-                                <span className="block text-muted-foreground">{header.value}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </TabsContent>
-                  {item.endpoint.body && (
-                    <TabsContent value="request">
-                      <div>
-                        <h4 className="font-medium mb-2">Request Body</h4>
-                        <code className="block bg-muted p-2 rounded-md text-xs overflow-auto whitespace-pre">
-                          {item.endpoint.body.raw}
-                        </code>
+          {results.map((item, index) => {
+            const cardKey = `${item.endpoint.method}-${item.endpoint.url}-${index}`;
+            const isExpanded = expandedCards[cardKey] || false;
+
+            return (
+              <Card key={cardKey} className="mb-4">
+                <CardHeader className="pt-2 pb-2">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          className={
+                            item.endpoint.method === "GET"
+                              ? "bg-emerald-500 hover:bg-emerald-600"
+                              : item.endpoint.method === "POST"
+                                ? "bg-amber-500 hover:bg-amber-600"
+                                : item.endpoint.method === "PUT"
+                                  ? "bg-blue-500 hover:bg-blue-600"
+                                  : item.endpoint.method === "PATCH"
+                                    ? "bg-purple-500 hover:bg-purple-600"
+                                    : item.endpoint.method === "DELETE"
+                                      ? "bg-red-500 hover:bg-red-600"
+                                      : ""
+                          }
+                        >
+                          {item.endpoint.method}
+                        </Badge>
+                        <code className="text-sm font-mono">{item.endpoint.url}</code>
                       </div>
-                    </TabsContent>
-                  )}
-                </Tabs>
-              </CardContent>
-            </Card>
-          ))}
+                      <CardDescription>
+                        <div>{item.endpoint.name}</div>
+                      </CardDescription>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {item.score !== undefined && (
+                        <Badge variant="secondary">{Math.round((1 - Math.abs(item.score)) * 100)}% match</Badge>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setExpandedCards((prev) => ({ ...prev, [cardKey]: !prev[cardKey] }))}
+                        aria-expanded={isExpanded}
+                      >
+                        {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                {isExpanded && (
+                  <CardContent>
+                    {item.endpoint.description && (
+                      <div className="text-sm text-muted-foreground mb-4">{item.endpoint.description}</div>
+                    )}
+                    <Tabs defaultValue="params">
+                      <TabsList>
+                        <TabsTrigger value="params">Parameters</TabsTrigger>
+                        <TabsTrigger value="headers">Headers</TabsTrigger>
+                        {item.endpoint.body && <TabsTrigger value="body">Body</TabsTrigger>}
+                        {item.metadata.has_auth && <TabsTrigger value="auth">Auth</TabsTrigger>}
+                      </TabsList>
+
+                      <TabsContent value="params">
+                        <div className="space-y-4">
+                          {item.endpoint.url.includes("?") ? (
+                            <div className="grid grid-cols-2 gap-2">
+                              {item.endpoint.url
+                                .split("?")[1]
+                                .split("&")
+                                .map((param, idx) => {
+                                  const [key, value] = param.split("=");
+                                  return (
+                                    <div key={idx} className="text-sm">
+                                      <code className="text-xs">{key}</code>
+                                      <span className="block text-muted-foreground">{value || "No default value"}</span>
+                                    </div>
+                                  );
+                                })}
+                            </div>
+                          ) : (
+                            <div className="text-sm text-muted-foreground">No URL parameters</div>
+                          )}
+                        </div>
+                      </TabsContent>
+
+                      <TabsContent value="headers">
+                        <div className="space-y-4">
+                          {item.endpoint.headers && item.endpoint.headers.length > 0 ? (
+                            <div className="grid grid-cols-2 gap-2">
+                              {item.endpoint.headers.map((header) => (
+                                <div key={header.key} className="text-sm">
+                                  <code className="text-xs">{header.key}</code>
+                                  <span className="block text-muted-foreground">{header.value}</span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-sm text-muted-foreground">No headers required</div>
+                          )}
+                        </div>
+                      </TabsContent>
+
+                      {item.endpoint.body && (
+                        <TabsContent value="body">
+                          <div>
+                            <code className="block bg-muted p-2 rounded-md text-xs overflow-auto whitespace-pre">
+                              {item.endpoint.body.raw}
+                            </code>
+                          </div>
+                        </TabsContent>
+                      )}
+
+                      {item.metadata.has_auth && (
+                        <TabsContent value="auth">
+                          <div className="text-sm text-muted-foreground">Authentication required for this endpoint</div>
+                        </TabsContent>
+                      )}
+                    </Tabs>
+                  </CardContent>
+                )}
+              </Card>
+            );
+          })}
         </ScrollArea>
       </CardContent>
     </Card>
