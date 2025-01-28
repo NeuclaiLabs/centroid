@@ -201,67 +201,71 @@ def parse_api_collection(content: dict) -> list[dict]:
 
 def store_embeddings(project_id: str, file_id: str, content: dict):
     """Store endpoints in ChromaDB with their embeddings."""
-    # First check if this is a supported API collection
-    if not isinstance(content, dict) or not (
-        content.get("info", {})
-        .get("schema", "")
-        .startswith("https://schema.getpostman.com")
-        or content.get("openapi")
-        or content.get("swagger")
-    ):
-        return  # Not a supported API collection format
+    try:
+        # First check if this is a supported API collection
+        if not isinstance(content, dict) or not (
+            content.get("info", {})
+            .get("schema", "")
+            .startswith("https://schema.getpostman.com")
+            or content.get("openapi")
+            or content.get("swagger")
+        ):
+            return  # Not a supported API collection format
 
-    # Parse the collection
-    endpoints = parse_api_collection(content)
-    if not endpoints:
-        return
+        # Parse the collection
+        endpoints = parse_api_collection(content)
+        if not endpoints:
+            return
 
-    collection = chroma_client.get_or_create_collection(
-        name=project_id,
-        metadata={"hnsw:space": "cosine"},
-    )
-
-    documents = []
-    metadatas = []
-    ids = []
-
-    for i, endpoint in enumerate(endpoints):
-        # Create a clean copy of endpoint data for embedding
-        endpoint_for_embedding = {
-            **endpoint,
-            # "examples": len(
-            #     endpoint.get("examples", [])
-            # ),  # Just store count of examples
-            # "auth": endpoint.get("auth", {}).get(
-            #     "type", "none"
-            # ),  # Simplify auth to just type
-        }
-
-        # Remove any empty or None values
-        doc_text = json.dumps(
-            {k: v for k, v in endpoint_for_embedding.items() if v}, indent=2
+        collection = chroma_client.get_or_create_collection(
+            name=project_id,
+            metadata={"hnsw:space": "cosine"},
         )
 
-        doc_id = f"{file_id}_{i}"
+        # Process endpoints in smaller batches to prevent memory issues
+        BATCH_SIZE = 50
+        for i in range(0, len(endpoints), BATCH_SIZE):
+            batch = endpoints[i : i + BATCH_SIZE]
 
-        documents.append(doc_text)
-        metadatas.append(
-            {
-                "file_id": file_id,
-                "method": endpoint["method"],
-                "url": endpoint["url"],
-                "name": endpoint["name"],
-                "folder_path": endpoint["folder_path"],
-                "has_examples": len(endpoint.get("examples", [])) > 0,
-                "has_auth": bool(endpoint.get("auth")),
-                "has_body": bool(endpoint.get("body")),
-            }
-        )
-        ids.append(doc_id)
+            documents = []
+            metadatas = []
+            ids = []
 
-    # Add documents to collection
-    if documents:
-        collection.add(documents=documents, metadatas=metadatas, ids=ids)
+            for j, endpoint in enumerate(batch):
+                # Create a clean copy of endpoint data for embedding
+                endpoint_for_embedding = {
+                    **endpoint,
+                }
+
+                # Remove any empty or None values
+                doc_text = json.dumps(
+                    {k: v for k, v in endpoint_for_embedding.items() if v}, indent=2
+                )
+
+                doc_id = f"{file_id}_{i + j}"
+
+                documents.append(doc_text)
+                metadatas.append(
+                    {
+                        "file_id": file_id,
+                        "method": endpoint["method"],
+                        "url": endpoint["url"],
+                        "name": endpoint["name"],
+                        "folder_path": endpoint["folder_path"],
+                        "has_examples": len(endpoint.get("examples", [])) > 0,
+                        "has_auth": bool(endpoint.get("auth")),
+                        "has_body": bool(endpoint.get("body")),
+                    }
+                )
+                ids.append(doc_id)
+
+            # Add batch of documents to collection
+            if documents:
+                collection.add(documents=documents, metadatas=metadatas, ids=ids)
+
+    except Exception as e:
+        print(f"Error storing embeddings: {str(e)}")
+        # Continue execution even if embedding fails
 
 
 # Add these new endpoints to your router

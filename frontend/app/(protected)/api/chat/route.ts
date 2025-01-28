@@ -145,7 +145,7 @@ export async function POST(request: Request) {
             })
             .optional()
             .describe(
-              "Optional metadata filter conditions. Supported fields: method (string), url (string), has_auth (boolean), has_body (boolean). Example: {'method': 'GET', 'has_auth': true}"
+              "Optional metadata filter conditions that will be inferred from your query. You can explicitly filter by HTTP method (GET, POST, etc.), URL patterns, authentication requirements, and request body requirements. Examples: 'Find all GET endpoints', 'Show authenticated endpoints', 'List endpoints that require a request body'"
             ),
         }),
         execute: async ({ query, limit, where }) => {
