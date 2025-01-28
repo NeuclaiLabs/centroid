@@ -27,7 +27,7 @@ import { tomorrowNight, atomOneLight } from "react-syntax-highlighter/dist/esm/s
 import remarkGfm from "remark-gfm";
 
 import { Button } from "@/components/ui/button";
-import { APIPlan } from "./api-plan";
+import { APIPlan } from "../tools/api-plan";
 
 // Register languages
 const languages = {

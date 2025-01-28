@@ -11,8 +11,8 @@ import { Markdown } from "./markdown";
 import { MessageActions } from "./message-actions";
 import { PreviewAttachment } from "./preview-attachment";
 import { Weather } from "./weather";
-import { ApiResponseViewer } from "./api-response-viewer";
-import { APISearchViewer } from "./api-search-viewer";
+import { APIResponseViewer } from "../tools/api-response-viewer";
+import { APISearchViewer } from "../tools/api-search-viewer";
 
 export const PreviewMessage = ({
   message,
@@ -74,7 +74,7 @@ export const PreviewMessage = ({
                       ) : toolName === "searchAPICollections" ? (
                         <APISearchViewer result={result} />
                       ) : (
-                        <ApiResponseViewer response={result.response} meta={result.meta} loading={false} />
+                        <APIResponseViewer response={result.response} meta={result.meta} loading={false} />
                       )}
                     </div>
                   );
@@ -91,7 +91,7 @@ export const PreviewMessage = ({
                       ) : toolName === "searchAPICollections" ? (
                         <APISearchViewer loading={true} />
                       ) : (
-                        <ApiResponseViewer response={undefined} meta={undefined} loading={true} />
+                        <APIResponseViewer response={undefined} meta={undefined} loading={true} />
                       )}
                     </div>
                   );

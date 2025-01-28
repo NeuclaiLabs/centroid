@@ -83,7 +83,6 @@ export function Project({ isLoading, data }: ProjectProps) {
     if (!data?.id) return;
 
     try {
-      console.log("Form data:", formData);
       await updateProject(data.id, formData);
 
       setIsEditDialogOpen(false);

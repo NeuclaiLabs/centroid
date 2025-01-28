@@ -1,7 +1,6 @@
 import { convertToCoreMessages, Message, streamText } from "ai";
 import { z } from "zod";
 
-
 import { auth } from "@/app/(auth)/auth";
 import { customModel } from "@/lib/ai";
 import { getToken } from "@/lib/utils";
@@ -46,7 +45,6 @@ const RequestSchema = z.object({
   url: URLSchema,
 });
 
-
 export async function POST(request: Request) {
   const { id, messages, project }: { id: string; messages: Array<Message>; project: Project | null } =
     await request.json();
@@ -88,16 +86,83 @@ export async function POST(request: Request) {
       },
       searchAPICollections: {
         description:
-          "Search and retrieve relevant API endpoints from the collection using natural language. Returns raw results without requiring additional commentary.",
+          "Search and retrieve relevant API endpoints from the collection using natural language. Supports metadata filtering for method, url, has_auth, and has_body fields.",
         parameters: z.object({
           query: z.string().describe("Natural language description of the API endpoints you're looking for"),
           limit: z.number().min(1).max(20).default(5).describe("Maximum number of API definitions to return"),
+          where: z
+            .object({
+              method: z
+                .union([
+                  z.string(),
+                  z
+                    .object({
+                      $eq: z.string(),
+                      $ne: z.string(),
+                      $in: z.array(z.string()),
+                      $nin: z.array(z.string()),
+                    })
+                    .partial(),
+                ])
+                .optional(),
+              url: z
+                .union([
+                  z.string(),
+                  z
+                    .object({
+                      $eq: z.string(),
+                      $ne: z.string(),
+                      $in: z.array(z.string()),
+                      $nin: z.array(z.string()),
+                    })
+                    .partial(),
+                ])
+                .optional(),
+              has_auth: z
+                .union([
+                  z.boolean(),
+                  z
+                    .object({
+                      $eq: z.boolean(),
+                      $ne: z.boolean(),
+                    })
+                    .partial(),
+                ])
+                .optional(),
+              has_body: z
+                .union([
+                  z.boolean(),
+                  z
+                    .object({
+                      $eq: z.boolean(),
+                      $ne: z.boolean(),
+                    })
+                    .partial(),
+                ])
+                .optional(),
+              $and: z.array(z.object({})).optional(),
+              $or: z.array(z.object({})).optional(),
+            })
+            .optional()
+            .describe(
+              "Optional metadata filter conditions. Supported fields: method (string), url (string), has_auth (boolean), has_body (boolean). Example: {'method': 'GET', 'has_auth': true}"
+            ),
         }),
-        execute: async ({ query, limit }) => {
+        execute: async ({ query, limit, where }) => {
           const startTime = performance.now();
           try {
+            const searchParams = new URLSearchParams({
+              project_id: project!.id,
+              query: query,
+              limit: limit.toString(),
+            });
+
+            if (where) {
+              searchParams.append("where", JSON.stringify(where));
+            }
+
             const response = await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL}/api/v1/files/search?project_id=${project!.id}&query=${encodeURIComponent(query)}&limit=${limit}`,
+              `${process.env.NEXT_PUBLIC_API_URL}/api/v1/files/search?${searchParams.toString()}`,
               {
                 method: "GET",
                 headers: {
@@ -115,9 +180,14 @@ export async function POST(request: Request) {
             const endTime = performance.now();
             const duration = Math.round(endTime - startTime);
             console.log(`Total processing time: ${duration}ms`);
+            console.log("Search results:", {
+              results: JSON.stringify(searchResult),
+              query,
+              metadata: searchResult.metadata,
+            });
 
             return {
-              results: searchResult,
+              results: searchResult.results,
               success: true,
               query,
               metadata: searchResult.metadata,
@@ -174,17 +244,6 @@ export async function POST(request: Request) {
         }),
         execute: async ({ endpoint, method, headers, body, auth, queryParams, timeout, retry, allowedDomains }) => {
           try {
-            console.log("Executing API call", {
-              endpoint,
-              method,
-              headers,
-              body,
-              auth,
-              queryParams,
-              timeout,
-              retry,
-              allowedDomains,
-            });
             // Domain validation
             if (allowedDomains?.length) {
               const url = new URL(endpoint);

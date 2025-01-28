@@ -38,7 +38,7 @@ class SearchResponse(BaseModel):
         "totalEndpoints": 0,
         "searchMethod": "fts",
         "timestamp": "",
-        "searchParameters": {"includeExamples": False, "limit": 50},
+        "searchParameters": {"includeExamples": False, "limit": 50, "where": None},
     }
     error: str | None = None
 
@@ -216,7 +216,10 @@ def store_embeddings(project_id: str, file_id: str, content: dict):
     if not endpoints:
         return
 
-    collection = chroma_client.get_or_create_collection(name=project_id)
+    collection = chroma_client.get_or_create_collection(
+        name=project_id,
+        metadata={"hnsw:space": "cosine"},
+    )
 
     documents = []
     metadatas = []
@@ -390,18 +393,31 @@ async def search_api_collections(
     project_id: str,
     query: str,
     limit: int = 10,
+    where: str | None = None,  # Add where parameter for metadata filtering
 ) -> Any:
     """
-    Search for API endpoints using semantic similarity.
+    Search for API endpoints using semantic similarity with optional metadata filtering.
     Returns matched endpoints ordered by relevance.
     """
     try:
         collection = chroma_client.get_collection(name=project_id)
 
-        # Perform similarity search
+        # Parse the where filter if provided
+        where_filter = None
+        if where:
+            try:
+                where_filter = json.loads(where)
+            except json.JSONDecodeError:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid where filter format. Must be valid JSON.",
+                )
+
+        # Perform similarity search with optional metadata filtering
         results = collection.query(
             query_texts=[query],
             n_results=limit,
+            where=where_filter,  # Add metadata filtering
             include=["documents", "metadatas", "distances"],
         )
 
@@ -420,12 +436,11 @@ async def search_api_collections(
             result = {
                 "endpoint": endpoint_data,
                 "metadata": metadata,
-                "score": 1
-                - abs(distance),  # Convert cosine distance to similarity score (0-1)
+                "score": distance,  # Convert cosine distance to similarity score (0-1)
             }
             processed_results.append(result)
 
-        # Prepare response
+        # Update metadata to include the where filter
         response = SearchResponse(
             success=True,
             query=query,
@@ -436,6 +451,7 @@ async def search_api_collections(
                 "timestamp": datetime.now().isoformat(),
                 "searchParameters": {
                     "limit": limit,
+                    "where": where_filter,  # Include the where filter in response metadata
                 },
             },
         )

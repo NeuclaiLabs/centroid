@@ -23,7 +23,6 @@ export const {
       },
       async authorize({ email, password }: any) {
         const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/login/access-token`;
-        console.log("Attempting login to:", apiUrl);
 
         try {
           const res = await fetch(apiUrl, {
@@ -51,7 +50,6 @@ export const {
           }
 
           const response = await res.json();
-          console.log("Login response:", response);
 
           if (!response.user) {
             console.error("No user data in response:", response);
@@ -73,7 +71,6 @@ export const {
   ],
   callbacks: {
     async jwt({ token, user }) {
-      console.log("jwt", token, user);
       if (user) {
         // @ts-ignore
         token = { ...token, accessToken: (user as User).token, id: user.id };
@@ -82,7 +79,6 @@ export const {
       return token;
     },
     async session({ session, token }) {
-      console.log("session", session, token);
       if (token) {
         const { id, accessToken } = token as { id: string; accessToken: string };
         const { user } = session;
