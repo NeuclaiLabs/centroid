@@ -1,6 +1,6 @@
 "use client";
 
-import { Upload, X } from "lucide-react";
+import { Upload, X, Check, ChevronsUpDown } from "lucide-react";
 import { useSession } from "next-auth/react";
 import * as React from "react";
 import { useState, useRef, useEffect } from "react";
@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import useSWR from "swr";
 import { fetcher, getToken } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 import type { CreateProjectData } from "@/lib/types";
 
@@ -183,18 +187,42 @@ export const ProjectForm = ({
 
       <div>
         <Label htmlFor="model">AI Model</Label>
-        <Select value={formData.model} onValueChange={(value) => setFormData({ ...formData, model: value })}>
-          <SelectTrigger className="mt-2">
-            <SelectValue placeholder="Select a model" />
-          </SelectTrigger>
-          <SelectContent>
-            {modelsData?.data.map((model) => (
-              <SelectItem key={model.id} value={model.id}>
-                {model.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              className={cn("w-full justify-between mt-2", !formData.model && "text-muted-foreground")}
+            >
+              {formData.model ? modelsData?.data.find((model) => model.id === formData.model)?.label : "Select a model"}
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-full p-0">
+            <Command>
+              <CommandInput placeholder="Search models..." className="h-9" />
+              <CommandList>
+                <CommandEmpty>No models found.</CommandEmpty>
+                <CommandGroup>
+                  {modelsData?.data.map((model) => (
+                    <CommandItem
+                      key={model.id}
+                      value={model.label}
+                      onSelect={() => {
+                        setFormData({ ...formData, model: model.id });
+                      }}
+                    >
+                      {model.label}
+                      <Check
+                        className={cn("ml-auto h-4 w-4", model.id === formData.model ? "opacity-100" : "opacity-0")}
+                      />
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
       </div>
 
       <div>
