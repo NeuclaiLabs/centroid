@@ -14,13 +14,10 @@ logger = get_logger(__name__, service="api_search_service")
 
 class ChromaDBMetadata(BaseModel):
     file_id: str
-    method: str
-    url: str
-    name: str
-    folder_path: str
-    has_examples: bool
-    has_auth: bool
-    has_body: bool
+    method: str | None = None
+    url: str | None = None
+    name: str | None = None
+    folder: str | None = None
 
 
 # Initialize ChromaDB client
@@ -67,7 +64,8 @@ def store_embeddings(project_id: str, file_id: str, content: dict):
 
             for endpoint in batch:
                 endpoint_model = APIEndpoint(**endpoint)
-                doc_id = f"{file_id}_{endpoint_model.method}_{endpoint_model.url}"
+                # Use the request object to access method and url
+                doc_id = f"{file_id}_{endpoint_model.id}"
 
                 # Serialize the entire endpoint model to JSON
                 doc_text = json.dumps(endpoint_model.model_dump(), indent=2)
@@ -75,9 +73,10 @@ def store_embeddings(project_id: str, file_id: str, content: dict):
                 metadata = ChromaDBMetadata(
                     file_id=file_id,
                     method=endpoint_model.request.method,
-                    url=endpoint_model.request.url,
+                    url="/".join(endpoint_model.request.url.path)
+                    or "",  # Use raw URL string
                     name=endpoint_model.request.name or endpoint_model.name,
-                    folder=endpoint_model.folder,
+                    folder=endpoint_model.folder,  # Updated to match the model field name
                 )
 
                 documents.append(doc_text)

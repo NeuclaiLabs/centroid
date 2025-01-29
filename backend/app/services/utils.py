@@ -12,80 +12,80 @@ logger = get_logger(__name__)
 
 
 class APIEndpointExample(BaseModel):
-    name: str
-    status: int
-    body: str
-    headers: list[dict]
+    name: str | None = None
+    status: int | None = None
+    body: str | None = None
+    headers: list[dict] | None = None
 
 
-class PostmanUrl(BaseModel):
-    raw: str | None
-    path: list[str] | None
-    host: list[str] | None
-    query: list[dict[str, Any]] | None
-    variable: list[dict[str, Any]] | None
+class Url(BaseModel):
+    raw: str | None = None
+    path: list[str] | None = None
+    host: list[str] | None = None
+    query: list[dict[str, Any]] | None = None
+    variable: list[dict[str, Any]] | None = None
 
 
-class PostmanRequest(BaseModel):
-    name: str | None
-    description: dict[str, str] | None
-    url: PostmanUrl
+class Request(BaseModel):
+    name: str | None = None
+    description: dict[str, str] | None = None
+    url: Url
     method: str
-    header: list[dict[str, str]] | None
-    body: dict[str, Any] | None
-    auth: dict[str, Any] | None
+    header: list[dict[str, Any]] | None = None
+    body: dict[str, Any] | None = None
+    auth: dict[str, Any] | None = None
 
 
-class PostmanResponse(BaseModel):
-    id: str
-    name: str
-    originalRequest: PostmanRequest | None
-    status: str | None
-    code: int | None
-    header: list[dict[str, str]] | None
-    body: str | None
-    cookie: list[Any] | None
-    _postman_previewlanguage: str | None
+class Response(BaseModel):
+    id: str | None = None
+    name: str | None = None
+    originalRequest: Request | None = None
+    status: str | None = None
+    code: int | None = None
+    header: list[dict[str, Any]] | None = None
+    body: str | None = None
+    cookie: list[Any] | None = None
+    _postman_previewlanguage: str | None = None
 
 
-class PostmanEndpoint(BaseModel):
-    id: str
-    name: str
-    request: PostmanRequest
-    response: list[PostmanResponse]
-    event: list[Any] | None
-    protocolProfileBehavior: dict[str, Any] | None
+class Endpoint(BaseModel):
+    id: str | None = None
+    name: str | None = None
+    request: Request | None = None
+    response: list[Response] | None = None
+    event: list[Any] | None = None
+    protocolProfileBehavior: dict[str, Any] | None = None
 
 
-class PostmanFolder(BaseModel):
+class Folder(BaseModel):
     name: str
     description: str | None
-    item: list[Any]  # Can be either PostmanEndpoint or PostmanFolder
+    item: list[Any]  # Can be either Endpoint or Folder
 
 
-class PostmanCollection(BaseModel):
-    info: dict[str, Any]
-    item: list[PostmanFolder]
-    event: list[Any] | None
-    variable: list[dict[str, Any]] | None
+class Collection(BaseModel):
+    info: dict[str, Any] | None = None
+    item: list[Folder] | None = None
+    event: list[Any] | None = None
+    variable: list[dict[str, Any]] | None = None
 
 
 class APIUrl(BaseModel):
-    raw: str | None
-    path: list[str] | None
-    host: list[str] | None
-    query: list[dict[str, Any]] | None
-    variable: list[dict[str, Any]] | None
+    raw: str | None = None
+    path: list[str] | None = None
+    host: list[str] | None = None
+    query: list[dict[str, Any]] | None = None
+    variable: list[dict[str, Any]] | None = None
 
 
 class APIRequest(BaseModel):
-    name: str | None
-    description: dict[str, str] | None
+    name: str | None = None
+    description: dict[str, str] | None = None
     url: APIUrl
     method: str
-    header: list[dict[str, str]] | None
-    body: dict[str, Any] | None
-    auth: dict[str, Any] | None
+    header: list[dict[str, Any]] | None = None
+    body: dict[str, Any] | None = None
+    auth: dict[str, Any] | None = None
 
 
 class APIResponse(BaseModel):
@@ -94,7 +94,7 @@ class APIResponse(BaseModel):
     originalRequest: APIRequest | None
     status: str | None
     code: int | None
-    header: list[dict[str, str]] | None
+    header: list[dict[str, Any]] | None = None
     body: str | None
     cookie: list[Any] | None
 
@@ -132,9 +132,12 @@ def process_folder(
 
     for item in folder.item:
         if "request" in item:  # It's an endpoint
-            endpoint = APIEndpoint(**item)
+            if isinstance(item, APIEndpoint):
+                endpoint = item
+            else:
+                endpoint = APIEndpoint(**item)
             endpoint.folder = current_path
-            endpoints.append(endpoint)
+            endpoints.append(endpoint.model_dump())  # Convert to dict before appending
         else:  # It's a subfolder
             subfolder = APIFolder(**item)
             process_folder(subfolder, current_path, endpoints)
