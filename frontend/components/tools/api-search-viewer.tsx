@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import type { SearchResult } from "@/lib/ai/tools/types";
+import React from "react";
 
 interface APISearchViewerProps {
   result?: SearchResult;
@@ -80,7 +81,8 @@ export const APISearchViewer: FC<APISearchViewerProps> = ({ result, loading }) =
       <CardContent>
         <ScrollArea className={`${results.length <= 5 ? "h-auto" : "h-[400px]"} pr-4`}>
           {results.map((item, index) => {
-            const cardKey = `${item.endpoint.method}-${item.endpoint.url}-${index}`;
+            const endpoint = item.endpoint;
+            const cardKey = `${endpoint.request?.method}-${endpoint.request?.url.raw}-${index}`;
             const isExpanded = expandedCards[cardKey] || false;
 
             return (
@@ -91,25 +93,29 @@ export const APISearchViewer: FC<APISearchViewerProps> = ({ result, loading }) =
                       <div className="flex items-center gap-2">
                         <Badge
                           className={
-                            item.endpoint.method === "GET"
+                            endpoint.request?.method === "GET"
                               ? "bg-emerald-500 hover:bg-emerald-600"
-                              : item.endpoint.method === "POST"
+                              : endpoint.request?.method === "POST"
                                 ? "bg-amber-500 hover:bg-amber-600"
-                                : item.endpoint.method === "PUT"
+                                : endpoint.request?.method === "PUT"
                                   ? "bg-blue-500 hover:bg-blue-600"
-                                  : item.endpoint.method === "PATCH"
+                                  : endpoint.request?.method === "PATCH"
                                     ? "bg-purple-500 hover:bg-purple-600"
-                                    : item.endpoint.method === "DELETE"
+                                    : endpoint.request?.method === "DELETE"
                                       ? "bg-red-500 hover:bg-red-600"
                                       : ""
                           }
                         >
-                          {item.endpoint.method}
+                          {endpoint.request?.method}
                         </Badge>
-                        <code className="text-sm font-mono">{item.endpoint.url}</code>
+                        <code className="text-sm font-mono">
+                          {(endpoint.request?.url.host ?? []).join(".") +
+                            "/" +
+                            (endpoint.request?.url.path ?? []).join("/")}
+                        </code>
                       </div>
                       <CardDescription>
-                        <div>{item.endpoint.name}</div>
+                        <div>{endpoint.name}</div>
                       </CardDescription>
                     </div>
                     <div className="flex items-center gap-2">
@@ -128,129 +134,140 @@ export const APISearchViewer: FC<APISearchViewerProps> = ({ result, loading }) =
                   </div>
                 </CardHeader>
                 {isExpanded && (
-                  <CardContent className="pt-2">
-                    {item.endpoint.description && (
-                      <div className="text-sm text-muted-foreground mb-2">{item.endpoint.description}</div>
+                  <>
+                    {endpoint.request?.description?.content && (
+                      <CardContent className="pt-0 pb-2">
+                        <p className="text-sm text-muted-foreground">{endpoint.request.description.content}</p>
+                      </CardContent>
                     )}
-                    <Tabs defaultValue="params">
-                      <TabsList>
-                        <TabsTrigger value="params">Parameters</TabsTrigger>
-                        <TabsTrigger value="headers">Headers</TabsTrigger>
-                        {item.endpoint.body && <TabsTrigger value="body">Body</TabsTrigger>}
-                        {item.endpoint.auth && <TabsTrigger value="auth">Auth</TabsTrigger>}
-                        {item.endpoint.examples && item.endpoint.examples.length > 0 && (
-                          <TabsTrigger value="examples">Examples</TabsTrigger>
-                        )}
-                      </TabsList>
-
-                      <TabsContent value="params">
-                        <div className="space-y-4">
-                          {item.endpoint.url.includes("?") ? (
-                            <div className="grid grid-cols-2 gap-2">
-                              {item.endpoint.url
-                                .split("?")[1]
-                                .split("&")
-                                .map((param, idx) => {
-                                  const [key, value] = param.split("=");
-                                  return (
-                                    <div key={idx} className="text-sm">
-                                      <code className="text-xs">{key}</code>
-                                      <span className="block text-muted-foreground">{value || "No default value"}</span>
-                                    </div>
-                                  );
-                                })}
-                            </div>
-                          ) : (
-                            <div className="text-sm text-muted-foreground">No URL parameters</div>
+                    <CardContent className="pt-2">
+                      <Tabs defaultValue="params">
+                        <TabsList>
+                          <TabsTrigger value="params">Parameters</TabsTrigger>
+                          <TabsTrigger value="headers">Headers</TabsTrigger>
+                          {endpoint.request?.body && <TabsTrigger value="body">Body</TabsTrigger>}
+                          {endpoint.response && endpoint.response.length > 0 && (
+                            <TabsTrigger value="response">Response</TabsTrigger>
                           )}
-                        </div>
-                      </TabsContent>
+                        </TabsList>
 
-                      <TabsContent value="headers">
-                        <div className="space-y-4">
-                          {item.endpoint.headers && item.endpoint.headers.length > 0 ? (
-                            <div className="grid grid-cols-2 gap-2">
-                              {item.endpoint.headers.map((header) => (
-                                <div key={header.key} className="text-sm">
-                                  <code className="text-xs">{header.key}</code>
-                                  <span className="block text-muted-foreground">{header.value}</span>
+                        <TabsContent value="params">
+                          <div className="space-y-6">
+                            {/* Query Parameters Section */}
+                            <div>
+                              <h4 className="text-sm font-medium mb-2">Query Params</h4>
+                              {endpoint.request?.url.query && endpoint.request.url.query.length > 0 ? (
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div className="font-medium text-sm text-muted-foreground">Key</div>
+                                  <div className="font-medium text-sm text-muted-foreground">Value</div>
+                                  {endpoint.request.url.query.map((param: any, idx) => (
+                                    <React.Fragment key={idx}>
+                                      <div className="text-sm">
+                                        <code className="text-xs">{param.key}</code>
+                                      </div>
+                                      <div className="text-sm text-muted-foreground">{param.value || "<string>"}</div>
+                                    </React.Fragment>
+                                  ))}
                                 </div>
-                              ))}
+                              ) : (
+                                <div className="text-sm text-muted-foreground">No query parameters</div>
+                              )}
                             </div>
-                          ) : (
-                            <div className="text-sm text-muted-foreground">No headers required</div>
-                          )}
-                        </div>
-                      </TabsContent>
 
-                      {item.endpoint.body && (
-                        <TabsContent value="body">
-                          <div>
-                            <code className="block bg-muted p-2 rounded-md text-xs overflow-auto whitespace-pre">
-                              {item.endpoint.body.raw}
-                            </code>
+                            {/* Path Variables Section */}
+                            <div>
+                              <h4 className="text-sm font-medium mb-2">Path Variables</h4>
+                              {endpoint.request?.url.variable && endpoint.request.url.variable.length > 0 ? (
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div className="font-medium text-sm text-muted-foreground">Key</div>
+                                  <div className="font-medium text-sm text-muted-foreground">Value</div>
+                                  {endpoint.request.url.variable.map((param: any, idx) => (
+                                    <React.Fragment key={idx}>
+                                      <div className="text-sm">
+                                        <code className="text-xs">{param.key}</code>
+                                      </div>
+                                      <div className="text-sm text-muted-foreground">{param.value || "<string>"}</div>
+                                    </React.Fragment>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="text-sm text-muted-foreground">No path variables</div>
+                              )}
+                            </div>
                           </div>
                         </TabsContent>
-                      )}
 
-                      {item.endpoint.auth && (
-                        <TabsContent value="auth">
-                          <div className="space-y-2">
-                            <div className="text-sm">
-                              <span className="font-medium">Auth Type:</span>{" "}
-                              <code className="text-xs">{item.endpoint.auth.type}</code>
-                            </div>
-                            {item.endpoint.auth.oauth2 && (
+                        <TabsContent value="headers">
+                          <div className="space-y-4">
+                            {endpoint.request?.header && endpoint.request.header.length > 0 ? (
                               <div className="grid grid-cols-2 gap-2">
-                                {item.endpoint.auth.oauth2.map((oauth, idx) => (
+                                {endpoint.request.header.map((header, idx) => (
                                   <div key={idx} className="text-sm">
-                                    <code className="text-xs">{oauth.key}</code>
-                                    <span className="block text-muted-foreground">{oauth.value}</span>
+                                    <code className="text-xs">{header.key}</code>
+                                    <span className="block text-muted-foreground">{header.value}</span>
                                   </div>
                                 ))}
                               </div>
+                            ) : (
+                              <div className="text-sm text-muted-foreground">No headers required</div>
                             )}
                           </div>
                         </TabsContent>
-                      )}
 
-                      {item.endpoint.examples && item.endpoint.examples.length > 0 && (
-                        <TabsContent value="examples">
-                          <div className="space-y-4">
-                            {item.endpoint.examples.map((example, idx) => (
-                              <div key={idx} className="border rounded-lg p-3">
-                                <div className="flex items-center justify-between mb-2">
-                                  <span className="font-medium text-sm">{example.name}</span>
-                                  <Badge variant={example.status < 300 ? "success" : "destructive"}>
-                                    {example.status}
-                                  </Badge>
-                                </div>
-                                {example.headers && example.headers.length > 0 && (
-                                  <div className="mb-2">
-                                    <div className="text-xs font-medium mb-1">Headers:</div>
-                                    <div className="grid grid-cols-2 gap-1">
-                                      {example.headers.map((header, hidx) => (
-                                        <div key={hidx} className="text-xs">
-                                          <code>{header.key}:</code>{" "}
-                                          <span className="text-muted-foreground">{header.value}</span>
-                                        </div>
-                                      ))}
-                                    </div>
+                        {endpoint.request?.body && (
+                          <TabsContent value="body">
+                            <div>
+                              <code className="block bg-muted p-2 rounded-md text-xs overflow-auto whitespace-pre">
+                                {endpoint.request.body.raw}
+                              </code>
+                            </div>
+                          </TabsContent>
+                        )}
+
+                        {endpoint.response && endpoint.response.length > 0 && (
+                          <TabsContent value="response">
+                            <div className="space-y-4">
+                              {endpoint.response.map((response, idx) => (
+                                <div key={idx} className="border rounded-lg p-3">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <span className="font-medium text-sm">
+                                      {response.name || `Response ${idx + 1}`}
+                                    </span>
+                                    {response.code && (
+                                      <Badge variant={response.code < 300 ? "success" : "destructive"}>
+                                        {response.code}
+                                      </Badge>
+                                    )}
                                   </div>
-                                )}
-                                <div>
-                                  <div className="text-xs font-medium mb-1">Response:</div>
-                                  <code className="block bg-muted p-2 rounded-md text-xs overflow-auto whitespace-pre">
-                                    {example.body}
-                                  </code>
+                                  {response.header && response.header.length > 0 && (
+                                    <div className="mb-2">
+                                      <div className="text-xs font-medium mb-1">Headers:</div>
+                                      <div className="grid grid-cols-2 gap-1">
+                                        {response.header.map((header, hidx) => (
+                                          <div key={hidx} className="text-xs">
+                                            <code>{header.key}:</code>{" "}
+                                            <span className="text-muted-foreground">{header.value}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                  {response.body && (
+                                    <div>
+                                      <div className="text-xs font-medium mb-1">Response Body:</div>
+                                      <code className="block bg-muted p-2 rounded-md text-xs overflow-auto whitespace-pre">
+                                        {response.body}
+                                      </code>
+                                    </div>
+                                  )}
                                 </div>
-                              </div>
-                            ))}
-                          </div>
-                        </TabsContent>
-                      )}
-                    </Tabs>
-                  </CardContent>
+                              ))}
+                            </div>
+                          </TabsContent>
+                        )}
+                      </Tabs>
+                    </CardContent>
+                  </>
                 )}
               </Card>
             );

@@ -5,11 +5,11 @@ export interface URLVariable {
 }
 
 export interface URL {
-  raw: string;
-  protocol?: string;
-  host?: string[];
+  raw?: string;
   path?: string[];
-  variable?: URLVariable[];
+  host?: string[];
+  query?: { [key: string]: any }[];
+  variable?: { [key: string]: any }[];
 }
 
 export interface Header {
@@ -18,21 +18,29 @@ export interface Header {
 }
 
 export interface Request {
+  name?: string;
+  description?: { [key: string]: string };
   method: string;
   header?: Header[];
   body?: {
     mode?: string;
     raw?: string;
+    [key: string]: any; // To match dict[str, Any] from Python
   };
   url: URL;
+  auth?: { [key: string]: any };
 }
 
 export interface Response {
+  id?: string;
   name?: string;
-  status?: number;
+  originalRequest?: Request;
+  status?: string;
   code?: number;
   body?: string;
   header?: Header[];
+  cookie?: any[];
+  _postman_previewlanguage?: string;
 }
 
 export interface Item {
@@ -44,37 +52,19 @@ export interface Item {
 }
 
 export interface Endpoint {
-  name: string;
-  folder_path: string;
-  method: string;
-  url: string;
-  params?: URLVariable[];
-  description?: string;
-  headers?: Header[];
-  body?: {
-    mode?: string;
-    raw?: string;
-  };
-  auth?: {
-    type: string;
-    oauth2?: {
-      key: string;
-      value: string;
-    }[];
-  };
-  examples?: {
-    name: string;
-    status: number;
-    body: string;
-    headers?: Header[];
-  }[];
+  id: string;
+  name?: string;
+  event?: any[];
+  folder?: string;
+  request?: Request;
+  response?: Response[];
 }
 
 export interface SearchResultItem {
   endpoint: Endpoint;
   metadata: {
     file_id: string;
-    folder_path: string;
+    folder: string;
     has_auth: boolean;
     has_body: boolean;
     has_examples: boolean;

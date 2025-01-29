@@ -103,6 +103,7 @@ export const searchAPICollections = (project: Project, session: Session) =>
         const searchResult = await response.json();
         const endTime = performance.now();
         const duration = Math.round(endTime - startTime);
+        console.log(searchResult.results[0]);
 
         return {
           message: `Found ${searchResult.metadata?.totalEndpoints} API definitions in ${duration}ms`,
