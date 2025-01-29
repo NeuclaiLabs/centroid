@@ -33,6 +33,9 @@ RUN apt-get update && apt-get install -y \
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
 RUN apt-get install -y nodejs
 
+# Install openapi-to-postmanv2 globally
+RUN npm install -g openapi-to-postmanv2
+
 # Install Poetry
 RUN curl -sSL https://install.python-poetry.org | python3 -
 ENV PATH="/root/.local/bin:$PATH"

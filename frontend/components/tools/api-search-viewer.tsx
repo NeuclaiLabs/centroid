@@ -78,13 +78,13 @@ export const APISearchViewer: FC<APISearchViewerProps> = ({ result, loading }) =
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[400px] pr-4">
+        <ScrollArea className={`${results.length <= 5 ? "h-auto" : "h-[400px]"} pr-4`}>
           {results.map((item, index) => {
             const cardKey = `${item.endpoint.method}-${item.endpoint.url}-${index}`;
             const isExpanded = expandedCards[cardKey] || false;
 
             return (
-              <Card key={cardKey} className="mb-4">
+              <Card key={cardKey} className={`${index !== results.length - 1 ? "mb-2" : ""}`}>
                 <CardHeader className="pt-2 pb-2">
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
@@ -128,16 +128,19 @@ export const APISearchViewer: FC<APISearchViewerProps> = ({ result, loading }) =
                   </div>
                 </CardHeader>
                 {isExpanded && (
-                  <CardContent>
+                  <CardContent className="pt-2">
                     {item.endpoint.description && (
-                      <div className="text-sm text-muted-foreground mb-4">{item.endpoint.description}</div>
+                      <div className="text-sm text-muted-foreground mb-2">{item.endpoint.description}</div>
                     )}
                     <Tabs defaultValue="params">
                       <TabsList>
                         <TabsTrigger value="params">Parameters</TabsTrigger>
                         <TabsTrigger value="headers">Headers</TabsTrigger>
                         {item.endpoint.body && <TabsTrigger value="body">Body</TabsTrigger>}
-                        {item.metadata.has_auth && <TabsTrigger value="auth">Auth</TabsTrigger>}
+                        {item.endpoint.auth && <TabsTrigger value="auth">Auth</TabsTrigger>}
+                        {item.endpoint.examples && item.endpoint.examples.length > 0 && (
+                          <TabsTrigger value="examples">Examples</TabsTrigger>
+                        )}
                       </TabsList>
 
                       <TabsContent value="params">
@@ -190,9 +193,60 @@ export const APISearchViewer: FC<APISearchViewerProps> = ({ result, loading }) =
                         </TabsContent>
                       )}
 
-                      {item.metadata.has_auth && (
+                      {item.endpoint.auth && (
                         <TabsContent value="auth">
-                          <div className="text-sm text-muted-foreground">Authentication required for this endpoint</div>
+                          <div className="space-y-2">
+                            <div className="text-sm">
+                              <span className="font-medium">Auth Type:</span>{" "}
+                              <code className="text-xs">{item.endpoint.auth.type}</code>
+                            </div>
+                            {item.endpoint.auth.oauth2 && (
+                              <div className="grid grid-cols-2 gap-2">
+                                {item.endpoint.auth.oauth2.map((oauth, idx) => (
+                                  <div key={idx} className="text-sm">
+                                    <code className="text-xs">{oauth.key}</code>
+                                    <span className="block text-muted-foreground">{oauth.value}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </TabsContent>
+                      )}
+
+                      {item.endpoint.examples && item.endpoint.examples.length > 0 && (
+                        <TabsContent value="examples">
+                          <div className="space-y-4">
+                            {item.endpoint.examples.map((example, idx) => (
+                              <div key={idx} className="border rounded-lg p-3">
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="font-medium text-sm">{example.name}</span>
+                                  <Badge variant={example.status < 300 ? "success" : "destructive"}>
+                                    {example.status}
+                                  </Badge>
+                                </div>
+                                {example.headers && example.headers.length > 0 && (
+                                  <div className="mb-2">
+                                    <div className="text-xs font-medium mb-1">Headers:</div>
+                                    <div className="grid grid-cols-2 gap-1">
+                                      {example.headers.map((header, hidx) => (
+                                        <div key={hidx} className="text-xs">
+                                          <code>{header.key}:</code>{" "}
+                                          <span className="text-muted-foreground">{header.value}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                <div>
+                                  <div className="text-xs font-medium mb-1">Response:</div>
+                                  <code className="block bg-muted p-2 rounded-md text-xs overflow-auto whitespace-pre">
+                                    {example.body}
+                                  </code>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         </TabsContent>
                       )}
                     </Tabs>

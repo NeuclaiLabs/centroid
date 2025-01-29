@@ -1,6 +1,14 @@
 import json
+import os
+import subprocess
+import tempfile
+from typing import Any
 
 from pydantic import BaseModel
+
+from app.core.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class APIEndpointExample(BaseModel):
@@ -10,191 +18,189 @@ class APIEndpointExample(BaseModel):
     headers: list[dict]
 
 
+class PostmanUrl(BaseModel):
+    raw: str | None
+    path: list[str] | None
+    host: list[str] | None
+    query: list[dict[str, Any]] | None
+    variable: list[dict[str, Any]] | None
+
+
+class PostmanRequest(BaseModel):
+    name: str | None
+    description: dict[str, str] | None
+    url: PostmanUrl
+    method: str
+    header: list[dict[str, str]] | None
+    body: dict[str, Any] | None
+    auth: dict[str, Any] | None
+
+
+class PostmanResponse(BaseModel):
+    id: str
+    name: str
+    originalRequest: PostmanRequest | None
+    status: str | None
+    code: int | None
+    header: list[dict[str, str]] | None
+    body: str | None
+    cookie: list[Any] | None
+    _postman_previewlanguage: str | None
+
+
+class PostmanEndpoint(BaseModel):
+    id: str
+    name: str
+    request: PostmanRequest
+    response: list[PostmanResponse]
+    event: list[Any] | None
+    protocolProfileBehavior: dict[str, Any] | None
+
+
+class PostmanFolder(BaseModel):
+    name: str
+    description: str | None
+    item: list[Any]  # Can be either PostmanEndpoint or PostmanFolder
+
+
+class PostmanCollection(BaseModel):
+    info: dict[str, Any]
+    item: list[PostmanFolder]
+    event: list[Any] | None
+    variable: list[dict[str, Any]] | None
+
+
+class APIUrl(BaseModel):
+    raw: str | None
+    path: list[str] | None
+    host: list[str] | None
+    query: list[dict[str, Any]] | None
+    variable: list[dict[str, Any]] | None
+
+
+class APIRequest(BaseModel):
+    name: str | None
+    description: dict[str, str] | None
+    url: APIUrl
+    method: str
+    header: list[dict[str, str]] | None
+    body: dict[str, Any] | None
+    auth: dict[str, Any] | None
+
+
+class APIResponse(BaseModel):
+    id: str
+    name: str
+    originalRequest: APIRequest | None
+    status: str | None
+    code: int | None
+    header: list[dict[str, str]] | None
+    body: str | None
+    cookie: list[Any] | None
+
+
 class APIEndpoint(BaseModel):
+    id: str
     name: str
-    folder_path: str
-    method: str
-    url: str
-    description: str = ""
-    headers: list[dict] = []
-    params: list[dict] = []
-    body: dict = {}
-    auth: dict = {}
-    examples: list[APIEndpointExample] = []
+    request: APIRequest
+    response: list[APIResponse]
+    event: list[Any] | None
+    folder: str = ""
 
 
-class ChromaDBMetadata(BaseModel):
-    file_id: str
-    method: str
-    url: str
+class APIFolder(BaseModel):
     name: str
-    folder_path: str
-    has_examples: bool
-    has_auth: bool
-    has_body: bool
+    description: str | None
+    item: list[Any]  # Can be either APIEndpoint or APIFolder
 
 
-def parse_api_collection(content: dict) -> list[dict]:
-    """Parse API collection and extract endpoints with metadata, handling multiple formats."""
+class APICollection(BaseModel):
+    info: dict[str, Any]
+    item: list[APIFolder]
+    event: list[Any] | None
+    variable: list[dict[str, Any]] | None
 
-    def parse_postman():
+
+def process_folder(
+    folder: APIFolder,
+    parent_path: str = "",
+    endpoints: list[dict[str, Any]] | None = None,
+) -> None:
+    if endpoints is None:
         endpoints = []
+    current_path = f"{parent_path}/{folder.name}" if parent_path else folder.name
 
-        def process_item(item, folder_path=""):
-            current_path = (
-                f"{folder_path}/{item.get('name', '')}"
-                if folder_path
-                else item.get("name", "")
+    for item in folder.item:
+        if "request" in item:  # It's an endpoint
+            endpoint = APIEndpoint(**item)
+            endpoint.folder = current_path
+            endpoints.append(endpoint)
+        else:  # It's a subfolder
+            subfolder = APIFolder(**item)
+            process_folder(subfolder, current_path, endpoints)
+
+
+def parse_api_collection(
+    content: dict[str, Any], file_id: str = ""
+) -> list[dict[str, Any]]:
+    """Parse an API collection and extract endpoints with their metadata."""
+
+    # Handle OpenAPI format
+    if content.get("openapi") or content.get("swagger"):
+        logger.info(
+            f"Converting OpenAPI/Swagger spec to Postman format for file_id: {file_id}"
+        )
+
+        # Convert OpenAPI to Postman format
+        with tempfile.NamedTemporaryFile(
+            suffix=".json", mode="w", delete=False
+        ) as input_file:
+            json.dump(content, input_file)
+            input_path = input_file.name
+
+        output_path = os.path.join(tempfile.gettempdir(), f"{file_id}_postman.json")
+        logger.debug(
+            f"Created temporary files - Input: {input_path}, Output: {output_path}"
+        )
+
+        try:
+            cmd = [
+                "openapi2postmanv2",
+                "-s",
+                input_path,
+                "-o",
+                output_path,
+                "-p",
+                "-O",
+                "folderStrategy=Tags,requestParametersResolution=Example,optimizeConversion=false,stackLimit=50",
+            ]
+            logger.debug(f"Executing conversion command: {' '.join(cmd)}")
+            subprocess.run(cmd, check=True)
+
+            with open(output_path) as f:
+                content = json.load(f)
+            logger.info("Successfully converted OpenAPI spec to Postman format")
+
+        except Exception as e:
+            logger.error(
+                f"Error converting OpenAPI to Postman: {str(e)}", exc_info=True
             )
+            return []
 
-            if "request" in item:
-                request = item.get("request", {})
-                url_data = request.get("url", {})
-                url = (
-                    url_data.get("raw", "")
-                    if isinstance(url_data, dict)
-                    else str(url_data)
-                )
+        finally:
+            # Cleanup temporary files
+            try:
+                os.unlink(input_path)
+                os.unlink(output_path)
+                logger.debug("Cleaned up temporary files")
+            except Exception as e:
+                logger.warning(f"Failed to cleanup temporary files: {str(e)}")
 
-                # Extract URL parameters
-                params = []
-                if isinstance(url_data, dict):
-                    params = [
-                        {
-                            "key": p.get("key", ""),
-                            "value": p.get("value", ""),
-                            "description": p.get("description", ""),
-                            "disabled": p.get("disabled", False),
-                        }
-                        for p in url_data.get("query", [])
-                    ]
+    # Continue with existing Postman collection parsing
+    collection = APICollection(**content)
+    endpoints = []
 
-                endpoint = {
-                    "name": item.get("name", ""),
-                    "folder_path": current_path,
-                    "method": request.get("method", ""),
-                    "url": url,
-                    "description": request.get("description", ""),
-                    "headers": request.get("header", []),
-                    "params": params,  # Add URL parameters
-                    "body": request.get("body", {}),
-                    "auth": request.get("auth", {}),
-                    "examples": [],
-                }
+    for folder in collection.item:
+        process_folder(folder, endpoints=endpoints)
 
-                if "response" in item:
-                    responses = item["response"]
-                    if isinstance(responses, list):
-                        endpoint["examples"].extend(
-                            [
-                                {
-                                    "name": resp.get("name", ""),
-                                    "status": resp.get("code", 0),
-                                    "body": resp.get("body", ""),
-                                    "headers": resp.get("header", []),
-                                }
-                                for resp in responses
-                            ]
-                        )
-
-                endpoints.append(endpoint)
-
-            if "item" in item:
-                for sub_item in item["item"]:
-                    process_item(sub_item, current_path)
-
-        for item in content.get("item", []):
-            process_item(item)
-        return endpoints
-
-    def parse_openapi():
-        endpoints = []
-        paths = content.get("paths", {})
-
-        for path, methods in paths.items():
-            for method, details in methods.items():
-                if method.lower() == "parameters":  # Skip common parameters
-                    continue
-
-                endpoint = {
-                    "name": details.get("summary", path),
-                    "folder_path": details.get("tags", [""])[
-                        0
-                    ],  # Use first tag as folder
-                    "method": method.upper(),
-                    "url": path,
-                    "description": details.get("description", ""),
-                    "headers": [],  # Extract from parameters
-                    "params": [],  # Add params list for query parameters
-                    "body": {},
-                    "auth": {},
-                    "examples": [],
-                }
-
-                # Handle parameters (headers, path params, query params)
-                for param in details.get("parameters", []):
-                    if param.get("in") == "header":
-                        endpoint["headers"].append(
-                            {
-                                "key": param.get("name"),
-                                "value": "",
-                                "description": param.get("description", ""),
-                            }
-                        )
-                    elif param.get("in") == "query":
-                        endpoint["params"].append(
-                            {
-                                "key": param.get("name"),
-                                "value": "",
-                                "description": param.get("description", ""),
-                                "disabled": False,
-                            }
-                        )
-
-                # Handle request body
-                if "requestBody" in details:
-                    content_type = next(
-                        iter(details["requestBody"].get("content", {})), ""
-                    )
-                    schema = (
-                        details["requestBody"]
-                        .get("content", {})
-                        .get(content_type, {})
-                        .get("schema", {})
-                    )
-                    endpoint["body"] = {
-                        "mode": "raw",
-                        "raw": json.dumps(schema, indent=2),
-                    }
-
-                # Handle response examples
-                responses = details.get("responses", {})
-                for status, response in responses.items():
-                    content_type = next(iter(response.get("content", {})), "")
-                    example = (
-                        response.get("content", {}).get(content_type, {}).get("example")
-                    )
-                    if example:
-                        endpoint["examples"].append(
-                            {
-                                "name": f"Response {status}",
-                                "status": int(status),
-                                "body": json.dumps(example, indent=2),
-                                "headers": [],
-                            }
-                        )
-
-                endpoints.append(endpoint)
-        return endpoints
-
-    # Detect format and parse accordingly
-    if (
-        content.get("info", {})
-        .get("schema", "")
-        .startswith("https://schema.getpostman.com")
-    ):
-        return parse_postman()
-    elif content.get("openapi") or content.get("swagger"):
-        return parse_openapi()
-
-    return []  # Return empty list for unsupported formats
+    return endpoints

@@ -7,6 +7,7 @@ from sqlmodel import func, select
 from app.api.deps import CurrentUser, SessionDep
 from app.api.routes.teams import check_team_permissions
 from app.core.config import settings
+from app.core.logger import get_logger
 from app.models import (
     Message,
     Project,
@@ -17,6 +18,8 @@ from app.models import (
 )
 
 router = APIRouter()
+
+logger = get_logger(__name__, service="projects")
 
 
 def get_project(session: SessionDep, project_id: str) -> Project:
@@ -138,6 +141,7 @@ async def update_project(
     new_files: list[UploadFile] = File(None),
 ) -> Any:
     """Update a project."""
+    logger.info(f"Starting update for project: {project_id}")
     project = get_project(session, project_id)
 
     # Create update data dictionary from form fields
@@ -147,19 +151,39 @@ async def update_project(
         "model": model,
         "instructions": instructions,
     }
+
+    # Handle file deletions
     current_files = project.files or []
     files_list = files.split(",") if files and files.strip() else []
-    project.files = [f for f in current_files if f in files_list]
+
+    # Find files that need to be deleted
+    files_to_delete = [f for f in current_files if f not in files_list]
+
+    # Delete files that are no longer needed
+    if files_to_delete:
+        logger.info(f"Deleting {len(files_to_delete)} files from project {project_id}")
+        from app.api.routes.files import delete_file
+
+        for file_path in files_to_delete:
+            try:
+                await delete_file(file=file_path)
+                logger.debug(f"Successfully deleted file: {file_path}")
+            except HTTPException as e:
+                # Log error but continue with other deletions
+                logger.error(f"Error deleting file {file_path}: {str(e)}")
+
+    # Update project's file list
+    project.files = files_list
 
     # Handle new file uploads
     if new_files:
+        logger.info(f"Uploading {len(new_files)} new files to project {project_id}")
         from app.api.routes.files import upload_files
 
         upload_response = await upload_files(
             project_id=str(project.id), files=new_files
         )
-        current_files = project.files or []
-        project.files = current_files + upload_response.files
+        project.files = project.files + upload_response.files
 
     # Update other fields
     for field, value in update_data.items():
@@ -169,6 +193,7 @@ async def update_project(
     session.commit()
     session.refresh(project)
 
+    logger.info(f"Successfully updated project {project_id}")
     return ProjectOut.model_validate(project.model_dump())
 
 

@@ -9,6 +9,7 @@ from fastapi import APIRouter, File, HTTPException, UploadFile
 from pydantic import BaseModel
 
 from app.core.config import settings
+from app.core.logger import get_logger
 from app.models import Message
 from app.services.api_search_service import (
     delete_embeddings,
@@ -17,6 +18,7 @@ from app.services.api_search_service import (
 )
 
 router = APIRouter()
+logger = get_logger(__name__, service="files")
 
 
 class UploadResponse(BaseModel):
@@ -63,9 +65,9 @@ async def upload_files(
     Upload files to a project and generate embeddings for API collections.
     Returns a list of safe filenames that were successfully uploaded.
     """
+    logger.info(f"Starting file upload for project_id: {project_id}")
     upload_dir = ensure_upload_dir(project_id)
     uploaded_files = []
-
     for upload_file in files:
         filename = Path(upload_file.filename).name
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -76,6 +78,7 @@ async def upload_files(
             with file_path.open("wb") as buffer:
                 shutil.copyfileobj(upload_file.file, buffer)
 
+            logger.debug(f"File saved successfully: {safe_filename}")
             relative_path = str(Path(project_id) / safe_filename)
             uploaded_files.append(relative_path)
 
@@ -89,12 +92,16 @@ async def upload_files(
                             else yaml.safe_load(f)
                         )
                         store_embeddings(project_id, safe_filename, content)
+                        logger.info(f"Generated embeddings for file: {safe_filename}")
                 except Exception as e:
-                    print(f"Error processing file for embeddings: {str(e)}")
+                    logger.error(f"Error processing file for embeddings: {str(e)}")
 
         finally:
             upload_file.file.close()
 
+    logger.info(
+        f"Successfully uploaded {len(uploaded_files)} files to project {project_id}"
+    )
     return UploadResponse(
         message=f"Successfully uploaded {len(uploaded_files)} files",
         files=uploaded_files,
@@ -104,19 +111,24 @@ async def upload_files(
 @router.delete("/", response_model=Message)
 async def delete_file(*, file: str) -> Any:
     """Delete a file and its embeddings from a project."""
+    logger.info(f"Attempting to delete file: {file}")
     if not file:
+        logger.warning("Delete request received with empty file path")
         raise HTTPException(status_code=404, detail="File not found in project")
 
     full_path = Path(settings.UPLOAD_DIR) / file
     try:
         if full_path.exists():
             full_path.unlink()
+            logger.info(f"File deleted: {file}")
 
             # Delete embeddings if they exist
             project_id = Path(file).parts[0]
             delete_embeddings(project_id, Path(file).name)
+            logger.info(f"Embeddings deleted for file: {file}")
 
     except Exception as e:
+        logger.error(f"Error deleting file {file}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error deleting file: {str(e)}")
 
     return Message(message=f"File deleted successfully: {file}")
@@ -173,27 +185,52 @@ async def search_api_collections(
     """
     Search for API endpoints using semantic similarity with optional metadata filtering.
     """
+    logger.info(
+        f"Searching API collections for project {project_id} with query: {query}"
+    )
     try:
-        where_filter = json.loads(where) if where else None
+        where_filter = None
+        if where:
+            try:
+                where_filter = json.loads(where)
+                logger.debug(f"Using where filter: {where_filter}")
+            except json.JSONDecodeError as e:
+                logger.warning(f"Invalid where filter format: {e}")
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Invalid where filter format. Must be valid JSON: {str(e)}",
+                )
 
         results = search_endpoints(project_id, query, limit, where_filter)
 
         # Process results
         processed_results = []
-        for doc, metadata, distance in zip(
-            results["documents"][0],
-            results["metadatas"][0],
-            results["distances"][0],
-            strict=False,
-        ):
-            endpoint_data = json.loads(doc)
-            result = {
-                "endpoint": endpoint_data,
-                "metadata": metadata,
-                "score": distance,
-            }
-            processed_results.append(result)
 
+        # Check if we have valid results
+        if (
+            results.get("documents")
+            and results.get("metadatas")
+            and results.get("distances")
+            and len(results["documents"]) > 0
+        ):
+            # Get the first result set (ChromaDB returns nested lists)
+            documents = results["documents"][0]
+            metadatas = results["metadatas"][0]
+            distances = results["distances"][0]
+
+            for doc, metadata, distance in zip(
+                documents, metadatas, distances, strict=True
+            ):
+                result = {
+                    "endpoint": json.loads(doc) if isinstance(doc, str) else doc,
+                    "metadata": metadata,
+                    "score": float(distance),
+                }
+                processed_results.append(result)
+
+        logger.info(
+            f"Search completed successfully with {len(processed_results)} results"
+        )
         return SearchResponse(
             success=True,
             query=query,
@@ -209,7 +246,10 @@ async def search_api_collections(
             },
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
+        logger.error(f"Search failed for project {project_id}: {str(e)}", exc_info=True)
         return SearchResponse(
             success=False,
             query=query,

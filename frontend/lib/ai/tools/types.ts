@@ -55,6 +55,19 @@ export interface Endpoint {
     mode?: string;
     raw?: string;
   };
+  auth?: {
+    type: string;
+    oauth2?: {
+      key: string;
+      value: string;
+    }[];
+  };
+  examples?: {
+    name: string;
+    status: number;
+    body: string;
+    headers?: Header[];
+  }[];
 }
 
 export interface SearchResultItem {

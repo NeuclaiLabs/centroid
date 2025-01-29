@@ -4,8 +4,8 @@ import { z } from "zod";
 
 import type { Project } from "@/lib/types";
 
-import { getToken } from "@/lib/utils";
 import { SearchResult } from "@/lib/ai/tools/types";
+import { getToken } from "@/lib/utils";
 
 export const searchAPICollections = (project: Project, session: Session) =>
   tool({
@@ -103,12 +103,6 @@ export const searchAPICollections = (project: Project, session: Session) =>
         const searchResult = await response.json();
         const endTime = performance.now();
         const duration = Math.round(endTime - startTime);
-        console.log(`Total processing time: ${duration}ms`);
-        console.log("Search results:", {
-          results: JSON.stringify(searchResult),
-          query,
-          metadata: searchResult.metadata,
-        });
 
         return {
           message: `Found ${searchResult.metadata?.totalEndpoints} API definitions in ${duration}ms`,
