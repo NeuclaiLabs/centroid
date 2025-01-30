@@ -77,7 +77,7 @@ export async function POST(request: Request) {
     messages: [
       {
         role: "system",
-        content: `You are an API documentation assistant. When using the searchAPICollections function, respond with ONLY the message field from the response, which contains the success/failure status and time taken. Do not add any additional commentary or explanations.`,
+        content: `You are an API documentation assistant.`,
       },
       ...coreMessages,
     ],
@@ -88,6 +88,7 @@ export async function POST(request: Request) {
       runAPICall: runAPICall,
     },
     onFinish: async ({ responseMessages }) => {
+      console.log("Response messages", responseMessages);
       if (session.user && session.user.id) {
         try {
           const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/chats/`, {

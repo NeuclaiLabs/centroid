@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 function ProjectBreadcrumb() {
   const { selectedProject } = useProject();
@@ -36,14 +37,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SidebarInset className="flex flex-col h-screen overflow-hidden">
           <header className="flex h-16 shrink-0 items-center gap-0 w-full z-50 border-0">
             <div className="flex items-center gap-2 px-4">
-              <SidebarTrigger className="-ml-1" />
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <SidebarTrigger className="-ml-1" />
+                  </TooltipTrigger>
+                  <TooltipContent>Toggle Sidebar</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               <Separator orientation="vertical" className="mr-2 h-4" />
               <Breadcrumb>
                 <BreadcrumbList>
                   <ProjectBreadcrumb />
                   <BreadcrumbSeparator className="hidden md:block" />
                   <BreadcrumbItem>
-                    <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+                    <BreadcrumbPage>Current Chat</BreadcrumbPage>
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>

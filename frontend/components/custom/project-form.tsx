@@ -67,12 +67,6 @@ export const ProjectForm = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
-  // Fetch available models
-  const { data: modelsDataFromServer } = useSWR(
-    session?.user ? [`${process.env.NEXT_PUBLIC_API_URL}/api/v1/llm/models`, token] : null,
-    ([url, token]) => fetcher(url, token)
-  );
-
   const MAX_FILE_SIZE = 500 * 1024; // 500KB in bytes
   const MAX_FILES = 5;
 
