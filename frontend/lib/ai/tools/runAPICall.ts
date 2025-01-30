@@ -1,6 +1,7 @@
+import { tool } from "ai";
 import { z } from "zod";
 
-export const runAPICall = {
+export const runAPICall = tool({
   description: "Call a specified API with dynamic parameters",
   parameters: z.object({
     endpoint: z.string().url("Must be a valid URL"),
@@ -32,7 +33,7 @@ export const runAPICall = {
     // Allow/deny list for domains
     allowedDomains: z.array(z.string()).optional(),
   }),
-  execute: async ({ endpoint, method, headers, body, auth, queryParams, timeout, retry, allowedDomains }) => {
+  execute: async ({ endpoint, method, headers = {}, body, auth, queryParams, timeout, retry, allowedDomains }) => {
     try {
       // Domain validation
       if (allowedDomains?.length) {
@@ -138,4 +139,4 @@ export const runAPICall = {
       };
     }
   },
-};
+});

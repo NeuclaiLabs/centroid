@@ -163,6 +163,9 @@ export function MultimodalInput({
   const pathname = usePathname();
   const shouldShowProjectDropdown = !pathname?.includes("chat") && !pathname?.includes("project");
 
+  // Add this helper function to check if project is selected
+  const isProjectSelectionRequired = shouldShowProjectDropdown && !selectedProject;
+
   return (
     <div className="relative w-full flex flex-col gap-2">
       <input
@@ -211,6 +214,8 @@ export function MultimodalInput({
 
               if (isLoading) {
                 toast.error("Please wait for the model to finish its response!");
+              } else if (isProjectSelectionRequired) {
+                toast.error("Please select a project first!");
               } else {
                 submitForm();
               }
@@ -278,9 +283,13 @@ export function MultimodalInput({
             className="p-1.5 h-fit m-0.5"
             onClick={(event) => {
               event.preventDefault();
-              handleSubmit(event);
+              if (isProjectSelectionRequired) {
+                toast.error("Please select a project first!");
+                return;
+              }
+              submitForm();
             }}
-            disabled={input.length === 0 || uploadQueue.length > 0}
+            disabled={input.length === 0 || uploadQueue.length > 0 || isProjectSelectionRequired}
           >
             <ArrowUpIcon size={14} />
           </Button>

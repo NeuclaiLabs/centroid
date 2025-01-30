@@ -234,7 +234,7 @@ export const APISearchViewer: FC<APISearchViewerProps> = ({ result, loading }) =
                                       {response.name || `Response ${idx + 1}`}
                                     </span>
                                     {response.code && (
-                                      <Badge variant={response.code < 300 ? "success" : "destructive"}>
+                                      <Badge variant={response.code < 300 ? "secondary" : "destructive"}>
                                         {response.code}
                                       </Badge>
                                     )}
