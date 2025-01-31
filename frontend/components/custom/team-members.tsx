@@ -30,7 +30,7 @@ interface MembersListProps {
 
 export const MembersList = ({ members, roles, handleRoleChange, isPending = false }: MembersListProps) => {
   if (members.length === 0 && isPending) {
-    return <div className="text-sm text-muted-foreground text-center py-4">No pending invitations</div>;
+    return <p className="text-sm text-muted-foreground text-center py-4">No pending invitations</p>;
   }
 
   return (

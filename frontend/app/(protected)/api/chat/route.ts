@@ -85,9 +85,11 @@ export async function POST(request: Request) {
 
 When executing API calls:
 - Analyze the available search results and select the most appropriate endpoint
+- If no search results are available, use searchAPICollections to find the most relevant endpoint
 - Use runAPICall with the selected endpoint, ensuring all required parameters are properly set
 - Explain the chosen endpoint and the results to the user
 - Use localhost as the base URL with port 8000 for the API calls if the endpoint is not specified
+- After executing a tool, do not summarize or repeat the tool's response
 
 Always prioritize endpoints mentioned in the current conversation context. If multiple endpoints match, choose the one that best fits the user's specific request.`,
       },

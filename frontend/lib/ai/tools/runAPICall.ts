@@ -44,11 +44,15 @@ export const runAPICall = (project: Project, session: Session) =>
     }),
     execute: async ({ request }) => {
       try {
+        // Capture start time
+        const startTime = performance.now();
+
         // Log the incoming request
         console.log("[API Call] Request:", request);
 
         // Prepare the request URL with query parameters
-        let url = request.url.host?.[0] + ":" + request.url.port + "/" + request.url.path?.join("/");
+        let url =
+          request.url.host?.[0] + (request.url.port ? `:${request.url.port}` : "") + "/" + request.url.path?.join("/");
 
         // Ensure URL has proper protocol
         if (!url.startsWith("http://") && !url.startsWith("https://")) {
@@ -98,7 +102,7 @@ export const runAPICall = (project: Project, session: Session) =>
           },
           meta: {
             status: apiResponse.status,
-            time: `${Date.now() - performance.now()}ms`,
+            time: `${(performance.now() - startTime).toFixed(1)}ms`,
             size: `${(responseSize / 1024).toFixed(1)}KB`,
           },
         };

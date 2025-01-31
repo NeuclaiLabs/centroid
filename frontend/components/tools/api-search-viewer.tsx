@@ -151,7 +151,7 @@ export const APISearchViewer: FC<APISearchViewerProps> = ({ result, loading }) =
                   <>
                     {endpoint.request?.description?.content && (
                       <CardContent className="pt-0 pb-2">
-                        <div className="text-sm text-muted-foreground">{endpoint.request.description.content}</div>
+                        <p className="text-sm text-muted-foreground">{endpoint.request.description.content}</p>
                       </CardContent>
                     )}
                     <CardContent className="pt-2">
