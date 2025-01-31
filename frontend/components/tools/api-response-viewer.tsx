@@ -155,22 +155,22 @@ ${Object.entries(response!.headers)
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                 <span className="text-muted-foreground">Executing request...</span>
               </div>
-            ) : (
+            ) : meta ? (
               <>
                 <div className="flex items-center">
                   <span className="font-medium mr-1">Status:</span>
-                  <span className={`${meta!.status < 400 ? "text-green-600" : "text-red-600"}`}>{meta!.status}</span>
+                  <span className={`${meta.status < 400 ? "text-green-600" : "text-red-600"}`}>{meta.status}</span>
                 </div>
                 <div className="flex items-center">
                   <span className="font-medium mr-1">Time:</span>
-                  <span className="text-muted-foreground">{meta!.time}</span>
+                  <span className="text-muted-foreground">{meta.time}</span>
                 </div>
                 <div className="flex items-center">
                   <span className="font-medium mr-1">Size:</span>
-                  <span className="text-muted-foreground">{meta!.size}</span>
+                  <span className="text-muted-foreground">{meta.size}</span>
                 </div>
               </>
-            )}
+            ) : null}
           </div>
           <Button variant="ghost" size="sm" onClick={() => setIsExpanded(!isExpanded)} aria-expanded={isExpanded}>
             {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}

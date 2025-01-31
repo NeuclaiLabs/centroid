@@ -30,6 +30,7 @@ const URLSchema = z.object({
   raw: z.string(),
   protocol: z.string().optional(),
   host: z.array(z.string()).optional(),
+  port: z.string().optional(),
   path: z.array(z.string()).optional(),
   variable: z.array(URLVariableSchema).optional(),
 });
@@ -77,7 +78,18 @@ export async function POST(request: Request) {
     messages: [
       {
         role: "system",
-        content: `You are an API documentation assistant.`,
+        content: `You are an API documentation assistant. Your primary tasks are:
+
+1. Help users discover and understand API endpoints by using the searchAPICollections tool
+2. Execute API calls using the runAPICall tool based on the context and user's request
+
+When executing API calls:
+- Analyze the available search results and select the most appropriate endpoint
+- Use runAPICall with the selected endpoint, ensuring all required parameters are properly set
+- Explain the chosen endpoint and the results to the user
+- Use localhost as the base URL with port 8000 for the API calls if the endpoint is not specified
+
+Always prioritize endpoints mentioned in the current conversation context. If multiple endpoints match, choose the one that best fits the user's specific request.`,
       },
       ...coreMessages,
     ],
@@ -85,10 +97,9 @@ export async function POST(request: Request) {
     tools: {
       getWeather: getWeather,
       searchAPICollections: searchAPICollections(project!, session),
-      runAPICall: runAPICall,
+      runAPICall: runAPICall(project!, session),
     },
     onFinish: async ({ responseMessages }) => {
-      console.log("Response messages", responseMessages);
       if (session.user && session.user.id) {
         try {
           const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/chats/`, {

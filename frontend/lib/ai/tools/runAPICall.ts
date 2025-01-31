@@ -1,142 +1,130 @@
 import { tool } from "ai";
+import { Session } from "next-auth";
 import { z } from "zod";
 
-export const runAPICall = tool({
-  description: "Call a specified API with dynamic parameters",
-  parameters: z.object({
-    endpoint: z.string().url("Must be a valid URL"),
-    method: z.enum(["GET", "POST", "PUT", "DELETE", "PATCH"]).default("GET"),
-    headers: z.record(z.string()).optional().default({}),
-    body: z.any().optional(),
-    // Authentication-related parameters
-    auth: z
-      .object({
-        type: z.enum(["bearer", "basic", "api_key", "none"]).default("none"),
-        token: z.string().optional(),
-        username: z.string().optional(),
-        password: z.string().optional(),
-        apiKey: z.string().optional(),
-        apiKeyName: z.string().optional().default("x-api-key"),
-      })
-      .optional(),
-    // Query parameters
-    queryParams: z.record(z.string()).optional(),
-    // Timeout in milliseconds
-    timeout: z.number().min(1000).max(30000).default(5000),
-    // Retry configuration
-    retry: z
-      .object({
-        attempts: z.number().min(0).max(3).default(0),
-        delay: z.number().min(100).max(5000).default(1000),
-      })
-      .optional(),
-    // Allow/deny list for domains
-    allowedDomains: z.array(z.string()).optional(),
-  }),
-  execute: async ({ endpoint, method, headers = {}, body, auth, queryParams, timeout, retry, allowedDomains }) => {
-    try {
-      // Domain validation
-      if (allowedDomains?.length) {
-        const url = new URL(endpoint);
-        if (!allowedDomains.some((domain: string) => url.hostname.endsWith(domain))) {
-          throw new Error(`Domain ${url.hostname} is not in the allowed list`);
-        }
-      }
+import type { Project } from "@/lib/types";
 
-      // Build authentication headers
-      const authHeaders: Record<string, string> = {};
-      if (auth) {
-        switch (auth.type) {
-          case "bearer":
-            if (auth.token) authHeaders["Authorization"] = `Bearer ${auth.token}`;
-            break;
-          case "basic":
-            if (auth.username && auth.password) {
-              const credentials = btoa(`${auth.username}:${auth.password}`);
-              authHeaders["Authorization"] = `Basic ${credentials}`;
-            }
-            break;
-          case "api_key":
-            if (auth.apiKey) {
-              authHeaders[auth.apiKeyName || "x-api-key"] = auth.apiKey;
-            }
-            break;
-        }
-      }
+import { getToken } from "@/lib/utils";
 
-      // Build URL with query parameters
-      const url = new URL(endpoint);
-      if (queryParams) {
-        Object.entries(queryParams).forEach(([key, value]) => {
-          if (typeof value === "string") {
-            url.searchParams.append(key, value);
-          } else {
-            throw new Error(`Query parameter value for ${key} is not a string`);
-          }
+export const runAPICall = (project: Project, session: Session) =>
+  tool({
+    description:
+      "Select and execute an API endpoint from the available options. Choose the most appropriate endpoint based on the user's request and provide any required parameters.",
+    parameters: z.object({
+      request: z.object({
+        method: z.string().describe("HTTP method for the request (GET, POST, PUT, DELETE, etc.)"),
+        url: z.object({
+          raw: z.string().optional().describe("Complete URL string"),
+          port: z.string().optional().describe("Port number"),
+          path: z.array(z.string()).optional().describe("URL path segments"),
+          host: z.array(z.string()).optional().describe("Host segments"),
+          query: z.array(z.record(z.any())).optional().describe("Query parameters"),
+          variable: z.array(z.record(z.any())).optional().describe("URL variables"),
+        }),
+        header: z
+          .array(
+            z.object({
+              key: z.string(),
+              value: z.string(),
+            })
+          )
+          .optional()
+          .describe("Request headers"),
+        body: z
+          .object({
+            mode: z.string().optional(),
+            raw: z.string().optional(),
+          })
+          .optional()
+          .describe("Request body"),
+        name: z.string().optional().describe("Name of the request"),
+        description: z.record(z.string()).optional().describe("Description of the request"),
+        auth: z.record(z.any()).optional().describe("Authentication details"),
+      }),
+    }),
+    execute: async ({ request }) => {
+      try {
+        // Log the incoming request
+        console.log("[API Call] Request:", request);
+
+        // Prepare the request URL with query parameters
+        let url = request.url.host?.[0] + ":" + request.url.port + "/" + request.url.path?.join("/");
+
+        // Ensure URL has proper protocol
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+          url = `http://${url}`;
+        }
+
+        // Log the constructed URL for debugging
+        console.log("[API Call] Constructed URL:", url);
+
+        if (request.url.query) {
+          const searchParams = new URLSearchParams(
+            request.url.query.reduce((acc, query) => ({ ...acc, ...query }), {})
+          );
+          url = `${url}?${searchParams.toString()}`;
+        }
+
+        // Log the final URL
+        console.log("[API Call] Final URL:", url, request.method);
+
+        // Execute the API call
+        const apiResponse = await fetch(url, {
+          method: request.method,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getToken(session)}`,
+            ...(request.header?.reduce((acc, header) => ({ ...acc, [header.key]: header.value }), {}) ?? {}),
+          },
+          ...(request.body?.raw && { body: request.body.raw }),
         });
+
+        const data = await apiResponse.json();
+        const responseSize = JSON.stringify(data).length;
+
+        // Log successful response
+        console.log("[API Call] Response:", {
+          status: apiResponse.status,
+          size: `${(responseSize / 1024).toFixed(1)}KB`,
+          data: data,
+        });
+
+        return {
+          response: {
+            method: request.method,
+            args: request.url.query?.[0] || {},
+            data: JSON.stringify(data),
+            headers: Object.fromEntries(apiResponse.headers.entries()),
+          },
+          meta: {
+            status: apiResponse.status,
+            time: `${Date.now() - performance.now()}ms`,
+            size: `${(responseSize / 1024).toFixed(1)}KB`,
+          },
+        };
+      } catch (error) {
+        // Log error details
+        console.error("[API Call] Error:", {
+          message: error instanceof Error ? error.message : "Unknown error",
+          error: error,
+        });
+
+        return {
+          response: {
+            method: request.method,
+            args: {},
+            data: JSON.stringify({
+              success: false,
+              message: error instanceof Error ? error.message : "Unknown error",
+            }),
+            headers: {},
+          },
+          meta: {
+            status: 500,
+            time: "0ms",
+            size: "0KB",
+          },
+        };
       }
-
-      const startTime = Date.now();
-
-      // Retry logic
-      const makeRequest = async (attempt: number = 0): Promise<any> => {
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), timeout);
-
-          const response = await fetch(url.toString(), {
-            method,
-            headers: { ...headers, ...authHeaders, "Content-Type": "application/json" },
-            body: body ? JSON.stringify(body) : undefined,
-            signal: controller.signal,
-          });
-
-          clearTimeout(timeoutId);
-
-          const responseData = await response.json();
-          const endTime = Date.now();
-          const responseSize = JSON.stringify(responseData).length;
-
-          return {
-            response: {
-              method,
-              args: {
-                ...queryParams,
-                ...(body && { body }),
-              },
-              data: responseData,
-              headers: Object.fromEntries(response.headers.entries()),
-            },
-            meta: {
-              status: response.status,
-              time: `${endTime - startTime}ms`,
-              size: `${(responseSize / 1024).toFixed(1)}KB`,
-            },
-          };
-        } catch (error) {
-          if (retry && attempt < retry.attempts) {
-            await new Promise((resolve) => setTimeout(resolve, retry.delay));
-            return makeRequest(attempt + 1);
-          }
-          throw error;
-        }
-      };
-
-      return await makeRequest();
-    } catch (error) {
-      return {
-        response: {
-          method,
-          args: {},
-          data: error instanceof Error ? error.message : "Failed to fetch data",
-          headers: {},
-        },
-        meta: {
-          status: 500,
-          time: "0ms",
-          size: "0KB",
-        },
-      };
-    }
-  },
-});
+    },
+  });

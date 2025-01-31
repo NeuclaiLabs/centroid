@@ -14,6 +14,7 @@ import { Button } from "../ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Textarea } from "../ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+import { useChatStore } from "@/lib/store/chat-store";
 
 const suggestedActions = [
   {
@@ -28,19 +29,26 @@ const suggestedActions = [
   },
 ];
 
+
 export function MultimodalInput({
   input,
   setInput,
+  handleSubmit,
   isLoading,
   stop,
   attachments,
   setAttachments,
   messages,
   append,
-  handleSubmit,
 }: {
   input: string;
   setInput: (value: string) => void;
+  handleSubmit: (
+    event?: {
+      preventDefault?: () => void;
+    },
+    chatRequestOptions?: ChatRequestOptions
+  ) => void;
   isLoading: boolean;
   stop: () => void;
   attachments: Array<Attachment>;
@@ -50,12 +58,6 @@ export function MultimodalInput({
     message: Message | CreateMessage,
     chatRequestOptions?: ChatRequestOptions
   ) => Promise<string | null | undefined>;
-  handleSubmit: (
-    event?: {
-      preventDefault?: () => void;
-    },
-    chatRequestOptions?: ChatRequestOptions
-  ) => void;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -87,6 +89,16 @@ export function MultimodalInput({
   useEffect(() => {
     setLocalStorageInput(input);
   }, [input, setLocalStorageInput]);
+
+  const pendingMessage = useChatStore((state) => state.pendingMessage);
+  const setPendingMessage = useChatStore((state) => state.setPendingMessage);
+
+  useEffect(() => {
+    if (pendingMessage) {
+      setInput(pendingMessage);
+      setPendingMessage(null);
+    }
+  }, [pendingMessage, setInput, setPendingMessage]);
 
   const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(event.target.value);

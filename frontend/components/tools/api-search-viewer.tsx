@@ -4,9 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { ChevronUp, ChevronDown, Play } from "lucide-react";
 import type { SearchResult } from "@/lib/ai/tools/types";
 import React from "react";
+import { useChatStore } from "@/lib/store/chat-store";
 
 interface APISearchViewerProps {
   result?: SearchResult;
@@ -19,6 +20,7 @@ interface ResultCardState {
 }
 
 export const APISearchViewer: FC<APISearchViewerProps> = ({ result, loading }) => {
+  const setPendingMessage = useChatStore((state) => state.setPendingMessage);
   const [expandedCards, setExpandedCards] = useState<ResultCardState>({});
 
   if (loading) {
@@ -125,6 +127,18 @@ export const APISearchViewer: FC<APISearchViewerProps> = ({ result, loading }) =
                       <Button
                         variant="ghost"
                         size="sm"
+                        onClick={() => {
+                          const method = endpoint.request?.method;
+                          const path = (endpoint.request?.url.path ?? []).join("/");
+                          setPendingMessage(`Run ${method} /${path}`);
+                        }}
+                        className="text-green-500 hover:text-green-600 hover:bg-green-100"
+                      >
+                        <Play className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => setExpandedCards((prev) => ({ ...prev, [cardKey]: !prev[cardKey] }))}
                         aria-expanded={isExpanded}
                       >
@@ -137,7 +151,7 @@ export const APISearchViewer: FC<APISearchViewerProps> = ({ result, loading }) =
                   <>
                     {endpoint.request?.description?.content && (
                       <CardContent className="pt-0 pb-2">
-                        <p className="text-sm text-muted-foreground">{endpoint.request.description.content}</p>
+                        <div className="text-sm text-muted-foreground">{endpoint.request.description.content}</div>
                       </CardContent>
                     )}
                     <CardContent className="pt-2">

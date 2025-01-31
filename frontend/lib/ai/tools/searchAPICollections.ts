@@ -2,10 +2,10 @@ import { tool } from "ai";
 import { Session } from "next-auth";
 import { z } from "zod";
 
-import type { Project } from "@/lib/types";
-
 import { SearchResult } from "@/lib/ai/tools/types";
 import { getToken } from "@/lib/utils";
+
+import type { Project } from "@/lib/types";
 
 export const searchAPICollections = (project: Project, session: Session) =>
   tool({

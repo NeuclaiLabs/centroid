@@ -27,7 +27,6 @@ import { tomorrowNight, atomOneLight } from "react-syntax-highlighter/dist/esm/s
 import remarkGfm from "remark-gfm";
 
 import { Button } from "@/components/ui/button";
-import { APIPlan } from "../tools/api-plan";
 
 // Register languages
 const languages = {
@@ -192,46 +191,6 @@ const MarkdownComponents = {
         {children}
       </td>
     );
-  },
-  apiPlan({ node }: any) {
-    try {
-      const summary = node.children.find((child: any) => child.tagName === "summary")?.children[0]?.value || "";
-
-      const steps =
-        node.children
-          .find((child: any) => child.tagName === "steps")
-          ?.children.filter((step: any) => step.tagName === "step")
-          .map((step: any) => ({
-            number: parseInt(step.properties.number),
-            action: step.children.find((c: any) => c.tagName === "action")?.children[0]?.value || "",
-            endpoint: step.children.find((c: any) => c.tagName === "endpoint")?.children[0]?.value || "",
-            method: step.children.find((c: any) => c.tagName === "method")?.children[0]?.value || "",
-            headers: step.children.find((c: any) => c.tagName === "headers")?.children[0]?.value || "",
-            body: step.children.find((c: any) => c.tagName === "body")?.children[0]?.value || "",
-            response: step.children.find((c: any) => c.tagName === "response")?.children[0]?.value || "",
-          })) || [];
-
-      const errorHandling = {
-        retries: parseInt(
-          node.children
-            .find((child: any) => child.tagName === "errorHandling")
-            ?.children.find((c: any) => c.tagName === "retries")?.children[0]?.value || "0"
-        ),
-        backoff:
-          node.children
-            .find((child: any) => child.tagName === "errorHandling")
-            ?.children.find((c: any) => c.tagName === "backoff")?.children[0]?.value || "",
-        timeout:
-          node.children
-            .find((child: any) => child.tagName === "errorHandling")
-            ?.children.find((c: any) => c.tagName === "timeout")?.children[0]?.value || "",
-      };
-
-      return <APIPlan summary={summary} steps={steps} errorHandling={errorHandling} />;
-    } catch (error) {
-      console.error("Error rendering API Plan:", error);
-      return <div className="text-red-500">Error rendering API plan</div>;
-    }
   },
 };
 
