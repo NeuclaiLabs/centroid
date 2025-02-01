@@ -31,7 +31,7 @@ interface ProjectProps {
   isLoading?: boolean;
 }
 
-export function Project({ isLoading, data }: ProjectProps) {
+export function Project({ isLoading: initialLoading, data }: ProjectProps) {
   const { updateProject, deleteProject } = useProject();
   const { data: session } = useSession();
   const token = getToken(session);
@@ -45,6 +45,8 @@ export function Project({ isLoading, data }: ProjectProps) {
     instructions: "",
   });
   const [files, setFiles] = useState<File[]>([]);
+  const [progress, setProgress] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Add this useEffect to update editedValues when modal opens
   React.useEffect(() => {
@@ -57,6 +59,25 @@ export function Project({ isLoading, data }: ProjectProps) {
       });
     }
   }, [isEditDialogOpen, data]);
+
+  // Update effect to handle progress animation for both initial loading and submitting states
+  React.useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isSubmitting) {
+      setProgress(0);
+      interval = setInterval(() => {
+        setProgress((prev) => {
+          // Slow down progress as it gets closer to 100%
+          const increment = Math.max(1, Math.floor((100 - prev) / 10));
+          const next = Math.min(95, prev + increment);
+          return next;
+        });
+      }, 300);
+    } else {
+      setProgress(0);
+    }
+    return () => clearInterval(interval);
+  }, [isSubmitting]);
 
   // Handle opening the edit dialog with specific field focused
   const handleEditClick = (field: string) => {
@@ -83,6 +104,7 @@ export function Project({ isLoading, data }: ProjectProps) {
     if (!data?.id) return;
 
     try {
+      setIsSubmitting(true);
       await updateProject(data.id, formData);
 
       setIsEditDialogOpen(false);
@@ -90,6 +112,8 @@ export function Project({ isLoading, data }: ProjectProps) {
     } catch (error) {
       console.error("Error saving project:", error);
       toast.error("Failed to update project");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -168,9 +192,7 @@ export function Project({ isLoading, data }: ProjectProps) {
               ? data.files.map((file, index) => (
                   <div key={index} className="flex items-center gap-2">
                     <FileIcon className="size-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
-                     {file.split("/").pop()?.slice(16)}
-                    </span>
+                    <span className="text-sm text-muted-foreground">{file.split("/").pop()?.slice(16)}</span>
                   </div>
                 ))
               : null}
@@ -188,7 +210,7 @@ export function Project({ isLoading, data }: ProjectProps) {
 
               <ProjectForm
                 onSubmit={handleSubmit}
-                isLoading={isLoading}
+                isLoading={isSubmitting}
                 modelsData={modelsData}
                 mode="edit"
                 initialData={{
@@ -199,16 +221,8 @@ export function Project({ isLoading, data }: ProjectProps) {
                   files: Array.isArray(data?.files) ? data.files : [],
                 }}
                 focusField={activeField}
+                onCancel={() => setIsEditDialogOpen(false)}
               />
-
-              <DialogFooter className="gap-2 sm:gap-0">
-                <Button variant="secondary" onClick={() => setIsEditDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit" form="create-project-form">
-                  Save Changes
-                </Button>
-              </DialogFooter>
             </DialogContent>
           </Dialog>
         </div>

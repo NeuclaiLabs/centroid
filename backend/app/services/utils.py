@@ -59,13 +59,13 @@ class Endpoint(BaseModel):
 
 class Folder(BaseModel):
     name: str
-    description: str | None
-    item: list[Any]  # Can be either Endpoint or Folder
+    description: str | None = None
+    item: list[Any] | None = None  # Made optional with default None
 
 
 class Collection(BaseModel):
     info: dict[str, Any] | None = None
-    item: list[Folder] | None = None
+    item: list[Any] | None = None  # Changed from list[Folder] to list[Any]
     event: list[Any] | None = None
     variable: list[dict[str, Any]] | None = None
 
@@ -110,25 +110,33 @@ class APIEndpoint(BaseModel):
 
 class APIFolder(BaseModel):
     name: str
-    description: str | None
-    item: list[Any]  # Can be either APIEndpoint or APIFolder
+    description: str | None = None
+    item: list[Any] | None = None  # Made optional with default None
 
 
 class APICollection(BaseModel):
-    info: dict[str, Any]
-    item: list[APIFolder]
-    event: list[Any] | None
-    variable: list[dict[str, Any]] | None
+    info: dict[str, Any] | None = None  # Made optional
+    item: list[Any]  # Changed from list[APIFolder] to list[Any]
+    event: list[Any] | None = None
+    variable: list[dict[str, Any]] | None = None
 
 
 def process_folder(
-    folder: APIFolder,
+    folder: APIFolder | dict,
     parent_path: str = "",
     endpoints: list[dict[str, Any]] | None = None,
 ) -> None:
     if endpoints is None:
         endpoints = []
+
+    # Convert dict to APIFolder if needed
+    if isinstance(folder, dict):
+        folder = APIFolder(**folder)
+
     current_path = f"{parent_path}/{folder.name}" if parent_path else folder.name
+
+    if not folder.item:  # Handle None case
+        return
 
     for item in folder.item:
         if "request" in item:  # It's an endpoint
