@@ -10,6 +10,7 @@ import { fetcher, getToken } from "@/lib/utils";
 import { useProject } from "./project-provider";
 import { toast } from "sonner";
 import { ProjectForm } from "./project-form";
+import { useState, useEffect } from "react";
 
 interface ProjectCreateDialogProps {
   open: boolean;
@@ -29,6 +30,7 @@ function useCreateProject(token: string | undefined) {
 }
 
 export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) => {
+  const [progress, setProgress] = useState(0);
   const { data: session } = useSession();
   const { updateProject } = useProject();
 
@@ -40,6 +42,25 @@ export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) 
     session?.user ? [`${process.env.NEXT_PUBLIC_API_URL}/api/v1/llm/models`, getToken(session)] : null,
     ([url, token]) => fetcher(url, token)
   );
+
+  // Add effect to handle progress animation when loading
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isLoading) {
+      setProgress(0);
+      interval = setInterval(() => {
+        setProgress((prev) => {
+          // Slow down progress as it gets closer to 100%
+          const increment = Math.max(1, Math.floor((100 - prev) / 10));
+          const next = Math.min(95, prev + increment);
+          return next;
+        });
+      }, 150);
+    } else {
+      setProgress(0);
+    }
+    return () => clearInterval(interval);
+  }, [isLoading]);
 
   const handleSubmit = async (formData: FormData) => {
     const token = getToken(session);
@@ -76,8 +97,13 @@ export const ProjectCreate = ({ open, onOpenChange }: ProjectCreateDialogProps) 
           <Button variant="secondary" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button type="submit" form="create-project-form" disabled={isLoading}>
-            Continue
+          <Button
+            type="submit"
+            form="create-project-form"
+            disabled={isLoading}
+            className={isLoading ? "opacity-50 cursor-not-allowed" : ""}
+          >
+            {isLoading ? `Creating... ${progress}%` : "Continue"}
           </Button>
         </DialogFooter>
       </DialogContent>
