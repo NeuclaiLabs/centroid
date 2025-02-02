@@ -25,6 +25,8 @@ export interface Request {
   body?: {
     mode?: string;
     raw?: string;
+    urlencoded?: { [key: string]: any };
+    formdata?: { [key: string]: any };
     [key: string]: any; // To match dict[str, Any] from Python
   };
   url: URL;

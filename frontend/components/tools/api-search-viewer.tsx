@@ -159,6 +159,7 @@ export const APISearchViewer: FC<APISearchViewerProps> = ({ result, loading }) =
                         <TabsList>
                           <TabsTrigger value="params">Parameters</TabsTrigger>
                           <TabsTrigger value="headers">Headers</TabsTrigger>
+                          {endpoint.request?.auth && <TabsTrigger value="auth">Auth</TabsTrigger>}
                           {endpoint.request?.body && <TabsTrigger value="body">Body</TabsTrigger>}
                           {endpoint.response && endpoint.response.length > 0 && (
                             <TabsTrigger value="response">Response</TabsTrigger>
@@ -228,12 +229,89 @@ export const APISearchViewer: FC<APISearchViewerProps> = ({ result, loading }) =
                           </div>
                         </TabsContent>
 
+                        {endpoint.request?.auth && (
+                          <TabsContent value="auth">
+                            <div className="space-y-4">
+                              {Object.entries(endpoint.request.auth).map(([key, value]) => (
+                                <div key={key} className="text-sm">
+                                  <div className="font-medium mb-1">{key}</div>
+                                  {typeof value === "object" ? (
+                                    <div className="grid grid-cols-2 gap-2 pl-4">
+                                      {Object.entries(value).map(([subKey, subValue]) => (
+                                        <React.Fragment key={subKey}>
+                                          <code className="text-xs">{JSON.stringify(subKey)}</code>
+                                          <span className="text-muted-foreground">{JSON.stringify(subValue)}</span>
+                                        </React.Fragment>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <span className="text-muted-foreground pl-4">{String(value)}</span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </TabsContent>
+                        )}
+
                         {endpoint.request?.body && (
                           <TabsContent value="body">
                             <div>
-                              <code className="block bg-muted p-2 rounded-md text-xs overflow-auto whitespace-pre">
-                                {endpoint.request.body.raw}
-                              </code>
+                              {endpoint.request.body.mode === "raw" && endpoint.request.body.raw && (
+                                <code className="block bg-muted p-2 rounded-md text-xs overflow-auto whitespace-pre">
+                                  {endpoint.request.body.raw}
+                                </code>
+                              )}
+                              {endpoint.request.body.mode === "urlencoded" && endpoint.request.body.urlencoded && (
+                                <div className="grid grid-cols-3 gap-2">
+                                  <div className="font-medium text-sm text-muted-foreground">Key</div>
+                                  <div className="font-medium text-sm text-muted-foreground">Value</div>
+                                  <div className="font-medium text-sm text-muted-foreground">Description</div>
+                                  {Array.isArray(endpoint.request.body.urlencoded) &&
+                                    endpoint.request.body.urlencoded
+                                      .filter((param) => !param.disabled)
+                                      .map((param, idx) => (
+                                        <React.Fragment key={idx}>
+                                          <div className="text-sm">
+                                            <code className="text-xs">{param.key}</code>
+                                          </div>
+                                          <div className="text-sm text-muted-foreground">{param.value}</div>
+                                          <div className="text-sm text-muted-foreground">
+                                            {param.description?.content}
+                                          </div>
+                                        </React.Fragment>
+                                      ))}
+                                </div>
+                              )}
+                              {endpoint.request.body.mode === "formdata" && endpoint.request.body.formdata && (
+                                <div className="grid grid-cols-4 gap-2">
+                                  <div className="font-medium text-sm text-muted-foreground">Key</div>
+                                  <div className="font-medium text-sm text-muted-foreground">Value</div>
+                                  <div className="font-medium text-sm text-muted-foreground">Type</div>
+                                  <div className="font-medium text-sm text-muted-foreground">Description</div>
+                                  {Array.isArray(endpoint.request.body.formdata) &&
+                                    endpoint.request.body.formdata.map((param, idx) => (
+                                      <React.Fragment key={idx}>
+                                        <div className="text-sm">
+                                          <code className="text-xs">{param.key}</code>
+                                        </div>
+                                        <div className="text-sm text-muted-foreground">{param.value}</div>
+                                        <div className="text-sm text-muted-foreground">
+                                          <Badge variant="outline" className="text-xs">
+                                            {param.type}
+                                          </Badge>
+                                        </div>
+                                        <div className="text-sm text-muted-foreground">
+                                          {param.description?.content}
+                                        </div>
+                                      </React.Fragment>
+                                    ))}
+                                </div>
+                              )}
+                              {!endpoint.request.body.mode && endpoint.request.body.raw && (
+                                <code className="block bg-muted p-2 rounded-md text-xs overflow-auto whitespace-pre">
+                                  {endpoint.request.body.raw}
+                                </code>
+                              )}
                             </div>
                           </TabsContent>
                         )}
