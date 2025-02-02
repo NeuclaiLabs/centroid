@@ -2,10 +2,9 @@ import { tool } from "ai";
 import { Session } from "next-auth";
 import { z } from "zod";
 
+import type { Project } from "@/lib/types";
 import { SearchResult } from "@/lib/ai/tools/types";
 import { getToken } from "@/lib/utils";
-
-import type { Project } from "@/lib/types";
 
 export const searchAPICollections = (project: Project, session: Session) =>
   tool({
@@ -13,7 +12,7 @@ export const searchAPICollections = (project: Project, session: Session) =>
       "Search and retrieve relevant API endpoints from the collection using natural language. Supports metadata filtering for method, url, has_auth, and has_body fields.",
     parameters: z.object({
       query: z.string().describe("Natural language description of the API endpoints you're looking for"),
-      limit: z.number().min(1).max(20).default(5).describe("Maximum number of API definitions to return"),
+      limit: z.number().min(1).max(10).default(5).describe("Maximum number of API definitions to return"),
       where: z
         .object({
           method: z
@@ -38,28 +37,6 @@ export const searchAPICollections = (project: Project, session: Session) =>
                   $ne: z.string(),
                   $in: z.array(z.string()),
                   $nin: z.array(z.string()),
-                })
-                .partial(),
-            ])
-            .optional(),
-          has_auth: z
-            .union([
-              z.boolean(),
-              z
-                .object({
-                  $eq: z.boolean(),
-                  $ne: z.boolean(),
-                })
-                .partial(),
-            ])
-            .optional(),
-          has_body: z
-            .union([
-              z.boolean(),
-              z
-                .object({
-                  $eq: z.boolean(),
-                  $ne: z.boolean(),
                 })
                 .partial(),
             ])

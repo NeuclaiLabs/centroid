@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { fetcher, getToken } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { Project } from "./project";
 import ProjectChats from "./project-chats";
@@ -81,9 +82,9 @@ export function Chat({
   const [partialScrollRef, scrollPartially] = usePartialScroll();
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const suggestions = [
-    "Generate a multi-step onboarding flow",
-    "How can I schedule cron jobs?",
-    "Write code to implement a min heap",
+    "List all endpoints related to authentication",
+    "Show endpoints for user management",
+    "Help me test an API endpoint",
   ];
 
   useEffect(() => {
@@ -180,15 +181,33 @@ export function Chat({
 
               <div className="flex flex-wrap justify-center gap-2 pb-20 md:pb-40">
                 {suggestions.map((suggestion, index) => (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    size="sm"
-                    className="text-xs px-2 py-1 h-auto"
-                    onClick={() => setInput(suggestion)}
-                  >
-                    {suggestion}
-                  </Button>
+                  <TooltipProvider key={index}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="inline-block">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-xs px-2 py-1 h-auto"
+                            disabled={!selectedProject}
+                            onClick={() => {
+                              if (!selectedProject) {
+                                return;
+                              }
+                              setInput(suggestion);
+                            }}
+                          >
+                            {suggestion}
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      {!selectedProject && (
+                        <TooltipContent>
+                          <p>Please select a project first to use suggestions</p>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
                 ))}
               </div>
             </form>

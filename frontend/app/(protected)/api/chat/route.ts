@@ -85,17 +85,19 @@ export async function POST(request: Request) {
 
 When executing API calls:
 - Analyze the available search results and select the most appropriate endpoint
-- If no search results are available, use searchAPICollections to find the most relevant endpoint
+- If no search results are available, use searchAPICollections to find the most relevant endpoint. And ask the user if they want to search for more endpoints or pick one from the list.
 - Use runAPICall with the selected endpoint, ensuring all required parameters are properly set
 - Explain the chosen endpoint and the results to the user
 - Use localhost as the base URL with port 8000 for the API calls if the endpoint is not specified
 - After executing a tool, do not summarize or repeat the tool's response
 
-Always prioritize endpoints mentioned in the current conversation context. If multiple endpoints match, choose the one that best fits the user's specific request.`,
+Always prioritize endpoints mentioned in the current conversation context. If multiple endpoints match, choose the one that best fits the user's specific request.
+
+${project!.instructions}`,
       },
       ...coreMessages,
     ],
-    maxSteps: 5,
+    maxSteps: 1,
     tools: {
       getWeather: getWeather,
       searchAPICollections: searchAPICollections(project!, session),

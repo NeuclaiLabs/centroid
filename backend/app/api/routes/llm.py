@@ -16,10 +16,8 @@ class ModelInfo(BaseModel):
     @computed_field
     def label(self) -> str:
         """Returns a user-friendly label for the model"""
-        # Remove tags after ':' if they exist
-        base_name = self.id.split(":")[0]
         # Replace separators with spaces and capitalize each word
-        return base_name.replace("-", " ").title()
+        return self.id.replace("-", " ").title()
 
 
 class ModelsResponse(BaseModel):
