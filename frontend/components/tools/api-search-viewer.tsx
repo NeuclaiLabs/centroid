@@ -81,7 +81,7 @@ export const APISearchViewer: FC<APISearchViewerProps> = ({ result, loading }) =
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <ScrollArea className={`${results.length <= 5 ? "h-auto" : "h-[400px]"} pr-4`}>
+        <ScrollArea className={`${results.length <= 5 ? "h-auto" : "h-[400px]"} `}>
           {results.map((item, index) => {
             const endpoint = item.endpoint;
             const cardKey = `${endpoint.request?.method}-${endpoint.request?.url.raw}-${index}`;
@@ -90,62 +90,56 @@ export const APISearchViewer: FC<APISearchViewerProps> = ({ result, loading }) =
             return (
               <Card key={cardKey} className={`${index !== results.length - 1 ? "mb-2" : ""}`}>
                 <CardHeader className="pt-2 pb-2">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          className={
-                            endpoint.request?.method === "GET"
-                              ? "bg-emerald-500 hover:bg-emerald-600"
-                              : endpoint.request?.method === "POST"
-                                ? "bg-amber-500 hover:bg-amber-600"
-                                : endpoint.request?.method === "PUT"
-                                  ? "bg-blue-500 hover:bg-blue-600"
-                                  : endpoint.request?.method === "PATCH"
-                                    ? "bg-purple-500 hover:bg-purple-600"
-                                    : endpoint.request?.method === "DELETE"
-                                      ? "bg-red-500 hover:bg-red-600"
-                                      : ""
-                          }
-                        >
-                          {endpoint.request?.method}
-                        </Badge>
-                        <code className="text-sm font-mono">
-                          {(endpoint.request?.url.host ?? []).join(".") +
-                            "/" +
-                            (endpoint.request?.url.path ?? []).join("/")}
-                        </code>
-                      </div>
-                      <CardDescription>
-                        <div>{endpoint.name}</div>
-                      </CardDescription>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {item.score !== undefined && (
-                        <Badge variant="secondary">{Math.round((1 - Math.abs(item.score)) * 100)}% match</Badge>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          const method = endpoint.request?.method;
-                          const path = (endpoint.request?.url.path ?? []).join("/");
-                          setPendingMessage(`Run ${method} /${path}`);
-                        }}
-                        className="text-green-500 hover:text-green-600 hover:bg-green-100"
-                      >
-                        <Play className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setExpandedCards((prev) => ({ ...prev, [cardKey]: !prev[cardKey] }))}
-                        aria-expanded={isExpanded}
-                      >
-                        {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                      </Button>
-                    </div>
+                  <div className="grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-2">
+                    <Badge
+                      className={
+                        endpoint.request?.method === "GET"
+                          ? "bg-emerald-500 hover:bg-emerald-600"
+                          : endpoint.request?.method === "POST"
+                            ? "bg-amber-500 hover:bg-amber-600"
+                            : endpoint.request?.method === "PUT"
+                              ? "bg-blue-500 hover:bg-blue-600"
+                              : endpoint.request?.method === "PATCH"
+                                ? "bg-purple-500 hover:bg-purple-600"
+                                : endpoint.request?.method === "DELETE"
+                                  ? "bg-red-500 hover:bg-red-600"
+                                  : ""
+                      }
+                    >
+                      {endpoint.request?.method}
+                    </Badge>
+                    <code className="text-sm font-mono break-words min-w-0">
+                      {(endpoint.request?.url.host ?? []).join(".") +
+                        "/" +
+                        (endpoint.request?.url.path ?? []).join("/")}
+                    </code>
+                    {item.score !== undefined && (
+                      <Badge variant="secondary">{Math.round((1 - Math.abs(item.score)) * 100)}% match</Badge>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        const method = endpoint.request?.method;
+                        const path = (endpoint.request?.url.path ?? []).join("/");
+                        setPendingMessage(`Run ${method} /${path}`);
+                      }}
+                      className="text-green-500 hover:text-green-600 hover:bg-green-100"
+                    >
+                      <Play className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setExpandedCards((prev) => ({ ...prev, [cardKey]: !prev[cardKey] }))}
+                      aria-expanded={isExpanded}
+                    >
+                      {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </Button>
                   </div>
+                  <CardDescription>
+                    <div>{endpoint.name}</div>
+                  </CardDescription>
                 </CardHeader>
                 {isExpanded && (
                   <>

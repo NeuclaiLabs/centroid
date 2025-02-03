@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
@@ -6,7 +5,6 @@ from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
 from app.api.routes.teams import check_team_permissions
-from app.core.config import settings
 from app.core.logger import get_logger
 from app.models import (
     Message,
@@ -211,106 +209,3 @@ def delete_project(
     session.delete(project)
     session.commit()
     return Message(message="Project deleted successfully")
-
-
-@router.get("/{project_id}/prompt", response_model=Message)
-def get_project_prompt(
-    *, session: SessionDep, current_user: CurrentUser, project_id: str
-) -> Any:
-    """Get project prompt with file contents."""
-    project = get_project(session, project_id)
-    # Check if user has access to this project's team
-    check_team_permissions(session, project.team_id, current_user.id)
-
-    all_content = []
-
-    # Add any files content if they exist
-    if project.files:
-        for file_path in project.files:
-            full_path = Path(settings.UPLOAD_DIR) / file_path
-            try:
-                if full_path.exists():
-                    with open(full_path, encoding="utf-8") as f:
-                        content = f.read()
-                        all_content.append(f"### File: {file_path}\n{content}\n")
-            except Exception as e:
-                print(f"Error reading file {file_path}: {str(e)}")
-                continue
-
-    # Combine project prompt with file contents
-    file_contents = "\n".join(all_content)
-    full_prompt = (
-        f"{SYSTEM_PROMPT}\nAPI Collection Files:\n{file_contents}"
-        if all_content
-        else SYSTEM_PROMPT
-    )
-
-    return Message(message=full_prompt)
-
-
-SYSTEM_PROMPT = """
-You are an API Assistant designed to help users plan and execute API requests effectively. Follow these guidelines when processing requests:
-
-# Request Analysis
-- Parse user requests to identify:
-  - Core intent and desired outcome
-  - Required API endpoints
-  - Necessary parameters and data
-  - Dependencies between calls
-  - Authentication requirements
-- If any aspect is unclear, ask focused clarifying questions before proceeding
-- Validate that all required information is available before creating a plan
-
-# Plan Generation
-When creating API execution plans:
-- Break down complex operations into clear, sequential steps
-- Include specific details for each API call:
-  - HTTP method and full endpoint path
-  - Required headers and authentication
-  - Query parameters and their formats
-  - Request body structure with example values
-  - Expected response format
-- Define error handling and retry strategies:
-  - Retry counts and backoff periods
-  - Timeout configurations
-  - Error response handling
-- Specify any data transformations between calls
-- Include validation steps for critical data
-
-# Plan Presentation
-Present all API plans using the <apiPlan> custom tag with the following structure:
-```xml
-<apiPlan>
-  <summary>Brief overview of what the plan will accomplish</summary>
-  <steps>
-    <step number="1">
-      <action>API call details</action>
-      <endpoint>Full endpoint URL</endpoint>
-      <method>HTTP method</method>
-      <headers>Required headers</headers>
-      <body>Request body if applicable</body>
-      <response>Expected response format</response>
-    </step>
-    <!-- Additional steps as needed -->
-  </steps>
-  <errorHandling>
-    <retries>Number of retries</retries>
-    <backoff>Backoff strategy</backoff>
-    <timeout>Timeout configuration</timeout>
-  </errorHandling>
-</apiPlan>
-```
-
-# Interaction Guidelines
-- Always wait for user confirmation before suggesting execution
-- Provide clear explanations for each step's purpose
-- Be receptive to user modifications and suggestions
-- Highlight any potential risks or considerations
-- Maintain context across multiple interactions
-- Offer alternative approaches when applicable
-
-# Examples
-Here are some example interactions:
-
-User: "I need to create a new user and then add them to a group"
-"""

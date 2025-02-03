@@ -34,15 +34,63 @@ export const runAPICall = (project: Project, session: Session) =>
           .object({
             mode: z.string().optional(),
             raw: z.string().optional(),
+            urlencoded: z
+              .array(
+                z.object({
+                  key: z.string(),
+                  value: z.string(),
+                })
+              )
+              .optional(),
+            formdata: z
+              .array(
+                z.object({
+                  key: z.string(),
+                  value: z.string(),
+                })
+              )
+              .optional(),
           })
           .optional()
           .describe("Request body"),
         name: z.string().optional().describe("Name of the request"),
         description: z.record(z.string()).optional().describe("Description of the request"),
-        auth: z.record(z.any()).optional().describe("Authentication details"),
+        auth: z
+          .object({
+            type: z.enum(["apikey", "basic", "bearer", "oauth2", "oauth1", "awsv4", "digest", "ntlm", "hawk"]),
+            apikey: z
+              .array(
+                z.object({
+                  key: z.string(),
+                  value: z.string(),
+                  type: z.string().optional(),
+                })
+              )
+              .optional(),
+            basic: z
+              .array(
+                z.object({
+                  key: z.string(),
+                  value: z.string(),
+                  type: z.string().optional(),
+                })
+              )
+              .optional(),
+            bearer: z
+              .array(
+                z.object({
+                  key: z.string(),
+                  value: z.string(),
+                })
+              )
+              .optional(),
+          })
+          .optional()
+          .describe("Authentication details"),
       }),
     }),
     execute: async ({ request }) => {
+      console.log("Request", request);
       try {
         // Capture start time
         const startTime = performance.now();
@@ -72,15 +120,93 @@ export const runAPICall = (project: Project, session: Session) =>
         // Log the final URL
         console.log("[API Call] Final URL:", url, request.method);
 
-        // Execute the API call
+        // Prepare request body based on mode
+        let requestBody: string | FormData | URLSearchParams | undefined;
+        if (request.body) {
+          switch (request.body.mode) {
+            case "raw":
+              requestBody = request.body.raw;
+              break;
+            case "urlencoded":
+              const urlSearchParams = new URLSearchParams();
+              request.body.urlencoded?.forEach(({ key, value }) => {
+                urlSearchParams.append(key, value);
+              });
+              requestBody = urlSearchParams;
+              break;
+            case "formdata":
+              const formData = new FormData();
+              request.body.formdata?.forEach(({ key, value }) => {
+                formData.append(key, value);
+              });
+              requestBody = formData;
+              break;
+          }
+        }
+
+        console.log("Request body", requestBody);
+
+        // Prepare headers with authentication
+        const headers: Record<string, string> = {
+          ...(request.body?.mode !== "formdata" && { "Content-Type": "application/json" }),
+          ...request.header?.reduce((acc, header) => ({ ...acc, [header.key]: header.value }), {}),
+        };
+
+        // Handle different auth types
+        if (request.auth) {
+          switch (request.auth.type) {
+            case "basic":
+              const username =
+                request.auth.basic?.find((item: { key: string; value: string }) => item.key === "username")?.value ||
+                "";
+              const password =
+                request.auth.basic?.find((item: { key: string; value: string }) => item.key === "password")?.value ||
+                "";
+              const base64Credentials = btoa(`${username}:${password}`);
+              headers["Authorization"] = `Basic ${base64Credentials}`;
+              break;
+
+            case "bearer":
+              const token = request.auth.bearer?.find(
+                (item: { key: string; value: string }) => item.key === "token"
+              )?.value;
+              if (token) {
+                headers["Authorization"] = `Bearer ${token}`;
+              }
+              break;
+
+            case "apikey":
+              const apiKey = request.auth.apikey?.find(
+                (item: { key: string; value: string }) => item.key === "key"
+              )?.value;
+              const inType = request.auth.apikey?.find(
+                (item: { key: string; value: string }) => item.key === "in"
+              )?.value;
+              const keyName = request.auth.apikey?.find(
+                (item: { key: string; value: string }) => item.key === "name"
+              )?.value;
+
+              if (apiKey && keyName) {
+                if (inType === "header") {
+                  headers[keyName] = apiKey;
+                } else if (inType === "query") {
+                  // Append API key to URL query parameters
+                  const separator = url.includes("?") ? "&" : "?";
+                  url = `${url}${separator}${keyName}=${apiKey}`;
+                }
+              }
+              break;
+          }
+        } else {
+          // Fallback to session token if no specific auth is provided
+          headers["Authorization"] = `Bearer ${getToken(session)}`;
+        }
+
+        // Execute the API call with proper body handling
         const apiResponse = await fetch(url, {
           method: request.method,
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getToken(session)}`,
-            ...(request.header?.reduce((acc, header) => ({ ...acc, [header.key]: header.value }), {}) ?? {}),
-          },
-          ...(request.body?.raw && { body: request.body.raw }),
+          headers,
+          ...(requestBody && { body: requestBody }),
         });
 
         const data = await apiResponse.json();

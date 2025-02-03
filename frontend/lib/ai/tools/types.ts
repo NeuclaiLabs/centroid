@@ -30,7 +30,36 @@ export interface Request {
     [key: string]: any; // To match dict[str, Any] from Python
   };
   url: URL;
-  auth?: { [key: string]: any };
+  auth?: {
+    type: "apikey" | "basic" | "bearer" | "oauth2" | "oauth1" | "awsv4" | "digest" | "ntlm" | "hawk" | string;
+    apikey?: [
+      {
+        key: string;
+        value: string;
+        type: string;
+      },
+    ];
+    basic?: [
+      {
+        key: string;
+        value: string;
+        type: string;
+      },
+    ];
+    bearer?: [
+      {
+        key: string;
+        value: string;
+      },
+    ];
+    oauth2?: [
+      {
+        key: string;
+        value: string;
+      },
+    ];
+    // other auth types follow similar pattern
+  };
 }
 
 export interface Response {
