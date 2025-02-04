@@ -1,5 +1,4 @@
 from pathlib import Path
-from urllib.parse import urlparse
 
 from fastapi import UploadFile
 from sqlmodel import Session, create_engine, select
@@ -47,17 +46,12 @@ async def init_db(session: Session) -> None:
                 session=session, team_create=team_in, owner_id=user.id
             )
 
-            # Parse host and port from NEXT_PUBLIC_API_URL
-            api_url = urlparse(settings.NEXT_PUBLIC_API_URL)
-            host = api_url.hostname or "localhost"
-            port = str(api_url.port or 8000)
-
             # Create default project
             project_in = ProjectCreate(
                 title="Default Project",
                 description="This is the default project with OpenAstra backend API collection.",
                 model=settings.NEXT_PUBLIC_LLM_DEFAULT_MODEL,
-                instructions=f"For baseUrl, use host as {host} and port as {port}",
+                instructions="For baseUrl, use host as localhost and port as 8000",
                 team_id=team.id,
             )
             project = crud.create_project(session=session, project_create=project_in)

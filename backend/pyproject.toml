@@ -2,9 +2,12 @@
 name = "app"
 version = "0.1.0"
 description = ""
-authors = ["Admin <admin@example.com>"]
+authors = ["Admin <admin@openastra.com>"]
 readme = "README.md"
 license = "MIT"
+packages = [
+    { include = "app"}
+]
 
 [tool.poetry.dependencies]
 python = "^3.10"

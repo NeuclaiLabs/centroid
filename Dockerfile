@@ -11,6 +11,43 @@ RUN npm install -g pnpm
 COPY frontend/package*.json ./
 RUN pnpm install
 COPY frontend/ .
+
+# Application Settings
+ENV PROJECT_NAME=OpenAstra
+ENV DOMAIN=localhost
+ENV ENVIRONMENT=local
+ENV EMAILS_FROM_EMAIL=info@openastra.com
+
+# Backend API Configuration
+ENV BACKEND_CORS_ORIGINS=http://localhost:3000
+ENV SECRET_KEY=yBUzteofjwxyj4b3RLGJGntojhb8B_i0mt2Oy7T-gIU
+ENV DB_TYPE=sqlite
+ENV TELEMETRY_ENABLED=true
+
+# User Management
+ENV FIRST_SUPERUSER=admin@openastra.com
+ENV FIRST_SUPERUSER_PASSWORD=openastra123
+ENV USERS_OPEN_REGISTRATION=True
+
+# LLM Service Configuration
+ENV LLM_BASE_URL=https://api.openai.com/v1
+ENV LLM_API_KEY=your_api_key_here
+ENV LLM_DEFAULT_MODEL=gpt-4o-mini
+
+# NextJS Frontend Environment Variables
+ENV NEXT_PUBLIC_API_URL=http://localhost:8000
+ENV NEXT_PUBLIC_APP_URL=http://localhost:3000
+ENV NEXT_PUBLIC_DEFAULT_USER_EMAIL=${FIRST_SUPERUSER}
+ENV NEXT_PUBLIC_DEFAULT_USER_PASSWORD=${FIRST_SUPERUSER_PASSWORD}
+ENV NEXT_PUBLIC_LLM_DEFAULT_MODEL=${LLM_DEFAULT_MODEL}
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# NextAuth Configuration
+ENV NEXTAUTH_URL=http://localhost:3000
+
+
+# Create dummy .env.local file for Next.js
+RUN touch /app/frontend/.env.local
 RUN pnpm run build
 
 # Build backend
@@ -40,36 +77,15 @@ RUN npm install -g openapi-to-postmanv2
 RUN curl -sSL https://install.python-poetry.org | python3 -
 ENV PATH="/root/.local/bin:$PATH"
 
-# Copy poetry files
-COPY backend/pyproject.toml backend/poetry.lock /app/backend/
-
-# Install dependencies
+# Set up backend
 WORKDIR /app/backend
+
+# Copy entire backend directory
+COPY backend/ ./
+
+# Now run poetry install
 RUN poetry config virtualenvs.create false \
     && poetry install --no-interaction --no-ansi
-
-# Copy backend code
-COPY backend/ /app/backend/
-
-# Set environment variables
-ENV NEXT_PUBLIC_API_URL=http://localhost:8000
-ENV OPENAI_API_KEY=your_api_key_here
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV NEXTAUTH_URL=http://localhost:3000
-ENV NEXTAUTH_SECRET=dev_secret_key
-ENV NEXT_PUBLIC_APP_URL=http://localhost:3000
-ENV PROJECT_NAME=OpenAstra
-ENV FIRST_SUPERUSER=admin@openastra.com
-ENV FIRST_SUPERUSER_PASSWORD=openastra123
-ENV NEXT_PUBLIC_DEFAULT_USER_EMAIL=user@openastra.com
-ENV NEXT_PUBLIC_DEFAULT_USER_PASSWORD=openastra123
-ENV DOMAIN=localhost
-ENV ENVIRONMENT=local
-ENV BACKEND_CORS_ORIGINS=http://localhost:3000
-ENV SECRET_KEY=yBUzteofjwxyj4b3RLGJGntojhb8B_i0mt2Oy7T-gIU
-ENV USERS_OPEN_REGISTRATION=True
-ENV DB_TYPE=sqlite
-ENV NEXT_PUBLIC_LLM_DEFAULT_MODEL=gpt-4o-mini
 
 # Add logging configuration
 ENV LOG_LEVEL=INFO

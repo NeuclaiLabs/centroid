@@ -1,8 +1,10 @@
+/* eslint-disable import/order */
 import { tool } from "ai";
 import { Session } from "next-auth";
 import { z } from "zod";
 
 import type { Project } from "@/lib/types";
+
 import { SearchResult } from "@/lib/ai/tools/types";
 import { getToken } from "@/lib/utils";
 
