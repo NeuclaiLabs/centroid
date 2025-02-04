@@ -1,166 +1,124 @@
-# Full Stack FastAPI Template
+# OpenAstra 👋
 
-<a href="https://github.com/tiangolo/full-stack-fastapi-template/actions?query=workflow%3ATest" target="_blank"><img src="https://github.com/tiangolo/full-stack-fastapi-template/workflows/Test/badge.svg" alt="Test"></a>
-<a href="https://coverage-badge.samuelcolvin.workers.dev/redirect/tiangolo/full-stack-fastapi-template" target="_blank"><img src="https://coverage-badge.samuelcolvin.workers.dev/tiangolo/full-stack-fastapi-template.svg" alt="Coverage"></a>
+![GitHub stars](https://img.shields.io/github/stars/openastra/openastra?style=social)
+![GitHub forks](https://img.shields.io/github/forks/openastra/openastra?style=social)
+![GitHub watchers](https://img.shields.io/github/watchers/openastra/openastra?style=social)
+![GitHub repo size](https://img.shields.io/github/repo-size/openastra/openastra)
+![GitHub language count](https://img.shields.io/github/languages/count/openastra/openastra)
+![GitHub top language](https://img.shields.io/github/languages/top/openastra/openastra)
+![GitHub last commit](https://img.shields.io/github/last-commit/openastra/openastra?color=red)
+![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fopenastra%2Fopenastra&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)
+[![Discord](https://img.shields.io/badge/Discord-OpenAstra-blue?logo=discord&logoColor=white)](https://discord.gg/openastra)
+[![](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/openastra)
 
-### Dashboard - Dark Mode
+**OpenAstra is a powerful, extensible, and user-friendly self-hosted AI assistant platform.** It enables seamless interaction with LLMs, API orchestration, and intelligent automation, supporting **OpenAI-compatible APIs, RAG, and advanced function calling**.
 
-[![API docs](img/dashboard-dark.png)](https://github.com/tiangolo/full-stack-fastapi-postgresql)
+For more information, check out the [OpenAstra Documentation](https://docs.openastra.com/).
 
-## Technology Stack and Features
+![OpenAstra Demo](./demo.gif)
 
-- ⚡ [**FastAPI**](https://fastapi.tiangolo.com) for the Python backend API.
-  - 🧰 [SQLModel](https://sqlmodel.tiangolo.com) for the Python SQL database interactions (ORM).
-  - 🔍 [Pydantic](https://docs.pydantic.dev), used by FastAPI, for the data validation and settings management.
-  - 💾 [PostgreSQL](https://www.postgresql.org) as the SQL database.
-- 🚀 [React](https://react.dev) for the frontend.
-  - 💃 Using TypeScript, hooks, Vite, and other parts of a modern frontend stack.
-  - 🎨 [Chakra UI](https://chakra-ui.com) for the frontend components.
-  - 🤖 An automatically generated frontend client.
-  - 🦇 Dark mode support.
-- 🐋 [Docker Compose](https://www.docker.com) for development and production.
-- 🔒 Secure password hashing by default.
-- 🔑 JWT token authentication.
-- 📫 Email based password recovery.
-- ✅ Tests with [Pytest](https://pytest.org).
-- 📞 [Traefik](https://traefik.io) as a reverse proxy / load balancer.
-- 🚢 Deployment instructions using Docker Compose, including how to set up a frontend Traefik proxy to handle automatic HTTPS certificates.
-- 🏭 CI (continuous integration) and CD (continuous deployment) based on GitHub Actions.
+## Key Features of OpenAstra ⭐
 
-### Dashboard Login
+- 🚀 **Easy Deployment**: Install via Docker, Kubernetes, or Python pip.
+- 🤖 **LLM Support**: Integrates with OpenAI-compatible APIs, including GPT-4o-mini.
+- 🛠️ **Dynamic API Assistant**: Call APIs with authentication, retries, and dynamic parameters.
+- 🔍 **RAG (Retrieval-Augmented Generation)**: Load documents and search locally for improved AI responses.
+- 🔐 **User Management & RBAC**: Fine-grained access control with superuser management.
+- 📱 **Responsive UI**: Works across desktop, mobile, and PWA.
+- 📚 **Markdown & LaTeX Support**: Rich text formatting for better AI interactions.
+- 🌍 **Multilingual**: Supports multiple languages with internationalization.
+- 🧩 **Plugin & Extensions**: Expand capabilities with a modular plugin framework.
+- ⚙️ **Backend API Support**: FastAPI-based backend with built-in authentication.
+- 🖼️ **Image Generation**: Integrated DALL-E, ComfyUI, and AUTOMATIC1111 support.
 
-[![API docs](img/login.png)](https://github.com/tiangolo/full-stack-fastapi-template)
+Want more details? Check out our [documentation](https://docs.openastra.com/features)!
 
-### Dashboard - Admin
+## 🚀 Installation Guide
 
-[![API docs](img/dashboard.png)](https://github.com/tiangolo/full-stack-fastapi-template)
+### 1. Install via Python pip 🐍
 
-### Dashboard - Create User
-
-[![API docs](img/dashboard-create.png)](https://github.com/tiangolo/full-stack-fastapi-template)
-
-### Dashboard - Items
-
-[![API docs](img/dashboard-items.png)](https://github.com/tiangolo/full-stack-fastapi-template)
-
-### Dashboard - User Settings
-
-[![API docs](img/dashboard-user-settings.png)](https://github.com/tiangolo/full-stack-fastapi-template)
-
-### Interactive API documentation
-
-[![API docs](img/docs.png)](https://github.com/tiangolo/full-stack-fastapi-template)
-
-## How to use it
-
-You can **just fork or clone** this repository and use it as is.
-
-✨ It just works. ✨
-
-### Configure
-
-You can then update configs in the `.env` files to customize your configurations.
-
-Before deploying it, make sure you change at least the values for:
-
-- `SECRET_KEY`
-- `FIRST_SUPERUSER_PASSWORD`
-- `POSTGRES_PASSWORD`
-
-### Generate secret keys
-
-Some environment variables in the `.env` file have a default value of `changethis`.
-
-You have to change them with a secret key, to generate secret keys you can run the following command:
+Ensure **Python 3.11** is installed before proceeding.
 
 ```bash
-python -c "import secrets; print(secrets.token_urlsafe(32))"
+pip install openastra
 ```
 
-Copy the content and use that as password / secret key. And run that again to generate another secure key.
-
-## How to use it - alternative with Copier
-
-This repository also supports generating a new project using [Copier](https://copier.readthedocs.io).
-
-It will copy all the files, ask you configuration questions, and update the `.env` files with your answers.
-
-### Install Copier
-
-You can install Copier with:
+Start the OpenAstra server:
 
 ```bash
-pip install copier
+openastra serve
 ```
 
-Or better, if you have [`pipx`](https://pipx.pypa.io/), you can run it with:
+Access it at [http://localhost:8000](http://localhost:8000)
+
+### 2. Quick Start with Docker 🐳
 
 ```bash
-pipx install copier
+docker run -d -p 3000:8000 --name openastra --restart always ghcr.io/openastra/openastra:latest
 ```
 
-**Note**: If you have `pipx`, installing copier is optional, you could run it directly.
+### 3. Kubernetes Deployment 🌎
 
-### Generate a Project with Copier
-
-Decide a name for your new project's directory, you will use it below. For example, `my-awesome-project`.
-
-Go to the directory that will be the parent of your project, and run the command with your project's name:
+Use `kubectl`, `kustomize`, or `helm` for deployment:
 
 ```bash
-copier copy https://github.com/tiangolo/full-stack-fastapi-template my-awesome-project --trust
+helm install openastra ./charts/openastra
 ```
 
-If you have `pipx` and you didn't install `copier`, you can run it directly:
+### 4. Running with Nvidia GPU (CUDA Support) 🖥️
 
 ```bash
-pipx run copier copy https://github.com/tiangolo/full-stack-fastapi-template my-awesome-project --trust
+docker run -d -p 3000:8000 --gpus all --name openastra ghcr.io/openastra/openastra:cuda
 ```
 
-**Note** the `--trust` option is necessary to be able to execute a [post-creation script](https://github.com/tiangolo/full-stack-fastapi-template/blob/master/.copier/update_dotenv.py) that updates your `.env` files.
+## 🌍 Environment Variables
 
-### Input variables
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `PROJECT_NAME` | Name of the project | OpenAstra |
+| `DOMAIN` | Deployment domain | localhost |
+| `LLM_BASE_URL` | LLM service URL | https://api.openai.com/v1 |
+| `LLM_DEFAULT_MODEL` | Default model used | gpt-4o-mini |
+| `NEXT_PUBLIC_API_URL` | API endpoint | http://localhost:8000 |
+| `NEXT_PUBLIC_APP_URL` | Web app URL | http://localhost:3000 |
+| `FIRST_SUPERUSER` | Admin email | admin@openastra.com |
+| `FIRST_SUPERUSER_PASSWORD` | Admin password | openastra123 |
 
-Copier will ask you for some data, you might want to have at hand before generating the project.
+## 🛠️ Development Setup
 
-But don't worry, you can just update any of that in the `.env` files afterwards.
+1. Clone the repo:
 
-The input variables, with their default values (some auto generated) are:
+```bash
+git clone https://github.com/openastra/openastra.git && cd openastra
+```
 
-- `project_name`: (default: `"FastAPI Project"`) The name of the project, shown to API users (in .env).
-- `stack_name`: (default: `"fastapi-project"`) The name of the stack used for Docker Compose labels (no spaces) (in .env).
-- `secret_key`: (default: `"changethis"`) The secret key for the project, used for security, stored in .env, you can generate one with the method above.
-- `first_superuser`: (default: `"admin@example.com"`) The email of the first superuser (in .env).
-- `first_superuser_password`: (default: `"changethis"`) The password of the first superuser (in .env).
-- `smtp_host`: (default: "") The SMTP server host to send emails, you can set it later in .env.
-- `smtp_user`: (default: "") The SMTP server user to send emails, you can set it later in .env.
-- `smtp_password`: (default: "") The SMTP server password to send emails, you can set it later in .env.
-- `emails_from_email`: (default: `"info@example.com"`) The email account to send emails from, you can set it later in .env.
-- `postgres_password`: (default: `"changethis"`) The password for the PostgreSQL database, stored in .env, you can generate one with the method above.
-- `sentry_dsn`: (default: "") The DSN for Sentry, if you are using it, you can set it later in .env.
+2. Install dependencies:
 
-## Backend Development
+```bash
+pnpm install  # for frontend
+typoetry install  # for backend
+```
 
-Backend docs: [backend/README.md](./backend/README.md).
+3. Run the project:
 
-## Frontend Development
+```bash
+./start.sh
+```
 
-Frontend docs: [frontend/README.md](./frontend/README.md).
+## 🤝 Contributing
 
-## Deployment
+We welcome contributions! Feel free to check our [Contributing Guide](https://github.com/openastra/openastra/blob/main/CONTRIBUTING.md) and submit PRs.
 
-Deployment docs: [deployment.md](./deployment.md).
+## ⭐ Community & Support
 
-## Development
+- [Join Discord](https://discord.gg/openastra)
+- [Submit Issues](https://github.com/openastra/openastra/issues)
+- [Read Documentation](https://docs.openastra.com/)
 
-General development docs: [development.md](./development.md).
+## 📜 License
 
-This includes using Docker Compose, custom local domains, `.env` configurations, etc.
+OpenAstra is licensed under the [MIT License](LICENSE).
 
-## Release Notes
+---
 
-Check the file [release-notes.md](./release-notes.md).
-
-## License
-
-The Full Stack FastAPI Template is licensed under the terms of the MIT license.
+Built with ❤️ by the OpenAstra community 🚀
