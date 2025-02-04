@@ -60,15 +60,18 @@ COPY --from=frontend-builder /app/frontend/public /app/frontend/public
 COPY --from=frontend-builder /app/frontend/node_modules /app/frontend/node_modules
 COPY --from=frontend-builder /app/frontend/package*.json /app/frontend/
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Install system dependencies and Node.js in a more cross-platform friendly way
+RUN apt-get update && \
+    apt-get install -y \
     curl \
     build-essential \
+    gnupg \
+    && mkdir -p /etc/apt/keyrings \
+    && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
+    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list \
+    && apt-get update \
+    && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
-
-# Install Node.js for running Next.js
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
-RUN apt-get install -y nodejs
 
 # Install openapi-to-postmanv2 globally
 RUN npm install -g openapi-to-postmanv2
