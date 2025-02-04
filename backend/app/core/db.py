@@ -1,4 +1,5 @@
 from pathlib import Path
+from urllib.parse import urlparse
 
 from fastapi import UploadFile
 from sqlmodel import Session, create_engine, select
@@ -46,22 +47,27 @@ async def init_db(session: Session) -> None:
                 session=session, team_create=team_in, owner_id=user.id
             )
 
+            # Parse host and port from NEXT_PUBLIC_API_URL
+            api_url = urlparse(settings.NEXT_PUBLIC_API_URL)
+            host = api_url.hostname or "localhost"
+            port = str(api_url.port or 8000)
+
             # Create default project
             project_in = ProjectCreate(
-                title="Welcome Project",
-                description="This is your first project with a sample API collection.",
-                model="default",
-                instructions="I am an AI assistant that helps with API testing. Feel free to ask me questions about the APIs or request changes.",
+                title="Default Project",
+                description="This is the default project with OpenAstra backend API collection.",
+                model=settings.NEXT_PUBLIC_LLM_DEFAULT_MODEL,
+                instructions=f"For baseUrl, use host as {host} and port as {port}",
                 team_id=team.id,
             )
             project = crud.create_project(session=session, project_create=project_in)
 
             # Read the collection file
-            collection_path = Path("./result_api_collection.json")
+            collection_path = Path("./openapi_backend_spec.json")
 
             # Create upload file
             upload_file = UploadFile(
-                filename="result_api_collection.json", file=open(collection_path, "rb")
+                filename="openapi_backend_spec.json", file=open(collection_path, "rb")
             )
 
             try:

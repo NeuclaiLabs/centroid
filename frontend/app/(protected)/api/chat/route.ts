@@ -91,7 +91,6 @@ When executing API calls:
   * For 'formdata' mode: Structure the body as key-value pairs compatible with FormData
   * For 'urlencoded' mode: Format as URLSearchParams with proper encoding
 - Always validate the request body against the endpoint's specified schema before making the call
-- Use localhost as the base URL with port 8000 for the API calls if the endpoint is not specified
 - After executing a tool, do not summarize or repeat the tool's response
 - Explain to the user if their requested data format needs to be adjusted to match the endpoint's requirements
 

@@ -192,13 +192,13 @@ async def search_api_collections(
         where_filter = None
         if where:
             try:
-                where_filter = json.loads(where)
+                where_filter = json.loads(where) or None
                 logger.debug(f"Using where filter: {where_filter}")
             except json.JSONDecodeError as e:
                 logger.warning(f"Invalid where filter format: {e}")
                 raise HTTPException(
                     status_code=400,
-                    detail=f"Invalid where filter format. Must be valid JSON: {str(e)}",
+                    detail="Invalid where filter format. Must be valid JSON",
                 )
 
         results = search_endpoints(project_id, query, limit, where_filter)

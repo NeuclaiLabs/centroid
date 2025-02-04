@@ -57,6 +57,8 @@ class Settings(BaseSettings):
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
     LLM_BASE_URL: str = "http://localhost:11434/v1"
     LLM_API_KEY: str = "dummyapikey"
+    LLM_DEFAULT_MODEL: str = "gpt-4o-mini"
+    NEXT_PUBLIC_API_URL: str = "http://localhost:8000"
 
     @computed_field  # type: ignore[misc]
     @property

@@ -190,6 +190,10 @@ export const ProjectForm = ({
     await onSubmit(submitFormData);
   };
 
+  const getModelLabel = (modelId: string | undefined) => {
+    return modelsData?.data.find((model) => model.id === modelId)?.label;
+  };
+
   return (
     <>
       <form id="create-project-form" className="space-y-6" onSubmit={handleSubmit} ref={formRef}>
@@ -226,9 +230,9 @@ export const ProjectForm = ({
                 role="combobox"
                 className={cn("w-full justify-between mt-2", !formData.model && "text-muted-foreground")}
               >
-                {formData.model
-                  ? modelsData?.data.find((model) => model.id === formData.model)?.label
-                  : "Select a model"}
+                {getModelLabel(formData.model) ||
+                  getModelLabel(process.env.NEXT_PUBLIC_LLM_DEFAULT_MODEL) ||
+                  "Select a model"}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
