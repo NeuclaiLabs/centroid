@@ -83,8 +83,8 @@ export function Chat({
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const suggestions = [
     "List all endpoints related to authentication",
-    "Show endpoints for user management",
-    "Help me test an API endpoint",
+    "Run health check endpoint",
+    "Retrieve all GET end points",
   ];
 
   useEffect(() => {
@@ -178,39 +178,42 @@ export function Chat({
                   append={append}
                 />
               </div>
+              <div className="flex flex-wrap justify-center gap-2 pb-20 md:pb-40">
+                {suggestions.map((suggestion, index) => (
+                  <TooltipProvider key={index}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="inline-block">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-xs px-2 py-1 h-auto"
+                            disabled={!selectedProject}
+                            onClick={() => {
+                              if (!selectedProject) {
+                                return;
+                              }
+                              setInput(suggestion);
+                              setTimeout(() => {
+                                handleSubmit();
+                                setInput("");
+                              }, 100);
+                            }}
+                          >
+                            {suggestion}
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      {!selectedProject && (
+                        <TooltipContent>
+                          <p>Please select a project first to use suggestions</p>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
+                ))}
+              </div>
             </form>
-
-            <div className="flex flex-wrap justify-center gap-2 pb-20 md:pb-40">
-              {suggestions.map((suggestion, index) => (
-                <TooltipProvider key={index}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="inline-block">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-xs px-2 py-1 h-auto"
-                          disabled={!selectedProject}
-                          onClick={() => {
-                            if (!selectedProject) {
-                              return;
-                            }
-                            setInput(suggestion);
-                          }}
-                        >
-                          {suggestion}
-                        </Button>
-                      </span>
-                    </TooltipTrigger>
-                    {!selectedProject && (
-                      <TooltipContent>
-                        <p>Please select a project first to use suggestions</p>
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                </TooltipProvider>
-              ))}
-            </div>
           </Card>
         </div>
       ) : messages.length === 0 && isOnProjectPage ? (
