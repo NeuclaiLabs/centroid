@@ -119,7 +119,7 @@ export function NavChats({ history, count, isLoading, mutate }: NavChatsProps) {
           )}
 
           {/* Show "View More" link only if there are messages */}
-          {history && count && count > 3 && (
+          {history && typeof count !== "undefined" && count > 3 && (
             <SidebarMenuItem>
               <Link href="/chats" className="flex items-center gap-2 p-2 text-sm text-foreground/50 hover:underline">
                 <span>View More</span>
