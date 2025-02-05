@@ -9,14 +9,17 @@ router = APIRouter()
 
 class ModelInfo(BaseModel):
     id: str
-    object: str
-    created: int
-    owned_by: str
+    name: str | None = None
+    object: str | None = None
+    created: int | None = None
+    owned_by: str | None = None
 
     @computed_field
     def label(self) -> str:
         """Returns a user-friendly label for the model"""
-        # Replace separators with spaces and capitalize each word
+        # Use name if available, otherwise format the id
+        if self.name:
+            return self.name
         return self.id.replace("-", " ").title()
 
     @computed_field
@@ -26,7 +29,7 @@ class ModelInfo(BaseModel):
 
 
 class ModelsResponse(BaseModel):
-    object: str
+    object: str | None = None  # Added to match API response
     data: list[ModelInfo]
 
 

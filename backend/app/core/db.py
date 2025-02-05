@@ -51,7 +51,8 @@ async def init_db(session: Session) -> None:
                 title="Default Project",
                 description="This is the default project with OpenAstra backend API collection.",
                 model=settings.LLM_DEFAULT_MODEL,
-                instructions="For baseUrl, use host as localhost and port as 8000",
+                instructions="""For baseUrl, use host as localhost and port as 8000.
+                 Health endpoint is hosted at GET /api/v1/utils/health.""",
                 team_id=team.id,
             )
             project = crud.create_project(session=session, project_create=project_in)

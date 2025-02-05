@@ -142,6 +142,13 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     updateSelectedProject();
   }, [selectedProjectId, projectsData?.data, singleProjectData]);
 
+  // Add effect to auto-select single project
+  useEffect(() => {
+    if (projectsData?.data?.length === 1 && !selectedProjectId) {
+      setSelectedProjectId(projectsData.data[0].id);
+    }
+  }, [projectsData?.data, selectedProjectId]);
+
   return (
     <ProjectContext.Provider
       value={{

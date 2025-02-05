@@ -16,20 +16,6 @@ import { Textarea } from "../ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import { useChatStore } from "@/lib/store/chat-store";
 
-const suggestedActions = [
-  {
-    title: "What is the weather",
-    label: "in San Francisco?",
-    action: "what is the weather in San Francisco?",
-  },
-  {
-    title: "Answer like I'm 5,",
-    label: "why is the sky blue?",
-    action: "Answer like I'm 5, why is the sky blue?",
-  },
-];
-
-
 export function MultimodalInput({
   input,
   setInput,
@@ -40,6 +26,7 @@ export function MultimodalInput({
   setAttachments,
   messages,
   append,
+  showSuggestions = false,
 }: {
   input: string;
   setInput: (value: string) => void;
@@ -58,6 +45,7 @@ export function MultimodalInput({
     message: Message | CreateMessage,
     chatRequestOptions?: ChatRequestOptions
   ) => Promise<string | null | undefined>;
+  showSuggestions?: boolean;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -177,6 +165,12 @@ export function MultimodalInput({
 
   // Add this helper function to check if project is selected
   const isProjectSelectionRequired = shouldShowProjectDropdown && !selectedProject;
+
+  const suggestions = [
+    "Show endpoints for user management",
+    "Test /api/v1/utils/health endpoint",
+    "Retrieve all GET endpoints",
+  ];
 
   return (
     <div className="relative w-full flex flex-col gap-2">

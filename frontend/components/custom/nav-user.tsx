@@ -77,7 +77,7 @@ export function NavUser() {
             </DropdownMenuGroup>
             <DropdownMenuSeparator /> */}
             <DropdownMenuGroup>
-              <DropdownMenuItem className="cursor-pointer">
+              {/* <DropdownMenuItem className="cursor-pointer">
                 <BadgeCheck className="mr-2 size-4" />
                 Account
               </DropdownMenuItem>
@@ -88,7 +88,7 @@ export function NavUser() {
               <DropdownMenuItem className="cursor-pointer">
                 <Bell className="mr-2 size-4" />
                 Notifications
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
               <DropdownMenuItem
                 onSelect={(e) => e.preventDefault()}
                 className={cn("flex items-center justify-between w-full", "cursor-pointer")}

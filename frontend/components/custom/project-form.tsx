@@ -59,7 +59,7 @@ export const ProjectForm = ({
   const [formData, setFormData] = useState<CreateProjectData>({
     title: initialData?.title || "",
     description: initialData?.description || "",
-    model: initialData?.model || "",
+    model: initialData?.model || modelsData?.data.find((model) => model.is_default)?.id || "",
     instructions: initialData?.instructions || "",
   });
 

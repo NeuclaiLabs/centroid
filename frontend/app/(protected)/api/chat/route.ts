@@ -84,7 +84,7 @@ export async function POST(request: Request) {
 2. Execute API calls using the runAPICall tool based on the context and user's request
 
 When executing API calls:
-- Analyze the available search results and select the most appropriate endpoint
+- Analyze the available search results and past conversation history and select the most appropriate endpoint
 - If no search results are available, use searchAPICollections to find the most relevant endpoint. And ask the user if they want to search for more endpoints or pick one from the list.
 - Use runAPICall with the selected endpoint, following these body formatting rules:
   * For 'raw' mode: Format the body as a JSON string matching the endpoint's schema

@@ -34,3 +34,11 @@ def test_sample() -> Message:
     Test emails.
     """
     return Message(message="Hello World!")
+
+
+@router.get("/health")
+def health_check() -> Message:
+    """
+    Health check endpoint to verify API is running.
+    """
+    return Message(message="OK")

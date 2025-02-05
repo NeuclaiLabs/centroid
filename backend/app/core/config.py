@@ -60,10 +60,13 @@ class Settings(BaseSettings):
     LLM_DEFAULT_MODEL: str = "gpt-4o-mini"
     NEXT_PUBLIC_API_URL: str = "http://localhost:8000"
 
+    # Add BASE_DIR setting
+    BASE_DIR: str = str(Path.home())
+
     @computed_field  # type: ignore[misc]
     @property
     def UPLOAD_DIR(self) -> str:
-        upload_path = Path.home() / ".openastra" / "uploads"
+        upload_path = Path(self.BASE_DIR) / ".openastra" / "uploads"
         upload_path.mkdir(parents=True, exist_ok=True)
         return str(upload_path)
 
@@ -107,7 +110,7 @@ class Settings(BaseSettings):
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> PostgresDsn | Any:
         if self.DB_TYPE == "sqlite":
-            db_path = Path.home() / ".openastra" / "app.db"
+            db_path = Path(self.BASE_DIR) / ".openastra" / "app.db"
             db_path.parent.mkdir(parents=True, exist_ok=True)
             return f"sqlite:///{db_path}"
 
