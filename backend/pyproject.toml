@@ -6,7 +6,7 @@ authors = ["Admin <admin@openastra.com>"]
 readme = "README.md"
 license = "MIT"
 packages = [
-    { include = "app"}
+    { include = "app", from = "." }
 ]
 
 [tool.poetry.dependencies]

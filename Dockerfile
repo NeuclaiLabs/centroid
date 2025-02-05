@@ -16,19 +16,17 @@ COPY frontend/ .
 # NextJS Frontend Environment Variables
 ENV NEXT_PUBLIC_API_URL=http://localhost:8000
 ENV NEXT_PUBLIC_APP_URL=http://localhost:3000
-ENV NEXT_PUBLIC_LLM_DEFAULT_MODEL=${LLM_DEFAULT_MODEL}
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # NextAuth Configuration
 ENV NEXTAUTH_URL=http://localhost:3000
-
 
 # Create dummy .env.local file for Next.js
 RUN touch /app/frontend/.env.local
 RUN pnpm run build
 
 # Build backend
-FROM python:3.10-slim
+FROM python:3.10-slim AS backend-builder
 WORKDIR /app
 
 # Copy frontend build
@@ -37,7 +35,7 @@ COPY --from=frontend-builder /app/frontend/public /app/frontend/public
 COPY --from=frontend-builder /app/frontend/node_modules /app/frontend/node_modules
 COPY --from=frontend-builder /app/frontend/package*.json /app/frontend/
 
-# Install system dependencies and Node.js in a more cross-platform friendly way
+# Install system dependencies and Node.js
 RUN apt-get update && \
     apt-get install -y \
     curl \
@@ -60,13 +58,14 @@ ENV PATH="/root/.local/bin:$PATH"
 # Set up backend
 WORKDIR /app/backend
 
-# Copy entire backend directory
-COPY backend/ ./
+# Copy backend files
+COPY backend/ .
 
-# Now run poetry install
-RUN poetry config virtualenvs.create false \
-    && poetry install --no-interaction --no-ansi
+# Configure Poetry to use virtual environments and install dependencies
+RUN poetry config virtualenvs.create true && \
+    poetry install --no-interaction --no-ansi
 
+# Set environment variables
 # Backend API Configuration
 ENV BACKEND_CORS_ORIGINS=http://localhost:3000
 ENV SECRET_KEY=yBUzteofjwxyj4b3RLGJGntojhb8B_i0mt2Oy7T-gIU
@@ -108,4 +107,4 @@ RUN chmod +x /entrypoint.sh
 EXPOSE 3000 8000
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["/app/start.sh"]

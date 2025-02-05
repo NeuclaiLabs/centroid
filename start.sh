@@ -8,7 +8,7 @@ fi
 
 # Start frontend
 echo "Starting frontend..."
-cd /app/frontend && pnpm install && pnpm run start &
+cd /app/frontend && pnpm run start &
 
 # Start backend
 echo "Starting backend..."

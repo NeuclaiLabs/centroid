@@ -50,7 +50,7 @@ async def init_db(session: Session) -> None:
             project_in = ProjectCreate(
                 title="Default Project",
                 description="This is the default project with OpenAstra backend API collection.",
-                model=settings.NEXT_PUBLIC_LLM_DEFAULT_MODEL,
+                model=settings.LLM_DEFAULT_MODEL,
                 instructions="For baseUrl, use host as localhost and port as 8000",
                 team_id=team.id,
             )

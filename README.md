@@ -54,7 +54,7 @@ Access it at [http://localhost:8000](http://localhost:8000)
 ### 2. Quick Start with Docker 🐳
 
 ```bash
-docker run -d -p 3000:8000 --name openastra --restart always ghcr.io/openastra/openastra:latest
+docker run -d -p 3000:3000 --name openastra --restart always openastra:latest
 ```
 
 ### 3. Kubernetes Deployment 🌎
