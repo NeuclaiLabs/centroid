@@ -84,7 +84,7 @@ export function Chat({
   const suggestions = [
     "List all endpoints related to authentication",
     "Run health check endpoint",
-    "Retrieve all GET end points",
+    "Retrieve all DELETE end points",
   ];
 
   useEffect(() => {
@@ -200,7 +200,7 @@ export function Chat({
                               }, 100);
                             }}
                           >
-                            {suggestion}
+                            {suggestion} ↗
                           </Button>
                         </span>
                       </TooltipTrigger>
