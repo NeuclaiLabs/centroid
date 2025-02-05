@@ -53,11 +53,7 @@ export default function Page() {
           <h3 className="text-xl font-semibold dark:text-zinc-50">Sign In</h3>
           <p className="text-sm text-gray-500 dark:text-zinc-400">Use your email and password to sign in</p>
         </div>
-        <AuthForm
-          action={handleSubmit}
-          defaultEmail={email}
-          defaultPassword={process.env.NEXT_PUBLIC_DEFAULT_USER_PASSWORD || ""}
-        >
+        <AuthForm action={handleSubmit} defaultEmail={"admin@example.com"} defaultPassword={"example123"}>
           <SubmitButton>Sign in</SubmitButton>
           <p className="text-center text-sm text-gray-600 mt-4 dark:text-zinc-400">
             {"Don't have an account? "}
@@ -65,6 +61,9 @@ export default function Page() {
               Sign up
             </Link>
             {" for free."}
+          </p>
+          <p className="text-center text-xs text-gray-500 mt-2 dark:text-zinc-500">
+            Default credentials: admin@example.com / example123
           </p>
         </AuthForm>
       </div>

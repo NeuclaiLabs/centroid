@@ -32,7 +32,7 @@ import type { CreateProjectData } from "@/lib/types";
 interface ProjectFormProps {
   onSubmit: (formData: FormData) => Promise<void>;
   isLoading?: boolean;
-  modelsData?: { data: Array<{ id: string; label: string }> };
+  modelsData?: { data: Array<{ id: string; label: string; is_default: boolean }> };
   initialData?: {
     title: string;
     description?: string;
@@ -231,7 +231,7 @@ export const ProjectForm = ({
                 className={cn("w-full justify-between mt-2", !formData.model && "text-muted-foreground")}
               >
                 {getModelLabel(formData.model) ||
-                  getModelLabel(process.env.NEXT_PUBLIC_LLM_DEFAULT_MODEL) ||
+                  modelsData?.data.find((model) => model.is_default)?.label ||
                   "Select a model"}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>

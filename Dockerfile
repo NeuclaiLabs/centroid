@@ -12,33 +12,10 @@ COPY frontend/package*.json ./
 RUN pnpm install
 COPY frontend/ .
 
-# Application Settings
-ENV PROJECT_NAME=OpenAstra
-ENV DOMAIN=localhost
-ENV ENVIRONMENT=local
-ENV EMAILS_FROM_EMAIL=info@openastra.com
-
-# Backend API Configuration
-ENV BACKEND_CORS_ORIGINS=http://localhost:3000
-ENV SECRET_KEY=yBUzteofjwxyj4b3RLGJGntojhb8B_i0mt2Oy7T-gIU
-ENV DB_TYPE=sqlite
-ENV TELEMETRY_ENABLED=true
-
-# User Management
-ENV FIRST_SUPERUSER=admin@openastra.com
-ENV FIRST_SUPERUSER_PASSWORD=openastra123
-ENV USERS_OPEN_REGISTRATION=True
-
-# LLM Service Configuration
-ENV LLM_BASE_URL=https://api.openai.com/v1
-ENV LLM_API_KEY=your_api_key_here
-ENV LLM_DEFAULT_MODEL=gpt-4o-mini
 
 # NextJS Frontend Environment Variables
 ENV NEXT_PUBLIC_API_URL=http://localhost:8000
 ENV NEXT_PUBLIC_APP_URL=http://localhost:3000
-ENV NEXT_PUBLIC_DEFAULT_USER_EMAIL=${FIRST_SUPERUSER}
-ENV NEXT_PUBLIC_DEFAULT_USER_PASSWORD=${FIRST_SUPERUSER_PASSWORD}
 ENV NEXT_PUBLIC_LLM_DEFAULT_MODEL=${LLM_DEFAULT_MODEL}
 ENV NEXT_TELEMETRY_DISABLED=1
 
@@ -89,6 +66,21 @@ COPY backend/ ./
 # Now run poetry install
 RUN poetry config virtualenvs.create false \
     && poetry install --no-interaction --no-ansi
+
+# Backend API Configuration
+ENV BACKEND_CORS_ORIGINS=http://localhost:3000
+ENV SECRET_KEY=yBUzteofjwxyj4b3RLGJGntojhb8B_i0mt2Oy7T-gIU
+ENV TELEMETRY_ENABLED=true
+
+# User Management
+ENV FIRST_SUPERUSER=admin@example.com
+ENV FIRST_SUPERUSER_PASSWORD=example123
+ENV USERS_OPEN_REGISTRATION=True
+
+# LLM Service Configuration
+ENV LLM_BASE_URL=https://api.openai.com/v1
+ENV LLM_API_KEY=your_api_key_here
+ENV LLM_DEFAULT_MODEL=gpt-4o-mini
 
 # Add logging configuration
 ENV LOG_LEVEL=INFO

@@ -19,6 +19,11 @@ class ModelInfo(BaseModel):
         # Replace separators with spaces and capitalize each word
         return self.id.replace("-", " ").title()
 
+    @computed_field
+    def is_default(self) -> bool:
+        """Returns whether this is the default model"""
+        return self.id == settings.LLM_DEFAULT_MODEL
+
 
 class ModelsResponse(BaseModel):
     object: str
