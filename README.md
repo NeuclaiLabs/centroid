@@ -70,8 +70,8 @@ OpenAstra re-imagines API workflows through the power of natural conversation. T
 
 ### Using Docker
 
-> [!INFO]
-> When using Docker to install OpenAstra, you **must** include the volume mount `-v openastra_data:/app/data` in your Docker command. This is not optional - it's crucial for:
+> [!TIP]
+> When using Docker to install OpenAstra, please include the volume mount `-v openastra_data:/app/data` in your Docker command. It's **crucial** for:
 >
 > - Persisting your database
 > - Preventing data loss between container restarts
@@ -79,7 +79,7 @@ OpenAstra re-imagines API workflows through the power of natural conversation. T
 >
 > Without the volume mount, all data will be lost when the container is restarted or updated.
 
-Visit `http://localhost:3000` to access the web interface and `http://localhost:8000` for the API.
+Visit `http://localhost:3000` to access the web interface.
 
 ```bash
 docker run -d \
@@ -90,7 +90,6 @@ docker run -d \
   --restart always \
   ghcr.io/srikanth235/openastra:latest
 ```
-
 
 ### Environment Variables
 
@@ -139,28 +138,32 @@ FIRST_SUPERUSER_PASSWORD=example123        # Default: example123
 docker run -d -p 3000:3000 openastra/openastra:latest
 ```
 
-## 🌟 Contributing
+## 🤖 Choosing an LLM
 
-We love contributions! Here's how you can help:
+> [!IMPORTANT]
+> OpenAstra requires an LLM with function/tool calling capabilities to work properly.
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+### Recommended Models
 
-Read our [Contributing Guide](CONTRIBUTING.md) for more details.
+We've tested various LLMs, and these models work particularly well with OpenAstra:
 
-## 🤝 Community & Support
+- **GPT-4o-mini**: Excellent performance with API interactions, good balance of cost, speed and accuracy
+- **Claude Haiku**: Fast responses, strong understanding of API concepts
+- **Llama 3.2 (70B)**: Excellent performance with API interactions, good balance of speed and accuracy
 
-- [Discord Community](https://discord.gg/openastra)
-- [Documentation](https://docs.openastra.com)
-- [GitHub Issues](https://github.com/openastra/openastra/issues)
-- [Feature Requests](https://github.com/openastra/openastra/discussions)
+All the above models work equally well with OpenAstra
 
-## 📄 License
+> [!TIP]
+> Any model with similar or better capabilities than above will work well with OpenAstra. The key requirement is support for function/tool calling and a reasonable context window.
 
-OpenAstra is [MIT licensed](LICENSE).
+> [!WARNING]
+> While models without tool calling might partially work, you won't get the full capabilities of OpenAstra's API automation features.
+
+### Performance Considerations
+
+- **Response Time**: Models like Haiku and GPT-4o-mini offer the best latency
+- **Cost**: Consider using GPT-4o-mini or Haiku for development/testing
+- **Context Window**: Larger context windows help with complex API documentation and multi-step workflows
 
 ## 📊 Telemetry
 
@@ -197,32 +200,29 @@ TELEMETRY_ENABLED=false
 
 [Learn more about our privacy policy →](https://docs.openastra.com/privacy)
 
-## 🤖 Choosing an LLM
+## 🌟 Contributing
 
-> [!IMPORTANT]
-> OpenAstra requires an LLM with function/tool calling capabilities to work properly.
+We love contributions! Here's how you can help:
 
-### Recommended Models
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-We've tested various LLMs, and these models work particularly well with OpenAstra:
+Read our [Contributing Guide](CONTRIBUTING.md) for more details.
 
-- **GPT-4o-mini**: Excellent performance with API interactions, good balance of cost, speed and accuracy
-- **Claude Haiku**: Fast responses, strong understanding of API concepts
-- **Llama 3.2 (70B)**: Excellent performance with API interactions, good balance of speed and accuracy
+## 🤝 Support & Community
 
-All the above models work equally well with OpenAstra
+Need help? Join our community:
 
-> [!TIP]
-> Any model with similar or better capabilities than above will work well with OpenAstra. The key requirement is support for function/tool calling and a reasonable context window.
+- [Discord Community](https://discord.gg/openastra) - Get help and discuss features
+- [GitHub Issues](https://github.com/openastra/openastra/issues) - Report bugs
+- [Documentation](https://docs.openastra.com) - Learn more about OpenAstra
 
-> [!WARNING]
-> While models without tool calling might partially work, you won't get the full capabilities of OpenAstra's API automation features.
+## 📄 License
 
-### Performance Considerations
-
-- **Response Time**: Models like Haiku and GPT-4o-mini offer the best latency
-- **Cost**: Consider using GPT-4o-mini or Haiku for development/testing
-- **Context Window**: Larger context windows help with complex API documentation and multi-step workflows
+OpenAstra is [MIT licensed](LICENSE).
 
 ---
 
