@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useState, useEffect, useRef } from "react";
 import useSWR from "swr";
+import { toast } from "sonner";
 
 import { PreviewMessage, ThinkingMessage } from "@/components/custom/message";
 import { MultimodalInput } from "@/components/custom/multimodal-input";
@@ -75,6 +76,13 @@ export function Chat({
     initialMessages,
     onFinish: () => {
       window.history.replaceState({}, "", `/chat/${id}`);
+    },
+    onError: (error) => {
+      console.error("Chat error:", error);
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      toast.error("Failed to get response. Please try again.", {
+        description: errorMessage,
+      });
     },
   });
 

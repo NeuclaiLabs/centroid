@@ -61,24 +61,24 @@ const RequestSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const { id, messages, project }: { id: string; messages: Array<Message>; project: Project | null } =
-    await request.json();
+  try {
+    const { id, messages, project }: { id: string; messages: Array<Message>; project: Project | null } =
+      await request.json();
 
-  const session = await auth();
+    const session = await auth();
 
-  if (!session) {
-    return new Response("Unauthorized", { status: 401 });
-  }
+    if (!session) {
+      return new Response("Unauthorized", { status: 401 });
+    }
 
-  const coreMessages = convertToCoreMessages(messages);
-  const llm = customModel(project!.model);
-  console.log("Prompt instructions", project!.instructions);
-  const result = await streamText({
-    model: llm,
-    messages: [
-      {
-        role: "system",
-        content: `You are an API documentation assistant. Your primary tasks are:
+    const coreMessages = convertToCoreMessages(messages);
+    const llm = customModel(project!.model);
+    const result = await streamText({
+      model: llm,
+      messages: [
+        {
+          role: "system",
+          content: `You are an API documentation assistant. Your primary tasks are:
 
 1. Help users discover and understand API endpoints by using the searchAPICollections tool
 2. Execute API calls using the runAPICall tool based on the context and user's request
@@ -97,45 +97,58 @@ When executing API calls:
 Always prioritize endpoints mentioned in the current conversation context. If multiple endpoints match, choose the one that best fits the user's specific request.
 
 ${project!.instructions}`,
+        },
+        ...coreMessages,
+      ],
+      maxSteps: 1,
+      tools: {
+        getWeather: getWeather,
+        searchAPICollections: searchAPICollections(project!, session),
+        runAPICall: runAPICall(project!, session),
       },
-      ...coreMessages,
-    ],
-    maxSteps: 1,
-    tools: {
-      getWeather: getWeather,
-      searchAPICollections: searchAPICollections(project!, session),
-      runAPICall: runAPICall(project!, session),
-    },
-    onFinish: async ({ responseMessages }) => {
-      if (session.user && session.user.id) {
-        try {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/chats/`, {
-            method: "POST",
-            headers: {
-              accept: "application/json",
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${getToken(session)}`,
-            },
-            body: JSON.stringify({
-              id,
-              messages: [...coreMessages, ...responseMessages],
-              project_id: project?.id,
-            }),
-          });
+      onFinish: async ({ responseMessages }) => {
+        if (session.user && session.user.id) {
+          try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/chats/`, {
+              method: "POST",
+              headers: {
+                accept: "application/json",
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${getToken(session)}`,
+              },
+              body: JSON.stringify({
+                id,
+                messages: [...coreMessages, ...responseMessages],
+                project_id: project?.id,
+              }),
+            });
 
-          if (!response.ok) {
-            throw new Error("Failed to save chat");
+            if (!response.ok) {
+              throw new Error("Failed to save chat");
+            }
+          } catch (error) {
+            console.error("Failed to save chat", error);
           }
-        } catch (error) {
-          console.error("Failed to save chat", error);
         }
-      }
-    },
-    experimental_telemetry: {
-      isEnabled: false,
-      functionId: "stream-text",
-    },
-  });
+      },
+      experimental_telemetry: {
+        isEnabled: false,
+        functionId: "stream-text",
+      },
+    });
 
-  return result.toDataStreamResponse({});
+    return result.toDataStreamResponse({});
+  } catch (error) {
+    console.error("Error in chat route:", error);
+    return new Response(
+      JSON.stringify({
+        error: "Failed to process chat request",
+        details: error instanceof Error ? error.message : "Unknown error",
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
 }

@@ -54,7 +54,7 @@ interface Props {
 export function APIResponseViewer({ response, meta, loading = true }: Props) {
   const { theme } = useTheme();
   const [clientTheme, setClientTheme] = useState<"light" | "dark" | undefined>(undefined);
-  const [activeTab, setActiveTab] = useState<"json" | "headers" | "test-results">("json");
+  const [activeTab, setActiveTab] = useState<"json" | "headers">("json");
   const [copied, setCopied] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -101,7 +101,7 @@ export function APIResponseViewer({ response, meta, loading = true }: Props) {
   };
 
   // Render content based on active tab
-  const renderContent = (tab: "json" | "headers" | "test-results") => {
+  const renderContent = (tab: "json" | "headers") => {
     switch (tab) {
       case "json":
         return (
@@ -138,8 +138,6 @@ ${Object.entries(response!.headers)
   .join("\n")}`;
 
         return <Markdown>{markdownTable}</Markdown>;
-      case "test-results":
-        return <div className="text-muted-foreground italic">No test results available</div>;
       default:
         return null;
     }
@@ -190,7 +188,6 @@ ${Object.entries(response!.headers)
                 <TabsList>
                   <TabsTrigger value="json">JSON</TabsTrigger>
                   <TabsTrigger value="headers">Headers</TabsTrigger>
-                  <TabsTrigger value="test-results">Test Results</TabsTrigger>
                 </TabsList>
                 <div className="flex items-center space-x-2">
                   <CopyToClipboard
@@ -211,7 +208,6 @@ ${Object.entries(response!.headers)
               </div>
               <TabsContent value="json">{renderContent("json")}</TabsContent>
               <TabsContent value="headers">{renderContent("headers")}</TabsContent>
-              <TabsContent value="test-results">{renderContent("test-results")}</TabsContent>
             </Tabs>
           )}
         </CardContent>

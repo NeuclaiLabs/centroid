@@ -47,7 +47,7 @@ def store_embeddings(project_id: str, file_id: str, content: dict):
             logger.warning(f"No endpoints found in collection for file_id: {file_id}")
             return
 
-        logger.info(f"Processing {len(endpoints)} endpoints for file_id: {file_id}")
+        logger.info(f"Found {len(endpoints)} API endpoints to process")
 
         collection = chroma_client.get_or_create_collection(
             name=project_id,
@@ -86,9 +86,11 @@ def store_embeddings(project_id: str, file_id: str, content: dict):
             # Add batch of documents to collection
             if documents:
                 collection.add(documents=documents, metadatas=metadatas, ids=ids)
-                logger.debug(f"Added batch of {len(documents)} documents to collection")
+                logger.debug(
+                    f"Processing API endpoints: {i + 1} to {min(i + batch_size, len(endpoints))} of {len(endpoints)}"
+                )
 
-        logger.info(f"Successfully stored embeddings for file_id: {file_id}")
+        logger.info("Successfully processed and stored all API endpoints")
 
     except Exception as e:
         logger.error(
