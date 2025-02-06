@@ -1,124 +1,232 @@
-# OpenAstra 👋
+<div align="center">
+  <h1>🚀 OpenAstra</h1>
+  <p>
+    <strong>A chat-based API development platform that makes API workflows intuitive and powerful.</strong>
+  </p>
 
-![GitHub stars](https://img.shields.io/github/stars/openastra/openastra?style=social)
-![GitHub forks](https://img.shields.io/github/forks/openastra/openastra?style=social)
-![GitHub watchers](https://img.shields.io/github/watchers/openastra/openastra?style=social)
-![GitHub repo size](https://img.shields.io/github/repo-size/openastra/openastra)
-![GitHub language count](https://img.shields.io/github/languages/count/openastra/openastra)
-![GitHub top language](https://img.shields.io/github/languages/top/openastra/openastra)
-![GitHub last commit](https://img.shields.io/github/last-commit/openastra/openastra?color=red)
-![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fopenastra%2Fopenastra&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)
-[![Discord](https://img.shields.io/badge/Discord-OpenAstra-blue?logo=discord&logoColor=white)](https://discord.gg/openastra)
-[![](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/openastra)
+  <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"/>
+  <img src="https://img.shields.io/github/v/release/srikanth235/openastra" alt="GitHub Release"/>
+  <img src="https://img.shields.io/github/issues/srikanth235/openastra" alt="GitHub Issues"/>
+  <img src="https://img.shields.io/github/stars/srikanth235/openastra" alt="GitHub Stars"/>
+  <a href="https://twitter.com/openastradev" style="text-decoration: none; outline: none">
+    <img src="https://img.shields.io/twitter/url/https/twitter.com/openastradev.svg?style=social&label=%20%40openastradev" alt="Twitter: @openastradev"/>
+  </a>
+  <a href="https://discord.gg/openastra" style="text-decoration: none; outline: none">
+    <img src="https://dcbadge.vercel.app/api/server/openastra?style=flat&compact=true" alt="Discord"/>
+  </a>
 
-**OpenAstra is a powerful, extensible, and user-friendly self-hosted AI assistant platform.** It enables seamless interaction with LLMs, API orchestration, and intelligent automation, supporting **OpenAI-compatible APIs, RAG, and advanced function calling**.
+  <br/>
+  <br/>
+  <img src="./demo.gif" alt="OpenAstra Demo" width="600">
+</div>
 
-For more information, check out the [OpenAstra Documentation](https://docs.openastra.com/).
+## 🎯 Overview
 
-![OpenAstra Demo](./demo.gif)
+OpenAstra re-imagines API workflows through the power of natural conversation. Think of it as "Postman meets ChatGPT" - a modern, intuitive approach to API interaction that lets you:
 
-## Key Features of OpenAstra ⭐
+- **Chat With Your APIs**: Instead of building complex request configurations, simply describe what you want to do in natural language
+- **Intelligent API Discovery**: Let AI help you explore and understand API endpoints through conversation
+- **Context-Aware Interactions**: The system remembers your previous API calls and authentication context
+- **Run API endpoints**: Execute API endpoints directly from the UI
+- **Automated Testing**: Generate and run API tests using natural language descriptions (in roadmap)
+- **Smart Documentation**: Auto-generate and update API documentation from your conversations (in roadmap)
 
-- 🚀 **Easy Deployment**: Install via Docker, Kubernetes, or Python pip.
-- 🤖 **LLM Support**: Integrates with OpenAI-compatible APIs, including GPT-4o-mini.
-- 🛠️ **Dynamic API Assistant**: Call APIs with authentication, retries, and dynamic parameters.
-- 🔍 **RAG (Retrieval-Augmented Generation)**: Load documents and search locally for improved AI responses.
-- 🔐 **User Management & RBAC**: Fine-grained access control with superuser management.
-- 📱 **Responsive UI**: Works across desktop, mobile, and PWA.
-- 📚 **Markdown & LaTeX Support**: Rich text formatting for better AI interactions.
-- 🌍 **Multilingual**: Supports multiple languages with internationalization.
-- 🧩 **Plugin & Extensions**: Expand capabilities with a modular plugin framework.
-- ⚙️ **Backend API Support**: FastAPI-based backend with built-in authentication.
-- 🖼️ **Image Generation**: Integrated DALL-E, ComfyUI, and AUTOMATIC1111 support.
+## ✨ Features
 
-Want more details? Check out our [documentation](https://docs.openastra.com/features)!
+- **🤖 Advanced LLM Integration**
 
-## 🚀 Installation Guide
+  - OpenAI-compatible API support
+  - GPT-4o-mini compatibility
+  - Function calling capabilities
 
-### 1. Install via Python pip 🐍
+- **🔍 RAG & Search**
 
-Ensure **Python 3.11** is installed before proceeding.
+  - Document indexing and search
+  - Context-aware responses
+  - Local knowledge base
 
-```bash
-pip install openastra
-```
+- **🛠️ Developer Experience**
 
-Start the OpenAstra server:
+  - FastAPI backend
+  - Next.js frontend
+  - Docker & Kubernetes ready
+  - Extensive API documentation
 
-```bash
-openastra serve
-```
+- **🔐 Enterprise Ready**
 
-Access it at [http://localhost:8000](http://localhost:8000)
+  - Role-based access control
+  - User management
+  - API authentication
+  - Audit logging
 
-### 2. Quick Start with Docker 🐳
+- **🎨 Rich Features**
+  - Markdown & LaTeX support
+  - Image generation (DALL-E, ComfyUI)
+  - Multilingual support
+  - Plugin system
+  - Mobile-responsive UI
 
-```bash
-docker run -d -p 3000:3000 --name openastra --restart always openastra:latest
-```
+## 🚀 Quick Start
 
-### 3. Kubernetes Deployment 🌎
+### Using Docker
 
-Use `kubectl`, `kustomize`, or `helm` for deployment:
+> [!INFO]
+> When using Docker to install OpenAstra, you **must** include the volume mount `-v openastra_data:/app/data` in your Docker command. This is not optional - it's crucial for:
+>
+> - Persisting your database
+> - Preventing data loss between container restarts
+> - Maintaining your chat history and configurations
+>
+> Without the volume mount, all data will be lost when the container is restarted or updated.
 
-```bash
-helm install openastra ./charts/openastra
-```
-
-### 4. Running with Nvidia GPU (CUDA Support) 🖥️
-
-```bash
-docker run -d -p 3000:8000 --gpus all --name openastra ghcr.io/openastra/openastra:cuda
-```
-
-## 🌍 Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `PROJECT_NAME` | Name of the project | OpenAstra |
-| `DOMAIN` | Deployment domain | localhost |
-| `LLM_BASE_URL` | LLM service URL | https://api.openai.com/v1 |
-| `LLM_DEFAULT_MODEL` | Default model used | gpt-4o-mini |
-| `NEXT_PUBLIC_API_URL` | API endpoint | http://localhost:8000 |
-| `NEXT_PUBLIC_APP_URL` | Web app URL | http://localhost:3000 |
-| `FIRST_SUPERUSER` | Admin email | admin@openastra.com |
-| `FIRST_SUPERUSER_PASSWORD` | Admin password | openastra123 |
-
-## 🛠️ Development Setup
-
-1. Clone the repo:
+Visit `http://localhost:3000` to access the web interface and `http://localhost:8000` for the API.
 
 ```bash
-git clone https://github.com/openastra/openastra.git && cd openastra
+docker run -d \
+  -p 3000:3000 \
+  -v openastra_data:/app/data \
+  -e LLM_API_KEY=your_api_key \
+  --name openastra \
+  --restart always \
+  ghcr.io/srikanth235/openastra:latest
 ```
 
-2. Install dependencies:
+
+### Environment Variables
 
 ```bash
-pnpm install  # for frontend
-typoetry install  # for backend
+# LLM Configuration
+LLM_BASE_URL=https://api.openai.com/v1      # OpenAI API compatible custom endpoint
+LLM_API_KEY=your_api_key                    # Your OpenAI compatible API key
+LLM_DEFAULT_MODEL=gpt-4o-mini              # Default model to use
+
+# Authentication (Optional)
+FIRST_SUPERUSER=admin@example.com          # Default: admin@example.com
+FIRST_SUPERUSER_PASSWORD=example123        # Default: example123
 ```
 
-3. Run the project:
+[View all configuration options →](https://docs.openastra.com/configuration)
+
+## 💻 Development Setup
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/openastra/openastra.git
+   cd openastra
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   # Frontend
+   pnpm install
+
+   # Backend
+   poetry install
+   ```
+
+3. **Start development servers**
+   ```bash
+   ./start.sh
+   ```
+
+## 🐳 Docker Deployment Options
+
+### Standard Deployment
 
 ```bash
-./start.sh
+docker run -d -p 3000:3000 openastra/openastra:latest
 ```
 
-## 🤝 Contributing
+## 🌟 Contributing
 
-We welcome contributions! Feel free to check our [Contributing Guide](https://github.com/openastra/openastra/blob/main/CONTRIBUTING.md) and submit PRs.
+We love contributions! Here's how you can help:
 
-## ⭐ Community & Support
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-- [Join Discord](https://discord.gg/openastra)
-- [Submit Issues](https://github.com/openastra/openastra/issues)
-- [Read Documentation](https://docs.openastra.com/)
+Read our [Contributing Guide](CONTRIBUTING.md) for more details.
 
-## 📜 License
+## 🤝 Community & Support
 
-OpenAstra is licensed under the [MIT License](LICENSE).
+- [Discord Community](https://discord.gg/openastra)
+- [Documentation](https://docs.openastra.com)
+- [GitHub Issues](https://github.com/openastra/openastra/issues)
+- [Feature Requests](https://github.com/openastra/openastra/discussions)
+
+## 📄 License
+
+OpenAstra is [MIT licensed](LICENSE).
+
+## 📊 Telemetry
+
+OpenAstra includes optional telemetry to help improve the platform. This feature:
+
+- Is **enabled by default** and requires explicit opt-out
+- Only tracks API usage patterns, never sensitive data
+- Helps us understand how features are used and identify performance issues
+
+### What We Track
+
+When enabled, OpenAstra tracks:
+
+- Chat API interactions (create/update/delete operations)
+- Basic request metrics (duration, status codes)
+- Anonymous usage patterns
+- Performance indicators
+
+### Configuration
+
+Control telemetry through environment variables:
+
+```bash
+# Enable/disable telemetry
+TELEMETRY_ENABLED=false
+```
+
+### Privacy Considerations
+
+- No personal data or chat content is ever collected
+- All tracking is anonymous
+- Performance metrics are aggregated
+- You can self-host without any external analytics
+
+[Learn more about our privacy policy →](https://docs.openastra.com/privacy)
+
+## 🤖 Choosing an LLM
+
+> [!IMPORTANT]
+> OpenAstra requires an LLM with function/tool calling capabilities to work properly.
+
+### Recommended Models
+
+We've tested various LLMs, and these models work particularly well with OpenAstra:
+
+- **GPT-4o-mini**: Excellent performance with API interactions, good balance of cost, speed and accuracy
+- **Claude Haiku**: Fast responses, strong understanding of API concepts
+- **Llama 3.2 (70B)**: Excellent performance with API interactions, good balance of speed and accuracy
+
+All the above models work equally well with OpenAstra
+
+> [!TIP]
+> Any model with similar or better capabilities than above will work well with OpenAstra. The key requirement is support for function/tool calling and a reasonable context window.
+
+> [!WARNING]
+> While models without tool calling might partially work, you won't get the full capabilities of OpenAstra's API automation features.
+
+### Performance Considerations
+
+- **Response Time**: Models like Haiku and GPT-4o-mini offer the best latency
+- **Cost**: Consider using GPT-4o-mini or Haiku for development/testing
+- **Context Window**: Larger context windows help with complex API documentation and multi-step workflows
 
 ---
 
-Built with ❤️ by the OpenAstra community 🚀
+<p align="center">
+  Made with ❤️ by humans and AI
+  <br>
+</p>

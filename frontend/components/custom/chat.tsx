@@ -78,7 +78,7 @@ export function Chat({
       window.history.replaceState({}, "", `/chat/${id}`);
     },
     onError: (error) => {
-      console.error("Chat error:", error);
+      console.log("Chat error:", error);
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       toast.error("Failed to get response. Please try again.", {
         description: errorMessage,
