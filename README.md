@@ -24,19 +24,19 @@
 
 OpenAstra re-imagines API workflows through the power of natural conversation. Think of it as "Postman meets ChatGPT" - a modern, intuitive approach to API interaction that lets you:
 
-- **Chat with API Collections**: Import and interact with your APIs through natural conversation
+- 💬 **Chat with API Collections**: Import and interact with your APIs through natural conversation
 
   - Support for OpenAPI/Swagger specifications
   - Import Postman collections
   - Understand and explore API endpoints through chat
 
-- **Execute API Endpoints**: Test and run API endpoints directly from the chat interface
+- 🚀 **Execute API Endpoints**: Test and run API endpoints directly from the chat interface
 
   - Send requests with custom parameters
   - View response data in real-time
   - Save and reuse API configurations
 
-- **Flexible LLM Support**: Works with any OpenAI-compatible API
+- 🤖 **Flexible LLM Support**: Works with any OpenAI-compatible API
   - Use OpenAI, Azure OpenAI, or any compatible endpoint
   - Support for various models (GPT-4, Claude, Llama)
   - Configurable model settings
@@ -78,30 +78,6 @@ FIRST_SUPERUSER_PASSWORD=example123        # Default: example123
 ```
 
 [View all environment variables →](https://github.com/srikanth235/openastra/blob/main/Dockerfile)
-
-## 💻 Development Setup
-
-1. **Clone the repository**
-
-   ```bash
-   git clone https://github.com/openastra/openastra.git
-   cd openastra
-   ```
-
-2. **Install dependencies**
-
-   ```bash
-   # Frontend
-   pnpm install
-
-   # Backend
-   poetry install
-   ```
-
-3. **Start development servers**
-   ```bash
-   ./start.sh
-   ```
 
 ## 🤖 Choosing an LLM
 
