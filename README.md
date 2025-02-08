@@ -1,7 +1,7 @@
 <div align="center">
   <h1>🚀 OpenAstra</h1>
   <p>
-    <strong>A chat-based API development platform that makes API workflows intuitive and powerful.</strong>
+    <strong>A chat-based open source development platform for API discovery and testing.</strong>
   </p>
 
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"/>
@@ -11,8 +11,8 @@
   <a href="https://twitter.com/openastradev" style="text-decoration: none; outline: none">
     <img src="https://img.shields.io/twitter/url/https/twitter.com/openastradev.svg?style=social&label=%20%40openastradev" alt="Twitter: @openastradev"/>
   </a>
-  <a href="https://discord.gg/openastra" style="text-decoration: none; outline: none">
-    <img src="https://dcbadge.vercel.app/api/server/openastra?style=flat&compact=true" alt="Discord"/>
+  <a href="https://discord.gg/CNWq2PxX8V" style="text-decoration: none; outline: none">
+    <img src="https://dcbadge.vercel.app/api/server/CNWq2PxX8V?style=flat&compact=true" alt="Discord"/>
   </a>
 
   <br/>
@@ -20,7 +20,7 @@
   <img src="./demo.gif" alt="OpenAstra Demo" width="600">
 </div>
 
-## 🎯 Overview
+## ✨ Key Features
 
 OpenAstra re-imagines API workflows through the power of natural conversation. Think of it as "Postman meets ChatGPT" - a modern, intuitive approach to API interaction that lets you:
 
@@ -31,53 +31,12 @@ OpenAstra re-imagines API workflows through the power of natural conversation. T
 - **Automated Testing**: Generate and run API tests using natural language descriptions (in roadmap)
 - **Smart Documentation**: Auto-generate and update API documentation from your conversations (in roadmap)
 
-## ✨ Features
-
-- **🤖 Advanced LLM Integration**
-
-  - OpenAI-compatible API support
-  - GPT-4o-mini compatibility
-  - Function calling capabilities
-
-- **🔍 RAG & Search**
-
-  - Document indexing and search
-  - Context-aware responses
-  - Local knowledge base
-
-- **🛠️ Developer Experience**
-
-  - FastAPI backend
-  - Next.js frontend
-  - Docker & Kubernetes ready
-  - Extensive API documentation
-
-- **🔐 Enterprise Ready**
-
-  - Role-based access control
-  - User management
-  - API authentication
-  - Audit logging
-
-- **🎨 Rich Features**
-  - Markdown & LaTeX support
-  - Image generation (DALL-E, ComfyUI)
-  - Multilingual support
-  - Plugin system
-  - Mobile-responsive UI
-
 ## 🚀 Quick Start
 
 ### Using Docker
 
 > [!TIP]
-> When using Docker to install OpenAstra, please include the volume mount `-v openastra_data:/app/data` in your Docker command. It's **crucial** for:
->
-> - Persisting your database
-> - Preventing data loss between container restarts
-> - Maintaining your chat history and configurations
->
-> Without the volume mount, all data will be lost when the container is restarted or updated.
+> Please include the volume mount `-v openastra_data:/app/data` in your Docker command. It's **crucial** for persisting your database, preventing data loss between container restarts.
 
 Visit `http://localhost:3000` to access the web interface.
 
@@ -85,7 +44,11 @@ Visit `http://localhost:3000` to access the web interface.
 docker run -d \
   -p 3000:3000 \
   -v openastra_data:/app/data \
+  -e LLM_BASE_URL=https://api.openai.com/v1 \
   -e LLM_API_KEY=your_api_key \
+  -e LLM_DEFAULT_MODEL=gpt-4o-mini \
+  -e FIRST_SUPERUSER=admin@example.com \
+  -e FIRST_SUPERUSER_PASSWORD=example123 \
   --name openastra \
   --restart always \
   ghcr.io/srikanth235/openastra:latest
@@ -99,12 +62,12 @@ LLM_BASE_URL=https://api.openai.com/v1      # OpenAI API compatible custom endpo
 LLM_API_KEY=your_api_key                    # Your OpenAI compatible API key
 LLM_DEFAULT_MODEL=gpt-4o-mini              # Default model to use
 
-# Authentication (Optional)
+# Authentication
 FIRST_SUPERUSER=admin@example.com          # Default: admin@example.com
 FIRST_SUPERUSER_PASSWORD=example123        # Default: example123
 ```
 
-[View all configuration options →](https://docs.openastra.com/configuration)
+[View all environment variables →](https://github.com/srikanth235/openastra/blob/main/Dockerfile)
 
 ## 💻 Development Setup
 
@@ -130,14 +93,6 @@ FIRST_SUPERUSER_PASSWORD=example123        # Default: example123
    ./start.sh
    ```
 
-## 🐳 Docker Deployment Options
-
-### Standard Deployment
-
-```bash
-docker run -d -p 3000:3000 openastra/openastra:latest
-```
-
 ## 🤖 Choosing an LLM
 
 > [!IMPORTANT]
@@ -147,23 +102,15 @@ docker run -d -p 3000:3000 openastra/openastra:latest
 
 We've tested various LLMs, and these models work particularly well with OpenAstra:
 
-- **GPT-4o-mini**: Excellent performance with API interactions, good balance of cost, speed and accuracy
-- **Claude Haiku**: Fast responses, strong understanding of API concepts
-- **Llama 3.2 (70B)**: Excellent performance with API interactions, good balance of speed and accuracy
-
-All the above models work equally well with OpenAstra
+- **GPT-4o-mini**
+- **Claude Haiku**
+- **Llama 3.2 (70B)**
 
 > [!TIP]
 > Any model with similar or better capabilities than above will work well with OpenAstra. The key requirement is support for function/tool calling and a reasonable context window.
 
 > [!WARNING]
 > While models without tool calling might partially work, you won't get the full capabilities of OpenAstra's API automation features.
-
-### Performance Considerations
-
-- **Response Time**: Models like Haiku and GPT-4o-mini offer the best latency
-- **Cost**: Consider using GPT-4o-mini or Haiku for development/testing
-- **Context Window**: Larger context windows help with complex API documentation and multi-step workflows
 
 ## 📊 Telemetry
 
@@ -181,6 +128,9 @@ When enabled, OpenAstra tracks:
 - Basic request metrics (duration, status codes)
 - Anonymous usage patterns
 - Performance indicators
+
+> [!NOTE]
+> You can view the exact events we track in our [analytics implementation](https://github.com/srikanth235/openastra/blob/main/backend/app/analytics.py).
 
 ### Configuration
 
@@ -216,7 +166,7 @@ Read our [Contributing Guide](CONTRIBUTING.md) for more details.
 
 Need help? Join our community:
 
-- [Discord Community](https://discord.gg/openastra) - Get help and discuss features
+- [Discord Community](https://discord.gg/CNWq2PxX8V) - Get help and discuss features
 - [GitHub Issues](https://github.com/openastra/openastra/issues) - Report bugs
 - [Documentation](https://docs.openastra.com) - Learn more about OpenAstra
 
