@@ -24,12 +24,22 @@
 
 OpenAstra re-imagines API workflows through the power of natural conversation. Think of it as "Postman meets ChatGPT" - a modern, intuitive approach to API interaction that lets you:
 
-- **Chat With Your APIs**: Instead of building complex request configurations, simply describe what you want to do in natural language
-- **Intelligent API Discovery**: Let AI help you explore and understand API endpoints through conversation
-- **Context-Aware Interactions**: The system remembers your previous API calls and authentication context
-- **Run API endpoints**: Execute API endpoints directly from the UI
-- **Automated Testing**: Generate and run API tests using natural language descriptions (in roadmap)
-- **Smart Documentation**: Auto-generate and update API documentation from your conversations (in roadmap)
+- **Chat with API Collections**: Import and interact with your APIs through natural conversation
+
+  - Support for OpenAPI/Swagger specifications
+  - Import Postman collections
+  - Understand and explore API endpoints through chat
+
+- **Execute API Endpoints**: Test and run API endpoints directly from the chat interface
+
+  - Send requests with custom parameters
+  - View response data in real-time
+  - Save and reuse API configurations
+
+- **Flexible LLM Support**: Works with any OpenAI-compatible API
+  - Use OpenAI, Azure OpenAI, or any compatible endpoint
+  - Support for various models (GPT-4, Claude, Llama)
+  - Configurable model settings
 
 ## 🚀 Quick Start
 
@@ -95,22 +105,13 @@ FIRST_SUPERUSER_PASSWORD=example123        # Default: example123
 
 ## 🤖 Choosing an LLM
 
-> [!IMPORTANT]
-> OpenAstra requires an LLM with function/tool calling capabilities to work properly.
-
-### Recommended Models
-
-We've tested various LLMs, and these models work particularly well with OpenAstra:
+OpenAstra requires an LLM with function/tool calling capabilities. We recommend using any of these tested models:
 
 - **GPT-4o-mini**
 - **Claude Haiku**
 - **Llama 3.2 (70B)**
 
-> [!TIP]
-> Any model with similar or better capabilities than above will work well with OpenAstra. The key requirement is support for function/tool calling and a reasonable context window.
-
-> [!WARNING]
-> While models without tool calling might partially work, you won't get the full capabilities of OpenAstra's API automation features.
+Any model with function/tool calling support and a reasonable context window will work well with OpenAstra. Models without tool calling capabilities may have limited functionality.
 
 ## 📊 Telemetry
 
@@ -148,19 +149,41 @@ TELEMETRY_ENABLED=false
 - Performance metrics are aggregated
 - You can self-host without any external analytics
 
-[Learn more about our privacy policy →](https://docs.openastra.com/privacy)
-
 ## 🌟 Contributing
 
-We love contributions! Here's how you can help:
+We love contributions! Here's how to get started:
+
+### Development Setup
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/openastra/openastra.git
+   cd openastra
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   # Frontend
+   pnpm install
+
+   # Backend
+   poetry install
+   ```
+
+3. **Start development servers**
+   ```bash
+   ./start.sh
+   ```
+
+### Making Changes
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
 3. Commit your changes (`git commit -m 'Add AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
-
-Read our [Contributing Guide](CONTRIBUTING.md) for more details.
 
 ## 🤝 Support & Community
 
