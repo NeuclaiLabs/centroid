@@ -17,6 +17,9 @@
   <br/>
   <br/>
   <img src="./demo.gif" alt="OpenAstra Demo" width="600">
+
+> ⚠️ **Note**: OpenAstra is currently in alpha stage. Please expect breaking changes and rapid development.
+
 </div>
 
 ## ✨ Key Features
@@ -60,7 +63,7 @@ docker run -d \
   -e FIRST_SUPERUSER_PASSWORD=example123 \
   --name openastra \
   --restart always \
-  ghcr.io/srikanth235/openastra:latest
+  ghcr.io/srikanth235/openastra:main
 ```
 
 ### Environment Variables
@@ -167,16 +170,16 @@ Need help? Join our community:
 - [Discord Community](https://discord.gg/CNWq2PxX8V) - Get help and discuss features
 - [GitHub Issues](https://github.com/srikanth235/openastra/issues) - Report bugs
 
-## 📄 License
-
-OpenAstra is [MIT licensed](LICENSE).
-
 ## 🙏 Credits
 
 This project draws inspiration from these excellent open-source projects:
 
-- Backend implementation by [Full Stack FastAPI Template](https://github.com/fastapi/full-stack-fastapi-template)
-- Frontend chat interface by [Vercel AI Chatbot](https://github.com/vercel/ai-chatbot)
+- Backend architecture and patterns inspired by [Full Stack FastAPI Template](https://github.com/fastapi/full-stack-fastapi-template)
+- Frontend chat interface inspired by [Vercel AI Chatbot](https://github.com/vercel/ai-chatbot)
+
+## 📄 License
+
+OpenAstra is [MIT licensed](LICENSE).
 
 ---
 
