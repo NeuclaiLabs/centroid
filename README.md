@@ -8,9 +8,8 @@
   <img src="https://img.shields.io/github/v/release/srikanth235/openastra" alt="GitHub Release"/>
   <img src="https://img.shields.io/github/issues/srikanth235/openastra" alt="GitHub Issues"/>
   <img src="https://img.shields.io/github/stars/srikanth235/openastra" alt="GitHub Stars"/>
-  <a href="https://twitter.com/openastradev" style="text-decoration: none; outline: none">
-    <img src="https://img.shields.io/twitter/url/https/twitter.com/openastradev.svg?style=social&label=%20%40openastradev" alt="Twitter: @openastradev"/>
-  </a>
+  <img src="https://img.shields.io/github/repo-size/srikanth235/openastra" alt="Repo Size"/>
+  <img src="https://img.shields.io/github/commit-activity/m/srikanth235/openastra" alt="Commit Activity"/>
   <a href="https://discord.gg/CNWq2PxX8V" style="text-decoration: none; outline: none">
     <img src="https://dcbadge.vercel.app/api/server/CNWq2PxX8V?style=flat&compact=true" alt="Discord"/>
   </a>
