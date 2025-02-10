@@ -86,7 +86,7 @@ OpenAstra requires an LLM with function/tool calling capabilities. We recommend 
 - **Claude Haiku**
 - **Llama 3.2 (70B)**
 
-Any model with function/tool calling support and a reasonable context window will work well with OpenAstra. Models without tool calling capabilities may have limited functionality.
+Any models at least as powerful as the ones listed above will work well with OpenAstra. Models without tool calling capabilities may have limited functionality.
 
 ## 📊 Telemetry
 
@@ -165,12 +165,18 @@ We love contributions! Here's how to get started:
 Need help? Join our community:
 
 - [Discord Community](https://discord.gg/CNWq2PxX8V) - Get help and discuss features
-- [GitHub Issues](https://github.com/openastra/openastra/issues) - Report bugs
-- [Documentation](https://docs.openastra.com) - Learn more about OpenAstra
+- [GitHub Issues](https://github.com/srikanth235/openastra/issues) - Report bugs
 
 ## 📄 License
 
 OpenAstra is [MIT licensed](LICENSE).
+
+## 🙏 Credits
+
+This project draws inspiration from these excellent open-source projects:
+
+- Backend implementation by [Full Stack FastAPI Template](https://github.com/fastapi/full-stack-fastapi-template)
+- Frontend chat interface by [Vercel AI Chatbot](https://github.com/vercel/ai-chatbot)
 
 ---
 
