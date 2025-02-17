@@ -172,10 +172,10 @@ Need help? Join our community:
 
 ## 🙏 Credits
 
-This project draws heavy inspiration from these excellent open-source boilerplate projects:
+The initial foundation of this project was built using these excellent open-source boilerplate projects:
 
-- Backend structure inspired by [Full Stack FastAPI Template](https://github.com/fastapi/full-stack-fastapi-template)
-- Frontend chat interface inspired by [Vercel AI Chatbot](https://github.com/vercel/ai-chatbot)
+- Backend structure based on [Full Stack FastAPI Template](https://github.com/fastapi/full-stack-fastapi-template)
+- Frontend chat interface based on [Vercel AI Chatbot](https://github.com/vercel/ai-chatbot)
 
 ## 📄 License
 
