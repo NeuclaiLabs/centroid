@@ -7,9 +7,9 @@
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"/>
   <img src="https://img.shields.io/github/v/release/srikanth235/openastra" alt="GitHub Release"/>
   <img src="https://img.shields.io/github/issues/srikanth235/openastra" alt="GitHub Issues"/>
-  <img src="https://img.shields.io/github/stars/srikanth235/openastra" alt="GitHub Stars"/>
   <img src="https://img.shields.io/github/repo-size/srikanth235/openastra" alt="Repo Size"/>
   <img src="https://img.shields.io/github/commit-activity/m/srikanth235/openastra" alt="Commit Activity"/>
+  <img src="https://img.shields.io/github/last-commit/srikanth235/openastra" alt="Last Commit"/>
   <a href="https://discord.gg/CNWq2PxX8V" style="text-decoration: none; outline: none">
     <img src="https://dcbadge.vercel.app/api/server/CNWq2PxX8V?style=flat&compact=true" alt="Discord"/>
   </a>
@@ -18,7 +18,7 @@
   <br/>
   <img src="./demo.gif" alt="OpenAstra Demo" width="600">
 
-> ⚠️ **Note**: OpenAstra is currently in alpha stage. Please expect breaking changes and rapid development.
+> 🚧 **Development Status**: OpenAstra is in active development (alpha). While fully functional, you may encounter occasional breaking changes as we rapidly improve the platform. We encourage you to try it out and provide feedback!
 
 </div>
 
@@ -172,9 +172,9 @@ Need help? Join our community:
 
 ## 🙏 Credits
 
-This project draws inspiration from these excellent open-source projects:
+This project draws heavy inspiration from these excellent open-source boilerplate projects:
 
-- Backend architecture and patterns inspired by [Full Stack FastAPI Template](https://github.com/fastapi/full-stack-fastapi-template)
+- Backend structure inspired by [Full Stack FastAPI Template](https://github.com/fastapi/full-stack-fastapi-template)
 - Frontend chat interface inspired by [Vercel AI Chatbot](https://github.com/vercel/ai-chatbot)
 
 ## 📄 License
