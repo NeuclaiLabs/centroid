@@ -1,15 +1,19 @@
 #!/bin/bash
 
-# Run database migrations if enabled
-if [ "$RUN_MIGRATIONS" = "true" ]; then
-    echo "Running database migrations..."
-    cd /app/backend && poetry run alembic upgrade head
-fi
+echo "[start.sh] Starting script..."
 
 # Start frontend
-echo "Starting frontend..."
-cd /app/frontend && pnpm run start &
+echo "[start.sh] Starting frontend server..."
+cd /app/frontend
+echo "[start.sh] Current directory: $(pwd)"
+echo "[start.sh] Listing directory contents:"
+ls -la
+pnpm run start &
 
 # Start backend
-echo "Starting backend..."
-cd /app/backend && poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000
+echo "[start.sh] Starting backend server..."
+cd /app/backend
+echo "[start.sh] Current directory: $(pwd)"
+echo "[start.sh] Listing directory contents:"
+ls -la
+poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000
