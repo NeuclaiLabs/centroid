@@ -59,17 +59,7 @@ OpenAstra re-imagines API workflows through the power of natural conversation. T
 Visit `http://localhost:3000` to access the web interface.
 
 ```bash
-docker run -d \
-  -p 3000:3000 \
-  -v openastra_data:/app/data \
-  -e LLM_BASE_URL=https://api.openai.com/v1 \
-  -e LLM_API_KEY=your_api_key \
-  -e LLM_DEFAULT_MODEL=gpt-4o-mini \
-  -e FIRST_SUPERUSER=admin@example.com \
-  -e FIRST_SUPERUSER_PASSWORD=example123 \
-  --name openastra \
-  --restart always \
-  ghcr.io/srikanth235/openastra:main
+docker run -d -p 3000:3000 -v openastra_data:/app/data -e LLM_BASE_URL=https://api.openai.com/v1 -e LLM_API_KEY=your_api_key -e LLM_DEFAULT_MODEL=gpt-4o-mini -e FIRST_SUPERUSER=admin@example.com -e FIRST_SUPERUSER_PASSWORD=example123 --name openastra --restart always ghcr.io/srikanth235/openastra:main
 ```
 
 ### Environment Variables
