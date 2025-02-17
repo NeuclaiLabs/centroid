@@ -92,7 +92,7 @@ services:
       dockerfile: Dockerfile
     environment:
       - NEXT_PUBLIC_API_URL=https://api.openastra.com
-      - OPENAI_API_KEY=sk-proj-eXrQS0396lcpeLw9SeYFT3BlbkFJi3KJa72kdsyXcurQ3AHm
+      - OPENAI_API_KEY=xxxxxxx
       - NEXT_TELEMETRY_DISABLED=1
       - NEXT_PUBLIC_DISABLE_TELEMETRY=false
       - NEXTAUTH_URL=https://openastra.com
