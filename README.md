@@ -24,7 +24,7 @@
   <br/>
   <img src="./demo.gif" alt="OpenAstra Demo" width="600">
 
-> 🚧 **Development Status**: OpenAstra is in active development (alpha). While fully functional, you may encounter occasional breaking changes as we rapidly improve the platform. We encourage you to try it out and provide feedback!
+> 🚧 **Development Status**: OpenAstra is in active development (alpha). While fully functional, you may encounter occasional breaking changes as the platform evolves. We encourage you to try it out and provide feedback!
 
 </div>
 
