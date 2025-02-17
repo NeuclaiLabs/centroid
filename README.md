@@ -10,7 +10,7 @@
     <strong>A chat-based open source development platform for API discovery and testing.</strong>
   </p>
 
-  <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"/>
+  <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License: Apache 2.0"/>
   <img src="https://img.shields.io/github/v/release/srikanth235/openastra" alt="GitHub Release"/>
   <img src="https://img.shields.io/github/issues/srikanth235/openastra" alt="GitHub Issues"/>
   <img src="https://img.shields.io/github/repo-size/srikanth235/openastra" alt="Repo Size"/>
