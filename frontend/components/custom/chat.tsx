@@ -90,9 +90,9 @@ export function Chat({
   const [partialScrollRef, scrollPartially] = usePartialScroll();
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const suggestions = [
-    "List all endpoints related to authentication",
+    "List all endpoints related to chats",
     "Run health check endpoint",
-    "Retrieve all DELETE end points",
+    "Retrieve all GET end points",
   ];
 
   useEffect(() => {
