@@ -2,6 +2,23 @@
 
 cd /app/backend
 
+# Set up ChromaDB model persistence
+echo "[entrypoint.sh] Setting up ChromaDB model persistence..."
+CACHE_DIR="/root/.cache/chroma/onnx_models"
+PERSISTENT_DIR="/app/data/.chromadb/models"
+
+# Create persistent directory if it doesn't exist
+mkdir -p "$PERSISTENT_DIR"
+
+# Remove existing cache directory or symlink if it exists
+rm -rf "$CACHE_DIR"
+
+# Create parent directory for cache
+mkdir -p "$(dirname "$CACHE_DIR")"
+
+# Create symlink
+ln -s "$PERSISTENT_DIR" "$CACHE_DIR"
+
 # Wait for database to be ready
 echo "[entrypoint.sh] Waiting for database..."
 poetry run python app/wait_for_db.py
