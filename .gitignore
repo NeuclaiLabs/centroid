@@ -14,3 +14,10 @@ htmlcov
 .cache
 .venv
 logs/*
+.history/*
+.DS_Store
+.idea/*
+.pytest_cache/*
+.ruff_cache/*
+.mypy_cache/*
+.coverage/*

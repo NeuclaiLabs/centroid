@@ -86,7 +86,7 @@ ENV LLM_DEFAULT_MODEL=gpt-4o-mini
 # Add logging configuration
 ENV LOG_LEVEL=INFO
 ENV LOG_FORMAT="%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s"
-ENV LOG_DIR=logs
+ENV LOG_DIR=/app/data/logs
 ENV LOG_FILE=app.log
 ENV LOG_ROTATION_INTERVAL=midnight
 ENV LOG_BACKUP_COUNT=7
@@ -94,7 +94,7 @@ ENV LOG_BACKUP_COUNT=7
 RUN npm install -g pnpm
 
 # Create logs directory with appropriate permissions
-RUN mkdir -p /app/logs && chmod 755 /app/logs
+RUN mkdir -p /app/data/logs && chmod 755 /app/data/logs
 
 # Add environment variable for migrations
 ENV RUN_MIGRATIONS=true
