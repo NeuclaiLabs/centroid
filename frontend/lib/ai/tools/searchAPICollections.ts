@@ -59,7 +59,7 @@ export const searchAPICollections = (project: Project, session: Session) =>
           query: query,
           limit: limit.toString(),
         });
-
+        console.log("Search params", searchParams.toString());
         if (where) {
           searchParams.append("where", JSON.stringify(where));
         }

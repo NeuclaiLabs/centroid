@@ -359,6 +359,19 @@ export const APISearchViewer: FC<APISearchViewerProps> = ({ result, loading }) =
             );
           })}
         </ScrollArea>
+
+        <div className="mt-4 p-3 bg-muted rounded-md text-sm text-muted-foreground">
+          <p>Available actions:</p>
+          <ul className="list-disc ml-5 mt-1">
+            <li>
+              Click the <Play className="h-3 w-3 inline" /> button next to any endpoint to run it
+            </li>
+            <li>Refine your search query to find different endpoints</li>
+            <li>
+              Click the <ChevronDown className="h-3 w-3 inline" /> button to view endpoint details
+            </li>
+          </ul>
+        </div>
       </CardContent>
     </Card>
   );

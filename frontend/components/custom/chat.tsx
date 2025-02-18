@@ -90,7 +90,7 @@ export function Chat({
   const [partialScrollRef, scrollPartially] = usePartialScroll();
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const suggestions = [
-    "List all endpoints related to chats",
+    "List all endpoints related to projects",
     "Run health check endpoint",
     "Retrieve all GET end points",
   ];
