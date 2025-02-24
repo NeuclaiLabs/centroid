@@ -46,16 +46,6 @@ const useScrollToBottom = () => {
   return [messagesEndRef, scrollToBottom] as const;
 };
 
-const usePartialScroll = () => {
-  const partialScrollRef = useRef<HTMLDivElement>(null);
-
-  const scrollPartially = () => {
-    partialScrollRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
-  return [partialScrollRef, scrollPartially] as const;
-};
-
 export function Chat({
   id,
   project,
@@ -87,7 +77,6 @@ export function Chat({
   });
 
   const [messagesEndRef, scrollToBottom] = useScrollToBottom();
-  const [partialScrollRef, scrollPartially] = usePartialScroll();
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const suggestions = [
     "List all endpoints related to projects",
@@ -153,17 +142,6 @@ export function Chat({
     }
 
     return () => observer.disconnect();
-  }, [messages]);
-
-  // Update scroll effect to consider loading state and message type
-  useEffect(() => {
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage?.role === "assistant") {
-      const messageLength = lastMessage.content.split("\n").length;
-      if (messageLength <= 10) {
-        scrollPartially();
-      }
-    }
   }, [messages]);
 
   return (
@@ -258,7 +236,6 @@ export function Chat({
                 <div
                   key={`${message.id || `${id}-${index}`}`}
                   className="mb-4 break-words overflow-hidden message-container"
-                  ref={index === messages.length - 1 && message.role === "assistant" ? partialScrollRef : undefined}
                 >
                   <PreviewMessage isLoading={isLoading} message={message} chatId={id} vote={undefined} />
                 </div>
