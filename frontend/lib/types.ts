@@ -2,14 +2,29 @@ export type User = {
   id: string;
   email: string;
   password: string | null;
+  salt: string;
+  accessToken: string;
 };
+export interface Project {
+  id: string;
+  title: string;
+  description: string;
+  model: string;
+  instructions: string;
+  files: string[] | string;
+  new_files?: File[];
+  threads: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export type Chat = {
   id: string;
   createdAt: Date;
   title: string;
   userId: string;
-  visibility: 'public' | 'private';
+  visibility: 'public' | 'private' | 'shared';
+  project?: Project;
 };
 
 export type Message = {
@@ -46,3 +61,21 @@ export type Suggestion = {
   userId: string;
   createdAt: Date;
 };
+
+export interface CreateProjectData {
+  title: string;
+  description: string;
+  model: string;
+  instructions: string;
+  team_id?: string;
+  files?: string[];
+}
+
+export interface UpdateProjectData {
+  title?: string;
+  description?: string;
+  model?: string;
+  instructions?: string;
+  files?: string[];
+  new_files?: File[];
+}
