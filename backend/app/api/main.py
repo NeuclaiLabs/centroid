@@ -10,6 +10,7 @@ from app.analytics import AnalyticsService
 from app.api.routes import (
     chats,
     documents,
+    execute,
     files,
     items,
     llm,
@@ -202,3 +203,4 @@ api_router.include_router(
     suggestions.router, prefix="/suggestions", tags=["suggestions"]
 )
 api_router.include_router(votes.router, prefix="/votes", tags=["votes"])
+api_router.include_router(execute.router, prefix="/execute", tags=["execute"])

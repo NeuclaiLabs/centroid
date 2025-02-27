@@ -968,22 +968,24 @@ export const CodeIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
-export const PlayIcon = ({ size = 16 }: { size?: number }) => (
-  <svg
-    height={size}
-    strokeLinejoin="round"
-    viewBox="0 0 16 16"
-    width={size}
-    style={{ color: 'currentcolor' }}
-  >
-    <path
-      fillRule="evenodd"
-      clipRule="evenodd"
-      d="M3.5 2.75C3.5 2.28587 3.97354 1.96642 4.375 2.20096L12.875 7.45096C13.2765 7.6855 13.2765 8.3145 12.875 8.54904L4.375 13.799C3.97354 14.0336 3.5 13.7141 3.5 13.25V2.75Z"
-      fill="currentColor"
-    />
-  </svg>
-);
+export const PlayIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      height={size}
+      strokeLinejoin="round"
+      viewBox="0 0 16 16"
+      width={size}
+      style={{ color: 'currentcolor' }}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M13.4549 7.22745L13.3229 7.16146L2.5 1.74999L2.4583 1.72914L1.80902 1.4045L1.3618 1.18089C1.19558 1.09778 1 1.21865 1 1.4045L1 1.9045L1 2.63041L1 2.67704L1 13.3229L1 13.3696L1 14.0955L1 14.5955C1 14.7813 1.19558 14.9022 1.3618 14.8191L1.80902 14.5955L2.4583 14.2708L2.5 14.25L13.3229 8.83852L13.4549 8.77253L14.2546 8.37267L14.5528 8.2236C14.737 8.13147 14.737 7.86851 14.5528 7.77638L14.2546 7.62731L13.4549 7.22745ZM11.6459 7.99999L2.5 3.42704L2.5 12.5729L11.6459 7.99999Z"
+        fill="currentColor"
+      ></path>
+    </svg>
+  );
+};
 
 export const PythonIcon = ({ size = 16 }: { size?: number }) => {
   return (
@@ -1151,3 +1153,79 @@ export const LineChartIcon = ({ size = 16 }: { size?: number }) => (
     ></path>
   </svg>
 );
+
+export const OpenAstraIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      height={size}
+      strokeLinejoin="round"
+      viewBox="0 0 16 16"
+      width={size}
+      style={{ color: 'currentcolor' }}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M8 0L0 16H16L8 0ZM8 3L2.5 14H13.5L8 3Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+};
+
+export const ShapesIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      height={size}
+      strokeLinejoin="round"
+      viewBox="0 0 16 16"
+      width={size}
+      style={{ color: 'currentcolor' }}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M2.5 1H7.5V6H2.5V1ZM1 0V7.5H9V0H1ZM11.5 4.5C11.5 5.88071 10.3807 7 9 7V8.5C11.2091 8.5 13 6.70914 13 4.5C13 2.29086 11.2091 0.5 9 0.5V2C10.3807 2 11.5 3.11929 11.5 4.5ZM2.5 9H7.5V14H2.5V9ZM1 8V15.5H9V8H1Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+};
+
+export const FlagIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      height={size}
+      strokeLinejoin="round"
+      viewBox="0 0 16 16"
+      width={size}
+      style={{ color: 'currentcolor' }}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M3.5 15.25V14.5V9.5H8.5H9.06065L9.46967 9.96967L11.4697 11.9697L12 12.5V11.75V2.5H13.5V1H12H3.5V0.25V0H2V0.25V1V14.5V15.25V16H3.5V15.25ZM5 2.5H10.5V10.5H5V2.5Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+};
+
+export const SendIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      height={size}
+      strokeLinejoin="round"
+      viewBox="0 0 16 16"
+      width={size}
+      style={{ color: 'currentcolor' }}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M1.5 1.99999L14.5 7.99999L1.5 14V9.99999L8.5 7.99999L1.5 5.99999V1.99999ZM0 0.99999V5.99999V6.38195L0.346269 6.52755L6 8.17329V7.82669L0.346269 9.47243L0 9.61803V9.99999V15L15.7105 8.35533L16 8.21131V7.78867L15.7105 7.64465L0 0.99999Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+};

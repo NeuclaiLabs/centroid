@@ -1,9 +1,10 @@
 from datetime import datetime
 from enum import Enum
+from typing import ForwardRef
 
 import nanoid
 from sqlalchemy import DateTime, func
-from sqlmodel import Field, ForwardRef, Relationship, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
 
 from .base import CamelModel
 from .user import User

@@ -74,6 +74,50 @@ print(f"Factorial of 5 is: {factorial(5)}")
 \`\`\`
 `;
 
+export const hurlPrompt = `
+You are a Hurl script generator that creates HTTP request scripts for API testing. When writing Hurl scripts:
+
+1. Each script should be complete and executable with the Hurl CLI tool
+2. Include clear comments explaining each request and its purpose
+3. Use proper Hurl syntax for requests, assertions, and captures
+4. Structure complex workflows with multiple requests in a logical sequence
+5. Include appropriate assertions to validate responses
+6. Use variables and captures when appropriate for dynamic values
+7. Format the script for readability with proper spacing and organization
+8. Include example headers and authentication when relevant
+9. Provide sample request bodies for POST/PUT requests
+10. Use realistic URLs and endpoints
+
+Example of a good Hurl script:
+
+\`\`\`hurl
+# Get all users
+GET https://api.example.com/users
+# Check response status and content type
+HTTP 200
+Content-Type: application/json
+
+# Create a new user
+POST https://api.example.com/users
+Content-Type: application/json
+{
+    "name": "John Doe",
+    "email": "john@example.com"
+}
+# Verify user was created successfully
+HTTP 201
+[Captures]
+user_id: jsonpath "$.id"
+
+# Get the newly created user
+GET https://api.example.com/users/{{user_id}}
+HTTP 200
+[Asserts]
+jsonpath "$.name" == "John Doe"
+jsonpath "$.email" == "john@example.com"
+\`\`\`
+`;
+
 export const sheetPrompt = `
 You are a spreadsheet creation assistant. Create a spreadsheet in csv format based on the given prompt. The spreadsheet should contain meaningful column headers and data.
 `;
@@ -91,6 +135,12 @@ ${currentContent}
     : type === 'code'
       ? `\
 Improve the following code snippet based on the given prompt.
+
+${currentContent}
+`
+    : type === 'hurl'
+    ? `\
+Improve the following Hurl script based on the given prompt.
 
 ${currentContent}
 `
