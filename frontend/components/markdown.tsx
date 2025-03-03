@@ -5,6 +5,21 @@ import remarkGfm from 'remark-gfm';
 import { CodeBlock } from './code-block';
 
 const components: Partial<Components> = {
+  // Override the default paragraph behavior for code blocks
+  p: ({ node, children, ...props }) => {
+    // Check if the children contain a CodeBlock component
+    const hasCodeBlock = React.Children.toArray(children).some(
+      (child) => React.isValidElement(child) && child.type === CodeBlock,
+    );
+
+    // If there's a CodeBlock, don't wrap it in a paragraph
+    if (hasCodeBlock) {
+      return <>{children}</>;
+    }
+
+    // Otherwise, render a normal paragraph
+    return <p {...props}>{children}</p>;
+  },
   // @ts-expect-error
   code: CodeBlock,
   pre: ({ children }) => <>{children}</>,

@@ -90,7 +90,7 @@ You are a Hurl script generator that creates HTTP request scripts for API testin
 
 Example of a good Hurl script:
 
-\`\`\`hurl
+\`\`\`
 # Get all users
 GET https://api.example.com/users
 # Check response status and content type
@@ -133,7 +133,7 @@ Improve the following contents of the document based on the given prompt.
 ${currentContent}
 `
     : type === 'code'
-      ? `\
+    ? `\
 Improve the following code snippet based on the given prompt.
 
 ${currentContent}
@@ -144,10 +144,10 @@ Improve the following Hurl script based on the given prompt.
 
 ${currentContent}
 `
-      : type === 'sheet'
-        ? `\
+    : type === 'sheet'
+    ? `\
 Improve the following spreadsheet based on the given prompt.
 
 ${currentContent}
 `
-        : '';
+    : '';
