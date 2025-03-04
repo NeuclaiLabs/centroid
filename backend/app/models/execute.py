@@ -1,3 +1,5 @@
+from typing import Any
+
 from pydantic import BaseModel
 
 
@@ -7,6 +9,6 @@ class HurlExecuteRequest(BaseModel):
 
 class HurlExecuteResponse(BaseModel):
     success: bool
-    output: list[str]
+    output: Any
     exit_code: int
     time: int
