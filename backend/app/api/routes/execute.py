@@ -41,10 +41,25 @@ async def execute_hurl(
             if stderr:
                 output.extend(stderr.splitlines())
 
+            print(f"Hurl script executed with exit code {process.returncode}")
+            print(f"Output: {output}")
+
+            # Parse the time from the JSON output if available
+            time_ms = 0
+            if stdout and process.returncode == 0:
+                import json
+
+                try:
+                    hurl_result = json.loads(stdout)
+                    time_ms = hurl_result.get("time", 0)
+                except json.JSONDecodeError:
+                    pass
+
             return HurlExecuteResponse(
                 success=process.returncode == 0,
-                output=output,
+                output=hurl_result,
                 exit_code=process.returncode,
+                time=time_ms,
             )
         finally:
             # Clean up the temporary file

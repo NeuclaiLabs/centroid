@@ -17,7 +17,7 @@ import {
 } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { nanoid } from 'nanoid';
 
 interface HurlEntry {
@@ -119,9 +119,6 @@ function EntryItem({
       h.name.toLowerCase() === 'x-api-key',
   );
 
-  // Get a description from the curl command if possible
-  const description = getDescriptionFromPath(path);
-
   // Get current content for copying
   const getCurrentContent = () => {
     switch (activeTab) {
@@ -218,19 +215,26 @@ function EntryItem({
   };
 
   return (
-    <Collapsible
-      open={isOpen}
-      onOpenChange={setIsOpen}
-      className="border rounded-md overflow-hidden"
-    >
-      <CollapsibleTrigger className="flex w-full flex-col sm:flex-row sm:items-center justify-between p-4 text-left">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 sm:mb-0">
-          <Badge variant="outline">{request.method}</Badge>
-          <span className="font-mono text-sm truncate max-w-[250px] sm:max-w-[300px] md:max-w-none">
-            {getDescriptionFromPath(request.url)}
-          </span>
+    <Card className="overflow-hidden">
+      <CardHeader className="p-4 flex flex-row items-center space-y-0 gap-2">
+        {/* Method - fixed width with forced dimensions */}
+        <div
+         className="flex items-center justify-center w-20 h-8 rounded-md border text-xs font-semibold bg-gray-800 shrink-0"
+          style={{ color: getMethodColor(request.method) }}
+        >
+          {request.method}
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+
+        {/* URL - flexible width with truncation */}
+        <div
+          className="flex-1 min-w-0 cursor-pointer"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <div className="font-mono text-sm truncate">{request.url}</div>
+        </div>
+
+        {/* Status and metadata - fixed width */}
+        <div className="flex items-center gap-2 shrink-0">
           {isSecured && <Lock className="size-4 text-muted-foreground" />}
           <Badge
             variant={response.status < 400 ? 'default' : 'destructive'}
@@ -238,7 +242,9 @@ function EntryItem({
           >
             {response.status}
           </Badge>
-          <span className="text-xs text-muted-foreground">{entry.time}ms</span>
+          <span className="text-xs text-muted-foreground whitespace-nowrap">
+            {entry.time}ms
+          </span>
           {onRunScript && (
             <Button
               onClick={(e) => {
@@ -247,185 +253,195 @@ function EntryItem({
               }}
               size="sm"
               variant="outline"
-              className="ml-auto sm:ml-2"
             >
               Run
             </Button>
           )}
-          <ChevronDown
-            className={cn(
-              'h-4 w-4 text-muted-foreground transition-transform',
-              isOpen && 'rotate-180',
-            )}
-          />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsOpen(!isOpen)}
+            className="p-0 size-8"
+          >
+            <ChevronDown
+              className={cn(
+                'h-4 w-4 transition-transform',
+                isOpen && 'rotate-180',
+              )}
+            />
+            <span className="sr-only">{isOpen ? 'Collapse' : 'Expand'}</span>
+          </Button>
         </div>
-      </CollapsibleTrigger>
-      <CollapsibleContent className="px-4 pb-4">
-        <Tabs defaultValue="parameters" className="w-full">
-          <TabsList className="flex mb-4 justify-start overflow-x-auto pb-1 w-full">
-            <TabsTrigger value="parameters">Parameters</TabsTrigger>
-            <TabsTrigger value="body">Body</TabsTrigger>
-            <TabsTrigger value="headers">Headers</TabsTrigger>
-            <TabsTrigger value="authorization">Authorization</TabsTrigger>
-            <TabsTrigger value="assertions">Assertions</TabsTrigger>
-          </TabsList>
+      </CardHeader>
 
-          <TabsContent value="parameters" className="p-4">
-            {request.query_string && request.query_string.length > 0 ? (
-              <div className="space-y-2">
-                {request.query_string.map(
-                  (param: { name: string; value: string }) => (
+      {isOpen && (
+        <CardContent className="px-4 pb-4 pt-0">
+          <Tabs defaultValue="parameters" className="w-full">
+            <TabsList className="flex mb-4 justify-start overflow-x-auto pb-1 w-full">
+              <TabsTrigger value="parameters">Parameters</TabsTrigger>
+              <TabsTrigger value="body">Body</TabsTrigger>
+              <TabsTrigger value="headers">Headers</TabsTrigger>
+              <TabsTrigger value="authorization">Authorization</TabsTrigger>
+              <TabsTrigger value="assertions">Assertions</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="parameters" className="p-4">
+              {request.query_string && request.query_string.length > 0 ? (
+                <div className="space-y-2">
+                  {request.query_string.map(
+                    (param: { name: string; value: string }) => (
+                      <div
+                        key={nanoid()}
+                        className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2"
+                      >
+                        <div className="font-medium">{param.name}:</div>
+                        <div className="font-mono text-sm break-all">
+                          {param.value}
+                        </div>
+                      </div>
+                    ),
+                  )}
+                </div>
+              ) : (
+                <div className="text-muted-foreground">No parameters</div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="body" className="p-4">
+              {request.body ? (
+                <div className="bg-muted p-4 rounded-md overflow-auto max-h-[200px] sm:max-h-[300px] md:max-h-[400px]">
+                  <pre className="text-xs sm:text-sm font-mono whitespace-pre-wrap break-all">
+                    {JSON.stringify(request.body, null, 2)}
+                  </pre>
+                </div>
+              ) : (
+                <div className="text-muted-foreground">No body</div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="headers" className="p-4">
+              {request.headers && request.headers.length > 0 ? (
+                <div className="space-y-2">
+                  {request.headers.map((header) => (
                     <div
                       key={nanoid()}
                       className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2"
                     >
-                      <div className="font-medium">{param.name}:</div>
+                      <div className="font-medium">{header.name}:</div>
                       <div className="font-mono text-sm break-all">
-                        {param.value}
+                        {header.value}
                       </div>
                     </div>
-                  ),
-                )}
-              </div>
-            ) : (
-              <div className="text-muted-foreground">No parameters</div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="body" className="p-4">
-            {request.body ? (
-              <div className="bg-muted p-4 rounded-md overflow-auto max-h-[200px] sm:max-h-[300px] md:max-h-[400px]">
-                <pre className="text-xs sm:text-sm font-mono whitespace-pre-wrap break-all">
-                  {JSON.stringify(request.body, null, 2)}
-                </pre>
-              </div>
-            ) : (
-              <div className="text-muted-foreground">No body</div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="headers" className="p-4">
-            {request.headers && request.headers.length > 0 ? (
-              <div className="space-y-2">
-                {request.headers.map((header) => (
-                  <div
-                    key={nanoid()}
-                    className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2"
-                  >
-                    <div className="font-medium">{header.name}:</div>
-                    <div className="font-mono text-sm break-all">
-                      {header.value}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-muted-foreground">No headers</div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="authorization" className="p-4">
-            {request.authorization ? (
-              <div className="space-y-2">
-                <div className="font-medium">Type:</div>
-                <div className="font-mono text-sm">
-                  {request.authorization.type}
+                  ))}
                 </div>
-                {request.authorization.token && (
-                  <>
-                    <div className="font-medium mt-2">Token:</div>
-                    <div className="font-mono text-sm truncate max-w-full">
-                      {request.authorization.token}
-                    </div>
-                  </>
-                )}
-              </div>
-            ) : (
-              <div className="text-muted-foreground">No authorization</div>
-            )}
-          </TabsContent>
+              ) : (
+                <div className="text-muted-foreground">No headers</div>
+              )}
+            </TabsContent>
 
-          <TabsContent value="assertions" className="p-4">
-            {request.assertions && request.assertions.length > 0 ? (
-              <div className="space-y-2">
-                {request.assertions.map((assertion: string) => (
-                  <div key={nanoid()} className="bg-muted p-2 rounded-md">
-                    <code className="text-sm">{assertion}</code>
+            <TabsContent value="authorization" className="p-4">
+              {request.authorization ? (
+                <div className="space-y-2">
+                  <div className="font-medium">Type:</div>
+                  <div className="font-mono text-sm">
+                    {request.authorization.type}
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-muted-foreground">No assertions</div>
-            )}
-          </TabsContent>
-        </Tabs>
+                  {request.authorization.token && (
+                    <>
+                      <div className="font-medium mt-2">Token:</div>
+                      <div className="font-mono text-sm truncate max-w-full">
+                        {request.authorization.token}
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="text-muted-foreground">No authorization</div>
+              )}
+            </TabsContent>
 
-        <div>
-          <h4 className="mb-2 font-medium">Response</h4>
-          <div className="rounded-md border p-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
-              <TabsList>
-                <TabsTrigger value="body">Body</TabsTrigger>
-                <TabsTrigger value="headers">Headers</TabsTrigger>
-              </TabsList>
-              <div className="flex items-center space-x-2">
-                <CopyButton text={getCurrentContent()} />
-                <Button variant="ghost" size="sm" onClick={handleSave}>
-                  Save
-                </Button>
-              </div>
-            </div>
-
-            <Tabs
-              defaultValue="body"
-              onValueChange={(value) =>
-                setActiveTab(value as 'body' | 'headers')
-              }
-            >
-              <TabsContent value="body">{renderContent('body')}</TabsContent>
-              <TabsContent value="headers">
-                {renderContent('headers')}
-              </TabsContent>
-            </Tabs>
-
-            {response.certificate && (
-              <div className="mt-4">
-                <Collapsible>
-                  <CollapsibleTrigger className="flex w-full items-center justify-between text-sm font-medium">
-                    <span>SSL Certificate</span>
-                    <ChevronDown className="size-4" />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="pt-2">
-                    <div className="bg-muted/50 p-3 rounded-md text-xs">
-                      <div>
-                        <span className="font-medium">Subject:</span>{' '}
-                        {response.certificate.subject}
-                      </div>
-                      <div>
-                        <span className="font-medium">Issuer:</span>{' '}
-                        {response.certificate.issuer}
-                      </div>
-                      <div>
-                        <span className="font-medium">Valid from:</span>{' '}
-                        {response.certificate.start_date}
-                      </div>
-                      <div>
-                        <span className="font-medium">Valid until:</span>{' '}
-                        {response.certificate.expire_date}
-                      </div>
-                      <div>
-                        <span className="font-medium">Serial:</span>{' '}
-                        {response.certificate.serial_number}
-                      </div>
+            <TabsContent value="assertions" className="p-4">
+              {request.assertions && request.assertions.length > 0 ? (
+                <div className="space-y-2">
+                  {request.assertions.map((assertion: string) => (
+                    <div key={nanoid()} className="bg-muted p-2 rounded-md">
+                      <code className="text-sm">{assertion}</code>
                     </div>
-                  </CollapsibleContent>
-                </Collapsible>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-muted-foreground">No assertions</div>
+              )}
+            </TabsContent>
+          </Tabs>
+
+          <div>
+            <h4 className="mb-2 font-medium">Response</h4>
+            <div className="rounded-md border p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
+                <TabsList>
+                  <TabsTrigger value="body">Body</TabsTrigger>
+                  <TabsTrigger value="headers">Headers</TabsTrigger>
+                </TabsList>
+                <div className="flex items-center space-x-2">
+                  <CopyButton text={getCurrentContent()} />
+                  <Button variant="ghost" size="sm" onClick={handleSave}>
+                    Save
+                  </Button>
+                </div>
               </div>
-            )}
+
+              <Tabs
+                defaultValue="body"
+                onValueChange={(value) =>
+                  setActiveTab(value as 'body' | 'headers')
+                }
+              >
+                <TabsContent value="body">{renderContent('body')}</TabsContent>
+                <TabsContent value="headers">
+                  {renderContent('headers')}
+                </TabsContent>
+              </Tabs>
+
+              {response.certificate && (
+                <div className="mt-4">
+                  <Collapsible>
+                    <CollapsibleTrigger className="flex w-full items-center justify-between text-sm font-medium">
+                      <span>SSL Certificate</span>
+                      <ChevronDown className="size-4" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="pt-2">
+                      <div className="bg-muted/50 p-3 rounded-md text-xs">
+                        <div>
+                          <span className="font-medium">Subject:</span>{' '}
+                          {response.certificate.subject}
+                        </div>
+                        <div>
+                          <span className="font-medium">Issuer:</span>{' '}
+                          {response.certificate.issuer}
+                        </div>
+                        <div>
+                          <span className="font-medium">Valid from:</span>{' '}
+                          {response.certificate.start_date}
+                        </div>
+                        <div>
+                          <span className="font-medium">Valid until:</span>{' '}
+                          {response.certificate.expire_date}
+                        </div>
+                        <div>
+                          <span className="font-medium">Serial:</span>{' '}
+                          {response.certificate.serial_number}
+                        </div>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      </CollapsibleContent>
-    </Collapsible>
+        </CardContent>
+      )}
+    </Card>
   );
 }
 
@@ -446,32 +462,6 @@ function formatResponseBody(
   return body;
 }
 
-// Helper function to get a description based on the path
-function getDescriptionFromPath(path: string): string {
-  if (path.includes('/posts') && !path.includes('/comments')) {
-    if (path === '/posts') {
-      return 'List Posts';
-    }
-    if (path.match(/\/posts\/\d+$/)) {
-      return 'Get Post';
-    }
-  }
-
-  if (path.includes('/comments')) {
-    if (path === '/comments') {
-      return 'List Comments';
-    }
-    if (path.match(/\/comments\/\d+$/)) {
-      return 'Get Comment';
-    }
-    if (path.match(/\/posts\/\d+\/comments$/)) {
-      return 'Get Post Comments';
-    }
-  }
-
-  return 'API Endpoint';
-}
-
 // Helper function to get status text
 function getStatusText(status: number): string {
   const statusTexts: Record<number, string> = {
@@ -486,6 +476,24 @@ function getStatusText(status: number): string {
   };
 
   return statusTexts[status] || 'Unknown Status';
+}
+
+// Helper function to determine color class based on HTTP method
+function getMethodColor(method: string): string {
+  switch (method.toUpperCase()) {
+    case 'GET':
+      return '#10b981'; // emerald-500
+    case 'POST':
+      return '#f59e0b'; // amber-500
+    case 'PUT':
+      return '#3b82f6'; // blue-500
+    case 'PATCH':
+      return '#8b5cf6'; // purple-500
+    case 'DELETE':
+      return '#ef4444'; // red-500
+    default:
+      return '#6b7280'; // gray-500
+  }
 }
 
 // Helper function to check if response is JSON

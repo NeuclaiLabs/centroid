@@ -9,3 +9,4 @@ class HurlExecuteResponse(BaseModel):
     success: bool
     output: list[str]
     exit_code: int
+    time: int

@@ -113,12 +113,12 @@ export const hurlArtifact = new Artifact<'hurl', Metadata>({
             ],
           }));
 
-          const response = await fetch('/api/artifacts/hurl/execute', {
+          const response = await fetch('http://localhost:8000/api/v1/execute/hurl', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ code: content }),
+            body: JSON.stringify({ script: content }),
           });
 
           if (!response.ok) {
@@ -142,7 +142,7 @@ export const hurlArtifact = new Artifact<'hurl', Metadata>({
                   contents: [
                     {
                       type: 'text',
-                      value: `Execution completed in ${result.time}ms with ${result.success ? 'success' : 'errors'}.`,
+                      value: `Execution completed in ${result.time} ms with ${result.success ? 'success' : 'errors'}.`,
                     },
                   ],
                   status: result.success ? 'completed' : 'failed',
