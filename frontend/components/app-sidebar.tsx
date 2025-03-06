@@ -2,6 +2,7 @@
 
 import type { User } from 'next-auth';
 import { useRouter } from 'next/navigation';
+import { Montserrat, Fira_Code } from 'next/font/google';
 
 import { PlusIcon } from '@/components/icons';
 import { SidebarHistory } from '@/components/sidebar-history';
@@ -17,6 +18,13 @@ import {
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+
+// Initialize Fira Code for the product name
+const firaCode = Fira_Code({
+  subsets: ['latin'],
+  weight: ['600'],
+  variable: '--font-fira-code',
+});
 
 export function AppSidebar({ user }: { user: User | undefined }) {
   const router = useRouter();
@@ -34,8 +42,10 @@ export function AppSidebar({ user }: { user: User | undefined }) {
               }}
               className="flex flex-row gap-3 items-center"
             >
-              <span className="text-lg font-semibold px-2 hover:bg-muted rounded-md cursor-pointer">
-                Chatbot
+              <span
+                className={`text-lg font-semibold px-2 hover:bg-muted rounded-md cursor-pointer ${firaCode.className}`}
+              >
+                OpenAstra
               </span>
             </Link>
             <Tooltip>

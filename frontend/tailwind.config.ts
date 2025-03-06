@@ -13,9 +13,6 @@ const config: Config = {
       mono: ['geist-mono'],
     },
     extend: {
-      screens: {
-        'toast-mobile': '600px',
-      },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',

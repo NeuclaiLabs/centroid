@@ -1,6 +1,6 @@
 'use client';
 
-import { useChat } from '@ai-sdk/react';
+import { useChat } from 'ai/react';
 import { useEffect, useRef } from 'react';
 import { artifactDefinitions, ArtifactKind } from './artifact';
 import { Suggestion } from '@/lib/db/schema';

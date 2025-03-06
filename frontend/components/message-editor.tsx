@@ -50,7 +50,6 @@ export function MessageEditor({
   return (
     <div className="flex flex-col gap-2 w-full">
       <Textarea
-        data-testid="message-editor"
         ref={textareaRef}
         className="bg-transparent outline-none overflow-hidden resize-none !text-base rounded-xl w-full"
         value={draftContent}
@@ -68,7 +67,6 @@ export function MessageEditor({
           Cancel
         </Button>
         <Button
-          data-testid="message-editor-send-button"
           variant="default"
           className="h-fit py-2 px-3"
           disabled={isSubmitting}

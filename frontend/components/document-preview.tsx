@@ -241,7 +241,7 @@ const DocumentContent = ({ document }: { document: Document }) => {
     'h-[257px] overflow-y-scroll border rounded-b-2xl dark:bg-muted border-t-0 dark:border-zinc-700',
     {
       'p-4 sm:px-14 sm:py-16': document.kind === 'text',
-      'p-0': document.kind === 'code',
+      'p-0': document.kind === 'code' || document.kind === 'hurl',
     },
   );
 
@@ -258,7 +258,7 @@ const DocumentContent = ({ document }: { document: Document }) => {
     <div className={containerClassName}>
       {document.kind === 'text' ? (
         <Editor {...commonProps} onSaveContent={() => {}} />
-      ) : document.kind === 'code' ? (
+      ) : document.kind === 'code' || document.kind === 'hurl' ? (
         <div className="flex flex-1 relative w-full">
           <div className="absolute inset-0">
             <CodeEditor {...commonProps} onSaveContent={() => {}} />

@@ -211,10 +211,7 @@ function PureMultimodalInput({
       />
 
       {(attachments.length > 0 || uploadQueue.length > 0) && (
-        <div
-          data-testid="attachments-preview"
-          className="flex flex-row gap-2 overflow-x-scroll items-end"
-        >
+        <div className="flex flex-row gap-2 overflow-x-scroll items-end">
           {attachments.map((attachment) => (
             <PreviewAttachment key={attachment.url} attachment={attachment} />
           ))}
@@ -234,7 +231,6 @@ function PureMultimodalInput({
       )}
 
       <Textarea
-        data-testid="multimodal-input"
         ref={textareaRef}
         placeholder="Send a message..."
         value={input}
@@ -246,11 +242,7 @@ function PureMultimodalInput({
         rows={2}
         autoFocus
         onKeyDown={(event) => {
-          if (
-            event.key === "Enter" &&
-            !event.shiftKey &&
-            !event.nativeEvent.isComposing
-          ) {
+          if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
 
             if (isLoading) {
@@ -301,7 +293,6 @@ function PureAttachmentsButton({
 }) {
   return (
     <Button
-      data-testid="attachments-button"
       className="rounded-md rounded-bl-lg p-[7px] h-fit dark:border-zinc-700 hover:dark:bg-zinc-900 hover:bg-zinc-200"
       onClick={(event) => {
         event.preventDefault();
@@ -326,7 +317,6 @@ function PureStopButton({
 }) {
   return (
     <Button
-      data-testid="stop-button"
       className="rounded-full p-1.5 h-fit border dark:border-zinc-600"
       onClick={(event) => {
         event.preventDefault();
@@ -352,7 +342,6 @@ function PureSendButton({
 }) {
   return (
     <Button
-      data-testid="send-button"
       className="rounded-full p-1.5 h-fit border dark:border-zinc-600"
       onClick={(event) => {
         event.preventDefault();

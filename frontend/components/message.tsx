@@ -3,10 +3,17 @@
 import type { ChatRequestOptions, Message } from 'ai';
 import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
-import { memo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
+
 import type { Vote } from '@/lib/db/schema';
+
 import { DocumentToolCall, DocumentToolResult } from './document';
-import { PencilEditIcon, SparklesIcon } from './icons';
+import {
+  ChevronDownIcon,
+  LoaderIcon,
+  PencilEditIcon,
+  SparklesIcon,
+} from './icons';
 import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
@@ -27,7 +34,6 @@ const PurePreviewMessage = ({
   setMessages,
   reload,
   isReadonly,
-  index,
 }: {
   chatId: string;
   message: Message;
@@ -40,14 +46,12 @@ const PurePreviewMessage = ({
     chatRequestOptions?: ChatRequestOptions,
   ) => Promise<string | null | undefined>;
   isReadonly: boolean;
-  index: number;
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
 
   return (
     <AnimatePresence>
       <motion.div
-        data-testid={`message-${message.role}-${index}`}
         className="w-full mx-auto max-w-3xl px-4 group/message"
         initial={{ y: 5, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -72,10 +76,7 @@ const PurePreviewMessage = ({
 
           <div className="flex flex-col gap-4 w-full">
             {message.experimental_attachments && (
-              <div
-                data-testid={`message-attachments-${index}`}
-                className="flex flex-row justify-end gap-2"
-              >
+              <div className="flex flex-row justify-end gap-2">
                 {message.experimental_attachments.map((attachment) => (
                   <PreviewAttachment
                     key={attachment.url}
@@ -98,7 +99,6 @@ const PurePreviewMessage = ({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
-                        data-testid={`edit-${message.role}-${index}`}
                         variant="ghost"
                         className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
                         onClick={() => {
@@ -114,7 +114,7 @@ const PurePreviewMessage = ({
 
                 <div
                   className={cn('flex flex-col gap-4', {
-                    'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
+                    'bg-muted text-accent-foreground px-3 py-2 rounded-xl':
                       message.role === 'user',
                   })}
                 >

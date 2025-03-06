@@ -13,7 +13,7 @@ export const Overview = () => {
       exit={{ opacity: 0, scale: 0.98 }}
       transition={{ delay: 0.5 }}
     >
-      <div className="rounded-xl p-6 flex flex-col gap-8 leading-relaxed text-center max-w-xl">
+      {/* <div className="rounded-xl p-6 flex flex-col gap-8 leading-relaxed text-center max-w-xl">
         <p className="flex flex-row justify-center gap-4 items-center">
           <VercelIcon size={32} />
           <span>+</span>
@@ -46,7 +46,7 @@ export const Overview = () => {
           </Link>
           .
         </p>
-      </div>
+      </div> */}
     </motion.div>
   );
 };
