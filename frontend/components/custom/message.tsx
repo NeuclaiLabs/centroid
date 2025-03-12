@@ -74,11 +74,14 @@ export const PreviewMessage = ({
                       ) : toolName === "searchAPICollections" ? (
                         <APISearchViewer result={result} />
                       ) : (
-                        <APIResponseViewer response={result.response} meta={result.meta} loading={false} />
+                        // <APIResponseViewer response={result.response} meta={result.meta} loading={false} />
+                        <div>
+                          {JSON.stringify(result)}
+                        </div>
                       )}
                     </div>
                   );
-                } else {
+                }
                   return (
                     <div
                       key={toolCallId}
@@ -95,7 +98,6 @@ export const PreviewMessage = ({
                       )}
                     </div>
                   );
-                }
               })}
             </div>
           )}

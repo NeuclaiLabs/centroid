@@ -1,7 +1,3 @@
-[build-system]
-requires = ["hatchling>=1.0.0"]
-build-backend = "hatchling.build"
-
 [project]
 name = "app"
 version = "0.1.0"
@@ -23,33 +19,46 @@ classifiers = [
 ]
 dependencies = [
     "uvicorn[standard]>=0.24.0.post1",
-    "fastapi>=0.109.1",
-    "python-multipart>=0.0.7",
-    "email-validator>=2.1.0.post1",
-    "passlib[bcrypt]>=1.7.4",
-    "tenacity>=8.2.3",
+    "fastapi[standard]<1.0.0,>=0.114.2",
+    "python-multipart<1.0.0,>=0.0.7",
+    "email-validator<3.0.0.0,>=2.1.0.post1",
+    "passlib[bcrypt]<2.0.0,>=1.7.4",
+    "tenacity<9.0.0,>=8.2.3",
     "pydantic>2.0",
-    "emails>=0.6",
+    "emails<1.0,>=0.6",
     "gunicorn>=21.2.0",
-    "jinja2>=3.1.2",
-    "alembic>=1.12.1",
-    "httpx==0.27.0",
-    "psycopg[binary]>=3.1.13",
-    "sqlmodel==0.0.22",
+    "jinja2<4.0.0,>=3.1.4",
+    "alembic<2.0.0,>=1.12.1",
+    "httpx<1.0.0,>=0.25.1",
+    "psycopg[binary]<4.0.0,>=3.1.13",
+    "sqlmodel<1.0.0,>=0.0.21",
     "bcrypt==4.0.1",
-    "pydantic-settings>=2.2.1",
-    "sentry-sdk[fastapi]>=2.15.0",
+    "pydantic-settings<3.0.0,>=2.2.1",
+    "sentry-sdk[fastapi]<2.0.0,>=1.40.6",
     "nanoid>=2.0.0",
-    "openai>=1.17.1",
-    "pyjwt>=2.8.0",
+    "pyjwt<3.0.0,>=2.8.0",
     "pyhumps>=3.8.0",
     "colorama>=0.4.6",
     "amplitude-analytics>=1.1.4",
     "chromadb>=0.6.3",
     "openapi3-parser>=1.1.19",
     "mcp>=1.3.0",
-    "fastapi-mcp>=0.1.3",
 ]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest<8.0.0,>=7.4.3",
+    "mypy<2.0.0,>=1.8.0",
+    "ruff<1.0.0,>=0.2.2",
+    "pre-commit<4.0.0,>=3.6.2",
+    "types-passlib<2.0.0.0,>=1.7.7.20240106",
+    "coverage<8.0.0,>=7.4.3",
+]
+
+[build-system]
+requires = ["hatchling>=1.0.0"]
+build-backend = "hatchling.build"
+
 
 [project.urls]
 "Homepage" = "https://openastra.com"

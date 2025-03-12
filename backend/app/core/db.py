@@ -4,7 +4,6 @@ from fastapi import UploadFile
 from sqlmodel import Session, create_engine, select
 
 from app import crud
-from app.api.routes.files import upload_files
 from app.core.config import settings
 from app.models import ProjectCreate, TeamCreate, User, UserCreate
 
@@ -67,12 +66,12 @@ async def init_db(session: Session) -> None:
 
             try:
                 # Upload the collection file
-                response = await upload_files(
-                    project_id=project.id, files=[upload_file]
-                )
+                # response = await upload_files(
+                #     project_id=project.id, files=[upload_file]
+                # )
 
                 # Update project with file path
-                project.files = response.files
+                # project.files = response.files
                 session.add(project)
                 session.commit()
             finally:

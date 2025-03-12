@@ -72,8 +72,8 @@ dependencies:
     specifier: ^0.10.0
     version: 0.10.0
   ai:
-    specifier: 4.0.0-canary.9
-    version: 4.0.0-canary.9(react@19.0.0-rc-7771d3a7-20240827)(zod@3.23.8)
+    specifier: 4.1.56
+    version: 4.1.56(react@19.0.0-rc-7771d3a7-20240827)(zod@3.23.8)
   bcrypt-ts:
     specifier: ^5.0.2
     version: 5.0.2
@@ -307,8 +307,31 @@ packages:
       zod: 3.23.8
     dev: false
 
+  /@ai-sdk/provider-utils@2.1.12(zod@3.23.8):
+    resolution: {integrity: sha512-NLm2Ypkv419jR5TNOvZ057ciSYFKzSDEIIwE8cRyeR1Y5RbuX+auZveqGg6GWsDzvUnn6Xra7BJmr0422v60UA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.0.0
+    peerDependenciesMeta:
+      zod:
+        optional: true
+    dependencies:
+      '@ai-sdk/provider': 1.0.10
+      eventsource-parser: 3.0.0
+      nanoid: 3.3.9
+      secure-json-parse: 2.7.0
+      zod: 3.23.8
+    dev: false
+
   /@ai-sdk/provider@1.0.0-canary.0:
     resolution: {integrity: sha512-NyYVTM8veeOLUNcY+2bGQ359AEWm/P3FgNVweGR8dNfihFXYxsBQhB58RhcVnKgWzlUgNFGi9tajgbSKkImTTg==}
+    engines: {node: '>=18'}
+    dependencies:
+      json-schema: 0.4.0
+    dev: false
+
+  /@ai-sdk/provider@1.0.10:
+    resolution: {integrity: sha512-pco8Zl9U0xwXI+nCLc0woMtxbvjU8hRmGTseAUiPHFLYAAL8trRPCukg69IDeinOvIeo1SmXxAIdWWPZOLb4Cg==}
     engines: {node: '>=18'}
     dependencies:
       json-schema: 0.4.0
@@ -321,8 +344,8 @@ packages:
       json-schema: 0.4.0
     dev: false
 
-  /@ai-sdk/react@1.0.0-canary.6(react@19.0.0-rc-7771d3a7-20240827)(zod@3.23.8):
-    resolution: {integrity: sha512-l65sGGhWR3ddV9HXbAmTGTrT4Lk0tKc11xVC4CGcPcnY/kF6BiBer2s0xWAdLOG27PyIkB7x3IoTlE7K8FNydQ==}
+  /@ai-sdk/react@1.1.22(react@19.0.0-rc-7771d3a7-20240827)(zod@3.23.8):
+    resolution: {integrity: sha512-+ZlmJBu9NH59wvAtuh+xXEJ2MEfisBpVbYwN347+VlJJ3LfHVH9Rp1d58jVwBsfJvDUMn5UMuHZIXIdQhJIBTg==}
     engines: {node: '>=18'}
     peerDependencies:
       react: ^18 || ^19 || ^19.0.0-rc
@@ -333,16 +356,16 @@ packages:
       zod:
         optional: true
     dependencies:
-      '@ai-sdk/provider-utils': 2.0.0-canary.3(zod@3.23.8)
-      '@ai-sdk/ui-utils': 1.0.0-canary.6(zod@3.23.8)
+      '@ai-sdk/provider-utils': 2.1.12(zod@3.23.8)
+      '@ai-sdk/ui-utils': 1.1.18(zod@3.23.8)
       react: 19.0.0-rc-7771d3a7-20240827
       swr: 2.2.5(react@19.0.0-rc-7771d3a7-20240827)
       throttleit: 2.1.0
       zod: 3.23.8
     dev: false
 
-  /@ai-sdk/ui-utils@1.0.0-canary.6(zod@3.23.8):
-    resolution: {integrity: sha512-+Lp3gqR/o2F+uMqROk8DUUFUaNlNHnmj6Pomfxabu7ruL8KW+yvG9JFxDeKzdtn4FbLpXfEyZccPHVcdaTx8YA==}
+  /@ai-sdk/ui-utils@1.1.18(zod@3.23.8):
+    resolution: {integrity: sha512-PCDXKKKHqA8Oqm5LsXl3Byxmit0r0Gg3nMPI3bdEriDIExoQikULX2T6/IS5u1qNeoC3UK5F2acpCyl5Q+aIuQ==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.0.0
@@ -350,10 +373,10 @@ packages:
       zod:
         optional: true
     dependencies:
-      '@ai-sdk/provider': 1.0.0-canary.0
-      '@ai-sdk/provider-utils': 2.0.0-canary.3(zod@3.23.8)
+      '@ai-sdk/provider': 1.0.10
+      '@ai-sdk/provider-utils': 2.1.12(zod@3.23.8)
       zod: 3.23.8
-      zod-to-json-schema: 3.24.1(zod@3.23.8)
+      zod-to-json-schema: 3.24.3(zod@3.23.8)
     dev: false
 
   /@alloc/quick-lru@5.2.0:
@@ -3098,8 +3121,8 @@ packages:
     hasBin: true
     dev: true
 
-  /ai@4.0.0-canary.9(react@19.0.0-rc-7771d3a7-20240827)(zod@3.23.8):
-    resolution: {integrity: sha512-MmiXwaNJdXvSm1Bn/zgG632d91l76812xCRgVLQMAE7rh7+LUt72Rq2SV1BKkkmZzb0RJFSSn+lvprEtctn2lw==}
+  /ai@4.1.56(react@19.0.0-rc-7771d3a7-20240827)(zod@3.23.8):
+    resolution: {integrity: sha512-PILWyZCEwI9ZLYoDls9PW26sPV3jE86XvCkYBTrGZcsEO28Oxatu9F7I+eOufTpK+7tOUSq3hdTDv83QBgskTg==}
     engines: {node: '>=18'}
     peerDependencies:
       react: ^18 || ^19 || ^19.0.0-rc
@@ -3110,15 +3133,15 @@ packages:
       zod:
         optional: true
     dependencies:
-      '@ai-sdk/provider': 1.0.0-canary.0
-      '@ai-sdk/provider-utils': 2.0.0-canary.3(zod@3.23.8)
-      '@ai-sdk/react': 1.0.0-canary.6(react@19.0.0-rc-7771d3a7-20240827)(zod@3.23.8)
-      '@ai-sdk/ui-utils': 1.0.0-canary.6(zod@3.23.8)
+      '@ai-sdk/provider': 1.0.10
+      '@ai-sdk/provider-utils': 2.1.12(zod@3.23.8)
+      '@ai-sdk/react': 1.1.22(react@19.0.0-rc-7771d3a7-20240827)(zod@3.23.8)
+      '@ai-sdk/ui-utils': 1.1.18(zod@3.23.8)
       '@opentelemetry/api': 1.9.0
+      eventsource-parser: 3.0.0
       jsondiffpatch: 0.6.0
       react: 19.0.0-rc-7771d3a7-20240827
       zod: 3.23.8
-      zod-to-json-schema: 3.24.1(zod@3.23.8)
     dev: false
 
   /ajv-draft-04@1.0.0(ajv@8.11.0):
@@ -3445,8 +3468,8 @@ packages:
       supports-color: 7.2.0
     dev: true
 
-  /chalk@5.3.0:
-    resolution: {integrity: sha512-dLitG79d+GV1Nb/VYcCDFivJeK1hiukt9QjRNVOsUtTy1rR1YJsmpGGTZ3qJos+uw7WmWF4wUwBd9jxjocFC2w==}
+  /chalk@5.4.1:
+    resolution: {integrity: sha512-zgVZuo2WcZgfUEmsn6eO3kINexW8RAE4maiQ8QNs8CtpPCSyMiYsULR3HQYkm3w8FIA3SberyMJMSldGsW+U3w==}
     engines: {node: ^12.17.0 || ^14.13 || >=16.0.0}
     dev: false
 
@@ -5505,7 +5528,7 @@ packages:
     hasBin: true
     dependencies:
       '@types/diff-match-patch': 1.0.36
-      chalk: 5.3.0
+      chalk: 5.4.1
       diff-match-patch: 1.0.5
     dev: false
 
@@ -6140,6 +6163,12 @@ packages:
 
   /nanoid@3.3.8:
     resolution: {integrity: sha512-WNLf5Sd8oZxOm+TzppcYk8gVOgP+l58xNy58D0nbUnOxOWRWvlcCV4kUF7ltmI6PsrLl/BgKEyS4mqsGChFN0w==}
+    engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
+    hasBin: true
+    dev: false
+
+  /nanoid@3.3.9:
+    resolution: {integrity: sha512-SppoicMGpZvbF1l3z4x7No3OlIjP7QJvC9XR7AhZr1kL133KHnKPztkKDc+Ir4aJ/1VhTySrtKhrsycmrMQfvg==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
     dev: false
@@ -8127,8 +8156,8 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  /zod-to-json-schema@3.24.1(zod@3.23.8):
-    resolution: {integrity: sha512-3h08nf3Vw3Wl3PK+q3ow/lIil81IT2Oa7YpQyUUDsEWbXveMesdfK1xBd2RhCkynwZndAxixji/7SYJJowr62w==}
+  /zod-to-json-schema@3.24.3(zod@3.23.8):
+    resolution: {integrity: sha512-HIAfWdYIt1sssHfYZFCXp4rU1w2r8hVVXYIlmoa0r0gABLs5di3RCqPU5DDROogVz1pAdYBaz7HK5n9pSUNs3A==}
     peerDependencies:
       zod: ^3.24.1
     dependencies:
