@@ -87,6 +87,39 @@ class LoggingMiddleware(BaseHTTPMiddleware):
             response.headers["X-Frame-Options"] = "DENY"
             response.headers["X-XSS-Protection"] = "1; mode=block"
 
+            # Check if this is a streaming response (like SSE)
+            content_type = response.headers.get("content-type", "")
+            is_streaming = "text/event-stream" in content_type
+
+            duration_ms = int((time.time() - start_time) * 1000)
+
+            # For streaming responses, don't try to capture the body
+            if is_streaming:
+                logger.info(
+                    "Streaming response started",
+                    extra={
+                        "extra_fields": {
+                            "request_id": request_id,
+                            "status_code": response.status_code,
+                            "path": request.url.path,
+                            "content_type": content_type,
+                            "is_streaming": True,
+                            "duration_ms": duration_ms,
+                        }
+                    },
+                )
+
+                # Track analytics with instance ID
+                analytics_service.track_api_event(
+                    request=request,
+                    response_status=response.status_code,
+                    duration_ms=duration_ms,
+                    user_id=INSTANCE_ID,
+                )
+
+                return response
+
+            # For non-streaming responses, continue with body capture
             response_body = b""
             async for chunk in response.body_iterator:
                 response_body += chunk
@@ -111,8 +144,6 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                 response_decoded = (
                     response_body.decode("utf-8") if response_body else None
                 )
-
-            duration_ms = int((time.time() - start_time) * 1000)
 
             # Log response details
             logger.info(
