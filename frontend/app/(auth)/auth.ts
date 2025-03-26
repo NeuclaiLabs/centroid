@@ -21,12 +21,50 @@ export const {
     Credentials({
       credentials: {},
       async authorize({ email, password }: any) {
-        const users = await getUser(email);
-        if (users.length === 0) return null;
-        // biome-ignore lint: Forbidden non-null assertion.
-        const passwordsMatch = await compare(password, users[0].password!);
-        if (!passwordsMatch) return null;
-        return users[0] as any;
+        const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/login/access-token`;
+
+        try {
+          const res = await fetch(apiUrl, {
+            method: 'POST',
+            body: new URLSearchParams({
+              username: email,
+              password: password,
+            }),
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              Accept: 'application/json',
+            },
+          });
+
+          const contentType = res.headers.get('content-type');
+          if (!contentType?.includes('application/json')) {
+            console.error('Received non-JSON response:', await res.text());
+            throw new Error('Invalid API response format');
+          }
+
+          if (!res.ok) {
+            const errorData = await res.json();
+            console.error('API error response:', errorData);
+            throw new Error(errorData.detail || 'Authentication failed');
+          }
+
+          const response = await res.json();
+
+          if (!response.user) {
+            console.error('No user data in response:', response);
+            return null;
+          }
+
+          return {
+            id: String(response.user.id),
+            email: response.user.email,
+            name: response.user.name,
+            token: response.access_token,
+          };
+        } catch (error) {
+          console.error('Auth error:', error);
+          return null;
+        }
       },
     }),
   ],

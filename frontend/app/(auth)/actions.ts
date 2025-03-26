@@ -61,12 +61,27 @@ export const register = async (
       password: formData.get('password'),
     });
 
-    const [user] = await getUser(validatedData.email);
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/signup`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: validatedData.email,
+          password: validatedData.password,
+        }),
+      },
+    );
 
-    if (user) {
-      return { status: 'user_exists' } as RegisterActionState;
+    if (!response.ok) {
+      const error = await response.json();
+      if (response.status === 400 && error.detail.includes('already exists')) {
+        return { status: 'user_exists' } as RegisterActionState;
+      }
+      return { status: 'failed' } as RegisterActionState;
     }
-    await createUser(validatedData.email, validatedData.password);
     await signIn('credentials', {
       email: validatedData.email,
       password: validatedData.password,
