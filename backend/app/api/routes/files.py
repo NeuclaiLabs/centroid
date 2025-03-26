@@ -1,5 +1,4 @@
 import json
-import shutil
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -10,12 +9,13 @@ from pydantic import BaseModel
 
 from app.core.config import settings
 from app.core.logger import get_logger
-from app.models import Message
+from app.models import UtilsMessage
 from app.services.api_search_service import (
     delete_embeddings,
     search_endpoints,
     store_embeddings,
 )
+from app.services.file_service import upload_files_to_project
 
 router = APIRouter()
 logger = get_logger(__name__, service="files")
@@ -66,38 +66,23 @@ async def upload_files(
     Returns a list of safe filenames that were successfully uploaded.
     """
     logger.info(f"Starting file upload for project_id: {project_id}")
-    upload_dir = ensure_upload_dir(project_id)
-    uploaded_files = []
-    for upload_file in files:
-        filename = Path(upload_file.filename).name
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        safe_filename = f"{timestamp}_{filename}"
-        file_path = upload_dir / safe_filename
-
-        try:
-            with file_path.open("wb") as buffer:
-                shutil.copyfileobj(upload_file.file, buffer)
-
-            logger.debug(f"File saved successfully: {safe_filename}")
-            relative_path = str(Path(project_id) / safe_filename)
-            uploaded_files.append(relative_path)
-
-            # Generate embeddings for potential API collections
-            if filename.lower().endswith((".json", ".yaml", ".yml")):
-                try:
-                    with file_path.open("r", encoding="utf-8") as f:
-                        content = (
-                            json.load(f)
-                            if filename.lower().endswith(".json")
-                            else yaml.safe_load(f)
-                        )
-                        store_embeddings(project_id, safe_filename, content)
-                        logger.info(f"Generated embeddings for file: {safe_filename}")
-                except Exception as e:
-                    logger.error(f"Error processing file for embeddings: {str(e)}")
-
-        finally:
-            upload_file.file.close()
+    uploaded_files = await upload_files_to_project(project_id=project_id, files=files)
+    # Generate embeddings for potential API collections
+    for file_path in uploaded_files:
+        filename = Path(file_path).name
+        if filename.lower().endswith((".json", ".yaml", ".yml")):
+            try:
+                full_path = Path(settings.UPLOAD_DIR) / file_path
+                with full_path.open("r", encoding="utf-8") as f:
+                    content = (
+                        json.load(f)
+                        if filename.lower().endswith(".json")
+                        else yaml.safe_load(f)
+                    )
+                    store_embeddings(project_id, filename, content)
+                    logger.info(f"Generated embeddings for file: {filename}")
+            except Exception as e:
+                logger.error(f"Error processing file for embeddings: {str(e)}")
 
     logger.info(
         f"Successfully uploaded {len(uploaded_files)} files to project {project_id}"
@@ -108,7 +93,7 @@ async def upload_files(
     )
 
 
-@router.delete("/", response_model=Message)
+@router.delete("/", response_model=UtilsMessage)
 async def delete_file(*, file: str) -> Any:
     """Delete a file and its embeddings from a project."""
     logger.info(f"Attempting to delete file: {file}")
@@ -131,7 +116,7 @@ async def delete_file(*, file: str) -> Any:
         logger.error(f"Error deleting file {file}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error deleting file: {str(e)}")
 
-    return Message(message=f"File deleted successfully: {file}")
+    return UtilsMessage(message=f"File deleted successfully: {file}")
 
 
 @router.get("/", response_model=FileContentResponse)

@@ -5,12 +5,12 @@ from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
 from app.models import (
-    Message,
     Setting,
     SettingCreate,
     SettingOut,
     SettingsOut,
     SettingUpdate,
+    UtilsMessage,
 )
 
 router = APIRouter()
@@ -83,7 +83,9 @@ def update_setting(
 
 
 @router.delete("/{id}")
-def delete_setting(session: SessionDep, current_user: CurrentUser, id: str) -> Message:
+def delete_setting(
+    session: SessionDep, current_user: CurrentUser, id: str
+) -> UtilsMessage:
     """Delete a setting."""
     setting = session.get(Setting, id)
     if not setting:
@@ -92,4 +94,4 @@ def delete_setting(session: SessionDep, current_user: CurrentUser, id: str) -> M
         raise HTTPException(status_code=400, detail="Not enough permissions")
     session.delete(setting)
     session.commit()
-    return Message(message="setting deleted successfully")
+    return UtilsMessage(message="setting deleted successfully")

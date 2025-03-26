@@ -5,7 +5,6 @@ from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
 from app.models import (
-    Message,
     Team,
     TeamCreate,
     TeamInvitationStatus,
@@ -20,6 +19,7 @@ from app.models import (
     TeamUpdate,
     User,
     UserOut,
+    UtilsMessage,
 )
 
 router = APIRouter()
@@ -127,7 +127,7 @@ def update_team(
     return TeamOut.model_validate(team)
 
 
-@router.delete("/{team_id}", response_model=Message)
+@router.delete("/{team_id}", response_model=UtilsMessage)
 def delete_team(*, session: SessionDep, current_user: CurrentUser, team_id: str) -> Any:
     """Delete a team."""
     team = get_team(session, team_id)
@@ -135,7 +135,7 @@ def delete_team(*, session: SessionDep, current_user: CurrentUser, team_id: str)
 
     session.delete(team)
     session.commit()
-    return Message(message="Team deleted successfully")
+    return UtilsMessage(message="Team deleted successfully")
 
 
 # Team member management
@@ -298,7 +298,7 @@ def respond_to_invitation(
     response: TeamInvitationStatus,
     current_user: CurrentUser,
     session: SessionDep,
-) -> Message:
+) -> UtilsMessage:
     team_member = session.exec(
         select(TeamMember).where(
             TeamMember.team_id == team_id, TeamMember.email == current_user.email
@@ -313,4 +313,4 @@ def respond_to_invitation(
     session.add(team_member)
     session.commit()
 
-    return Message(message=f"Invitation {response.value}")
+    return UtilsMessage(message=f"Invitation {response.value}")

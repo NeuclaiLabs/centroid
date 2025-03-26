@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlmodel import Session
 
 from app import crud
-from app.models import Chat, ChatMessage
+from app.models import Chat, Message
 from app.tests.utils.user import create_random_user
 from app.tests.utils.utils import random_lower_string, random_string
 
@@ -16,8 +16,12 @@ def create_random_chat(db: Session) -> Chat:
     title = random_lower_string()
     path = random_lower_string()
 
-    chat_message = ChatMessage(
-        id=random_string(), role="system", name="Bot", content=random_lower_string()
+    chat_message = Message(
+        id=random_string(),
+        role="system",
+        name="Bot",
+        parts=[random_lower_string()],
+        attachments=None,
     )
 
     chat = Chat(
