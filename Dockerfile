@@ -1,43 +1,55 @@
-# Build frontend
-FROM node:18-alpine AS frontend-builder
-WORKDIR /app/frontend
-
-# Install build dependencies and Python for node-gyp
+# Base stage for shared dependencies
+FROM node:18-alpine AS node-base
+RUN npm install -g pnpm
 RUN apk add --no-cache python3 make g++ gcc
 
-# Install pnpm
-RUN npm install -g pnpm
-
+# Frontend dependencies stage
+FROM node-base AS frontend-deps
+WORKDIR /app/frontend
 COPY frontend/package*.json ./
-RUN pnpm install
-COPY frontend/ .
+# Cache dependency installation
+RUN --mount=type=cache,id=pnpm,target=/root/.pnpm-store \
+    pnpm install
 
+# Frontend builder stage
+FROM frontend-deps AS frontend-builder
+WORKDIR /app/frontend
+# Copy frontend source code
+COPY frontend/ .
 
 # NextJS Frontend Environment Variables
 ENV NEXT_PUBLIC_API_URL=http://localhost:8000
 ENV NEXT_PUBLIC_APP_URL=http://localhost:3000
 ENV NEXT_TELEMETRY_DISABLED=1
-
-# NextAuth Configuration
 ENV NEXTAUTH_URL=http://localhost:3000
 
 # Create dummy .env.local file for Next.js
 RUN touch /app/frontend/.env.local
-RUN pnpm run build
+# Build frontend app
+RUN --mount=type=cache,id=next-cache,target=/app/frontend/.next/cache \
+    pnpm run build
 
-# Build backend
-FROM python:3.10-slim AS backend-builder
-WORKDIR /app
+# Python base stage
+FROM python:3.10-slim AS python-base
+# Install Poetry
+RUN pip install --no-cache-dir poetry
+# Configure Poetry
+RUN poetry config virtualenvs.create false
 
-# Copy frontend build
-COPY --from=frontend-builder /app/frontend/.next /app/frontend/.next
-COPY --from=frontend-builder /app/frontend/public /app/frontend/public
-COPY --from=frontend-builder /app/frontend/node_modules /app/frontend/node_modules
-COPY --from=frontend-builder /app/frontend/package*.json /app/frontend/
+# Backend dependencies stage
+FROM python-base AS backend-deps
+WORKDIR /app/backend
+# Copy backend dependency specification
+COPY backend/pyproject.toml backend/poetry.lock* ./
+# Install dependencies
+RUN --mount=type=cache,id=pip,target=/root/.cache/pip \
+    poetry install --no-interaction --no-ansi --no-root
 
+# Node.js installation for backend stage
+FROM backend-deps AS backend-with-node
 # Install system dependencies and Node.js
 RUN apt-get update && \
-    apt-get install -y \
+    apt-get install -y --no-install-recommends \
     curl \
     build-essential \
     gnupg \
@@ -46,24 +58,13 @@ RUN apt-get update && \
     && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list \
     && apt-get update \
     && apt-get install -y nodejs \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && npm install -g pnpm openapi-to-postmanv2
 
-# Install openapi-to-postmanv2 globally
-RUN npm install -g openapi-to-postmanv2
-
-# Install Poetry
-RUN curl -sSL https://install.python-poetry.org | python3 -
-ENV PATH="/root/.local/bin:$PATH"
-
-# Set up backend
-WORKDIR /app/backend
-
-# Copy backend files
-COPY backend/ .
-
-# Configure Poetry to use virtual environments and install dependencies
-RUN poetry config virtualenvs.create true && \
-    poetry install --no-interaction --no-ansi
+# Final application stage
+FROM backend-with-node AS app
+WORKDIR /app
 
 # Set environment variables
 # Backend API Configuration
@@ -91,15 +92,22 @@ ENV LOG_FILE=app.log
 ENV LOG_ROTATION_INTERVAL=midnight
 ENV LOG_BACKUP_COUNT=7
 
-RUN npm install -g pnpm
+# Add environment variable for migrations
+ENV RUN_MIGRATIONS=true
+
+# Copy backend application
+COPY backend/ /app/backend/
+
+# Copy frontend build artifacts from build stage
+COPY --from=frontend-builder /app/frontend/.next /app/frontend/.next
+COPY --from=frontend-builder /app/frontend/public /app/frontend/public
+COPY --from=frontend-builder /app/frontend/node_modules /app/frontend/node_modules
+COPY --from=frontend-builder /app/frontend/package*.json /app/frontend/
 
 # Create logs directory with appropriate permissions
 RUN mkdir -p /app/data/logs && chmod 755 /app/data/logs
 
-# Add environment variable for migrations
-ENV RUN_MIGRATIONS=true
-
-# Copy start script
+# Copy startup scripts
 COPY ./start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
