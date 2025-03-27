@@ -26,7 +26,9 @@ class Message(SQLModel, table=True):
     chat: "Chat" = Relationship(back_populates="messages")
 
 
-class MessageCreate(CamelModel):
+class MessageCreate(SQLModel):
+    id: str = Field(default_factory=nanoid.generate)
+    chat_id: str
     role: str
     parts: list | str | dict | None
     attachments: dict | None = None

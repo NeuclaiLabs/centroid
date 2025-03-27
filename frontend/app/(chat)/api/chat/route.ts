@@ -1,5 +1,5 @@
+import type { UIMessage } from 'ai';
 import {
-  UIMessage,
   appendResponseMessages,
   createDataStreamResponse,
   smoothStream,
