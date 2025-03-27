@@ -72,6 +72,8 @@ export const {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        // @ts-ignore
+        token.token = user.token;
       }
 
       return token;
@@ -85,6 +87,8 @@ export const {
     }) {
       if (session.user) {
         session.user.id = token.id as string;
+        // @ts-ignore
+        session.user.token = token.token;
       }
 
       return session;

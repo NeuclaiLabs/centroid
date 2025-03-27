@@ -21,3 +21,4 @@ logs/*
 .ruff_cache/*
 .mypy_cache/*
 .coverage/*
+**/.history/*
