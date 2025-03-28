@@ -35,7 +35,7 @@ export async function generateTitleFromUserMessage({
 }
 
 export async function deleteTrailingMessages({ id }: { id: string }) {
-  const [message] = await getMessageById({ id });
+  const message = await getMessageById({ id });
 
   await deleteMessagesByChatIdAfterTimestamp({
     chatId: message.chatId,

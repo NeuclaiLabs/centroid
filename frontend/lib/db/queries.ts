@@ -285,9 +285,9 @@ export async function getSuggestionsByDocumentId({
   }
 }
 
-export async function getMessageById({ id }: { id: string }) {
+export async function getMessageById({ id }: { id: string }): Promise<DBMessage> {
   try {
-    return await fetchApi(`/messages/${id}`);
+    return await fetchApi<DBMessage>(`/messages/${id}`);
   } catch (error) {
     console.error('Failed to get message');
     throw error;
