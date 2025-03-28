@@ -130,20 +130,9 @@ export async function saveMessages({
   messages: Array<DBMessage>;
 }): Promise<DBMessage[]> {
   try {
-    const transformedMessages = messages.map(
-      ({ createdAt, chatId, ...rest }) => ({
-        ...rest,
-        chat_id: chatId,
-        attachments:
-          Array.isArray(rest.attachments) && rest.attachments.length > 0
-            ? rest.attachments
-            : null,
-      }),
-    );
-
     return await fetchApi<DBMessage[]>('/messages', {
       method: 'POST',
-      body: JSON.stringify(transformedMessages),
+      body: JSON.stringify(messages),
     });
   } catch (error) {
     console.error('Failed to save messages');
@@ -153,7 +142,10 @@ export async function saveMessages({
 
 export async function getMessagesByChatId({ id }: { id: string }) {
   try {
-    return await fetchApi<DBMessage[]>(`/chats/${id}/messages`);
+    const response = await fetchApi<{ data: DBMessage[]; count: number }>(
+      `/messages?chat_id=${id}`,
+    );
+    return response.data;
   } catch (error) {
     console.error('Failed to get chat messages');
     throw error;
@@ -170,9 +162,9 @@ export async function voteMessage({
   type: 'up' | 'down';
 }): Promise<Vote> {
   try {
-    return await fetchApi<Vote>(`/chats/${chatId}/messages/${messageId}/vote`, {
+    return await fetchApi<Vote>('/votes', {
       method: 'POST',
-      body: JSON.stringify({ type }),
+      body: JSON.stringify({ chatId, messageId, type }),
     });
   } catch (error) {
     console.error('Failed to vote on message');
@@ -186,7 +178,10 @@ export async function getVotesByChatId({
   id: string;
 }): Promise<Vote[]> {
   try {
-    return await fetchApi<Vote[]>(`/chats/${id}/votes`);
+    const response = await fetchApi<{ data: Vote[]; count: number }>(
+      `/votes?chat_id=${id}`,
+    );
+    return response.data;
   } catch (error) {
     console.error('Failed to get chat votes');
     throw error;

@@ -17,7 +17,7 @@ class Message(SQLModel, table=True):
     chat_id: str = Field(foreign_key="chats.id")
     role: str
     parts: list | str | dict | None = Field(sa_column=Column(JSON))
-    attachments: dict | None = Field(default=None, sa_column=Column(JSON))
+    attachments: list | dict | None = Field(default=None, sa_column=Column(JSON))
     created_at: datetime | None = Field(
         default=None,
         sa_type=DateTime(timezone=True),
@@ -26,12 +26,12 @@ class Message(SQLModel, table=True):
     chat: "Chat" = Relationship(back_populates="messages")
 
 
-class MessageCreate(SQLModel):
+class MessageCreate(CamelModel):
     id: str = Field(default_factory=nanoid.generate)
     chat_id: str
     role: str
     parts: list | str | dict | None
-    attachments: dict | None = None
+    attachments: list | dict | None = None
 
 
 class MessageOut(CamelModel):
@@ -39,7 +39,7 @@ class MessageOut(CamelModel):
     chat_id: str
     role: str
     parts: list | str | dict | None
-    attachments: dict | None = None
+    attachments: list | dict | None = None
     created_at: datetime | None = None
 
 

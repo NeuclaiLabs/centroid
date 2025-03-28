@@ -50,3 +50,14 @@ Key Conventions:
 
 
 Follow Next.js docs for Data Fetching, Rendering, and Routing
+
+
+For Python, use the following:
+
+- Use Pydantic for data validation and parsing
+- Use SQLModel for database models
+- Use FastAPI for the API
+- Use SQLAlchemy for the database
+- Use Pytest for testing
+- Use uv for package management
+- Use Black for code formatting

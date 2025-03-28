@@ -18,7 +18,7 @@ class VoteCreate(VoteBase):
     pass
 
 
-class VoteUpdate(CamelModel):
+class VoteUpdate(VoteBase):
     is_upvoted: bool | None = None
 
 

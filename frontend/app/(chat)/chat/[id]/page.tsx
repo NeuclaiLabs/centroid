@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 
 import { auth } from '@/app/(auth)/auth';
 import { Chat } from '@/components/chat';
@@ -12,13 +12,16 @@ import { Attachment, UIMessage } from 'ai';
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const { id } = params;
+  const session = await auth();
+  if (!session?.user) {
+    // Redirect to login if user is not authenticated
+    redirect('/login');
+  }
   const chat = await getChatById({ id });
 
   if (!chat) {
     notFound();
   }
-
-  const session = await auth();
 
   if (chat.visibility === 'private') {
     if (!session || !session.user) {

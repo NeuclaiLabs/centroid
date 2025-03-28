@@ -18,5 +18,5 @@
       }
     }
   },
-  "ignorePatterns": ["**/components/ui/**", "app/**"]
+  "ignorePatterns": ["components/**", "app/**"]
 }

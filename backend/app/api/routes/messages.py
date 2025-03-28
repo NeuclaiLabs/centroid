@@ -40,7 +40,7 @@ def read_messages(
     statement = (
         select(Message)
         .where(*conditions)
-        .order_by(Message.created_at.desc())
+        .order_by(Message.created_at.asc())
         .offset(skip)
         .limit(limit)
     )
@@ -71,14 +71,17 @@ def create_message(*, session: SessionDep, messages: list[MessageCreate]) -> Any
     Expects a list of message objects.
     """
     try:
-        # Direct conversion without validation
-        db_messages = [Message(**msg) for msg in messages]
+        # Convert Pydantic models to dictionaries before creating Message instances
+        db_messages = [Message(**msg.model_dump(by_alias=False)) for msg in messages]
         session.add_all(db_messages)
         session.commit()
         return UtilsMessage(message="Messages created successfully")
     except Exception as e:
-        print("Error details:", str(e))  # Debug error
-        return UtilsMessage(message="Messages processed")
+        print("Error", e)
+        # Log the error properly instead of print
+        raise HTTPException(
+            status_code=400, detail=f"Failed to create messages: {str(e)}"
+        )
 
 
 @router.delete("/{id}")

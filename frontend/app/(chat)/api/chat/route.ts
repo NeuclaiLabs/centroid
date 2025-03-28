@@ -2,6 +2,7 @@ import type { UIMessage } from 'ai';
 import {
   appendResponseMessages,
   createDataStreamResponse,
+  experimental_createMCPClient,
   smoothStream,
   streamText,
 } from 'ai';
@@ -78,7 +79,14 @@ export async function POST(request: Request) {
         },
       ],
     });
+    const client = await experimental_createMCPClient({
+      transport: {
+        type: 'sse',
+        url: 'http://localhost:8000/mcp',
+      },
+    });
 
+    const mcpTools = await client.tools();
     return createDataStreamResponse({
       execute: (dataStream) => {
         const result = streamText({
@@ -105,6 +113,7 @@ export async function POST(request: Request) {
               session,
               dataStream,
             }),
+            ...mcpTools,
           },
           onFinish: async ({ response }) => {
             if (session.user?.id) {
