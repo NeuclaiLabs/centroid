@@ -2,6 +2,7 @@ import json
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from pydantic.fields import PydanticUndefined
 
 from app.mcp.openapi.executor import (
     EndpointConfig,
@@ -43,12 +44,10 @@ def github_function():
     return create_dynamic_function_from_schema(github_schema)
 
 
-def test_translate_fn_to_endpoint_basic(github_function):
-    """Test basic translation of function to endpoint configuration with required fields."""
-    # Set required fields to pass validation
-    github_function.owner = "microsoft"
-    github_function.repo = "typescript"
-
+@pytest.mark.asyncio
+async def test_translate_fn_parameters(github_function):
+    """Test function translation with different parameter scenarios."""
+    # Test with required parameters
     config = translate_fn_to_endpoint(
         base_url="https://api.github.com",
         method="GET",
@@ -57,46 +56,26 @@ def test_translate_fn_to_endpoint_basic(github_function):
         fn=github_function,
     )
 
+    # Verify basic configuration
     assert isinstance(config, EndpointConfig)
     assert config.url == "https://api.github.com/repos/{owner}/{repo}/issues"
     assert config.method == "GET"
     assert config.timeout == 30.0
-    # Should include required params and default value
-    assert config.params == {
-        "owner": "microsoft",
-        "repo": "typescript",
-        "state": "open",  # Default value should be included
-    }
-
-
-def test_translate_fn_with_required_parameters(github_function):
-    """Test translation with only required parameters."""
-    github_function.owner = "microsoft"
-    github_function.repo = "typescript"
-
-    config = translate_fn_to_endpoint(
-        base_url="https://api.github.com",
-        method="GET",
-        path="/repos/{owner}/{repo}/issues",
-        connection="test_connection",
-        fn=github_function,
-    )
-
-    # Should include required params and default value
-    assert config.params == {
-        "owner": "microsoft",
-        "repo": "typescript",
-        "state": "open",  # Default value should be included
-    }
     assert config.headers is None
     assert config.body is None
 
+    # Verify default parameters
+    params = config.params
+    assert params["owner"] is PydanticUndefined
+    assert params["repo"] is PydanticUndefined
+    assert params["state"] == "open"
 
-def test_translate_fn_with_optional_parameter(github_function):
-    """Test translation with optional parameter override."""
-    github_function.owner = "microsoft"
-    github_function.repo = "typescript"
-    github_function.state = "closed"  # Override default value
+    # Set runtime arguments and verify they're used in translation
+    github_function.__bound_args__ = {
+        "owner": "microsoft",
+        "repo": "typescript",
+        "state": "closed",
+    }
 
     config = translate_fn_to_endpoint(
         base_url="https://api.github.com",
@@ -106,119 +85,83 @@ def test_translate_fn_with_optional_parameter(github_function):
         fn=github_function,
     )
 
+    # Verify parameters with runtime values
     assert config.params == {
         "owner": "microsoft",
         "repo": "typescript",
-        "state": "closed",  # Overridden value should be used instead of default
-    }
-
-
-def test_translate_fn_with_default_parameter(github_function):
-    """Test translation with default parameter value."""
-    github_function.owner = "microsoft"
-    github_function.repo = "typescript"
-    # Not setting state should use the default value
-
-    config = translate_fn_to_endpoint(
-        base_url="https://api.github.com",
-        method="GET",
-        path="/repos/{owner}/{repo}/issues",
-        connection="test_connection",
-        fn=github_function,
-    )
-
-    # Should include required params and default value
-    assert config.params == {
-        "owner": "microsoft",
-        "repo": "typescript",
-        "state": "open",  # Default value should be included
+        "state": "closed",  # Overridden value
     }
 
 
 @pytest.mark.asyncio
-async def test_execute_endpoint_success():
-    """Test successful endpoint execution."""
-    response_data = {"id": 1, "title": "Test Issue"}
-    mock_response = AsyncMock()
-    mock_response.status_code = 200
-    mock_response.text = json.dumps(response_data)
-    # Mock json as a regular method, not a coroutine
-    mock_response.json = lambda: response_data
-
-    config = EndpointConfig(
-        url="https://api.github.com/repos/test/test/issues",
-        method="GET",
-        params={"state": "open"},
+async def test_execute_endpoint_responses():
+    """Test endpoint execution with success and error responses."""
+    # Test successful response
+    success_data = {"id": 1, "title": "Test Issue"}
+    success_response = AsyncMock(
+        status_code=200,
+        text=json.dumps(success_data),
+        json=lambda: success_data,
     )
 
-    # Create a mock client instance
-    mock_client_instance = AsyncMock()
-    mock_client_instance.request.return_value = mock_response
-
-    # Mock the AsyncClient class
-    with patch("httpx.AsyncClient") as mock_client:
-        # Configure the mock to return our mock instance
-        mock_client.return_value = mock_client_instance
-        mock_client.return_value.__aenter__.return_value = mock_client_instance
-
-        response = await execute_endpoint(config)
-
-        # Verify the request was made with correct parameters
-        mock_client_instance.request.assert_called_once_with(
-            method="GET",
-            url="https://api.github.com/repos/test/test/issues",
-            headers=None,
-            params={"state": "open"},
-            json=None,
-        )
-
-    assert response.status_code == 200
-    assert response.data == response_data
-    assert response.error is None
-
-
-@pytest.mark.asyncio
-async def test_execute_endpoint_error():
-    """Test endpoint execution with error response."""
+    # Test error response
     error_data = {"message": "Not Found"}
-    mock_response = AsyncMock()
-    mock_response.status_code = 404
-    mock_response.text = json.dumps(error_data)
-    # Mock json as a regular method, not a coroutine
-    mock_response.json = lambda: error_data
-
-    config = EndpointConfig(
-        url="https://api.github.com/repos/test/test/issues", method="GET"
+    error_response = AsyncMock(
+        status_code=404,
+        text=json.dumps(error_data),
+        json=lambda: error_data,
     )
 
-    # Create a mock client instance
-    mock_client_instance = AsyncMock()
-    mock_client_instance.request.return_value = mock_response
+    configs = [
+        (
+            EndpointConfig(
+                url="https://api.github.com/repos/test/test/issues",
+                method="GET",
+                params={"state": "open"},
+            ),
+            success_response,
+            {"state": "open"},
+        ),
+        (
+            EndpointConfig(
+                url="https://api.github.com/repos/test/test/issues",
+                method="GET",
+            ),
+            error_response,
+            None,
+        ),
+    ]
 
-    # Mock the AsyncClient class
-    with patch("httpx.AsyncClient") as mock_client:
-        # Configure the mock to return our mock instance
-        mock_client.return_value = mock_client_instance
-        mock_client.return_value.__aenter__.return_value = mock_client_instance
+    for config, mock_response, expected_params in configs:
+        mock_client_instance = AsyncMock()
+        mock_client_instance.request.return_value = mock_response
 
-        response = await execute_endpoint(config)
+        with patch("httpx.AsyncClient") as mock_client:
+            mock_client.return_value = mock_client_instance
+            mock_client.return_value.__aenter__.return_value = mock_client_instance
 
-        # Verify the request was made with correct parameters
-        mock_client_instance.request.assert_called_once_with(
-            method="GET",
-            url="https://api.github.com/repos/test/test/issues",
-            headers=None,
-            params=None,
-            json=None,
-        )
+            response = await execute_endpoint(config)
 
-    assert response.status_code == 404
-    assert response.data is None
-    assert response.error == json.dumps(error_data)
+            mock_client_instance.request.assert_called_once_with(
+                method="GET",
+                url="https://api.github.com/repos/test/test/issues",
+                headers=None,
+                params=expected_params,
+                json=None,
+            )
+
+            if mock_response.status_code == 200:
+                assert response.status_code == 200
+                assert response.data == success_data
+                assert response.error is None
+            else:
+                assert response.status_code == 404
+                assert response.data is None
+                assert response.error == json.dumps(error_data)
 
 
-def test_translate_fn_invalid_function():
-    """Test translation with invalid function (no model attribute)."""
+def test_translate_fn_validation():
+    """Test function translation validation."""
 
     def invalid_fn():
         pass

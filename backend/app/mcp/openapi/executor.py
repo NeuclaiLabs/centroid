@@ -121,6 +121,9 @@ def translate_fn_to_endpoint(
     model = fn.model
     fields = model.model_fields
 
+    # Get runtime arguments if they exist
+    runtime_args = getattr(fn, "__bound_args__", {})
+
     # Initialize parameter containers
     headers: dict[str, str] = {}
     params: dict[str, Any] = {}
@@ -135,8 +138,8 @@ def translate_fn_to_endpoint(
             else "body"
         )
 
-        # Get the value if it exists as an attribute
-        value = getattr(fn, field_name, None)
+        # First try to get value from runtime arguments
+        value = runtime_args.get(field_name)
 
         # If we have a value, use it
         if value is not None:
