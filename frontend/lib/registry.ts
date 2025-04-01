@@ -37,10 +37,10 @@ export const integrationRegistry: Record<string, IntegrationMetadata> = {
     name: 'Gmail',
     description: 'Connect to Gmail to send and manage emails.',
     icon: siGmail,
-    category: 'communication',
+    category: 'Communication',
     authMethods: ['oauth2', 'bearer'],
     apiEndpointCount: 17,
-    docsUrl: 'https://developers.google.com/gmail/api',
+    docsUrl: 'https://gmail.googleapis.com/$discovery/rest?version=v1',
     features: [
       'Send emails',
       'Read inbox',
@@ -59,7 +59,8 @@ export const integrationRegistry: Record<string, IntegrationMetadata> = {
     category: 'Development',
     authMethods: ['oauth2', 'bearer'],
     apiEndpointCount: 324,
-    docsUrl: 'https://docs.github.com/en/rest',
+    docsUrl:
+      'https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json',
     features: [
       'Repository management',
       'Issue tracking',
@@ -77,7 +78,8 @@ export const integrationRegistry: Record<string, IntegrationMetadata> = {
     category: 'Communication',
     authMethods: ['oauth2', 'bearer'],
     apiEndpointCount: 125,
-    docsUrl: 'https://api.slack.com/',
+    docsUrl:
+      'https://raw.githubusercontent.com/slackapi/slack-api-specs/master/web-api/slack_web_openapi_v2.json',
     features: [
       'Send messages',
       'Create channels',

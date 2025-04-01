@@ -98,7 +98,9 @@ export function ConnectionCard({
 				<div className="flex items-center justify-between w-full text-sm">
 					<div className="flex items-center gap-2 text-muted-foreground">
 						<LayoutGrid className="size-3 text-orange-500" />
-						{integrationData.apiEndpointCount} actions
+						<span className="text-xs">
+							{integrationData.apiEndpointCount}k actions
+						</span>
 					</div>
 					<Link
 						href={integrationData.docsUrl}

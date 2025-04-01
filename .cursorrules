@@ -49,7 +49,7 @@ Key Conventions:
 - Optimize Web Vitals (LCP, CLS, FID)
 
 
-Follow Next.js docs for Data Fetching, Rendering, and Routing
+Follow Next.js docs for Data Fetching, Rendering, and Routing. Use pnpm for package management.
 
 
 For Python, use the following:
@@ -61,3 +61,4 @@ For Python, use the following:
 - Use Pytest for testing
 - Use uv for package management
 - Use Black for code formatting
+- Use Pydantic v2 for data validation and parsing
