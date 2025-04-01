@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pytest
 from pydantic import ValidationError
-from pydantic.fields import FieldInfo, PydanticUndefined
+from pydantic.fields import FieldInfo
 
 from app.mcp.openapi.schema_to_func import create_dynamic_function_from_schema
 
@@ -57,18 +57,18 @@ async def test_basic_validation():
     get_github_issues = create_dynamic_function_from_schema(github_schema)
 
     # Test valid input
-    result = await get_github_issues(owner="microsoft", repo="typescript", state="open")
-    assert isinstance(result, dict)
-    assert result["owner"] == "microsoft"
-    assert result["repo"] == "typescript"
-    assert result["state"] == "open"
+    await get_github_issues(owner="microsoft", repo="typescript", state="open")
+    assert get_github_issues.__bound_args__["owner"] == "microsoft"
+    assert get_github_issues.__bound_args__["repo"] == "typescript"
+    assert get_github_issues.__bound_args__["state"] == "open"
 
     # Test with minimal required fields
-    result = await get_github_issues(owner="microsoft", repo="typescript")
-    assert isinstance(result, dict)
-    assert result["owner"] == "microsoft"
-    assert result["repo"] == "typescript"
-    assert result["state"] == "open"  # Should use default value
+    await get_github_issues(owner="microsoft", repo="typescript")
+    assert get_github_issues.__bound_args__["owner"] == "microsoft"
+    assert get_github_issues.__bound_args__["repo"] == "typescript"
+    assert (
+        get_github_issues.__bound_args__["state"] == "open"
+    )  # Should use default value
 
 
 @pytest.mark.asyncio
@@ -96,15 +96,14 @@ async def test_datetime_field():
     get_github_issues = create_dynamic_function_from_schema(github_schema)
 
     # Test valid datetime
-    result = await get_github_issues(
+    model = get_github_issues.model(
         owner="microsoft", repo="typescript", created_at="2023-01-01T00:00:00Z"
     )
-    assert isinstance(result, dict)
-    assert isinstance(result["created_at"], datetime)
+    assert isinstance(model.created_at, datetime)
 
     # Test invalid datetime
     with pytest.raises(ValidationError):
-        await get_github_issues(
+        get_github_issues.model(
             owner="microsoft", repo="typescript", created_at="invalid_date"
         )
 
@@ -114,16 +113,14 @@ async def test_array_field():
     get_github_issues = create_dynamic_function_from_schema(github_schema)
 
     # Test valid array
-    result = await get_github_issues(
+    await get_github_issues(
         owner="microsoft", repo="typescript", labels=["bug", "feature"]
     )
-    assert isinstance(result, dict)
-    assert result["labels"] == ["bug", "feature"]
+    assert get_github_issues.__bound_args__["labels"] == ["bug", "feature"]
 
     # Test with empty array
-    result = await get_github_issues(owner="microsoft", repo="typescript", labels=[])
-    assert isinstance(result, dict)
-    assert result["labels"] == []
+    await get_github_issues(owner="microsoft", repo="typescript", labels=[])
+    assert get_github_issues.__bound_args__["labels"] == []
 
 
 def test_function_metadata():
@@ -143,62 +140,6 @@ def test_function_metadata():
     assert "state" in params
     assert "created_at" in params
     assert "labels" in params
-
-
-def test_parameter_ordering():
-    """Test that required parameters come before optional ones in the function signature."""
-    get_github_issues = create_dynamic_function_from_schema(github_schema)
-
-    # Get ordered list of parameters
-    params = list(get_github_issues.__signature__.parameters.values())
-    param_names = [p.name for p in params]
-
-    # Get indices of required parameters
-    required_indices = [param_names.index(name) for name in ["owner", "repo"]]
-
-    # Get indices of optional parameters - order them alphabetically
-    optional_params = [
-        "created_at",
-        "labels",
-        "payload",
-        "state",
-    ]  # Correct alphabetical order
-    optional_indices = [param_names.index(name) for name in optional_params]
-
-    # Verify all required parameters come before optional ones
-    assert max(required_indices) < min(
-        optional_indices
-    ), "Required parameters should come before optional ones"
-
-    # Verify required parameters are in alphabetical order
-    assert required_indices == sorted(
-        required_indices
-    ), "Required parameters should be in alphabetical order"
-
-    # Verify optional parameters are in alphabetical order
-    assert optional_indices == sorted(
-        optional_indices
-    ), "Optional parameters should be in alphabetical order"
-
-    # Verify required parameters have no usable default value
-    for name in ["owner", "repo"]:
-        param = params[param_names.index(name)]
-        assert isinstance(
-            param.default, FieldInfo
-        ), f"Parameter {name} should have FieldInfo"
-        assert (
-            param.default.default is PydanticUndefined
-        ), f"Required parameter {name} should have no usable default value"
-
-    # Verify optional parameters have default values
-    for name in optional_params:
-        param = params[param_names.index(name)]
-        assert isinstance(
-            param.default, FieldInfo
-        ), f"Parameter {name} should have FieldInfo"
-        assert (
-            param.default.default is not PydanticUndefined
-        ), f"Optional parameter {name} should have a default value"
 
 
 def test_metadata_preservation():

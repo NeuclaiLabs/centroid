@@ -167,3 +167,33 @@ def translate_fn_to_endpoint(
         body=body if body else None,
         timeout=30.0,
     )
+
+
+async def execute_dynamic_function(
+    model_instance: BaseModel,
+    connection: Any | None,
+    dynamic_function: Callable,
+) -> dict[str, Any]:
+    """Execute the dynamic function with proper error handling"""
+    # if connection is None:
+    #     return model_instance.model_dump()
+
+    try:
+        endpoint_config = translate_fn_to_endpoint(
+            base_url="https://api.github.com",
+            method="GET",
+            path=f"/repos/{model_instance.owner}/{model_instance.repo}/issues",
+            connection=connection.id if connection else "",
+            fn=dynamic_function,
+        )
+
+        response = await execute_endpoint(endpoint_config)
+        return response.data if response.data is not None else response.error
+
+    except Exception as e:
+        import traceback
+
+        print(f"Error during API call: {str(e)}")
+        print(f"Error type: {type(e)}")
+        print(f"Traceback: {traceback.format_exc()}")
+        return model_instance.model_dump()
