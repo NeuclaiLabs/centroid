@@ -1,32 +1,34 @@
-import type { ComponentProps } from 'react';
+"use client";
 
-import { type SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
+import type { ComponentProps } from "react";
+
+import { type SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 
-import { SidebarLeftIcon } from './icons';
-import { Button } from './ui/button';
+import { SidebarLeftIcon } from "./icons";
+import { Button } from "./ui/button";
 
 export function SidebarToggle({
-  className,
+	className,
 }: ComponentProps<typeof SidebarTrigger>) {
-  const { toggleSidebar } = useSidebar();
+	const { toggleSidebar } = useSidebar();
 
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          onClick={toggleSidebar}
-          variant="outline"
-          className="md:px-2 md:h-fit"
-        >
-          <SidebarLeftIcon size={16} />
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent align="start">Toggle Sidebar</TooltipContent>
-    </Tooltip>
-  );
+	return (
+		<Tooltip>
+			<TooltipTrigger asChild>
+				<Button
+					onClick={toggleSidebar}
+					variant="outline"
+					className="md:px-2 md:h-fit"
+				>
+					<SidebarLeftIcon size={16} />
+				</Button>
+			</TooltipTrigger>
+			<TooltipContent align="start">Toggle Sidebar</TooltipContent>
+		</Tooltip>
+	);
 }

@@ -197,3 +197,103 @@ export function getAuthMethodLabel(method: string): string {
   };
   return labels[method] || method;
 }
+
+interface Tool {
+  name: string;
+  description: string;
+}
+
+export const tools: Record<string, Tool[]> = {
+  gmail: [
+    {
+      name: 'send_email',
+      description:
+        'Send an email to specified recipients with subject and body content',
+    },
+    {
+      name: 'search_emails',
+      description:
+        'Search through emails using specified criteria like subject, sender, or date range',
+    },
+    {
+      name: 'manage_labels',
+      description: 'Create, modify, or apply labels to organize emails',
+    },
+  ],
+  github: [
+    {
+      name: 'create_issue',
+      description:
+        'Create a new issue in a specified repository with title and description',
+    },
+    {
+      name: 'get_pull_requests',
+      description:
+        'Retrieve pull requests for a repository with optional filtering',
+    },
+    {
+      name: 'list_repositories',
+      description:
+        'List repositories for a user or organization with specified criteria',
+    },
+  ],
+  slack: [
+    {
+      name: 'post_message',
+      description: 'Send a message to a specified channel or user',
+    },
+    {
+      name: 'create_channel',
+      description: 'Create a new channel with specified name and settings',
+    },
+    {
+      name: 'invite_users',
+      description: 'Invite users to a specified channel or workspace',
+    },
+  ],
+  openai: [
+    {
+      name: 'generate_completion',
+      description:
+        'Generate text completion using specified model and parameters',
+    },
+    {
+      name: 'create_image',
+      description: 'Generate an image using DALL-E with specified parameters',
+    },
+    {
+      name: 'create_embedding',
+      description: 'Generate embeddings for provided text content',
+    },
+  ],
+  dropbox: [
+    {
+      name: 'upload_file',
+      description: 'Upload a file to a specified Dropbox path',
+    },
+    {
+      name: 'share_file',
+      description:
+        'Create a sharing link for a file with specified permissions',
+    },
+    {
+      name: 'list_folder',
+      description: 'List contents of a specified folder path',
+    },
+  ],
+  google_calendar: [
+    {
+      name: 'create_event',
+      description:
+        'Create a calendar event with specified details and attendees',
+    },
+    {
+      name: 'list_events',
+      description: 'Retrieve calendar events within a specified time range',
+    },
+    {
+      name: 'update_event',
+      description: "Modify an existing calendar event's details",
+    },
+  ],
+};

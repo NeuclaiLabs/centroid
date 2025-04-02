@@ -16,6 +16,7 @@ import {
 import type { Connection } from "@/app/connection/types";
 import { integrationRegistry, getAuthMethodLabel } from "@/lib/registry";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface ConnectionCardProps {
 	connection: Connection;
@@ -28,14 +29,22 @@ export function ConnectionCard({
 	onEdit,
 	onDelete,
 }: ConnectionCardProps) {
+	const router = useRouter();
 	const integrationData = integrationRegistry[connection.type];
 
 	if (!integrationData) {
 		return null; // Or render a fallback card for unknown integration types
 	}
 
+	const handleCardClick = () => {
+		router.push(`/connection/${connection.id}`);
+	};
+
 	return (
-		<Card className="hover:bg-secondary/50 transition-colors">
+		<Card
+			className="hover:bg-secondary/50 transition-colors cursor-pointer"
+			onClick={handleCardClick}
+		>
 			<CardHeader className="p-6 flex flex-row items-start justify-between space-y-0">
 				<div className="flex flex-col gap-2">
 					<div className="flex items-center gap-2">
@@ -45,6 +54,7 @@ export function ConnectionCard({
 								viewBox="0 0 24 24"
 								className="size-5 text-primary"
 								fill="currentColor"
+								aria-label={`${integrationData.name} icon`}
 							>
 								<path d={integrationData.icon.path} />
 							</svg>
@@ -57,7 +67,7 @@ export function ConnectionCard({
 						</div>
 					</div>
 				</div>
-				<DropdownMenu>
+				{/* <DropdownMenu>
 					<DropdownMenuTrigger asChild>
 						<Button variant="ghost" className="size-8 p-0">
 							<MoreVertical className="size-4" />
@@ -75,7 +85,7 @@ export function ConnectionCard({
 							Delete
 						</DropdownMenuItem>
 					</DropdownMenuContent>
-				</DropdownMenu>
+				</DropdownMenu> */}
 			</CardHeader>
 			<CardContent className="px-6 py-2 space-y-4">
 				<p className="text-sm text-muted-foreground">

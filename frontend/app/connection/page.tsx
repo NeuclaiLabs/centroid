@@ -40,36 +40,23 @@ import {
 	CardFooter,
 } from "@/components/ui/card";
 import { Plus } from "lucide-react";
+import { integrationRegistry } from "@/lib/registry";
 
-const PLACEHOLDER_CONNECTIONS: Connection[] = [
-	{
-		id: "1",
-		name: "OpenAI API",
-		type: "openai",
-		description: "GPT-4 and DALL-E integration",
-		apiKey: "sk-***************************",
-		status: "active",
-		created_at: new Date().toISOString(),
-	},
-	{
-		id: "2",
-		name: "GitHub API",
-		type: "github",
-		description: "Repository management and CI/CD integration",
-		apiKey: "gh-***************************",
-		status: "active",
-		created_at: new Date().toISOString(),
-	},
-	{
-		id: "3",
-		name: "Slack Webhook",
-		type: "slack",
-		description: "Team notifications and alerts",
-		apiKey: "xoxb-************************",
-		status: "inactive",
-		created_at: new Date().toISOString(),
-	},
-];
+// Map integration registry to connections format for display
+const registryConnections: Connection[] = Object.entries(
+	integrationRegistry,
+).map(([key, integration]) => ({
+	id: integration.id,
+	name: integration.name,
+	type: key as keyof typeof integrationRegistry,
+	description: integration.description,
+	apiKey: "***************************",
+	status: "active",
+	created_at: new Date().toISOString(),
+	updated_at: new Date().toISOString(),
+	kind: integration.category.toLowerCase(),
+	base_url: integration.docsUrl,
+}));
 
 export default function ConnectionsPage() {
 	const [isFormOpen, setIsFormOpen] = useState(false);
@@ -131,23 +118,14 @@ export default function ConnectionsPage() {
 	}, [connectionToDelete, mutate]);
 
 	return (
-		<div className="flex flex-col min-w-0 h-dvh bg-background">
-			<header className="flex sticky top-0 bg-background py-1.5 items-center px-2 md:px-2 gap-2">
-				<SidebarToggle />
-				<h1 className="text-xl font-semibold flex-1 text-center">
-					Connections
-				</h1>
-				<div className="w-10" /> {/* Spacer to balance the layout */}
-			</header>
-
+		<>
 			<div className="flex-1">
-				<div className="max-w-6xl mx-auto p-6 md:px-20">
-					{/* <p className="text-muted-foreground mb-8">
+				{/* <p className="text-muted-foreground mb-8">
 						Manage your API connections and integrations
 					</p> */}
 
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-						<Card
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+					{/* <Card
 							key="create"
 							onClick={() => setIsFormOpen(true)}
 							className="cursor-pointer hover:bg-secondary/50 transition-colors"
@@ -170,17 +148,16 @@ export default function ConnectionsPage() {
 									Add a new API connection
 								</h3>
 							</CardFooter>
-						</Card>
+						</Card> */}
 
-						{(data?.data || PLACEHOLDER_CONNECTIONS).map((connection) => (
-							<ConnectionCard
-								key={connection.id}
-								connection={connection}
-								onEdit={setSelectedConnection}
-								onDelete={setConnectionToDelete}
-							/>
-						))}
-					</div>
+					{(data?.data || registryConnections).map((connection) => (
+						<ConnectionCard
+							key={connection.id}
+							connection={connection}
+							onEdit={setSelectedConnection}
+							onDelete={setConnectionToDelete}
+						/>
+					))}
 				</div>
 			</div>
 
@@ -229,6 +206,6 @@ export default function ConnectionsPage() {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
-		</div>
+		</>
 	);
 }

@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { auth } from "../(auth)/auth";
-import Script from "next/script";
+import { ConnectionHeader } from "@/components/connection-header";
 
 export const experimental_ppr = true;
 
@@ -16,11 +16,14 @@ export default async function Layout({
 	const isCollapsed = cookieStore.get("sidebar:state")?.value !== "true";
 
 	return (
-		<>
-			<SidebarProvider defaultOpen={!isCollapsed}>
-				<AppSidebar user={session?.user} />
-				<SidebarInset>{children}</SidebarInset>
-			</SidebarProvider>
-		</>
+		<SidebarProvider defaultOpen={!isCollapsed}>
+			<AppSidebar user={session?.user} />
+			<SidebarInset>
+				<ConnectionHeader />
+				<div className="max-w-6xl mx-auto p-6 md:px-20">
+					{children}
+				</div>
+			</SidebarInset>
+		</SidebarProvider>
 	);
 }
