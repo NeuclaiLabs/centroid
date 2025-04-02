@@ -33,23 +33,38 @@ interface ActionRow {
 	name: string;
 	enum: string;
 	description: string;
-	type: "Action" | "Trigger";
+	tags: "Action" | "Trigger";
 }
 
 interface PageProps {
 	params: Promise<{ id: string }>;
 }
 
+function filterTools(tools: ActionRow[], searchQuery: string): ActionRow[] {
+	const query = searchQuery.toLowerCase().trim();
+	if (!query) return tools;
+
+	return tools.filter(
+		(tool) =>
+			tool.name.toLowerCase().includes(query) ||
+			tool.description.toLowerCase().includes(query) ||
+			tool.tags.toLowerCase().includes(query),
+	);
+}
+
 export default function ConnectionPage({ params }: PageProps) {
 	const resolvedParams = use(params);
+	const [searchQuery, setSearchQuery] = useState("");
 	const [isFormOpen, setIsFormOpen] = useState(false);
+	const [isSchemaOpen, setIsSchemaOpen] = useState(false);
+	const [selectedTool, setSelectedTool] = useState<ActionRow | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [integrationData, setIntegrationData] = useState(
 		integrationRegistry.github,
 	);
 	const [connection, setConnection] = useState({
 		id: "",
-		type: "github",
+		type: "",
 		name: "",
 	});
 
@@ -70,25 +85,18 @@ export default function ConnectionPage({ params }: PageProps) {
 	const integrationTools = tools[connection.type] || [];
 
 	// Map tools to ActionRow format
-	const actions: ActionRow[] = integrationTools.map((tool) => ({
+	const toolsList: ActionRow[] = integrationTools.map((tool) => ({
 		name: tool.name
 			.split("_")
 			.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
 			.join(" "),
 		enum: tool.name.toUpperCase(),
 		description: tool.description,
-		type: "Action",
+		tags: "Action",
 	}));
 
-	// Add triggers based on integration features
-	const triggers: ActionRow[] = integrationData.features.map((feature) => ({
-		name: `${feature} Trigger`,
-		enum: `ON_${feature.toUpperCase().replace(/\s+/g, "_")}`,
-		description: `Triggers when ${feature.toLowerCase()} occurs.`,
-		type: "Trigger",
-	}));
-
-	const allActions = [...triggers, ...actions];
+	const allTools = [...toolsList];
+	const filteredTools = filterTools(allTools, searchQuery);
 
 	const handleCreate = async (formData: ConnectionCreate) => {
 		try {
@@ -163,18 +171,17 @@ export default function ConnectionPage({ params }: PageProps) {
 										<h3 className="text-xl font-medium">
 											All Tools
 											<span className="ml-2 text-muted-foreground">
-												({allActions.length})
+												({allTools.length})
 											</span>
 										</h3>
 										<div className="flex items-center gap-4">
-											<Button variant="outline" className="h-10">
-												Add custom action
-											</Button>
 											<div className="relative w-[300px]">
 												<Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
 												<Input
 													placeholder="Search all tools"
 													className="pl-9 h-10 w-full"
+													value={searchQuery}
+													onChange={(e) => setSearchQuery(e.target.value)}
 												/>
 											</div>
 										</div>
@@ -193,7 +200,7 @@ export default function ConnectionPage({ params }: PageProps) {
 																Description
 															</TableHead>
 															<TableHead className="min-w-[100px] py-4">
-																Type
+																Tags
 															</TableHead>
 															<TableHead className="min-w-[100px] py-4">
 																Schema
@@ -201,31 +208,35 @@ export default function ConnectionPage({ params }: PageProps) {
 														</TableRow>
 													</TableHeader>
 													<TableBody>
-														{allActions.map((action) => (
-															<TableRow key={action.enum} className="py-2">
+														{filteredTools.map((tool) => (
+															<TableRow key={tool.enum} className="py-2">
 																<TableCell className="font-medium py-4">
-																	{action.name}
+																	{tool.name}
 																</TableCell>
 																<TableCell className="text-muted-foreground py-4">
-																	{action.description}
+																	{tool.description}
 																</TableCell>
 																<TableCell className="py-4">
 																	<Badge
 																		variant={
-																			action.type === "Trigger"
+																			tool.tags === "Trigger"
 																				? "default"
 																				: "secondary"
 																		}
 																		className="font-normal"
 																	>
-																		{action.type}
+																		{tool.tags}
 																	</Badge>
 																</TableCell>
 																<TableCell className="py-4">
 																	<Button
-																		variant="ghost"
+																		variant="outline"
 																		size="sm"
 																		className="h-7 px-2 text-xs font-medium"
+																		onClick={() => {
+																			setSelectedTool(tool);
+																			setIsSchemaOpen(true);
+																		}}
 																	>
 																		Open
 																	</Button>
@@ -249,7 +260,7 @@ export default function ConnectionPage({ params }: PageProps) {
 										<h3 className="text-xl font-medium">
 											Tool Settings
 											<span className="ml-2 text-muted-foreground">
-												({allActions.length})
+												({allTools.length})
 											</span>
 										</h3>
 										<div className="flex items-center gap-4">
@@ -281,20 +292,20 @@ export default function ConnectionPage({ params }: PageProps) {
 														</TableRow>
 													</TableHeader>
 													<TableBody>
-														{allActions.map((action) => (
-															<TableRow key={action.enum} className="py-2">
+														{allTools.map((tool) => (
+															<TableRow key={tool.enum} className="py-2">
 																<TableCell className="font-medium py-4">
-																	{action.name}
+																	{tool.name}
 																</TableCell>
 																<TableCell className="text-muted-foreground py-4">
-																	{action.description}
+																	{tool.description}
 																</TableCell>
 																<TableCell className="py-4">
 																	<Switch
 																		defaultChecked={true}
 																		onCheckedChange={(checked: boolean) => {
 																			toast.success(
-																				`${action.name} ${checked ? "enabled" : "disabled"}`,
+																				`${tool.name} ${checked ? "enabled" : "disabled"}`,
 																			);
 																		}}
 																	/>
@@ -312,6 +323,92 @@ export default function ConnectionPage({ params }: PageProps) {
 					</div>
 				</div>
 			</div>
+
+			<Dialog
+				open={isSchemaOpen}
+				onOpenChange={(open) => {
+					if (!open) {
+						setIsSchemaOpen(false);
+						setSelectedTool(null);
+					}
+				}}
+			>
+				<DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
+					<DialogHeader className="flex-none">
+						<DialogTitle className="flex items-center gap-2">
+							<span>{selectedTool?.name} Schema</span>
+							<Button
+								variant="outline"
+								size="icon"
+								className="h-6 w-6"
+								onClick={() => {
+									const schema =
+										document.getElementById("schema-content")?.textContent;
+									if (schema) {
+										navigator.clipboard.writeText(schema);
+										toast.success("Schema copied to clipboard");
+									}
+								}}
+							>
+								<Copy className="h-3 w-3" />
+							</Button>
+						</DialogTitle>
+						<DialogDescription>
+							The schema defines the structure and types of data that can be
+							used with this tool.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="flex-1 min-h-0 mt-4">
+						<div
+							className="h-full rounded-md bg-muted p-4 overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100"
+							style={{
+								maxHeight: "60vh",
+								overflowY: "scroll",
+								scrollbarWidth: "thin",
+								scrollbarColor: "rgb(156 163 175) rgb(243 244 246)",
+							}}
+						>
+							<pre id="schema-content" className="text-sm">
+								{JSON.stringify(
+									{
+										name: selectedTool?.name,
+										type: "object",
+										required: ["input"],
+										properties: {
+											input: {
+												type: "object",
+												required: ["message"],
+												properties: {
+													message: {
+														type: "string",
+														description: "The message to process",
+													},
+													options: {
+														type: "object",
+														properties: {
+															maxLength: {
+																type: "number",
+																description: "Maximum length of the output",
+															},
+															format: {
+																type: "string",
+																enum: ["json", "text", "markdown"],
+																description: "Output format",
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+									null,
+									2,
+								)}
+							</pre>
+						</div>
+					</div>
+				</DialogContent>
+			</Dialog>
 
 			<Dialog
 				open={isFormOpen}
