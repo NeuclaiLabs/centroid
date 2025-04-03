@@ -1,10 +1,16 @@
+import random
+import string
 from typing import Any
 
 from sqlmodel import Session, select
 
 from app.core.security import get_password_hash, verify_password
 from app.models import (
+    ApiKeyAuth,
+    AuthConfig,
+    AuthType,
     Chat,
+    Connection,
     Item,
     ItemCreate,
     Project,
@@ -16,6 +22,10 @@ from app.models import (
     TeamInvitationStatus,
     TeamMember,
     TeamRole,
+    ToolDefinition,
+    ToolDefinitionCreate,
+    ToolInstance,
+    ToolInstanceCreate,
     User,
     UserCreate,
     UserUpdate,
@@ -117,3 +127,60 @@ def create_project(*, session: Session, project_create: ProjectCreate) -> Projec
     session.commit()
     session.refresh(db_project)
     return db_project
+
+
+def create_tool_definition(
+    session: Session, *, tool_definition: ToolDefinition | ToolDefinitionCreate
+) -> ToolDefinition:
+    """Create a new tool definition."""
+    db_obj = ToolDefinition.model_validate(tool_definition)
+    session.add(db_obj)
+    session.commit()
+    session.refresh(db_obj)
+    return db_obj
+
+
+def create_tool_instance(
+    session: Session, *, tool_instance: ToolInstance | ToolInstanceCreate
+) -> ToolInstance:
+    """Create a new tool instance."""
+    db_obj = ToolInstance.model_validate(tool_instance)
+    session.add(db_obj)
+    session.commit()
+    session.refresh(db_obj)
+    return db_obj
+
+
+def random_lower_string() -> str:
+    return "".join(random.choices(string.ascii_lowercase, k=32))
+
+
+def create_random_connection(
+    db: Session,
+    owner_id: str | None = None,
+) -> Connection:
+    name = random_lower_string()
+    description = random_lower_string()
+    kind = random.choice(["api", "oauth2", "basic"])
+    base_url = f"https://{random_lower_string()}.com"
+
+    # Create a valid AuthConfig object
+    auth_config = AuthConfig(
+        type=AuthType.API_KEY,
+        config=ApiKeyAuth(
+            key=random_lower_string(), value=random_lower_string(), location="header"
+        ),
+    )
+
+    connection_in = Connection(
+        name=name,
+        description=description,
+        kind=kind,
+        base_url=base_url,
+        auth=auth_config,
+        owner_id=owner_id,
+    )
+    db.add(connection_in)
+    db.commit()
+    db.refresh(connection_in)
+    return connection_in

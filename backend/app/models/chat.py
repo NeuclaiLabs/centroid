@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 from typing import TYPE_CHECKING, ForwardRef
 
@@ -52,7 +52,7 @@ class Chat(ChatBase, SQLModel, table=True):
 class ChatUpdate(CamelModel):
     title: str | None = None
     project_id: str | None = None
-    updated_at: datetime = datetime.utcnow()
+    updated_at: datetime = datetime.now(UTC)
     messages: list[ForwardRef("Message")] | None = None
 
 

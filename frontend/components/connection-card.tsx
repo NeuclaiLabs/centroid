@@ -14,7 +14,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Connection } from "@/app/connection/types";
-import { integrationRegistry, getAuthMethodLabel } from "@/lib/registry";
+import { appRegistry, getAuthMethodLabel } from "@/lib/registry";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -30,10 +30,10 @@ export function ConnectionCard({
 	onDelete,
 }: ConnectionCardProps) {
 	const router = useRouter();
-	const integrationData = integrationRegistry[connection.type];
+	const appData = appRegistry[connection.type];
 
-	if (!integrationData) {
-		return null; // Or render a fallback card for unknown integration types
+	if (!appData) {
+		return null; // Or render a fallback card for unknown app types
 	}
 
 	const handleCardClick = () => {
@@ -54,15 +54,15 @@ export function ConnectionCard({
 								viewBox="0 0 24 24"
 								className="size-5 text-primary"
 								fill="currentColor"
-								aria-label={`${integrationData.name} icon`}
+								aria-label={`${appData.name} icon`}
 							>
-								<path d={integrationData.icon.path} />
+								<path d={appData.icon.path} />
 							</svg>
 						</div>
 						<div className="flex flex-col">
 							<span className="font-semibold text-sm">{connection.name}</span>
 							<span className="text-xs text-muted-foreground capitalize">
-								{integrationData.category}
+								{appData.category}
 							</span>
 						</div>
 					</div>
@@ -88,12 +88,10 @@ export function ConnectionCard({
 				</DropdownMenu> */}
 			</CardHeader>
 			<CardContent className="px-6 py-2 space-y-4">
-				<p className="text-sm text-muted-foreground">
-					{integrationData.description}
-				</p>
+				<p className="text-sm text-muted-foreground">{appData.description}</p>
 
 				<div className="flex flex-wrap gap-2">
-					{integrationData.authMethods.map((method) => (
+					{appData.authMethods.map((method) => (
 						<Badge
 							key={method}
 							variant="outline"
@@ -108,12 +106,10 @@ export function ConnectionCard({
 				<div className="flex items-center justify-between w-full text-sm">
 					<div className="flex items-center gap-2 text-muted-foreground">
 						<LayoutGrid className="size-3 text-orange-500" />
-						<span className="text-xs">
-							{integrationData.apiEndpointCount}k actions
-						</span>
+						<span className="text-xs">{appData.apiEndpointCount}k actions</span>
 					</div>
 					<Link
-						href={integrationData.docsUrl}
+						href={appData.docsUrl}
 						target="_blank"
 						rel="noopener noreferrer"
 						className="flex items-center gap-1 text-xs text-primary hover:underline"

@@ -12,7 +12,7 @@ import {
   siCalendly,
 } from 'simple-icons';
 
-export interface IntegrationMetadata {
+export interface AppMetadata {
   id: string;
   name: string;
   description: string;
@@ -31,7 +31,7 @@ export interface IntegrationMetadata {
   tags: string[];
 }
 
-export const integrationRegistry: Record<string, IntegrationMetadata> = {
+export const appRegistry: Record<string, AppMetadata> = {
   gmail: {
     id: 'gmail',
     name: 'Gmail',
@@ -172,19 +172,17 @@ export const categories = {
   },
 };
 
-export function getIntegrationsByCategory(category: string) {
-  return Object.values(integrationRegistry).filter(
-    (integration) => integration.category === category,
-  );
+export function getAppsByCategory(category: string) {
+  return Object.values(appRegistry).filter((app) => app.category === category);
 }
 
-export function searchIntegrations(query: string) {
+export function searchApps(query: string) {
   const searchTerm = query.toLowerCase();
-  return Object.values(integrationRegistry).filter(
-    (integration) =>
-      integration.name.toLowerCase().includes(searchTerm) ||
-      integration.description.toLowerCase().includes(searchTerm) ||
-      integration.tags.some((tag) => tag.toLowerCase().includes(searchTerm)),
+  return Object.values(appRegistry).filter(
+    (app) =>
+      app.name.toLowerCase().includes(searchTerm) ||
+      app.description.toLowerCase().includes(searchTerm) ||
+      app.tags.some((tag) => tag.toLowerCase().includes(searchTerm)),
   );
 }
 
@@ -198,102 +196,107 @@ export function getAuthMethodLabel(method: string): string {
   return labels[method] || method;
 }
 
-interface Tool {
+export interface Tool {
+  appId: string;
   name: string;
   description: string;
 }
 
-export const tools: Record<string, Tool[]> = {
-  gmail: [
-    {
-      name: 'send_email',
-      description:
-        'Send an email to specified recipients with subject and body content',
-    },
-    {
-      name: 'search_emails',
-      description:
-        'Search through emails using specified criteria like subject, sender, or date range',
-    },
-    {
-      name: 'manage_labels',
-      description: 'Create, modify, or apply labels to organize emails',
-    },
-  ],
-  github: [
-    {
-      name: 'create_issue',
-      description:
-        'Create a new issue in a specified repository with title and description',
-    },
-    {
-      name: 'get_pull_requests',
-      description:
-        'Retrieve pull requests for a repository with optional filtering',
-    },
-    {
-      name: 'list_repositories',
-      description:
-        'List repositories for a user or organization with specified criteria',
-    },
-  ],
-  slack: [
-    {
-      name: 'post_message',
-      description: 'Send a message to a specified channel or user',
-    },
-    {
-      name: 'create_channel',
-      description: 'Create a new channel with specified name and settings',
-    },
-    {
-      name: 'invite_users',
-      description: 'Invite users to a specified channel or workspace',
-    },
-  ],
-  openai: [
-    {
-      name: 'generate_completion',
-      description:
-        'Generate text completion using specified model and parameters',
-    },
-    {
-      name: 'create_image',
-      description: 'Generate an image using DALL-E with specified parameters',
-    },
-    {
-      name: 'create_embedding',
-      description: 'Generate embeddings for provided text content',
-    },
-  ],
-  dropbox: [
-    {
-      name: 'upload_file',
-      description: 'Upload a file to a specified Dropbox path',
-    },
-    {
-      name: 'share_file',
-      description:
-        'Create a sharing link for a file with specified permissions',
-    },
-    {
-      name: 'list_folder',
-      description: 'List contents of a specified folder path',
-    },
-  ],
-  google_calendar: [
-    {
-      name: 'create_event',
-      description:
-        'Create a calendar event with specified details and attendees',
-    },
-    {
-      name: 'list_events',
-      description: 'Retrieve calendar events within a specified time range',
-    },
-    {
-      name: 'update_event',
-      description: "Modify an existing calendar event's details",
-    },
-  ],
-};
+export const tools: Tool[] = [
+  {
+    appId: 'gmail',
+    name: 'send_email',
+    description:
+      'Send an email to specified recipients with subject and body content',
+  },
+  {
+    appId: 'gmail',
+    name: 'search_emails',
+    description:
+      'Search through emails using specified criteria like subject, sender, or date range',
+  },
+  {
+    appId: 'gmail',
+    name: 'manage_labels',
+    description: 'Create, modify, or apply labels to organize emails',
+  },
+  {
+    appId: 'github',
+    name: 'create_issue',
+    description:
+      'Create a new issue in a specified repository with title and description',
+  },
+  {
+    appId: 'github',
+    name: 'get_pull_requests',
+    description:
+      'Retrieve pull requests for a repository with optional filtering',
+  },
+  {
+    appId: 'github',
+    name: 'list_repositories',
+    description:
+      'List repositories for a user or organization with specified criteria',
+  },
+  {
+    appId: 'slack',
+    name: 'post_message',
+    description: 'Send a message to a specified channel or user',
+  },
+  {
+    appId: 'slack',
+    name: 'create_channel',
+    description: 'Create a new channel with specified name and settings',
+  },
+  {
+    appId: 'slack',
+    name: 'invite_users',
+    description: 'Invite users to a specified channel or workspace',
+  },
+  {
+    appId: 'openai',
+    name: 'generate_completion',
+    description:
+      'Generate text completion using specified model and parameters',
+  },
+  {
+    appId: 'openai',
+    name: 'create_image',
+    description: 'Generate an image using DALL-E with specified parameters',
+  },
+  {
+    appId: 'openai',
+    name: 'create_embedding',
+    description: 'Generate embeddings for provided text content',
+  },
+  {
+    appId: 'dropbox',
+    name: 'upload_file',
+    description: 'Upload a file to a specified Dropbox path',
+  },
+  {
+    appId: 'dropbox',
+    name: 'share_file',
+    description: 'Create a sharing link for a file with specified permissions',
+  },
+  {
+    appId: 'dropbox',
+    name: 'list_folder',
+    description: 'List contents of a specified folder path',
+  },
+  {
+    appId: 'google_calendar',
+    name: 'create_event',
+    description: 'Create a calendar event with specified details and attendees',
+  },
+  {
+    appId: 'google_calendar',
+    name: 'list_events',
+    description: 'Retrieve calendar events within a specified time range',
+  },
+  {
+    appId: 'google_calendar',
+    name: 'update_event',
+    description: "Modify an existing calendar event's details",
+  },
+];

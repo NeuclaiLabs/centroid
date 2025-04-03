@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 import nanoid
 from sqlalchemy import DateTime, func
@@ -16,7 +16,7 @@ class SettingCreate(SettingBase):
 
 
 class SettingUpdate(SettingBase):
-    updated_at: datetime = datetime.utcnow()
+    updated_at: datetime = datetime.now(UTC)
 
 
 class Setting(SettingBase, table=True):

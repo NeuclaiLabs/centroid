@@ -40,23 +40,24 @@ import {
 	CardFooter,
 } from "@/components/ui/card";
 import { Plus } from "lucide-react";
-import { integrationRegistry } from "@/lib/registry";
+import { appRegistry, tools } from "@/lib/registry";
 
-// Map integration registry to connections format for display
-const registryConnections: Connection[] = Object.entries(
-	integrationRegistry,
-).map(([key, integration]) => ({
-	id: integration.id,
-	name: integration.name,
-	type: key as keyof typeof integrationRegistry,
-	description: integration.description,
-	apiKey: "***************************",
-	status: "active",
-	created_at: new Date().toISOString(),
-	updated_at: new Date().toISOString(),
-	kind: integration.category.toLowerCase(),
-	base_url: integration.docsUrl,
-}));
+// Map app registry to connections format for display
+const registryConnections: Connection[] = Object.entries(appRegistry).map(
+	([key, app]) => ({
+		id: app.id,
+		name: app.name,
+		type: key as keyof typeof appRegistry,
+		description: app.description,
+		apiKey: "***************************",
+		status: "active",
+		created_at: new Date().toISOString(),
+		updated_at: new Date().toISOString(),
+		kind: app.category.toLowerCase(),
+		base_url: app.docsUrl,
+		tools: tools.filter((tool) => tool.appId === app.id),
+	}),
+);
 
 export default function ConnectionsPage() {
 	const [isFormOpen, setIsFormOpen] = useState(false);
@@ -117,6 +118,11 @@ export default function ConnectionsPage() {
 		}
 	}, [connectionToDelete, mutate]);
 
+	// Helper function to get tools for a connection
+	const getConnectionTools = useCallback((connectionId: string) => {
+		return tools.filter((tool) => tool.appId === connectionId);
+	}, []);
+
 	return (
 		<>
 			<div className="flex-1">
@@ -153,7 +159,10 @@ export default function ConnectionsPage() {
 					{(data?.data || registryConnections).map((connection) => (
 						<ConnectionCard
 							key={connection.id}
-							connection={connection}
+							connection={{
+								...connection,
+								tools: getConnectionTools(connection.id),
+							}}
 							onEdit={setSelectedConnection}
 							onDelete={setConnectionToDelete}
 						/>

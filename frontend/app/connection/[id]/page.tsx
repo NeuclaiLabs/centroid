@@ -5,7 +5,7 @@ import { use } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { integrationRegistry, tools } from "@/lib/registry";
+import { appRegistry, tools } from "@/lib/registry";
 import { ArrowRight, Copy, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import { createConnection } from "../actions";
 import type { ConnectionCreate } from "../types";
 import { Switch } from "@/components/ui/switch";
+import type { Tool } from "@/lib/registry";
 
 interface ActionRow {
 	name: string;
@@ -59,43 +60,47 @@ export default function ConnectionPage({ params }: PageProps) {
 	const [isSchemaOpen, setIsSchemaOpen] = useState(false);
 	const [selectedTool, setSelectedTool] = useState<ActionRow | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
-	const [integrationData, setIntegrationData] = useState(
-		integrationRegistry.github,
-	);
+	const [appData, setAppData] = useState(appRegistry.github);
 	const [connection, setConnection] = useState({
 		id: "",
 		type: "",
 		name: "",
 	});
+	const [connTools, setConnTools] = useState<ActionRow[]>([]);
 
 	useEffect(() => {
-		const integrationType =
-			Object.keys(integrationRegistry).find(
-				(key) => integrationRegistry[key].id === resolvedParams.id,
+		const appType =
+			Object.keys(appRegistry).find(
+				(key) => appRegistry[key].id === resolvedParams.id,
 			) || "github";
 
-		setIntegrationData(integrationRegistry[integrationType]);
+		setAppData(appRegistry[appType]);
 		setConnection({
 			id: resolvedParams.id,
-			type: integrationType,
-			name: `${integrationRegistry[integrationType].name} Connection`,
+			type: appType,
+			name: `${appRegistry[appType].name} Connection`,
 		});
+
+		// Get tools for this connection - either by id or by type, depending on what's available
+		const integrationTools = tools.filter(
+			(tool) => tool.appId === resolvedParams.id || tool.appId === appType,
+		);
+
+		// Map tools to ActionRow format
+		const toolsList: ActionRow[] = integrationTools.map((tool: Tool) => ({
+			name: tool.name
+				.split("_")
+				.map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+				.join(" "),
+			enum: tool.name.toUpperCase(),
+			description: tool.description,
+			tags: "Action",
+		}));
+
+		setConnTools(toolsList);
 	}, [resolvedParams.id]);
 
-	const integrationTools = tools[connection.type] || [];
-
-	// Map tools to ActionRow format
-	const toolsList: ActionRow[] = integrationTools.map((tool) => ({
-		name: tool.name
-			.split("_")
-			.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-			.join(" "),
-		enum: tool.name.toUpperCase(),
-		description: tool.description,
-		tags: "Action",
-	}));
-
-	const allTools = [...toolsList];
+	const allTools = [...connTools];
 	const filteredTools = filterTools(allTools, searchQuery);
 
 	const handleCreate = async (formData: ConnectionCreate) => {
@@ -122,19 +127,19 @@ export default function ConnectionPage({ params }: PageProps) {
 							viewBox="0 0 24 24"
 							className="size-9 text-primary"
 							fill="currentColor"
-							aria-label={`${integrationData.name} icon`}
+							aria-label={`${appData.name} icon`}
 						>
-							<path d={integrationData.icon.path} />
+							<path d={appData.icon.path} />
 						</svg>
 					</div>
 					<div className="flex-1 min-w-0">
 						<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
 							<div className="space-y-2 min-w-0">
 								<h1 className="text-xl font-semibold flex items-center gap-2 truncate">
-									{integrationData.name}
+									{appData.name}
 								</h1>
 								<p className="text-muted-foreground line-clamp-2 sm:line-clamp-1">
-									{integrationData.description}
+									{appData.description}
 								</p>
 							</div>
 							<Button
@@ -420,9 +425,9 @@ export default function ConnectionPage({ params }: PageProps) {
 			>
 				<DialogContent>
 					<DialogHeader>
-						<DialogTitle>Setup {integrationData.name} Integration</DialogTitle>
+						<DialogTitle>Setup {appData.name} Integration</DialogTitle>
 						<DialogDescription>
-							Configure your {integrationData.name} integration settings below
+							Configure your {appData.name} integration settings below
 						</DialogDescription>
 					</DialogHeader>
 					<ConnectionForm onSubmit={handleCreate} isSubmitting={isSubmitting} />

@@ -1,4 +1,4 @@
-import { integrationRegistry } from '@/lib/registry';
+import type { appRegistry, Tool } from '@/lib/registry';
 
 export interface ConnectionBase {
   name: string;
@@ -11,12 +11,13 @@ export interface ConnectionBase {
 export interface Connection extends ConnectionBase {
   id: string;
   name: string;
-  type: keyof typeof integrationRegistry;
+  type: keyof typeof appRegistry;
   description: string;
   apiKey: string;
   status: 'active' | 'inactive';
   created_at: string;
   updated_at: string;
+  tools?: Tool[];
 }
 
 export interface ConnectionCreate extends ConnectionBase {}

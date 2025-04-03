@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 import nanoid
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from .setting import Setting
     from .suggestion import Suggestion
     from .team import TeamMember
-    from .tool_call import ToolCall
+    from .tool_instance import ToolInstance
     from .vote import Vote
 
 
@@ -42,14 +42,14 @@ class UserRegister(SQLModel):
 class UserUpdate(UserBase):
     email: str | None = None  # type: ignore
     password: str | None = None
-    updated_at: datetime = datetime.utcnow()
+    updated_at: datetime = datetime.now(UTC)
 
 
 # TODO replace email str with EmailStr when sqlmodel supports it
 class UserUpdateMe(SQLModel):
     full_name: str | None = None
     email: str | None = None
-    updated_at: datetime = datetime.utcnow()
+    updated_at: datetime = datetime.now(UTC)
 
 
 class UpdatePassword(SQLModel):
@@ -78,9 +78,6 @@ class User(UserBase, table=True):
     settings: list["Setting"] = Relationship(
         cascade_delete=True, back_populates="owner"
     )
-    tool_calls: list["ToolCall"] = Relationship(
-        back_populates="owner", cascade_delete=True
-    )
     team_memberships: list["TeamMember"] = Relationship(
         back_populates="user", cascade_delete=True
     )
@@ -91,6 +88,9 @@ class User(UserBase, table=True):
     )
     suggestions: list["Suggestion"] = Relationship(
         back_populates="user", cascade_delete=True
+    )
+    tool_instances: list["ToolInstance"] = Relationship(
+        back_populates="owner", cascade_delete=True
     )
 
 

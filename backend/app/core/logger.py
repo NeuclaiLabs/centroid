@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import sys
-from datetime import datetime
+from datetime import UTC, datetime
 from functools import cache
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
@@ -24,7 +24,7 @@ class CustomJSONFormatter(logging.Formatter):
 
     def format(self, record):
         json_record = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "level": record.levelname,
             "name": record.name,
             "message": record.getMessage(),
