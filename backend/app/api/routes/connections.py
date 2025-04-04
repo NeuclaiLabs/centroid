@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
@@ -7,6 +7,7 @@ from app.models import (
     Connection,
     ConnectionCreate,
     ConnectionOut,
+    ConnectionSearch,
     ConnectionsOut,
     ConnectionUpdate,
     UtilsMessage,
@@ -57,6 +58,7 @@ def create_connection(
 def read_connections(
     session: SessionDep,
     current_user: CurrentUser,
+    search: ConnectionSearch = Depends(),
     skip: int = 0,
     limit: int = 100,
 ) -> ConnectionsOut:
@@ -64,6 +66,10 @@ def read_connections(
     try:
         # Build base query with owner filter
         statement = select(Connection).where(Connection.owner_id == current_user.id)
+
+        # Add app_id filter if provided
+        if search.app_id:
+            statement = statement.where(Connection.app_id == search.app_id)
 
         # Get total count
         count = session.exec(

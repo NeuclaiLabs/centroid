@@ -1,5 +1,6 @@
 Code Style and Structure:
 
+- Pursue simplicity and elegance as much as possible.
 - Write concise, technical TypeScript code with accurate examples
 - Use functional and declarative programming patterns; avoid classes
 - Prefer iteration and modularization over code duplication
@@ -49,16 +50,19 @@ Key Conventions:
 - Optimize Web Vitals (LCP, CLS, FID)
 
 
-Follow Next.js docs for Data Fetching, Rendering, and Routing. Use pnpm for package management.
 
+App specific rules:
+
+- Follow Next.js docs for Data Fetching, Rendering, and Routing.
+- Use pnpm for package management.
+- And always use useSWR for data fetching.
+- For routes, always rely on backend/app/api for the API and for type defintions rely on backend/app/models.
+- Always use camelCase for the types.
 
 For Python, use the following:
 
-- Use Pydantic for data validation and parsing
-- Use SQLModel for database models
 - Use FastAPI for the API
 - Use SQLAlchemy for the database
 - Use Pytest for testing
 - Use uv for package management
-- Use Black for code formatting
 - Use Pydantic v2 for data validation and parsing

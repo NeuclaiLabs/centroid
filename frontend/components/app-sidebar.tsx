@@ -69,11 +69,11 @@ export function AppSidebar({ user }: { user: User | undefined }) {
 					<SidebarGroupLabel>Platform</SidebarGroupLabel>
 					<SidebarGroupContent>
 						<SidebarMenu>
-							<SidebarMenuItem key="connections">
+							<SidebarMenuItem key="apps">
 								<SidebarMenuButton asChild>
-									<Link href="/connection">
+									<Link href="/apps">
 										<Network className="h-4 w-4" />
-										<span>Connections</span>
+										<span>Apps</span>
 									</Link>
 								</SidebarMenuButton>
 							</SidebarMenuItem>

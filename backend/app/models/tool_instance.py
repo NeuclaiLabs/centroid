@@ -21,11 +21,16 @@ class ToolInstanceStatus(str, enum.Enum):
     INACTIVE = "inactive"
 
 
+class ToolInstanceSearch(CamelModel):
+    app_id: str | None = None
+
+
 class ToolInstanceBase(CamelModel):
     definition_id: str = Field(foreign_key="tool_definitions.id")
     connection_id: str | None = Field(default=None, foreign_key="connections.id")
     status: ToolInstanceStatus = Field(default=ToolInstanceStatus.ACTIVE)
     owner_id: str = Field(foreign_key="users.id")
+    app_id: str = Field(foreign_key="apps.id")
 
 
 class ToolInstanceCreate(ToolInstanceBase):
@@ -36,11 +41,13 @@ class ToolInstanceUpdate(CamelModel):
     definition_id: str | None = None
     connection_id: str | None = None
     status: ToolInstanceStatus | None = None
+    app_id: str | None = None
 
 
 class ToolInstance(ToolInstanceBase, SQLModel, table=True):
     __tablename__ = "tool_instances"
     id: str | None = Field(default_factory=nanoid.generate, primary_key=True)
+    app_id: str = Field(nullable=False)
     created_at: datetime | None = Field(
         default=None,
         sa_type=DateTime(timezone=True),
@@ -67,11 +74,8 @@ class ToolInstance(ToolInstanceBase, SQLModel, table=True):
     )
 
 
-class ToolInstanceOut(CamelModel):
+class ToolInstanceOut(ToolInstanceBase):
     id: str
-    definition_id: str
-    connection_id: str | None = None
-    status: ToolInstanceStatus
     owner_id: str
     created_at: datetime
     updated_at: datetime

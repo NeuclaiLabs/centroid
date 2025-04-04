@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { auth } from "../(auth)/auth";
+import { auth } from "../../(auth)/auth";
 import { ConnectionHeader } from "@/components/connection-header";
 
 export const experimental_ppr = true;
@@ -20,9 +20,7 @@ export default async function Layout({
 			<AppSidebar user={session?.user} />
 			<SidebarInset>
 				<ConnectionHeader />
-				<div className="max-w-6xl mx-auto p-6 md:px-20">
-					{children}
-				</div>
+				<div className="max-w-6xl mx-auto ">{children}</div>
 			</SidebarInset>
 		</SidebarProvider>
 	);

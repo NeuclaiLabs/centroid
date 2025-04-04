@@ -13,17 +13,20 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const skip = searchParams.get('skip');
     const limit = searchParams.get('limit');
+    const appId = searchParams.get('appId');
 
     const params = new URLSearchParams();
     if (skip) params.append('skip', skip);
     if (limit) params.append('limit', limit);
+    if (appId) params.append('appId', appId);
 
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/v1/connections/?${params}`,
       {
         headers: {
           accept: 'application/json',
-          // Authorization: `Bearer ${getToken(session)}`,
+          // @ts-ignore
+          Authorization: `Bearer ${session.user.token}`,
         },
       },
     );
@@ -58,7 +61,8 @@ export async function POST(request: NextRequest) {
         headers: {
           accept: 'application/json',
           'Content-Type': 'application/json',
-          // Authorization: `Bearer ${getToken(session)}`,
+          // @ts-ignore
+          Authorization: `Bearer ${session.user.token}`,
         },
         body: JSON.stringify(body),
       },

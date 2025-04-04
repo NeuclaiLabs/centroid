@@ -1,6 +1,6 @@
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
@@ -8,6 +8,7 @@ from app.models import (
     ToolInstance,
     ToolInstanceCreate,
     ToolInstanceOut,
+    ToolInstanceSearch,
     ToolInstancesOut,
     ToolInstanceUpdate,
     UtilsMessage,
@@ -18,26 +19,30 @@ router = APIRouter()
 
 @router.get("/", response_model=ToolInstancesOut)
 def read_tool_instances(
-    session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
+    session: SessionDep,
+    current_user: CurrentUser,
+    search: ToolInstanceSearch = Depends(),
+    skip: int = 0,
+    limit: int = 100,
 ) -> Any:
     """
     Retrieve tool instances.
+    All search parameters are optional and will be automatically parsed from query parameters.
     """
-    # Filter by owner_id
-    statement = (
-        select(func.count())
-        .select_from(ToolInstance)
-        .where(ToolInstance.owner_id == current_user.id)
-    )
-    count = session.exec(statement).one()
+    # Build base query
+    query = select(ToolInstance).where(ToolInstance.owner_id == current_user.id)
 
-    statement = (
-        select(ToolInstance)
-        .where(ToolInstance.owner_id == current_user.id)
-        .offset(skip)
-        .limit(limit)
-    )
-    tools = session.exec(statement).all()
+    # Add app_id filter if provided
+    if search.app_id:
+        query = query.where(ToolInstance.app_id == search.app_id)
+
+    # Get total count
+    count_query = select(func.count()).select_from(query.subquery())
+    count = session.exec(count_query).one()
+
+    # Get paginated results
+    query = query.offset(skip).limit(limit)
+    tools = session.exec(query).all()
 
     return ToolInstancesOut(data=tools, count=count)
 

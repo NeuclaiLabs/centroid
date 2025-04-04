@@ -11,6 +11,7 @@ from .connection import (
     ConnectionBase,
     ConnectionCreate,
     ConnectionOut,
+    ConnectionSearch,
     ConnectionsOut,
     ConnectionUpdate,
     TokenAuth,
@@ -70,6 +71,7 @@ from .tool_definition import (
     ToolDefinitionBase,
     ToolDefinitionCreate,
     ToolDefinitionOut,
+    ToolDefinitionSearch,
     ToolDefinitionsOut,
     ToolDefinitionUpdate,
 )
@@ -78,6 +80,7 @@ from .tool_instance import (
     ToolInstanceBase,
     ToolInstanceCreate,
     ToolInstanceOut,
+    ToolInstanceSearch,
     ToolInstancesOut,
     ToolInstanceStatus,
     ToolInstanceUpdate,
@@ -178,6 +181,7 @@ __all__ = [
     "ConnectionUpdate",
     "ConnectionOut",
     "ConnectionsOut",
+    "ConnectionSearch",
     "AuthType",
     "AuthConfig",
     "TokenAuth",
@@ -196,4 +200,6 @@ __all__ = [
     "ToolInstanceOut",
     "ToolInstancesOut",
     "ToolInstanceStatus",
+    "ToolDefinitionSearch",
+    "ToolInstanceSearch",
 ]

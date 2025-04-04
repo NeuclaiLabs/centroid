@@ -1,0 +1,1065 @@
+[
+  {
+    "app_id": "gmail",
+    "tool_schema": {
+      "name": "SendEmail",
+      "description": "Send an email to specified recipients with subject and body content",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "string",
+            "description": "Email address(es) of recipients (comma-separated for multiple recipients)"
+          },
+          "cc": {
+            "type": "string",
+            "description": "Email address(es) to CC (comma-separated for multiple recipients)"
+          },
+          "bcc": {
+            "type": "string",
+            "description": "Email address(es) to BCC (comma-separated for multiple recipients)"
+          },
+          "subject": {
+            "type": "string",
+            "description": "Subject line of the email"
+          },
+          "body": {
+            "type": "string",
+            "description": "Content of the email body"
+          },
+          "is_html": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether the body content is HTML formatted"
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "filename": {
+                  "type": "string",
+                  "description": "Name of the file to attach"
+                },
+                "content": {
+                  "type": "string",
+                  "description": "Base64 encoded content of the file"
+                },
+                "mime_type": {
+                  "type": "string",
+                  "description": "MIME type of the attachment"
+                }
+              },
+              "required": ["filename", "content"]
+            },
+            "description": "Files to attach to the email"
+          }
+        },
+        "required": ["to", "subject", "body"]
+      }
+    },
+    "tool_metadata": {
+      "path": "/gmail/v1/users/me/messages/send",
+      "method": "POST",
+      "to": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "cc": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "bcc": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "subject": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "body": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "is_html": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "attachments": {
+        "type": "parameter",
+        "in": "body"
+      }
+    }
+  },
+  {
+    "app_id": "gmail",
+    "tool_schema": {
+      "name": "SearchEmails",
+      "description": "Search through emails using specified criteria like subject, sender, or date range",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query using Gmail search syntax"
+          },
+          "max_results": {
+            "type": "integer",
+            "default": 10,
+            "description": "Maximum number of emails to return"
+          },
+          "include_attachments": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether to include attachment information in results"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Filter emails from this date onwards"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Filter emails until this date"
+          },
+          "label_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of label IDs to filter by"
+          }
+        },
+        "required": ["query"]
+      }
+    },
+    "tool_metadata": {
+      "path": "/gmail/v1/users/me/messages",
+      "method": "GET",
+      "query": {
+        "type": "parameter",
+        "in": "query",
+        "name": "q"
+      },
+      "max_results": {
+        "type": "parameter",
+        "in": "query",
+        "name": "maxResults"
+      },
+      "include_attachments": {
+        "type": "parameter",
+        "in": "query"
+      },
+      "start_date": {
+        "type": "parameter",
+        "in": "query",
+        "name": "after"
+      },
+      "end_date": {
+        "type": "parameter",
+        "in": "query",
+        "name": "before"
+      },
+      "label_ids": {
+        "type": "parameter",
+        "in": "query",
+        "name": "labelIds"
+      }
+    }
+  },
+  {
+    "app_id": "gmail",
+    "tool_schema": {
+      "name": "ManageLabels",
+      "description": "Create, modify, or apply labels to organize emails",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": ["create", "update", "delete", "apply", "remove"],
+            "description": "Action to perform on labels"
+          },
+          "label_id": {
+            "type": "string",
+            "description": "ID of the label to modify or apply (required for all actions except 'create')"
+          },
+          "label_name": {
+            "type": "string",
+            "description": "Name of the label (required for 'create' and optional for 'update')"
+          },
+          "message_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of message IDs to apply or remove label from (required for 'apply' and 'remove')"
+          },
+          "text_color": {
+            "type": "string",
+            "description": "Text color for the label in hex format (e.g., '#000000')"
+          },
+          "background_color": {
+            "type": "string",
+            "description": "Background color for the label in hex format (e.g., '#ffffff')"
+          }
+        },
+        "required": ["action"]
+      }
+    },
+    "tool_metadata": {
+      "path": "/gmail/v1/users/me/labels",
+      "method": "POST",
+      "action": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "label_id": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "label_name": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "message_ids": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "text_color": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "background_color": {
+        "type": "parameter",
+        "in": "body"
+      }
+    }
+  },
+  {
+    "app_id": "slack",
+    "tool_schema": {
+      "name": "PostMessage",
+      "description": "Send a message to a specified channel or user",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "channel": {
+            "type": "string",
+            "description": "Channel ID or user ID to send message to"
+          },
+          "text": {
+            "type": "string",
+            "description": "Text content of the message"
+          },
+          "thread_ts": {
+            "type": "string",
+            "description": "Timestamp of parent message to reply in thread"
+          },
+          "blocks": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            },
+            "description": "Array of blocks for complex message formatting"
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            },
+            "description": "Legacy attachments for message formatting"
+          },
+          "unfurl_links": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether to enable link unfurling"
+          }
+        },
+        "required": ["channel", "text"]
+      }
+    },
+    "tool_metadata": {
+      "path": "/api/chat.postMessage",
+      "method": "POST",
+      "channel": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "text": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "thread_ts": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "blocks": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "attachments": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "unfurl_links": {
+        "type": "parameter",
+        "in": "body"
+      }
+    }
+  },
+  {
+    "app_id": "slack",
+    "tool_schema": {
+      "name": "CreateChannel",
+      "description": "Create a new channel with specified name and settings",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the channel to create (must be lowercase, no spaces)"
+          },
+          "is_private": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether the channel should be private"
+          },
+          "team_id": {
+            "type": "string",
+            "description": "The ID of the workspace where the channel will be created"
+          },
+          "initial_members": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of user IDs to add to the channel upon creation"
+          },
+          "topic": {
+            "type": "string",
+            "description": "Topic for the channel"
+          },
+          "purpose": {
+            "type": "string",
+            "description": "Purpose for the channel"
+          }
+        },
+        "required": ["name"]
+      }
+    },
+    "tool_metadata": {
+      "path": "/api/conversations.create",
+      "method": "POST",
+      "name": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "is_private": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "team_id": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "initial_members": {
+        "type": "parameter",
+        "in": "body",
+        "name": "user_ids"
+      },
+      "topic": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "purpose": {
+        "type": "parameter",
+        "in": "body"
+      }
+    }
+  },
+  {
+    "app_id": "slack",
+    "tool_schema": {
+      "name": "InviteUsers",
+      "description": "Invite users to a specified channel or workspace",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "channel": {
+            "type": "string",
+            "description": "Channel ID to invite users to"
+          },
+          "users": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of user IDs to invite to the channel"
+          },
+          "email_addresses": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "email"
+            },
+            "description": "List of email addresses to invite to the workspace"
+          },
+          "team_id": {
+            "type": "string",
+            "description": "Workspace ID when inviting by email"
+          },
+          "custom_message": {
+            "type": "string",
+            "description": "Custom message to include with the invitation"
+          }
+        },
+        "required": ["channel", "users"]
+      }
+    },
+    "tool_metadata": {
+      "path": "/api/conversations.invite",
+      "method": "POST",
+      "channel": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "users": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "email_addresses": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "team_id": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "custom_message": {
+        "type": "parameter",
+        "in": "body"
+      }
+    }
+  },
+  {
+    "app_id": "openai",
+    "tool_schema": {
+      "name": "GenerateCompletion",
+      "description": "Generate text completion using specified model and parameters",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "description": "ID of the model to use",
+            "enum": ["gpt-4", "gpt-3.5-turbo", "gpt-4-turbo", "gpt-4o"]
+          },
+          "prompt": {
+            "type": "string",
+            "description": "The prompt to generate completions for"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "type": "string",
+                  "enum": ["system", "user", "assistant"]
+                },
+                "content": {
+                  "type": "string"
+                }
+              },
+              "required": ["role", "content"]
+            },
+            "description": "The messages to generate completions for (for chat models)"
+          },
+          "max_tokens": {
+            "type": "integer",
+            "default": 16,
+            "description": "Maximum number of tokens to generate"
+          },
+          "temperature": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2,
+            "default": 1,
+            "description": "Controls randomness: 0 is deterministic, higher values make output more random"
+          },
+          "top_p": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "default": 1,
+            "description": "Controls diversity via nucleus sampling"
+          },
+          "stop": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Sequences where the API will stop generating further tokens"
+          }
+        },
+        "required": ["model"]
+      }
+    },
+    "tool_metadata": {
+      "path": "/v1/chat/completions",
+      "method": "POST",
+      "model": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "prompt": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "messages": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "max_tokens": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "temperature": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "top_p": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "stop": {
+        "type": "parameter",
+        "in": "body"
+      }
+    }
+  },
+  {
+    "app_id": "openai",
+    "tool_schema": {
+      "name": "CreateImage",
+      "description": "Generate an image using DALL-E with specified parameters",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "description": "A text description of the desired image"
+          },
+          "model": {
+            "type": "string",
+            "default": "dall-e-3",
+            "enum": ["dall-e-2", "dall-e-3"],
+            "description": "The model to use for image generation"
+          },
+          "n": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "default": 1,
+            "description": "The number of images to generate"
+          },
+          "size": {
+            "type": "string",
+            "enum": [
+              "256x256",
+              "512x512",
+              "1024x1024",
+              "1792x1024",
+              "1024x1792"
+            ],
+            "default": "1024x1024",
+            "description": "The size of the generated images"
+          },
+          "quality": {
+            "type": "string",
+            "enum": ["standard", "hd"],
+            "default": "standard",
+            "description": "The quality of the image generation"
+          },
+          "style": {
+            "type": "string",
+            "enum": ["vivid", "natural"],
+            "default": "vivid",
+            "description": "The style of the generated images"
+          },
+          "response_format": {
+            "type": "string",
+            "enum": ["url", "b64_json"],
+            "default": "url",
+            "description": "The format in which the generated images are returned"
+          }
+        },
+        "required": ["prompt"]
+      }
+    },
+    "tool_metadata": {
+      "path": "/v1/images/generations",
+      "method": "POST",
+      "prompt": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "model": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "n": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "size": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "quality": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "style": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "response_format": {
+        "type": "parameter",
+        "in": "body"
+      }
+    }
+  },
+  {
+    "app_id": "openai",
+    "tool_schema": {
+      "name": "CreateEmbedding",
+      "description": "Generate embeddings for provided text content",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "default": "text-embedding-ada-002",
+            "description": "ID of the model to use"
+          },
+          "input": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ],
+            "description": "Input text to get embeddings for, can be a string or array of strings"
+          },
+          "user": {
+            "type": "string",
+            "description": "A unique identifier representing your end-user"
+          },
+          "dimensions": {
+            "type": "integer",
+            "description": "The number of dimensions the resulting output embeddings should have"
+          }
+        },
+        "required": ["model", "input"]
+      }
+    },
+    "tool_metadata": {
+      "path": "/v1/embeddings",
+      "method": "POST",
+      "model": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "input": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "user": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "dimensions": {
+        "type": "parameter",
+        "in": "body"
+      }
+    }
+  },
+  {
+    "app_id": "dropbox",
+    "tool_schema": {
+      "name": "UploadFile",
+      "description": "Upload a file to a specified Dropbox path",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Path in the user's Dropbox to save the file, including filename"
+          },
+          "file_content": {
+            "type": "string",
+            "description": "Base64 encoded content of the file to upload"
+          },
+          "mode": {
+            "type": "string",
+            "enum": ["add", "overwrite", "update"],
+            "default": "add",
+            "description": "The write conflict resolution strategy"
+          },
+          "autorename": {
+            "type": "boolean",
+            "default": false,
+            "description": "If there's a conflict, automatically rename the file"
+          },
+          "mute": {
+            "type": "boolean",
+            "default": false,
+            "description": "If true, users will not receive notifications about this file"
+          }
+        },
+        "required": ["path", "file_content"]
+      }
+    },
+    "tool_metadata": {
+      "path": "/2/files/upload",
+      "method": "POST",
+      "path": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "file_content": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "mode": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "autorename": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "mute": {
+        "type": "parameter",
+        "in": "body"
+      }
+    }
+  },
+  {
+    "app_id": "dropbox",
+    "tool_schema": {
+      "name": "ShareFile",
+      "description": "Create a sharing link for a file with specified permissions",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Path to the file or folder to share"
+          },
+          "requested_visibility": {
+            "type": "string",
+            "enum": ["public", "team_only", "password"],
+            "default": "public",
+            "description": "The requested access level for the shared link"
+          },
+          "password": {
+            "type": "string",
+            "description": "Password for the shared link (required if requested_visibility is 'password')"
+          },
+          "expires": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Expiration timestamp for the shared link"
+          },
+          "audience": {
+            "type": "string",
+            "enum": ["public", "team", "no_one"],
+            "default": "public",
+            "description": "The requested audience for the shared link"
+          },
+          "access": {
+            "type": "string",
+            "enum": ["viewer", "editor", "max"],
+            "default": "viewer",
+            "description": "The access level for the shared link"
+          }
+        },
+        "required": ["path"]
+      }
+    },
+    "tool_metadata": {
+      "path": "/2/sharing/create_shared_link_with_settings",
+      "method": "POST",
+      "path": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "requested_visibility": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "password": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "expires": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "audience": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "access": {
+        "type": "parameter",
+        "in": "body"
+      }
+    }
+  },
+  {
+    "app_id": "dropbox",
+    "tool_schema": {
+      "name": "ListFolder",
+      "description": "List contents of a specified folder path",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Path to the folder to list contents of"
+          },
+          "recursive": {
+            "type": "boolean",
+            "default": false,
+            "description": "If true, list contents of all subfolders recursively"
+          },
+          "include_media_info": {
+            "type": "boolean",
+            "default": false,
+            "description": "If true, include media info for photo and video files"
+          },
+          "include_deleted": {
+            "type": "boolean",
+            "default": false,
+            "description": "If true, include files and folders that have been deleted"
+          },
+          "include_has_explicit_shared_members": {
+            "type": "boolean",
+            "default": false,
+            "description": "If true, include a flag for each file indicating whether it has explicit members"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 100,
+            "description": "Maximum number of results to return"
+          }
+        },
+        "required": ["path"]
+      }
+    },
+    "tool_metadata": {
+      "path": "/2/files/list_folder",
+      "method": "POST",
+      "path": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "recursive": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "include_media_info": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "include_deleted": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "include_has_explicit_shared_members": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "limit": {
+        "type": "parameter",
+        "in": "body"
+      }
+    }
+  },
+  {
+    "app_id": "google_calendar",
+    "tool_schema": {
+      "name": "CreateEvent",
+      "description": "Create a calendar event with specified details and attendees",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "string",
+            "description": "Title of the event"
+          },
+          "location": {
+            "type": "string",
+            "description": "Location of the event"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description or notes for the event"
+          },
+          "start": {
+            "type": "object",
+            "properties": {
+              "dateTime": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Start time of the event (ISO 8601 format)"
+              },
+              "timeZone": {
+                "type": "string",
+                "description": "Timezone for the start time (e.g., 'America/Los_Angeles')"
+              }
+            },
+            "required": ["dateTime"],
+            "description": "Start time details"
+          },
+          "end": {
+            "type": "object",
+            "properties": {
+              "dateTime": {
+                "type": "string",
+                "format": "date-time",
+                "description": "End time of the event (ISO 8601 format)"
+              },
+              "timeZone": {
+                "type": "string",
+                "description": "Timezone for the end time (e.g., 'America/Los_Angeles')"
+              }
+            },
+            "required": ["dateTime"],
+            "description": "End time details"
+          },
+          "attendees": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "format": "email",
+                  "description": "Email address of the attendee"
+                },
+                "optional": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Whether attendance is optional for this attendee"
+                }
+              },
+              "required": ["email"]
+            },
+            "description": "List of event attendees"
+          },
+          "recurrence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "RRULE, RDATE and EXDATE rules for event recurrence"
+          },
+          "reminders": {
+            "type": "object",
+            "properties": {
+              "useDefault": {
+                "type": "boolean",
+                "description": "Whether to use the default reminders"
+              },
+              "overrides": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "method": {
+                      "type": "string",
+                      "enum": ["email", "popup"],
+                      "description": "Method of reminder delivery"
+                    },
+                    "minutes": {
+                      "type": "integer",
+                      "description": "Minutes before the event to trigger the reminder"
+                    }
+                  },
+                  "required": ["method", "minutes"]
+                }
+              }
+            },
+            "description": "Event reminder settings"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": ["default", "public", "private", "confidential"],
+            "default": "default",
+            "description": "Visibility of the event"
+          },
+          "calendar_id": {
+            "type": "string",
+            "default": "primary",
+            "description": "Calendar ID to create the event in"
+          }
+        },
+        "required": ["summary", "start", "end"]
+      }
+    },
+    "tool_metadata": {
+      "path": "/calendar/v3/calendars/{calendar_id}/events",
+      "method": "POST",
+      "calendar_id": {
+        "type": "parameter",
+        "in": "path"
+      },
+      "summary": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "location": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "description": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "start": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "end": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "attendees": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "recurrence": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "reminders": {
+        "type": "parameter",
+        "in": "body"
+      },
+      "visibility": {
+        "type": "parameter",
+        "in": "body"
+      }
+    }
+  }
+]

@@ -1,8 +1,8 @@
 """feat: adding support for connection, tool defintion and tool instance
 
-Revision ID: ce7bac6b12f5
+Revision ID: 8919d52caa01
 Revises: 6415c4591871
-Create Date: 2025-04-04 10:29:06.209499
+Create Date: 2025-04-04 11:47:44.518872
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ import sqlmodel.sql.sqltypes
 from sqlalchemy.dialects import sqlite
 
 # revision identifiers, used by Alembic.
-revision = 'ce7bac6b12f5'
+revision = '8919d52caa01'
 down_revision = '6415c4591871'
 branch_labels = None
 depends_on = None
@@ -47,6 +47,7 @@ def upgrade():
     sa.Column('status', sa.Enum('ACTIVE', 'INACTIVE', name='toolinstancestatus'), nullable=False),
     sa.Column('owner_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('app_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
     sa.ForeignKeyConstraint(['connection_id'], ['connections.id'], ),

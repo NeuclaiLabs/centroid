@@ -1,7 +1,9 @@
-import { useCallback } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { toast } from "sonner";
+import React from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -23,13 +25,26 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import type { Connection, ConnectionCreate } from "@/app/connection/types";
+import type { Connection, ConnectionCreate } from "../../types";
+import { AuthType } from "../../types";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import {
+	createConnection,
+	updateConnection,
+	useConnection,
+	useConnections,
+} from "../hooks/use-connections";
 
 const AUTH_TYPES = {
-	NONE: "none",
-	TOKEN: "token",
-	API_KEY: "api_key",
-	BASIC: "basic",
+	NONE: AuthType.NONE,
+	TOKEN: AuthType.TOKEN,
+	API_KEY: AuthType.API_KEY,
+	BASIC: AuthType.BASIC,
 } as const;
 
 const API_KEY_LOCATIONS = {
@@ -76,55 +91,68 @@ const connectionSchema = z.object({
 type ConnectionFormData = z.infer<typeof connectionSchema>;
 
 interface ConnectionFormProps {
+	appId: string;
 	initialData?: Connection;
-	onSubmit: (data: ConnectionCreate) => Promise<void>;
+	onSuccess?: () => void;
 	isSubmitting?: boolean;
 }
 
 export function ConnectionForm({
+	appId,
 	initialData,
-	onSubmit,
-	isSubmitting,
-}: ConnectionFormProps) {
+	onSuccess,
+	isSubmitting: externalIsSubmitting,
+}: ConnectionFormProps): JSX.Element {
+	const [isSubmitting, setIsSubmitting] = useState(false);
 	const form = useForm<ConnectionFormData>({
 		resolver: zodResolver(connectionSchema),
 		defaultValues: {
 			name: initialData?.name ?? "",
 			description: initialData?.description ?? "",
-			baseUrl: initialData?.base_url ?? "",
+			baseUrl: initialData?.baseUrl ?? "",
 			auth: {
-				type: AUTH_TYPES.NONE,
-				config: {},
+				type: initialData?.auth?.type ?? AUTH_TYPES.NONE,
+				config: initialData?.auth?.config ?? {},
 			},
 		},
 	});
 
 	const authType = form.watch("auth.type");
 
-	const handleSubmit = useCallback(
-		async (formData: ConnectionFormData) => {
+	const onSubmit = useCallback(
+		async (data: ConnectionFormData) => {
+			console.log("Form data", data);
 			try {
-				// Transform the data to match the API's expected format
-				const submissionData: ConnectionCreate = {
-					name: formData.name,
-					description: formData.description,
-					base_url: formData.baseUrl,
-					kind: "api", // This should match the connection type
-					auth: formData.auth.config,
-				};
-
-				await onSubmit(submissionData);
-				form.reset();
+				setIsSubmitting(true);
+				if (initialData?.id) {
+					await updateConnection(initialData.id, data);
+					toast.success("Connection updated successfully");
+				} else {
+					const submissionData = {
+						...data,
+						appId,
+					};
+					await createConnection(submissionData);
+					toast.success("Connection created successfully");
+				}
+				onSuccess?.();
 			} catch (error) {
 				console.error("Form submission error:", error);
+				toast.error(
+					error instanceof Error ? error.message : "Failed to save connection",
+				);
+			} finally {
+				setIsSubmitting(false);
 			}
 		},
-		[form, onSubmit],
+		[initialData?.id, appId, onSuccess],
 	);
+
+	const isProcessing = externalIsSubmitting || isSubmitting;
 
 	return (
 		<Form {...form}>
-			<form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 				<FormField
 					control={form.control}
 					name="name"
@@ -324,10 +352,112 @@ export function ConnectionForm({
 					</>
 				)}
 
-				<Button type="submit" disabled={isSubmitting}>
-					{isSubmitting ? "Saving..." : initialData ? "Update" : "Create"}
+				<Button type="submit" disabled={isProcessing}>
+					{isProcessing
+						? "Saving..."
+						: initialData
+							? "Update Connection"
+							: "Create Connection"}
 				</Button>
 			</form>
 		</Form>
+	);
+}
+
+interface ConnectionDialogProps {
+	appId: string;
+	isOpen: boolean;
+	onOpenChange: (open: boolean) => void;
+	connectionId?: string;
+	onSelectConnection: (connectionId?: string) => void;
+}
+
+export function ConnectionDialog({
+	appId,
+	isOpen,
+	onOpenChange,
+	connectionId,
+	onSelectConnection,
+}: ConnectionDialogProps) {
+	const { connections, isLoading: isLoadingConnections } = useConnections({
+		appId,
+	});
+	const { connection, isLoading: isLoadingConnection } = useConnection(
+		connectionId ?? "",
+	);
+
+	// If we're opening the dialog and there's exactly one connection, use that
+	useEffect(() => {
+		if (isOpen && !connectionId && connections.length === 1) {
+			// Auto-select the only connection
+			onSelectConnection(connections[0].id);
+		}
+	}, [isOpen, connectionId, connections, onSelectConnection]);
+
+	const isLoading = isLoadingConnections || isLoadingConnection;
+
+	if (isLoading) {
+		return (
+			<Dialog open={isOpen} onOpenChange={onOpenChange}>
+				<DialogContent className="sm:max-w-[600px]">
+					<DialogHeader>
+						<DialogTitle className="text-center">Loading...</DialogTitle>
+					</DialogHeader>
+				</DialogContent>
+			</Dialog>
+		);
+	}
+
+	// If there's no specific connection selected and we have multiple connections,
+	// show the connection list
+	if (!connectionId && connections.length > 0) {
+		return (
+			<Dialog open={isOpen} onOpenChange={onOpenChange}>
+				<DialogContent className="sm:max-w-[600px]">
+					<DialogHeader>
+						<DialogTitle className="text-center">Select Connection</DialogTitle>
+					</DialogHeader>
+					<div className="grid gap-4">
+						{connections.map((conn) => (
+							<Button
+								key={conn.id}
+								variant="outline"
+								className="flex flex-col items-start p-4 h-auto"
+								onClick={() => onSelectConnection(conn.id)}
+							>
+								<div className="font-medium">{conn.name}</div>
+								{conn.description && (
+									<div className="text-sm text-muted-foreground mt-1">
+										{conn.description}
+									</div>
+								)}
+							</Button>
+						))}
+						<Button onClick={() => onSelectConnection()}>
+							Create New Connection
+						</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
+		);
+	}
+
+	return (
+		<Dialog open={isOpen} onOpenChange={onOpenChange}>
+			<DialogContent className="sm:max-w-[600px] max-h-[85vh] flex flex-col">
+				<DialogHeader className="flex-none">
+					<DialogTitle className="text-center">
+						{connectionId ? "Edit Connection" : "Create Connection"}
+					</DialogTitle>
+				</DialogHeader>
+				<div className="flex-1 min-h-0 overflow-y-auto pr-1">
+					<ConnectionForm
+						appId={appId}
+						initialData={connection}
+						onSuccess={() => onOpenChange(false)}
+					/>
+				</div>
+			</DialogContent>
+		</Dialog>
 	);
 }

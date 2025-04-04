@@ -49,6 +49,10 @@ class ToolDefinition(ToolDefinitionBase, SQLModel, table=True):
     )
 
 
+class ToolDefinitionSearch(CamelModel):
+    app_id: str | None = None
+
+
 class ToolDefinitionOut(CamelModel):
     id: str
     app_id: str

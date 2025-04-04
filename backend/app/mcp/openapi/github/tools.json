@@ -1,0 +1,653 @@
+[
+  {
+    "app_id": "github",
+    "tool_schema": {
+      "name": "ListGitHubIssues",
+      "description": "Parameters for fetching GitHub issues via REST API",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "owner": {
+            "type": "string",
+            "description": "The account owner of the repository"
+          },
+          "repo": {
+            "type": "string",
+            "description": "The name of the repository"
+          },
+          "state": {
+            "type": "string",
+            "enum": ["open", "closed", "all"],
+            "default": "open",
+            "description": "Indicates the state of issues to return"
+          },
+          "assignee": {
+            "type": "string",
+            "description": "Filter issues by assignee. Can be 'none' for unassigned issues"
+          },
+          "creator": {
+            "type": "string",
+            "description": "Filter issues by creator"
+          },
+          "mentioned": {
+            "type": "string",
+            "description": "Filter issues by user mentioned in them"
+          },
+          "labels": {
+            "type": "string",
+            "description": "Comma-separated list of label names"
+          },
+          "sort": {
+            "type": "string",
+            "enum": ["created", "updated", "comments"],
+            "default": "created",
+            "description": "What to sort results by"
+          },
+          "direction": {
+            "type": "string",
+            "enum": ["asc", "desc"],
+            "default": "desc",
+            "description": "The direction of the sort"
+          },
+          "since": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Only show issues updated at or after this time"
+          },
+          "per_page": {
+            "type": "integer",
+            "default": 30,
+            "description": "Number of results per page"
+          },
+          "page": {
+            "type": "integer",
+            "default": 1,
+            "description": "Page number of the results"
+          }
+        },
+        "required": ["owner", "repo"]
+      }
+    },
+    "tool_metadata": {
+      "path": "/repos/{owner}/{repo}/issues",
+      "method": "GET",
+      "tags": ["issues", "list", "query"],
+      "owner": {
+        "type": "parameter",
+        "in": "path"
+      },
+      "repo": {
+        "type": "parameter",
+        "in": "path"
+      },
+      "state": {
+        "type": "parameter",
+        "in": "query"
+      },
+      "assignee": {
+        "type": "parameter",
+        "in": "query"
+      },
+      "creator": {
+        "type": "parameter",
+        "in": "query"
+      },
+      "mentioned": {
+        "type": "parameter",
+        "in": "query"
+      },
+      "labels": {
+        "type": "parameter",
+        "in": "query"
+      },
+      "sort": {
+        "type": "parameter",
+        "in": "query"
+      },
+      "direction": {
+        "type": "parameter",
+        "in": "query"
+      },
+      "since": {
+        "type": "parameter",
+        "in": "query"
+      },
+      "per_page": {
+        "type": "parameter",
+        "in": "query"
+      },
+      "page": {
+        "type": "parameter",
+        "in": "query"
+      }
+    }
+  },
+  {
+    "app_id": "github",
+    "tool_schema": {
+      "name": "GetGitHubIssue",
+      "description": "Parameters for fetching a specific GitHub issue via REST API",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "owner": {
+            "type": "string",
+            "description": "The account owner of the repository"
+          },
+          "repo": {
+            "type": "string",
+            "description": "The name of the repository"
+          },
+          "issue_number": {
+            "type": "integer",
+            "description": "The number that identifies the issue"
+          }
+        },
+        "required": ["owner", "repo", "issue_number"]
+      }
+    },
+    "tool_metadata": {
+      "path": "/repos/{owner}/{repo}/issues/{issue_number}",
+      "method": "GET",
+      "tags": ["issues", "read", "single"],
+      "owner": {
+        "type": "parameter",
+        "in": "path"
+      },
+      "repo": {
+        "type": "parameter",
+        "in": "path"
+      },
+      "issue_number": {
+        "type": "parameter",
+        "in": "path"
+      }
+    }
+  },
+  {
+    "app_id": "github",
+    "tool_schema": {
+      "name": "CreateGitHubIssue",
+      "description": "Parameters for creating a GitHub issue via REST API",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "owner": {
+            "type": "string",
+            "description": "The account owner of the repository"
+          },
+          "repo": {
+            "type": "string",
+            "description": "The name of the repository"
+          },
+          "title": {
+            "type": "string",
+            "description": "The title of the issue"
+          },
+          "body": {
+            "type": "string",
+            "description": "The contents of the issue"
+          },
+          "assignees": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Logins for users to assign to this issue"
+          },
+          "milestone": {
+            "type": "integer",
+            "description": "The number of the milestone to associate with this issue"
+          },
+          "labels": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Labels to associate with this issue"
+          }
+        },
+        "required": ["owner", "repo", "title"]
+      }
+    },
+    "tool_metadata": {
+      "path": "/repos/{owner}/{repo}/issues",
+      "method": "POST",
+      "tags": ["issues", "create"],
+      "owner": {
+        "type": "parameter",
+        "in": "path"
+      },
+      "repo": {
+        "type": "parameter",
+        "in": "path"
+      },
+      "title": {
+        "type": "body"
+      },
+      "body": {
+        "type": "body"
+      },
+      "assignees": {
+        "type": "body"
+      },
+      "milestone": {
+        "type": "body"
+      },
+      "labels": {
+        "type": "body"
+      }
+    }
+  },
+  {
+    "app_id": "github",
+    "tool_schema": {
+      "name": "UpdateGitHubIssue",
+      "description": "Parameters for updating a GitHub issue via REST API",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "owner": {
+            "type": "string",
+            "description": "The account owner of the repository"
+          },
+          "repo": {
+            "type": "string",
+            "description": "The name of the repository"
+          },
+          "issue_number": {
+            "type": "integer",
+            "description": "The number that identifies the issue"
+          },
+          "title": {
+            "type": "string",
+            "description": "The title of the issue"
+          },
+          "body": {
+            "type": "string",
+            "description": "The contents of the issue"
+          },
+          "state": {
+            "type": "string",
+            "enum": ["open", "closed"],
+            "description": "State of the issue"
+          },
+          "assignees": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Logins for users to assign to this issue"
+          },
+          "milestone": {
+            "type": "integer",
+            "description": "The number of the milestone to associate with this issue"
+          },
+          "labels": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Labels to associate with this issue"
+          }
+        },
+        "required": ["owner", "repo", "issue_number"]
+      }
+    },
+    "tool_metadata": {
+      "path": "/repos/{owner}/{repo}/issues/{issue_number}",
+      "method": "PATCH",
+      "tags": ["issues", "update"],
+      "owner": {
+        "type": "parameter",
+        "in": "path"
+      },
+      "repo": {
+        "type": "parameter",
+        "in": "path"
+      },
+      "issue_number": {
+        "type": "parameter",
+        "in": "path"
+      },
+      "title": {
+        "type": "body"
+      },
+      "body": {
+        "type": "body"
+      },
+      "state": {
+        "type": "body"
+      },
+      "assignees": {
+        "type": "body"
+      },
+      "milestone": {
+        "type": "body"
+      },
+      "labels": {
+        "type": "body"
+      }
+    }
+  },
+  {
+    "app_id": "github",
+    "tool_schema": {
+      "name": "LockGitHubIssue",
+      "description": "Parameters for locking a GitHub issue via REST API",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "owner": {
+            "type": "string",
+            "description": "The account owner of the repository"
+          },
+          "repo": {
+            "type": "string",
+            "description": "The name of the repository"
+          },
+          "issue_number": {
+            "type": "integer",
+            "description": "The number that identifies the issue"
+          },
+          "lock_reason": {
+            "type": "string",
+            "enum": ["off-topic", "too heated", "resolved", "spam"],
+            "description": "The reason for locking the issue"
+          }
+        },
+        "required": ["owner", "repo", "issue_number"]
+      }
+    },
+    "tool_metadata": {
+      "path": "/repos/{owner}/{repo}/issues/{issue_number}/lock",
+      "method": "PUT",
+      "tags": ["issues", "lock", "moderation"],
+      "owner": {
+        "type": "parameter",
+        "in": "path"
+      },
+      "repo": {
+        "type": "parameter",
+        "in": "path"
+      },
+      "issue_number": {
+        "type": "parameter",
+        "in": "path"
+      },
+      "lock_reason": {
+        "type": "body"
+      }
+    }
+  },
+  {
+    "app_id": "github",
+    "tool_schema": {
+      "name": "UnlockGitHubIssue",
+      "description": "Parameters for unlocking a GitHub issue via REST API",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "owner": {
+            "type": "string",
+            "description": "The account owner of the repository"
+          },
+          "repo": {
+            "type": "string",
+            "description": "The name of the repository"
+          },
+          "issue_number": {
+            "type": "integer",
+            "description": "The number that identifies the issue"
+          }
+        },
+        "required": ["owner", "repo", "issue_number"]
+      }
+    },
+    "tool_metadata": {
+      "path": "/repos/{owner}/{repo}/issues/{issue_number}/lock",
+      "method": "DELETE",
+      "tags": ["issues", "unlock", "moderation"],
+      "owner": {
+        "type": "parameter",
+        "in": "path"
+      },
+      "repo": {
+        "type": "parameter",
+        "in": "path"
+      },
+      "issue_number": {
+        "type": "parameter",
+        "in": "path"
+      }
+    }
+  },
+  {
+    "app_id": "github",
+    "tool_schema": {
+      "name": "SearchGitHubIssues",
+      "description": "Parameters for searching GitHub issues via REST API",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "q": {
+            "type": "string",
+            "description": "The search query string"
+          },
+          "sort": {
+            "type": "string",
+            "enum": [
+              "comments",
+              "reactions",
+              "reactions-+1",
+              "reactions--1",
+              "reactions-smile",
+              "reactions-thinking_face",
+              "reactions-heart",
+              "reactions-tada",
+              "interactions",
+              "created",
+              "updated"
+            ],
+            "default": "created",
+            "description": "The sort field"
+          },
+          "order": {
+            "type": "string",
+            "enum": ["asc", "desc"],
+            "default": "desc",
+            "description": "The sort order"
+          },
+          "per_page": {
+            "type": "integer",
+            "default": 30,
+            "description": "Results per page"
+          },
+          "page": {
+            "type": "integer",
+            "default": 1,
+            "description": "Page number of the results"
+          }
+        },
+        "required": ["q"]
+      }
+    },
+    "tool_metadata": {
+      "path": "/search/issues",
+      "method": "GET",
+      "tags": ["issues", "search", "query"],
+      "q": {
+        "type": "parameter",
+        "in": "query"
+      },
+      "sort": {
+        "type": "parameter",
+        "in": "query"
+      },
+      "order": {
+        "type": "parameter",
+        "in": "query"
+      },
+      "per_page": {
+        "type": "parameter",
+        "in": "query"
+      },
+      "page": {
+        "type": "parameter",
+        "in": "query"
+      }
+    }
+  },
+  {
+    "app_id": "github",
+    "tool_schema": {
+      "name": "ListRepoIssueEvents",
+      "description": "Parameters for listing events for an issue in a repository",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "owner": {
+            "type": "string",
+            "description": "The account owner of the repository"
+          },
+          "repo": {
+            "type": "string",
+            "description": "The name of the repository"
+          },
+          "issue_number": {
+            "type": "integer",
+            "description": "The number that identifies the issue"
+          },
+          "per_page": {
+            "type": "integer",
+            "default": 30,
+            "description": "Results per page"
+          },
+          "page": {
+            "type": "integer",
+            "default": 1,
+            "description": "Page number of the results"
+          }
+        },
+        "required": ["owner", "repo", "issue_number"]
+      }
+    },
+    "tool_metadata": {
+      "path": "/repos/{owner}/{repo}/issues/{issue_number}/events",
+      "method": "GET",
+      "tags": ["issues", "events", "list"],
+      "owner": {
+        "type": "parameter",
+        "in": "path"
+      },
+      "repo": {
+        "type": "parameter",
+        "in": "path"
+      },
+      "issue_number": {
+        "type": "parameter",
+        "in": "path"
+      },
+      "per_page": {
+        "type": "parameter",
+        "in": "query"
+      },
+      "page": {
+        "type": "parameter",
+        "in": "query"
+      }
+    }
+  },
+  {
+    "app_id": "github",
+    "tool_schema": {
+      "name": "AddAssigneesToIssue",
+      "description": "Parameters for adding assignees to an issue",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "owner": {
+            "type": "string",
+            "description": "The account owner of the repository"
+          },
+          "repo": {
+            "type": "string",
+            "description": "The name of the repository"
+          },
+          "issue_number": {
+            "type": "integer",
+            "description": "The number that identifies the issue"
+          },
+          "assignees": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Usernames of people to assign this issue to"
+          }
+        },
+        "required": ["owner", "repo", "issue_number", "assignees"]
+      }
+    },
+    "tool_metadata": {
+      "path": "/repos/{owner}/{repo}/issues/{issue_number}/assignees",
+      "method": "POST",
+      "tags": ["issues", "assignees", "add"],
+      "owner": {
+        "type": "parameter",
+        "in": "path"
+      },
+      "repo": {
+        "type": "parameter",
+        "in": "path"
+      },
+      "issue_number": {
+        "type": "parameter",
+        "in": "path"
+      },
+      "assignees": {
+        "type": "body"
+      }
+    }
+  },
+  {
+    "app_id": "github",
+    "tool_schema": {
+      "name": "RemoveAssigneesFromIssue",
+      "description": "Parameters for removing assignees from an issue",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "owner": {
+            "type": "string",
+            "description": "The account owner of the repository"
+          },
+          "repo": {
+            "type": "string",
+            "description": "The name of the repository"
+          },
+          "issue_number": {
+            "type": "integer",
+            "description": "The number that identifies the issue"
+          },
+          "assignees": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Usernames of assignees to remove from the issue"
+          }
+        },
+        "required": ["owner", "repo", "issue_number", "assignees"]
+      }
+    },
+    "tool_metadata": {
+      "path": "/repos/{owner}/{repo}/issues/{issue_number}/assignees",
+      "method": "DELETE",
+      "tags": ["issues", "assignees", "remove"],
+      "owner": {
+        "type": "parameter",
+        "in": "path"
+      },
+      "repo": {
+        "type": "parameter",
+        "in": "path"
+      },
+      "issue_number": {
+        "type": "parameter",
+        "in": "path"
+      },
+      "assignees": {
+        "type": "body"
+      }
+    }
+  }
+]

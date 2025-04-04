@@ -50,6 +50,10 @@ class ConnectionBase(CamelModel, SQLModel):
     owner_id: str | None = Field(default=None, foreign_key="users.id")
 
 
+class ConnectionSearch(CamelModel):
+    app_id: str | None = None
+
+
 class ConnectionCreate(ConnectionBase):
     auth: AuthConfig | None = None
 
