@@ -3,37 +3,32 @@ import string
 
 from sqlmodel import Session
 
-from app.models import ApiKeyAuth, AuthConfig, AuthType, Connection
+from app.models.connection import ApiKeyAuth, AuthConfig, AuthType, Connection
+from app.tests.utils.utils import random_string
 
 
 def random_lower_string() -> str:
     return "".join(random.choices(string.ascii_lowercase, k=32))
 
 
-def create_random_connection(
-    db: Session,
-) -> Connection:
-    name = random_lower_string()
-    description = random_lower_string()
-    kind = random.choice(["api", "oauth2", "basic"])
-    base_url = f"https://{random_lower_string()}.com"
-
-    # Create a valid AuthConfig object
+def create_random_connection(*, session: Session, owner_id: str) -> Connection:
+    """Create a random connection for testing."""
     auth_config = AuthConfig(
         type=AuthType.API_KEY,
-        config=ApiKeyAuth(
-            key=random_lower_string(), value=random_lower_string(), location="header"
-        ),
+        config=ApiKeyAuth(key="X-API-Key", value="test-key", location="header"),
     )
 
-    connection_in = Connection(
-        name=name,
-        description=description,
-        kind=kind,
-        base_url=base_url,
+    connection = Connection(
+        name=f"Test Connection {random_string()}",
+        description=f"Test Description {random_string()}",
+        app_id=random_string(),
+        base_url="https://api.example.com",
         auth=auth_config,
+        owner_id=owner_id,
     )
-    db.add(connection_in)
-    db.commit()
-    db.refresh(connection_in)
-    return connection_in
+
+    session.add(connection)
+    session.commit()
+    session.refresh(connection)
+
+    return connection

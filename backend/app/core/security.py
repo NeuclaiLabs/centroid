@@ -19,8 +19,9 @@ def get_encryption_key() -> bytes:
     if not key:
         key = Fernet.generate_key()
         # In production, this key should be stored securely and loaded from environment
-        settings.ENCRYPTION_KEY = key
-    return key if isinstance(key, bytes) else key.encode()
+        settings.ENCRYPTION_KEY = key.decode()
+        return key
+    return key.encode() if isinstance(key, str) else key
 
 
 def encrypt_dict(data: dict) -> str:

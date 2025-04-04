@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from sqlmodel import func, select
 
-from app.api.deps import SessionDep
+from app.api.deps import CurrentUser, SessionDep
 from app.core.logger import get_logger
 from app.models import (
     Connection,
@@ -16,12 +16,18 @@ router = APIRouter()
 logger = get_logger(__name__, service="connections")
 
 
-def get_connection(session: SessionDep, connection_id: str) -> Connection:
+def get_connection(
+    session: SessionDep, connection_id: str, current_user: CurrentUser
+) -> Connection:
     """Get a connection by ID or raise 404."""
     connection = session.get(Connection, connection_id)
     if not connection:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Connection not found"
+        )
+    if not current_user.is_superuser and (connection.owner_id != current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions"
         )
     return connection
 
@@ -30,35 +36,34 @@ def get_connection(session: SessionDep, connection_id: str) -> Connection:
 def create_connection(
     session: SessionDep,
     connection_in: ConnectionCreate,
+    current_user: CurrentUser,
 ) -> ConnectionOut:
     """Create new connection."""
-    try:
-        # Convert input model to DB model
-        connection = Connection.model_validate(connection_in)
-        session.add(connection)
-        session.commit()
-        session.refresh(connection)
+    connection = Connection.model_validate(connection_in)
+    connection.owner_id = current_user.id
 
-        # Convert DB model to output model
-        return ConnectionOut.model_validate(connection)
-    except Exception as e:
-        logger.error(f"Failed to create connection: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create connection: {str(e)}",
-        )
+    # Explicitly set auth if provided
+    if connection_in.auth:
+        connection.auth = connection_in.auth
+
+    session.add(connection)
+    session.commit()
+    session.refresh(connection)
+
+    return ConnectionOut.model_validate(connection)
 
 
 @router.get("/", response_model=ConnectionsOut)
 def read_connections(
     session: SessionDep,
+    current_user: CurrentUser,
     skip: int = 0,
     limit: int = 100,
 ) -> ConnectionsOut:
     """Retrieve connections with pagination."""
     try:
-        # Build base query
-        statement = select(Connection)
+        # Build base query with owner filter
+        statement = select(Connection).where(Connection.owner_id == current_user.id)
 
         # Get total count
         count = session.exec(
@@ -84,9 +89,10 @@ def read_connections(
 def read_connection(
     session: SessionDep,
     connection_id: str,
+    current_user: CurrentUser,
 ) -> ConnectionOut:
     """Get connection by ID."""
-    connection = get_connection(session, connection_id)
+    connection = get_connection(session, connection_id, current_user)
     return ConnectionOut.model_validate(connection)
 
 
@@ -95,29 +101,23 @@ def update_connection(
     session: SessionDep,
     connection_id: str,
     connection_in: ConnectionUpdate,
+    current_user: CurrentUser,
 ) -> ConnectionOut:
     """Update a connection."""
-    try:
-        connection = get_connection(session, connection_id)
+    connection = get_connection(session, connection_id, current_user)
 
-        # Only update fields that were actually provided
-        update_data = connection_in.model_dump(exclude_unset=True)
-        for field, value in update_data.items():
-            setattr(connection, field, value)
+    # Only update fields that were actually provided
+    update_data = connection_in.model_dump(exclude_unset=True, by_alias=False)
+    # Prevent owner_id from being updated
+    update_data.pop("ownerId", None)
 
+    if update_data:
+        connection.sqlmodel_update(update_data)
         session.add(connection)
         session.commit()
         session.refresh(connection)
 
-        return ConnectionOut.model_validate(connection)
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Failed to update connection {connection_id}: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update connection: {str(e)}",
-        )
+    return ConnectionOut.model_validate(connection)
 
 
 @router.delete(
@@ -128,10 +128,11 @@ def update_connection(
 def delete_connection(
     session: SessionDep,
     connection_id: str,
+    current_user: CurrentUser,
 ) -> UtilsMessage:
     """Delete a connection."""
     try:
-        connection = get_connection(session, connection_id)
+        connection = get_connection(session, connection_id, current_user)
         session.delete(connection)
         session.commit()
         return UtilsMessage(message="Connection deleted successfully")

@@ -7,6 +7,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from .chat import Chat
+    from .connection import Connection
     from .document import Document
     from .item import Item
     from .setting import Setting
@@ -90,6 +91,9 @@ class User(UserBase, table=True):
         back_populates="user", cascade_delete=True
     )
     tool_instances: list["ToolInstance"] = Relationship(
+        back_populates="owner", cascade_delete=True
+    )
+    connections: list["Connection"] = Relationship(
         back_populates="owner", cascade_delete=True
     )
 

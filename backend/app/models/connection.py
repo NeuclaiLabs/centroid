@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import nanoid
 from sqlalchemy import Column, DateTime, String, func
@@ -9,6 +9,10 @@ from sqlmodel import Field, Relationship, SQLModel
 from app.core.security import decrypt_dict, encrypt_dict
 
 from .base import CamelModel
+
+if TYPE_CHECKING:
+    from .tool_instance import ToolInstance
+    from .user import User
 
 
 class AuthType(str, Enum):
@@ -38,14 +42,12 @@ class AuthConfig(CamelModel):
     config: dict | TokenAuth | ApiKeyAuth | BasicAuth = {}
 
 
-class ConnectionBase(CamelModel):
+class ConnectionBase(CamelModel, SQLModel):
     name: str
     description: str | None = None
-    kind: str
-    base_url: str | None = None
-
-    class Config:
-        json_encoders = {AuthConfig: lambda v: v.model_dump() if v else None}
+    app_id: str
+    base_url: str | None = Field(default=None)
+    owner_id: str | None = Field(default=None, foreign_key="users.id")
 
 
 class ConnectionCreate(ConnectionBase):
@@ -55,8 +57,8 @@ class ConnectionCreate(ConnectionBase):
 class ConnectionUpdate(CamelModel):
     name: str | None = None
     description: str | None = None
-    kind: str | None = None
-    base_url: str | None = None
+    base_url: str | None = Field(default=None)
+    app_id: str | None = Field(default=None)
     auth: AuthConfig | None = None
 
 
@@ -68,6 +70,7 @@ class Connection(ConnectionBase, SQLModel, table=True):
     )
 
     tool_instances: list["ToolInstance"] = Relationship(back_populates="connection")
+    owner: "User" = Relationship(back_populates="connections")
 
     created_at: datetime | None = Field(
         default=None,
@@ -93,29 +96,56 @@ class Connection(ConnectionBase, SQLModel, table=True):
         """Decrypt and return the auth configuration."""
         if not self.encrypted_auth:
             return None
-        auth_dict = decrypt_dict(self.encrypted_auth)
-        return AuthConfig.model_validate(auth_dict)
+        try:
+            auth_dict = decrypt_dict(self.encrypted_auth)
+            return AuthConfig.model_validate(auth_dict)
+        except Exception as e:
+            print(f"Error decrypting auth: {e}")
+            return None
 
     @auth.setter
     def auth(self, value: AuthConfig | dict | None) -> None:
         """Encrypt and store the auth configuration."""
         if value is None:
             self.encrypted_auth = None
-        else:
-            # Handle both AuthConfig and dict cases
-            if isinstance(value, dict):
-                # Convert dict to AuthConfig
-                value = AuthConfig.model_validate(value)
+            return
 
-            auth_dict = value.model_dump()
-            self.encrypted_auth = encrypt_dict(auth_dict)
+        # Handle both AuthConfig and dict cases
+        if isinstance(value, dict):
+            # Convert dict to AuthConfig
+            value = AuthConfig.model_validate(value)
 
-    def model_dump(self, *args, **kwargs):
+        # Handle AuthType.API_KEY enum serialization issue
+        # Convert enum types to their string values for storage
+        auth_dict = value.model_dump()
+        if isinstance(auth_dict.get("type"), AuthType):
+            auth_dict["type"] = auth_dict["type"].value
+
+        self.encrypted_auth = encrypt_dict(auth_dict)
+
+    def model_dump(self, *args, **kwargs) -> dict[str, Any]:
         """Override model_dump to include auth in the output."""
-        data = super().model_dump(*args, **kwargs)
-        if "encrypted_auth" in data:
-            del data["encrypted_auth"]
-        data["auth"] = self.auth.model_dump() if self.auth else None
+        exclude = kwargs.pop("exclude", set())
+        data = super().model_dump(*args, exclude=exclude | {"encrypted_auth"}, **kwargs)
+
+        # Only include auth if it's not excluded
+        if "auth" not in exclude:
+            try:
+                auth = self.auth
+                if auth:
+                    auth_dict = auth.model_dump()
+
+                    # Convert string types back to enum for the response
+                    if isinstance(auth_dict.get("type"), str):
+                        auth_dict["type"] = AuthType(auth_dict["type"])
+
+                    data["auth"] = auth_dict
+                else:
+                    data["auth"] = None
+            except Exception as e:
+                print(f"Error including auth in model_dump: {e}")
+                data["auth"] = None
+
         return data
 
 
@@ -123,9 +153,10 @@ class ConnectionOut(CamelModel):
     id: str
     name: str
     description: str | None = None
-    kind: str
+    app_id: str
     base_url: str | None = None
     auth: AuthConfig | None = None
+    owner_id: str
     created_at: datetime
     updated_at: datetime
 
@@ -133,7 +164,3 @@ class ConnectionOut(CamelModel):
 class ConnectionsOut(CamelModel):
     data: list[ConnectionOut]
     count: int
-
-
-# Resolve forward references
-from .tool_instance import ToolInstance  # noqa
