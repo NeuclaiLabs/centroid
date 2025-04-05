@@ -3,10 +3,8 @@ import { auth } from '@/app/(auth)/auth';
 
 const TOOL_API_BASE = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/tool-definitions`;
 
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } },
-) {
+export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const session = await auth();
     // @ts-ignore

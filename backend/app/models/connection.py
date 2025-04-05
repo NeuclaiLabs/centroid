@@ -11,7 +11,6 @@ from app.core.security import decrypt_dict, encrypt_dict
 from .base import CamelModel
 
 if TYPE_CHECKING:
-    from .tool_instance import ToolInstance
     from .user import User
 
 
@@ -73,7 +72,6 @@ class Connection(ConnectionBase, SQLModel, table=True):
         default=None, sa_column=Column("encrypted_auth", String)
     )
 
-    tool_instances: list["ToolInstance"] = Relationship(back_populates="connection")
     owner: "User" = Relationship(back_populates="connections")
 
     created_at: datetime | None = Field(

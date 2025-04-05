@@ -5,35 +5,98 @@ from typing import Literal
 from mcp.server.fastmcp import FastMCP
 from pydantic import Field
 
-from app.mcp.openapi.schema_to_func import create_dynamic_function_from_schema
+from app.mcp.openapi.schema_to_func import schema_to_function
 
 # Type for HTTP methods
 HttpMethod = Literal["GET", "POST", "PUT", "PATCH", "DELETE"]
 
 github_schema = {
-    "title": "get_github_issues",
-    "description": "Parameters for fetching GitHub issues via REST API",
-    "type": "object",
-    "properties": {
-        "owner": {
-            "type": "string",
-            "description": "The account owner of the repository",
-            "x-category": "parameters",
-        },
-        "repo": {
-            "type": "string",
-            "description": "The name of the repository",
-            "x-category": "parameters",
-        },
-        "state": {
-            "type": "string",
-            "enum": ["open", "closed", "all"],
-            "default": "open",
-            "description": "Indicates the state of issues to return",
-            "x-category": "parameters",
+    "app_id": "github",
+    "id": "list_github_issues",
+    "tool_schema": {
+        "name": "ListGitHubIssues",
+        "description": "Parameters for fetching GitHub issues via REST API",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "owner": {
+                    "type": "string",
+                    "description": "The account owner of the repository",
+                },
+                "repo": {
+                    "type": "string",
+                    "description": "The name of the repository",
+                },
+                "state": {
+                    "type": "string",
+                    "enum": ["open", "closed", "all"],
+                    "default": "open",
+                    "description": "Indicates the state of issues to return",
+                },
+                "assignee": {
+                    "type": "string",
+                    "description": "Filter issues by assignee. Can be 'none' for unassigned issues",
+                },
+                "creator": {
+                    "type": "string",
+                    "description": "Filter issues by creator",
+                },
+                "mentioned": {
+                    "type": "string",
+                    "description": "Filter issues by user mentioned in them",
+                },
+                "labels": {
+                    "type": "string",
+                    "description": "Comma-separated list of label names",
+                },
+                "sort": {
+                    "type": "string",
+                    "enum": ["created", "updated", "comments"],
+                    "default": "created",
+                    "description": "What to sort results by",
+                },
+                "direction": {
+                    "type": "string",
+                    "enum": ["asc", "desc"],
+                    "default": "desc",
+                    "description": "The direction of the sort",
+                },
+                "since": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Only show issues updated at or after this time",
+                },
+                "per_page": {
+                    "type": "integer",
+                    "default": 30,
+                    "description": "Number of results per page",
+                },
+                "page": {
+                    "type": "integer",
+                    "default": 1,
+                    "description": "Page number of the results",
+                },
+            },
+            "required": ["owner", "repo"],
         },
     },
-    "required": ["owner", "repo"],
+    "tool_metadata": {
+        "path": "/repos/{owner}/{repo}/issues",
+        "method": "GET",
+        "tags": ["issues", "list", "query"],
+        "owner": {"type": "parameter", "in": "path"},
+        "repo": {"type": "parameter", "in": "path"},
+        "state": {"type": "parameter", "in": "query"},
+        "assignee": {"type": "parameter", "in": "query"},
+        "creator": {"type": "parameter", "in": "query"},
+        "mentioned": {"type": "parameter", "in": "query"},
+        "labels": {"type": "parameter", "in": "query"},
+        "sort": {"type": "parameter", "in": "query"},
+        "direction": {"type": "parameter", "in": "query"},
+        "since": {"type": "parameter", "in": "query"},
+        "per_page": {"type": "parameter", "in": "query"},
+        "page": {"type": "parameter", "in": "query"},
+    },
 }
 
 
@@ -83,7 +146,7 @@ def concatenate_tool(text1: str, text2: str) -> str:
 tools_to_load = [
     addition_tool,
     concatenate_tool,
-    create_dynamic_function_from_schema(github_schema),
+    schema_to_function(github_schema["tool_schema"], github_schema["tool_metadata"]),
 ]
 
 for func in tools_to_load:

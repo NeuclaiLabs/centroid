@@ -9,6 +9,7 @@ from .base import CamelModel
 
 
 class ToolDefinitionBase(CamelModel):
+    id: str | None
     app_id: str
     tool_schema: dict[str, Any] | None = Field(
         default=None, sa_column=Column("schema", JSON)

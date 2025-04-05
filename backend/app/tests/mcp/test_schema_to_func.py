@@ -1,257 +1,399 @@
-from datetime import datetime
+from typing import Any
 
 import pytest
-from pydantic import ValidationError
-from pydantic.fields import FieldInfo
+from pydantic import BaseModel
+from pydantic.fields import FieldInfo, PydanticUndefined
 
-from app.mcp.openapi.schema_to_func import create_dynamic_function_from_schema
+from app.mcp.openapi.schema_to_func import schema_to_function
+
 
 # Test schemas
-github_schema = {
-    "title": "GetGitHubIssues",
-    "description": "Parameters for fetching GitHub issues via REST API",
-    "type": "object",
-    "properties": {
-        "owner": {
-            "type": "string",
-            "description": "The account owner of the repository",
-            "x-category": "parameters",
+@pytest.fixture
+def github_schema() -> tuple[dict[str, Any], dict[str, Any]]:
+    """GitHub list issues schema and metadata fixture"""
+    schema = {
+        "name": "ListGitHubIssues",
+        "title": "ListGitHubIssues",
+        "description": "Parameters for fetching GitHub issues via REST API",
+        "type": "object",
+        "properties": {
+            "owner": {
+                "type": "string",
+                "description": "The account owner of the repository",
+            },
+            "repo": {"type": "string", "description": "The name of the repository"},
+            "state": {
+                "type": "string",
+                "enum": ["open", "closed", "all"],
+                "default": "open",
+                "description": "Indicates the state of issues to return",
+            },
+            "assignee": {
+                "type": "string",
+                "description": "Filter issues by assignee. Can be 'none' for unassigned issues",
+            },
+            "creator": {"type": "string", "description": "Filter issues by creator"},
+            "mentioned": {
+                "type": "string",
+                "description": "Filter issues by user mentioned in them",
+            },
+            "labels": {
+                "type": "string",
+                "description": "Comma-separated list of label names",
+            },
+            "sort": {
+                "type": "string",
+                "enum": ["created", "updated", "comments"],
+                "default": "created",
+                "description": "What to sort results by",
+            },
+            "direction": {
+                "type": "string",
+                "enum": ["asc", "desc"],
+                "default": "desc",
+                "description": "The direction of the sort",
+            },
+            "since": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Only show issues updated at or after this time",
+            },
+            "per_page": {
+                "type": "integer",
+                "default": 30,
+                "description": "Number of results per page",
+            },
+            "page": {
+                "type": "integer",
+                "default": 1,
+                "description": "Page number of the results",
+            },
         },
-        "repo": {
-            "type": "string",
-            "description": "The name of the repository",
-            "x-category": "parameters",
-        },
-        "state": {
-            "type": "string",
-            "enum": ["open", "closed", "all"],
-            "default": "open",
-            "description": "Indicates the state of issues to return",
-            "x-category": "parameters",
-        },
-        "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Creation timestamp",
-            "x-category": "parameters",
-        },
-        "labels": {
-            "type": "array",
-            "items": {"type": "string"},
-            "description": "List of label names",
-            "x-category": "parameters",
-        },
-        "payload": {
+        "required": ["owner", "repo"],
+    }
+
+    metadata = {
+        "path": "/repos/{owner}/{repo}/issues",
+        "method": "GET",
+        "tags": ["issues", "list", "query"],
+        "owner": {"type": "parameter", "in": "path"},
+        "repo": {"type": "parameter", "in": "path"},
+        "state": {"type": "parameter", "in": "query"},
+        "assignee": {"type": "parameter", "in": "query"},
+        "creator": {"type": "parameter", "in": "query"},
+        "mentioned": {"type": "parameter", "in": "query"},
+        "labels": {"type": "parameter", "in": "query"},
+        "sort": {"type": "parameter", "in": "query"},
+        "direction": {"type": "parameter", "in": "query"},
+        "since": {"type": "parameter", "in": "query"},
+        "per_page": {"type": "parameter", "in": "query"},
+        "page": {"type": "parameter", "in": "query"},
+    }
+    return schema, metadata
+
+
+@pytest.fixture
+def gmail_schema() -> tuple[dict[str, Any], dict[str, Any]]:
+    """Gmail send email schema and metadata fixture"""
+    return {
+        "name": "SendEmail",
+        "description": "Send an email to specified recipients with subject and body content",
+        "parameters": {
             "type": "object",
-            "description": "The request payload",
-            "x-category": "body",
-            "properties": {"title": {"type": "string"}, "body": {"type": "string"}},
-        },
-    },
-    "required": ["owner", "repo"],
-}
-
-
-@pytest.mark.asyncio
-async def test_basic_validation():
-    get_github_issues = create_dynamic_function_from_schema(github_schema)
-
-    # Test valid input
-    await get_github_issues(owner="microsoft", repo="typescript", state="open")
-    assert get_github_issues.__bound_args__["owner"] == "microsoft"
-    assert get_github_issues.__bound_args__["repo"] == "typescript"
-    assert get_github_issues.__bound_args__["state"] == "open"
-
-    # Test with minimal required fields
-    await get_github_issues(owner="microsoft", repo="typescript")
-    assert get_github_issues.__bound_args__["owner"] == "microsoft"
-    assert get_github_issues.__bound_args__["repo"] == "typescript"
-    assert (
-        get_github_issues.__bound_args__["state"] == "open"
-    )  # Should use default value
-
-
-@pytest.mark.asyncio
-async def test_required_fields():
-    get_github_issues = create_dynamic_function_from_schema(github_schema)
-
-    # Test missing required field
-    with pytest.raises(ValidationError):
-        await get_github_issues(owner="microsoft")
-
-
-@pytest.mark.asyncio
-async def test_enum_validation():
-    get_github_issues = create_dynamic_function_from_schema(github_schema)
-
-    # Test invalid enum value
-    with pytest.raises(ValidationError):
-        await get_github_issues(
-            owner="microsoft", repo="typescript", state="invalid_state"
-        )
-
-
-@pytest.mark.asyncio
-async def test_datetime_field():
-    get_github_issues = create_dynamic_function_from_schema(github_schema)
-
-    # Test valid datetime
-    model = get_github_issues.model(
-        owner="microsoft", repo="typescript", created_at="2023-01-01T00:00:00Z"
-    )
-    assert isinstance(model.created_at, datetime)
-
-    # Test invalid datetime
-    with pytest.raises(ValidationError):
-        get_github_issues.model(
-            owner="microsoft", repo="typescript", created_at="invalid_date"
-        )
-
-
-@pytest.mark.asyncio
-async def test_array_field():
-    get_github_issues = create_dynamic_function_from_schema(github_schema)
-
-    # Test valid array
-    await get_github_issues(
-        owner="microsoft", repo="typescript", labels=["bug", "feature"]
-    )
-    assert get_github_issues.__bound_args__["labels"] == ["bug", "feature"]
-
-    # Test with empty array
-    await get_github_issues(owner="microsoft", repo="typescript", labels=[])
-    assert get_github_issues.__bound_args__["labels"] == []
-
-
-def test_function_metadata():
-    get_github_issues = create_dynamic_function_from_schema(github_schema)
-
-    # Test function name
-    assert get_github_issues.__name__ == "GetGitHubIssues"
-
-    # Test model attachment
-    assert hasattr(get_github_issues, "model")
-
-    # Test function signature
-    assert hasattr(get_github_issues, "__signature__")
-    params = get_github_issues.__signature__.parameters
-    assert "owner" in params
-    assert "repo" in params
-    assert "state" in params
-    assert "created_at" in params
-    assert "labels" in params
-
-
-def test_metadata_preservation():
-    """Test that metadata is properly preserved in json_schema_extra."""
-    # Schema with various metadata fields
-    test_schema = {
-        "title": "TestMetadata",
-        "description": "Test schema with metadata",
-        "type": "object",
-        "properties": {
-            "field_with_metadata": {
-                "type": "string",
-                "description": "Field with rich metadata",
-                "title": "Custom Title",
-                "x-category": "custom_category",
-                "x-custom-field": "custom value",
-                "examples": ["example1", "example2"],
-                "deprecated": True,
-            },
-            "field_with_defaults": {
-                "type": "string",
-                "description": "Field with default metadata",
-            },
-        },
-        "required": ["field_with_metadata"],
-    }
-
-    test_func = create_dynamic_function_from_schema(test_schema)
-    model_fields = test_func.model.model_fields
-    params = list(test_func.__signature__.parameters.values())
-
-    # Test model field metadata
-    field_with_metadata = model_fields["field_with_metadata"]
-    assert field_with_metadata.description == "Field with rich metadata"
-    assert field_with_metadata.title == "Custom Title"
-
-    # Test json_schema_extra content
-    extra = field_with_metadata.json_schema_extra
-    assert extra["x-category"] == "custom_category"
-    assert extra["x-custom-field"] == "custom value"
-    assert extra["examples"] == ["example1", "example2"]
-    assert extra["deprecated"] is True
-
-    # Test default metadata handling
-    field_with_defaults = model_fields["field_with_defaults"]
-    assert field_with_defaults.description == "Field with default metadata"
-    assert (
-        field_with_defaults.title == "field_with_defaults"
-    )  # Should use field name as title
-    assert (
-        field_with_defaults.json_schema_extra["x-category"] == "body"
-    )  # Should use default category
-
-    # Test parameter metadata preservation
-    param_with_metadata = next(p for p in params if p.name == "field_with_metadata")
-    assert isinstance(param_with_metadata.default, FieldInfo)
-    assert param_with_metadata.default.description == "Field with rich metadata"
-    assert param_with_metadata.default.title == "Custom Title"
-    assert (
-        param_with_metadata.default.json_schema_extra["x-category"] == "custom_category"
-    )
-    assert (
-        param_with_metadata.default.json_schema_extra["x-custom-field"]
-        == "custom value"
-    )
-
-
-def test_nested_metadata():
-    """Test that metadata is preserved for nested object fields."""
-    nested_schema = {
-        "title": "TestNestedMetadata",
-        "type": "object",
-        "properties": {
-            "nested_object": {
-                "type": "object",
-                "description": "A nested object with metadata",
-                "title": "Nested Object",
-                "x-category": "nested",
-                "properties": {
-                    "nested_field": {
-                        "type": "string",
-                        "description": "Nested field description",
-                        "title": "Nested Field",
-                        "examples": ["example value"],
-                        "deprecated": True,
-                    }
+            "properties": {
+                "to": {
+                    "type": "string",
+                    "description": "Email address(es) of recipients (comma-separated for multiple recipients)",
                 },
-            }
+                "cc": {
+                    "type": "string",
+                    "description": "Email address(es) to CC (comma-separated for multiple recipients)",
+                },
+                "subject": {
+                    "type": "string",
+                    "description": "Subject line of the email",
+                },
+                "body": {"type": "string", "description": "Content of the email body"},
+                "is_html": {
+                    "type": "boolean",
+                    "default": False,
+                    "description": "Whether the body content is HTML formatted",
+                },
+            },
+            "required": ["to", "subject", "body"],
         },
+    }, {
+        "path": "/gmail/v1/users/me/messages/send",
+        "method": "POST",
+        "to": {"type": "parameter", "in": "body"},
+        "cc": {"type": "parameter", "in": "body"},
+        "subject": {"type": "parameter", "in": "body"},
+        "body": {"type": "parameter", "in": "body"},
+        "is_html": {"type": "parameter", "in": "body"},
     }
 
-    test_func = create_dynamic_function_from_schema(nested_schema)
-    model_fields = test_func.model.model_fields
-    print("Model fields: ", model_fields)
 
-    # Test nested object metadata
-    nested_field = model_fields["nested_object"]
-    assert nested_field.description == "A nested object with metadata"
-    assert nested_field.title == "Nested Object"
-    assert nested_field.json_schema_extra["x-category"] == "nested"
+@pytest.fixture
+def calendar_schema() -> tuple[dict[str, Any], dict[str, Any]]:
+    """Google Calendar create event schema and metadata fixture"""
+    return {
+        "name": "CreateEvent",
+        "description": "Create a calendar event with specified details and attendees",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "summary": {"type": "string", "description": "Title of the event"},
+                "start": {
+                    "type": "object",
+                    "properties": {
+                        "dateTime": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "Start time of the event (ISO 8601 format)",
+                        },
+                        "timeZone": {
+                            "type": "string",
+                            "description": "Timezone for the start time",
+                        },
+                    },
+                    "required": ["dateTime"],
+                    "description": "Start time details",
+                },
+                "end": {
+                    "type": "object",
+                    "properties": {
+                        "dateTime": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "End time of the event (ISO 8601 format)",
+                        },
+                        "timeZone": {
+                            "type": "string",
+                            "description": "Timezone for the end time",
+                        },
+                    },
+                    "required": ["dateTime"],
+                    "description": "End time details",
+                },
+                "attendees": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "format": "email",
+                                "description": "Email address of the attendee",
+                            },
+                            "optional": {
+                                "type": "boolean",
+                                "default": False,
+                                "description": "Whether attendance is optional",
+                            },
+                        },
+                        "required": ["email"],
+                    },
+                    "description": "List of event attendees",
+                },
+            },
+            "required": ["summary", "start", "end"],
+        },
+    }, {
+        "path": "/calendar/v3/calendars/{calendar_id}/events",
+        "method": "POST",
+        "summary": {"type": "parameter", "in": "body"},
+        "start": {"type": "parameter", "in": "body"},
+        "end": {"type": "parameter", "in": "body"},
+        "attendees": {"type": "parameter", "in": "body"},
+    }
 
-    # Test nested field metadata in the generated model
-    nested_model = nested_field.annotation.__args__[0]  # Get actual model from Optional
-    print("Actual nested model: ", nested_model)
-    print("Actual nested model fields: ", nested_model.model_fields)
 
-    nested_model_field = nested_model.model_fields["nested_field"]
-    assert nested_model_field.description == "Nested field description"
-    assert nested_model_field.title == "Nested Field"
-    assert nested_model_field.json_schema_extra["examples"] == ["example value"]
-    assert nested_model_field.json_schema_extra["deprecated"] is True
+@pytest.fixture
+def openai_schema() -> tuple[dict[str, Any], dict[str, Any]]:
+    """OpenAI create embedding schema and metadata fixture"""
+    return {
+        "name": "CreateEmbedding",
+        "description": "Generate embeddings for provided text content",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "model": {
+                    "type": "string",
+                    "default": "text-embedding-ada-002",
+                    "description": "ID of the model to use",
+                },
+                "input": {
+                    "oneOf": [
+                        {"type": "string"},
+                        {"type": "array", "items": {"type": "string"}},
+                    ],
+                    "description": "Input text to get embeddings for",
+                },
+                "dimensions": {
+                    "type": "integer",
+                    "description": "The number of dimensions for output embeddings",
+                },
+            },
+            "required": ["model", "input"],
+        },
+    }, {
+        "path": "/v1/embeddings",
+        "method": "POST",
+        "model": {"type": "parameter", "in": "body"},
+        "input": {"type": "parameter", "in": "body"},
+        "dimensions": {"type": "parameter", "in": "body"},
+    }
+
+
+class TestSchemaToFunction:
+    """Test suite for schema to function conversion"""
+
+    def test_gmail_signature_inspection(
+        self, gmail_schema: tuple[dict[str, Any], dict[str, Any]]
+    ):
+        """Test Gmail schema function signature inspection"""
+        schema, metadata = gmail_schema
+        send_email = schema_to_function(schema, metadata)
+
+        # Test function metadata
+        assert send_email.__name__ == "SendEmail"
+        assert (
+            send_email.__doc__
+            == "Send an email to specified recipients with subject and body content"
+        )
+
+        # Test signature parameters
+        params = send_email.__signature__.parameters
+        assert "to" in params
+        assert "subject" in params
+        assert "body" in params
+        assert "is_html" in params
+        assert "cc" in params
+
+        # Test parameter metadata
+        to_param = params["to"]
+        assert isinstance(to_param.default, FieldInfo)
+        assert (
+            to_param.default.description
+            == "Email address(es) of recipients (comma-separated for multiple recipients)"
+        )
+
+        # Test required vs optional parameters
+        assert params["to"].default.default is PydanticUndefined  # Required
+        assert params["subject"].default.default is PydanticUndefined  # Required
+        assert params["body"].default.default is PydanticUndefined  # Required
+        assert params["is_html"].default.default is False  # Optional with default
+        assert params["cc"].default.default is None  # Optional without default
+
+    def test_calendar_nested_signature(
+        self, calendar_schema: tuple[dict[str, Any], dict[str, Any]]
+    ):
+        """Test Calendar schema nested object signature inspection"""
+        schema, metadata = calendar_schema
+        create_event = schema_to_function(schema, metadata)
+
+        # Test function metadata
+        assert create_event.__name__ == "CreateEvent"
+        assert (
+            create_event.__doc__
+            == "Create a calendar event with specified details and attendees"
+        )
+
+        # Test model fields for nested structures
+        fields = create_event.model.model_fields
+
+        # Check start field structure
+        start_field = fields["start"]
+        assert issubclass(start_field.annotation, BaseModel)
+        start_model = start_field.annotation
+        assert "dateTime" in start_model.model_fields
+        assert "timeZone" in start_model.model_fields
+
+        # Check attendees field structure
+        attendees_field = fields["attendees"]
+        assert "list[dict] | None" in str(attendees_field.annotation)
+
+        # Test required fields
+        assert fields["summary"].is_required()
+        assert fields["start"].is_required()
+        assert fields["end"].is_required()
+
+    def test_openai_union_type_signature(
+        self, openai_schema: tuple[dict[str, Any], dict[str, Any]]
+    ):
+        """Test OpenAI schema union type signature inspection"""
+        schema, metadata = openai_schema
+        create_embedding = schema_to_function(schema, metadata)
+
+        # Test function metadata
+        assert create_embedding.__name__ == "CreateEmbedding"
+        assert (
+            create_embedding.__doc__ == "Generate embeddings for provided text content"
+        )
+
+        # Test model fields for union types
+        fields = create_embedding.model.model_fields
+
+        # Check input field union type
+        input_field = fields["input"]
+        assert str(input_field.annotation) == "str | list[str]"
+
+        # Test default values
+        assert fields["model"].default == "text-embedding-ada-002"
+        assert fields["dimensions"].default is None
+
+        # Test required fields
+        assert not fields["model"].is_required()
+        assert fields["input"].is_required()
+        assert not fields["dimensions"].is_required()
+
+    def test_github_metadata_inspection(
+        self, github_schema: tuple[dict[str, Any], dict[str, Any]]
+    ):
+        """Test GitHub schema metadata and parameter locations inspection"""
+        schema, metadata = github_schema
+        list_issues = schema_to_function(schema, metadata)
+
+        # Test function metadata
+        assert list_issues.__name__ == schema["name"]
+        assert list_issues.__doc__ == schema["description"]
+
+        # Test model configuration
+        assert list_issues.model.model_config["arbitrary_types_allowed"] is True
+        assert list_issues.model.model_config["json_schema_extra"] == metadata
+
+        # Test parameter locations
+        assert metadata["owner"]["in"] == "path"
+        assert metadata["repo"]["in"] == "path"
+        assert metadata["state"]["in"] == "query"
+        assert metadata["assignee"]["in"] == "query"
+        assert metadata["labels"]["in"] == "query"
+
+        # Test path and method
+        assert metadata["path"] == "/repos/{owner}/{repo}/issues"
+        assert metadata["method"] == "GET"
+        assert metadata["tags"] == ["issues", "list", "query"]
+
+        # Test parameter types and defaults
+        fields = list_issues.model.model_fields
+        assert fields["owner"].annotation == str
+        assert fields["repo"].annotation == str
+        assert fields["state"].annotation == str
+        assert fields["state"].default == "open"
+        assert fields["per_page"].annotation == int
+        assert fields["per_page"].default == 30
+        assert fields["page"].annotation == int
+        assert fields["page"].default == 1
+
+        # Test optional fields
+        assert fields["assignee"].annotation == str | None
+        assert fields["creator"].annotation == str | None
+        assert fields["mentioned"].annotation == str | None
+        assert fields["labels"].annotation == str | None
+        assert fields["since"].annotation == str | None
+
+        # No need to test required fields here as they were tested in schema assertions above
 
 
 if __name__ == "__main__":
-    pytest.main([__file__])
+    pytest.main(["-v", __file__])

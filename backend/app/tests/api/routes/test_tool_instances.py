@@ -55,8 +55,38 @@ def test_create_tool_instance(
     assert content["status"] == ToolInstanceStatus.ACTIVE
     assert content["ownerId"] == user.id
     assert content["appId"] == tool_data.app_id
+    assert content["config"] is None
     assert content["createdAt"] is not None
     assert content["updatedAt"] is not None
+
+
+def test_create_tool_instance_with_config(
+    client: TestClient, normal_user_token_headers: dict[str, str], db: Session
+) -> None:
+    tool_def = ToolDefinition(
+        app_id=random_string(),
+        tool_schema={"type": "object", "properties": {}},
+        tool_metadata={"name": "test_tool"},
+    )
+    crud.create_tool_definition(session=db, tool_definition=tool_def)
+    user = crud.get_user_by_email(session=db, email=settings.EMAIL_TEST_USER)
+
+    config = {"key": "value", "nested": {"foo": "bar"}}
+    tool_data = ToolInstanceCreate(
+        definition_id=tool_def.id,
+        status=ToolInstanceStatus.ACTIVE,
+        owner_id=user.id,
+        app_id=tool_def.app_id,
+        config=config,
+    )
+    response = client.post(
+        f"{settings.API_V1_STR}/tool-instances/",
+        headers=normal_user_token_headers,
+        json=tool_data.model_dump(exclude_unset=True),
+    )
+    assert response.status_code == 200
+    content = response.json()
+    assert content["config"] == config
 
 
 def test_read_tool_instance(
@@ -91,6 +121,7 @@ def test_read_tool_instance(
     assert content["status"] == ToolInstanceStatus.ACTIVE
     assert content["ownerId"] == user.id
     assert content["appId"] == tool_data.app_id
+    assert content["config"] is None
     assert content["createdAt"] is not None
     assert content["updatedAt"] is not None
 
@@ -121,17 +152,21 @@ def test_read_tool_instances(
     # Get the user
     user = crud.get_user_by_email(session=db, email=settings.EMAIL_TEST_USER)
 
+    config1 = {"setting": "value1"}
+    config2 = None
     tool_data1 = ToolInstanceCreate(
         definition_id=tool_def.id,
         status=ToolInstanceStatus.ACTIVE,
         owner_id=user.id,
         app_id=tool_def.app_id,
+        config=config1,
     )
     tool_data2 = ToolInstanceCreate(
         definition_id=tool_def.id,
         status=ToolInstanceStatus.ACTIVE,
         owner_id=user.id,
         app_id=tool_def.app_id,
+        config=config2,
     )
     crud.create_tool_instance(session=db, tool_instance=tool_data1)
     crud.create_tool_instance(session=db, tool_instance=tool_data2)
@@ -143,9 +178,13 @@ def test_read_tool_instances(
     content = response.json()
     assert len(content["data"]) >= 2
     assert content["count"] >= 2
+    configs_found = set()
     for item in content["data"]:
         assert item["ownerId"] == user.id
         assert item["appId"] == tool_def.app_id
+        configs_found.add(str(item["config"]))
+    assert str(config1) in configs_found
+    assert str(None) in configs_found
 
 
 def test_update_tool_instance(
@@ -169,7 +208,12 @@ def test_update_tool_instance(
         app_id=tool_def.app_id,
     )
     tool_instance = crud.create_tool_instance(session=db, tool_instance=tool_data)
-    update_data = ToolInstanceUpdate(status=ToolInstanceStatus.INACTIVE)
+
+    new_config = {"updated": "config"}
+    update_data = ToolInstanceUpdate(
+        status=ToolInstanceStatus.INACTIVE,
+        config=new_config,
+    )
     response = client.put(
         f"{settings.API_V1_STR}/tool-instances/{tool_instance.id}",
         headers=normal_user_token_headers,
@@ -180,6 +224,7 @@ def test_update_tool_instance(
     assert content["status"] == ToolInstanceStatus.INACTIVE
     assert content["ownerId"] == user.id
     assert content["appId"] == tool_def.app_id
+    assert content["config"] == new_config
     assert content["updatedAt"] is not None
 
 

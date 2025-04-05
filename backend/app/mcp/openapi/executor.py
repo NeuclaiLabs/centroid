@@ -1,11 +1,15 @@
 import json
 from collections.abc import Callable
-from typing import Any, Literal
+from typing import Any
 from urllib.parse import urljoin
 
 import httpx
 from fastapi import HTTPException
 from pydantic import BaseModel, ValidationError
+from sqlmodel import Session
+
+from app.core.db import engine
+from app.models import Connection
 
 
 class APIResponse(BaseModel):
@@ -95,20 +99,16 @@ async def execute_endpoint(
 
 
 def translate_fn_to_endpoint(
-    base_url: str,
-    method: Literal["GET", "PUT", "DELETE", "POST", "PATCH"],
-    path: str,
-    connection: str,
+    metadata: dict[str, Any],
+    connection: Connection | None,
     fn: Callable,
 ) -> EndpointConfig:
     """
     Translate a function to an EndpointConfig object based on the function's model metadata.
 
     Args:
-        base_url: Base URL for the API
-        method: HTTP method to use
-        path: API endpoint path
-        connection: Connection identifier
+        metadata: Metadata from the function's model
+        connection: Connection object
         fn: Generated function from schema_to_func
 
     Returns:
@@ -116,7 +116,6 @@ def translate_fn_to_endpoint(
     """
     if not hasattr(fn, "model"):
         raise ValueError("Function must have a model attribute")
-    print(connection)
 
     model = fn.model
     fields = model.model_fields
@@ -128,36 +127,67 @@ def translate_fn_to_endpoint(
     headers: dict[str, str] = {}
     params: dict[str, Any] = {}
     body: dict[str, Any] = {}
+    cookies: dict[str, str] = {}
+    path_params: dict[str, str] = {}
+
+    # Extract base path and method from metadata
+    base_url = connection.base_url if connection else ""
+    path = metadata.get("path", "")
+    method = metadata.get("method", "GET")
 
     # Get values from the function attributes
     for field_name, field in fields.items():
-        # Get the category from json_schema_extra, defaulting to "body"
-        category = (
-            field.json_schema_extra.get("x-category", "body")
-            if field.json_schema_extra
-            else "body"
+        # Get parameter metadata
+        param_meta = metadata.get(field_name, {})
+        is_parameter = (
+            isinstance(param_meta, dict)
+            and "type" in param_meta
+            and param_meta["type"] == "parameter"
+        )
+        param_in = param_meta.get("in") if isinstance(param_meta, dict) else None
+        param_name = (
+            param_meta.get("name", field_name)
+            if isinstance(param_meta, dict)
+            else field_name
         )
 
-        # First try to get value from runtime arguments
+        # Get value from runtime arguments
         value = runtime_args.get(field_name)
 
-        # If we have a value, use it
-        if value is not None:
-            if category == "headers" and isinstance(value, str):
-                headers[field_name] = value
-            elif category == "parameters":
-                params[field_name] = value
-            elif category == "body":
-                body[field_name] = value
-        # If we don't have a value but have a default, use the default
-        elif field.default is not None:
-            if category == "parameters":
-                params[field_name] = field.default
-            elif category == "body":
-                body[field_name] = field.default
+        # Skip if no value and no default
+        if value is None and field.default is None:
+            continue
+
+        # Use default if no runtime value
+        if value is None:
+            value = field.default
+
+        # Handle parameters based on their location
+        if is_parameter and param_in:
+            if param_in == "query":
+                params[param_name] = value
+            elif param_in == "header" and isinstance(value, str):
+                headers[param_name] = value
+            elif param_in == "path":
+                path_params[param_name] = str(value)
+            elif param_in == "cookie":
+                cookies[param_name] = str(value)
+        else:
+            # If not explicitly a parameter or no location specified, treat as body
+            body[param_name] = value
+
+    # Apply path parameters
+    if path_params:
+        for name, value in path_params.items():
+            path = path.replace(f"{{{name}}}", value)
 
     # Ensure the URL is properly constructed
     full_url = urljoin(base_url.rstrip("/") + "/", path.lstrip("/"))
+
+    # Add cookies to headers if any
+    if cookies:
+        cookie_str = "; ".join(f"{k}={v}" for k, v in cookies.items())
+        headers["Cookie"] = cookie_str
 
     return EndpointConfig(
         url=full_url,
@@ -171,21 +201,49 @@ def translate_fn_to_endpoint(
 
 async def execute_dynamic_function(
     model_instance: BaseModel,
-    connection: Any | None,
     dynamic_function: Callable,
 ) -> dict[str, Any]:
     """Execute the dynamic function with proper error handling"""
-    # if connection is None:
-    #     return model_instance.model_dump()
+    metadata = model_instance.model_config.get("json_schema_extra", {})
 
     try:
+        # Get connection details if connection_id is provided
+        connection_id = metadata.get("connection_id")
+        connection = None
+        if connection_id:
+            with Session(engine) as session:
+                connection = session.get(Connection, connection_id)
+
         endpoint_config = translate_fn_to_endpoint(
-            base_url="https://api.github.com",
-            method="GET",
-            path=f"/repos/{model_instance.owner}/{model_instance.repo}/issues",
-            connection=connection.id if connection else "",
+            metadata=metadata,
+            connection=connection,
             fn=dynamic_function,
         )
+
+        # If we have a connection, add its auth configuration to headers
+        if connection_id and connection and connection.auth:
+            auth_config = connection.auth
+            headers = endpoint_config.headers or {}
+
+            if auth_config.type == "token":
+                headers["Authorization"] = f"Bearer {auth_config.config.token}"
+            elif auth_config.type == "api_key":
+                if auth_config.config.location == "header":
+                    headers[auth_config.config.key] = auth_config.config.value
+                elif auth_config.config.location == "query":
+                    params = endpoint_config.params or {}
+                    params[auth_config.config.key] = auth_config.config.value
+                    endpoint_config.params = params
+            elif auth_config.type == "basic":
+                import base64
+
+                auth_string = (
+                    f"{auth_config.config.username}:{auth_config.config.password}"
+                )
+                encoded = base64.b64encode(auth_string.encode()).decode()
+                headers["Authorization"] = f"Basic {encoded}"
+
+            endpoint_config.headers = headers
 
         response = await execute_endpoint(endpoint_config)
         return response.data if response.data is not None else response.error

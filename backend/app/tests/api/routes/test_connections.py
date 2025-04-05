@@ -33,8 +33,11 @@ def valid_connection_data():
         "app_id": random_string(),
         "base_url": "https://api.example.com",
         "auth": {
-            "type": AuthType.API_KEY,
-            "config": {"key": "X-API-Key", "value": "test-key", "location": "header"},
+            "type": AuthType.BASIC,
+            "config": {
+                "username": "test-user",
+                "password": "test-password",
+            },
         },
     }
 

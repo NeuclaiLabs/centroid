@@ -30,9 +30,9 @@ export interface ToolDefinitionsResponse {
 export interface ToolInstance {
   id: string;
   appId: string;
-  enabled: boolean;
-  name: string;
-  description: string;
+  status: string;
+  definition: ToolDefinition;
+  config: Record<string, unknown> | null;
   createdAt: string;
   updatedAt: string;
 }

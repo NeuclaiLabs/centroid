@@ -1,6 +1,7 @@
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import selectinload
 from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
@@ -30,7 +31,11 @@ def read_tool_instances(
     All search parameters are optional and will be automatically parsed from query parameters.
     """
     # Build base query
-    query = select(ToolInstance).where(ToolInstance.owner_id == current_user.id)
+    query = (
+        select(ToolInstance)
+        .where(ToolInstance.owner_id == current_user.id)
+        .options(selectinload(ToolInstance.definition))
+    )
 
     # Add app_id filter if provided
     if search.app_id:
@@ -52,7 +57,13 @@ def read_tool_instance(session: SessionDep, current_user: CurrentUser, id: str) 
     """
     Get tool instance by ID.
     """
-    tool = session.get(ToolInstance, id)
+    query = (
+        select(ToolInstance)
+        .where(ToolInstance.id == id)
+        .options(selectinload(ToolInstance.definition))
+    )
+    tool = session.exec(query).first()
+
     if not tool:
         raise HTTPException(status_code=404, detail="Tool instance not found")
     if not current_user.is_superuser and tool.owner_id != current_user.id:

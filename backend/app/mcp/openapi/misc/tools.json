@@ -1,6 +1,7 @@
 [
   {
     "app_id": "gmail",
+    "id": "send_email",
     "tool_schema": {
       "name": "SendEmail",
       "description": "Send an email to specified recipients with subject and body content",
@@ -93,6 +94,7 @@
   },
   {
     "app_id": "gmail",
+    "id": "search_emails",
     "tool_schema": {
       "name": "SearchEmails",
       "description": "Search through emails using specified criteria like subject, sender, or date range",
@@ -170,6 +172,7 @@
   },
   {
     "app_id": "gmail",
+    "id": "manage_labels",
     "tool_schema": {
       "name": "ManageLabels",
       "description": "Create, modify, or apply labels to organize emails",
@@ -239,6 +242,7 @@
   },
   {
     "app_id": "slack",
+    "id": "post_message",
     "tool_schema": {
       "name": "PostMessage",
       "description": "Send a message to a specified channel or user",
@@ -311,6 +315,7 @@
   },
   {
     "app_id": "slack",
+    "id": "create_channel",
     "tool_schema": {
       "name": "CreateChannel",
       "description": "Create a new channel with specified name and settings",
@@ -381,6 +386,7 @@
   },
   {
     "app_id": "slack",
+    "id": "invite_users",
     "tool_schema": {
       "name": "InviteUsers",
       "description": "Invite users to a specified channel or workspace",
@@ -445,6 +451,7 @@
   },
   {
     "app_id": "openai",
+    "id": "generate_completion",
     "tool_schema": {
       "name": "GenerateCompletion",
       "description": "Generate text completion using specified model and parameters",
@@ -542,6 +549,7 @@
   },
   {
     "app_id": "openai",
+    "id": "create_image",
     "tool_schema": {
       "name": "CreateImage",
       "description": "Generate an image using DALL-E with specified parameters",
@@ -634,6 +642,7 @@
   },
   {
     "app_id": "openai",
+    "id": "create_embedding",
     "tool_schema": {
       "name": "CreateEmbedding",
       "description": "Generate embeddings for provided text content",
@@ -694,6 +703,7 @@
   },
   {
     "app_id": "dropbox",
+    "id": "upload_file",
     "tool_schema": {
       "name": "UploadFile",
       "description": "Upload a file to a specified Dropbox path",
@@ -731,7 +741,7 @@
     "tool_metadata": {
       "path": "/2/files/upload",
       "method": "POST",
-      "path": {
+      "file_path": {
         "type": "parameter",
         "in": "body"
       },
@@ -755,6 +765,7 @@
   },
   {
     "app_id": "dropbox",
+    "id": "share_file",
     "tool_schema": {
       "name": "ShareFile",
       "description": "Create a sharing link for a file with specified permissions",
@@ -799,7 +810,7 @@
     "tool_metadata": {
       "path": "/2/sharing/create_shared_link_with_settings",
       "method": "POST",
-      "path": {
+      "file_path": {
         "type": "parameter",
         "in": "body"
       },
@@ -827,6 +838,7 @@
   },
   {
     "app_id": "dropbox",
+    "id": "list_folder",
     "tool_schema": {
       "name": "ListFolder",
       "description": "List contents of a specified folder path",
@@ -869,7 +881,7 @@
     "tool_metadata": {
       "path": "/2/files/list_folder",
       "method": "POST",
-      "path": {
+      "folder_path": {
         "type": "parameter",
         "in": "body"
       },
@@ -897,6 +909,7 @@
   },
   {
     "app_id": "google_calendar",
+    "id": "create_event",
     "tool_schema": {
       "name": "CreateEvent",
       "description": "Create a calendar event with specified details and attendees",

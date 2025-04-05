@@ -1,6 +1,7 @@
 [
   {
     "app_id": "github",
+    "id": "list_github_issues",
     "tool_schema": {
       "name": "ListGitHubIssues",
       "description": "Parameters for fetching GitHub issues via REST API",
@@ -124,6 +125,7 @@
   },
   {
     "app_id": "github",
+    "id": "get_github_issue",
     "tool_schema": {
       "name": "GetGitHubIssue",
       "description": "Parameters for fetching a specific GitHub issue via REST API",
@@ -166,6 +168,7 @@
   },
   {
     "app_id": "github",
+    "id": "create_github_issue",
     "tool_schema": {
       "name": "CreateGitHubIssue",
       "description": "Parameters for creating a GitHub issue via REST API",
@@ -237,6 +240,7 @@
   },
   {
     "app_id": "github",
+    "id": "update_github_issue",
     "tool_schema": {
       "name": "UpdateGitHubIssue",
       "description": "Parameters for updating a GitHub issue via REST API",
@@ -324,6 +328,7 @@
   },
   {
     "app_id": "github",
+    "id": "lock_github_issue",
     "tool_schema": {
       "name": "LockGitHubIssue",
       "description": "Parameters for locking a GitHub issue via REST API",
@@ -374,6 +379,7 @@
   },
   {
     "app_id": "github",
+    "id": "unlock_github_issue",
     "tool_schema": {
       "name": "UnlockGitHubIssue",
       "description": "Parameters for unlocking a GitHub issue via REST API",
@@ -416,6 +422,7 @@
   },
   {
     "app_id": "github",
+    "id": "search_github_issues",
     "tool_schema": {
       "name": "SearchGitHubIssues",
       "description": "Parameters for searching GitHub issues via REST API",
@@ -492,6 +499,7 @@
   },
   {
     "app_id": "github",
+    "id": "list_repo_issue_events",
     "tool_schema": {
       "name": "ListRepoIssueEvents",
       "description": "Parameters for listing events for an issue in a repository",
@@ -552,6 +560,7 @@
   },
   {
     "app_id": "github",
+    "id": "add_assignees_to_issue",
     "tool_schema": {
       "name": "AddAssigneesToIssue",
       "description": "Parameters for adding assignees to an issue",
@@ -602,6 +611,7 @@
   },
   {
     "app_id": "github",
+    "id": "remove_assignees_from_issue",
     "tool_schema": {
       "name": "RemoveAssigneesFromIssue",
       "description": "Parameters for removing assignees from an issue",

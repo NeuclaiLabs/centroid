@@ -72,20 +72,24 @@ const connectionSchema = z.object({
 	name: z.string().min(1, "Name is required"),
 	description: z.string().optional(),
 	baseUrl: z.string().url("Must be a valid URL"),
-	auth: z.object({
-		type: z.enum([
-			AUTH_TYPES.NONE,
-			AUTH_TYPES.TOKEN,
-			AUTH_TYPES.API_KEY,
-			AUTH_TYPES.BASIC,
-		]),
-		config: z.union([
-			authSchemas.none,
-			authSchemas.token,
-			authSchemas.api_key,
-			authSchemas.basic,
-		]),
-	}),
+	auth: z.discriminatedUnion("type", [
+		z.object({
+			type: z.literal(AUTH_TYPES.NONE),
+			config: authSchemas[AUTH_TYPES.NONE],
+		}),
+		z.object({
+			type: z.literal(AUTH_TYPES.TOKEN),
+			config: authSchemas[AUTH_TYPES.TOKEN],
+		}),
+		z.object({
+			type: z.literal(AUTH_TYPES.API_KEY),
+			config: authSchemas[AUTH_TYPES.API_KEY],
+		}),
+		z.object({
+			type: z.literal(AUTH_TYPES.BASIC),
+			config: authSchemas[AUTH_TYPES.BASIC],
+		}),
+	]),
 });
 
 type ConnectionFormData = z.infer<typeof connectionSchema>;
@@ -112,24 +116,62 @@ export function ConnectionForm({
 			baseUrl: initialData?.baseUrl ?? "",
 			auth: {
 				type: initialData?.auth?.type ?? AUTH_TYPES.NONE,
-				config: initialData?.auth?.config ?? {},
-			},
+				config: initialData?.auth?.type
+					? {
+							...initialData.auth.config,
+						}
+					: {},
+			} as ConnectionFormData["auth"],
 		},
+		mode: "onChange",
 	});
 
+
+	// Reset auth config when auth type changes
 	const authType = form.watch("auth.type");
+	useEffect(() => {
+		const defaultConfigs = {
+			[AUTH_TYPES.NONE]: {},
+			[AUTH_TYPES.TOKEN]: { token: "" },
+			[AUTH_TYPES.API_KEY]: {
+				key: "",
+				value: "",
+				location: API_KEY_LOCATIONS.HEADER,
+			},
+			[AUTH_TYPES.BASIC]: { username: "", password: "" },
+		} as const;
+
+
+		// Only set default config for new connections or when auth type changes for existing ones
+		if (!initialData || initialData?.auth?.type !== authType) {
+			form.setValue("auth.type", authType, { shouldValidate: false });
+			form.setValue("auth.config", defaultConfigs[authType], {
+				shouldValidate: true,
+			});
+		}
+	}, [form, authType, initialData]);
 
 	const onSubmit = useCallback(
 		async (data: ConnectionFormData) => {
-			console.log("Form data", data);
 			try {
 				setIsSubmitting(true);
+
+				// Ensure we have the correct auth config based on the auth type
+				const formattedData = {
+					...data,
+					auth: {
+						type: data.auth.type,
+						config: data.auth.type === AUTH_TYPES.NONE ? {} : data.auth.config,
+					},
+				};
+
+
 				if (initialData?.id) {
-					await updateConnection(initialData.id, data);
+					await updateConnection(initialData.id, formattedData);
 					toast.success("Connection updated successfully");
 				} else {
 					const submissionData = {
-						...data,
+						...formattedData,
 						appId,
 					};
 					await createConnection(submissionData);
@@ -145,7 +187,7 @@ export function ConnectionForm({
 				setIsSubmitting(false);
 			}
 		},
-		[initialData?.id, appId, onSuccess],
+		[appId, initialData?.id, onSuccess],
 	);
 
 	const isProcessing = externalIsSubmitting || isSubmitting;
@@ -201,7 +243,7 @@ export function ConnectionForm({
 					render={({ field }) => (
 						<FormItem>
 							<FormLabel>Authentication Type</FormLabel>
-							<Select onValueChange={field.onChange} defaultValue={field.value}>
+							<Select onValueChange={field.onChange} value={field.value}>
 								<FormControl>
 									<SelectTrigger>
 										<SelectValue placeholder="Select authentication type" />
@@ -290,7 +332,7 @@ export function ConnectionForm({
 									<FormControl>
 										<RadioGroup
 											onValueChange={field.onChange}
-											defaultValue={field.value}
+											value={field.value}
 											className="flex flex-col space-y-1"
 										>
 											<FormItem className="flex items-center space-x-3 space-y-0">
@@ -385,6 +427,7 @@ export function ConnectionDialog({
 	const { connection, isLoading: isLoadingConnection } = useConnection(
 		connectionId ?? "",
 	);
+
 
 	// If we're opening the dialog and there's exactly one connection, use that
 	useEffect(() => {

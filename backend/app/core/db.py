@@ -3,7 +3,6 @@ import logging
 from collections.abc import Sequence
 from pathlib import Path
 
-from sqlalchemy import func
 from sqlmodel import Session, create_engine, select
 
 from app import crud
@@ -57,23 +56,20 @@ def populate_tool_definitions(session: Session, tool_files: Sequence[Path]) -> N
         total_tools += len(tools_data)
 
         for tool in tools_data:
-            # Get the tool name from schema
-            tool_name = tool["tool_schema"]["name"]
+            # Get the tool id
+            tool_id = tool["id"]
             app_id = tool["app_id"]
 
-            # Check if tool definition already exists by app_id and name using SQLite JSON functions
+            # Check if tool definition already exists by id
             existing_tool = session.exec(
-                select(ToolDefinition)
-                .where(ToolDefinition.app_id == app_id)
-                .where(
-                    func.json_extract(ToolDefinition.tool_schema, "$.name") == tool_name
-                )
+                select(ToolDefinition).where(ToolDefinition.id == tool_id)
             ).first()
 
             if not existing_tool:
-                logger.info(f"Adding new tool: {app_id}/{tool_name}")
+                logger.info(f"Adding new tool: {app_id}/{tool_id}")
                 tool_in = ToolDefinitionCreate(
                     app_id=tool["app_id"],
+                    id=tool["id"],
                     tool_schema=tool["tool_schema"],
                     tool_metadata=tool["tool_metadata"],
                 )

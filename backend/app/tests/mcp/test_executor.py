@@ -9,7 +9,7 @@ from app.mcp.openapi.executor import (
     execute_endpoint,
     translate_fn_to_endpoint,
 )
-from app.mcp.openapi.schema_to_func import create_dynamic_function_from_schema
+from app.mcp.openapi.schema_to_func import schema_to_function
 
 # Simplified GitHub schema with only parameters
 github_schema = {
@@ -41,7 +41,7 @@ github_schema = {
 
 @pytest.fixture
 def github_function():
-    return create_dynamic_function_from_schema(github_schema)
+    return schema_to_function(github_schema)
 
 
 @pytest.mark.asyncio

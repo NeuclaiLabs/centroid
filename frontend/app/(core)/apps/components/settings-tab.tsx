@@ -4,8 +4,11 @@ import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { fetcher } from "@/lib/utils";
 import type { ToolInstance, ToolInstancesResponse } from "../../types";
-import { filterTools } from "../[id]/utils";
+import { filterToolInstances } from "../../utils";
 import { ToolInstancesTable } from "./tool-instances-table";
+import { ErrorState, LoadingState } from "./states";
+
+type SortDirection = "asc" | "desc" | null;
 
 interface SettingsTabProps {
 	appId: string;
@@ -13,23 +16,50 @@ interface SettingsTabProps {
 
 export function SettingsTab({ appId }: SettingsTabProps) {
 	const [searchQuery, setSearchQuery] = useState("");
+	const [statusSort, setStatusSort] = useState<SortDirection>(null);
 
 	const { data: toolInstances, error } = useSWR<ToolInstancesResponse>(
 		`/api/tool-instances?appId=${appId}`,
 		fetcher,
 	);
 
-	const filteredTools = filterTools(toolInstances?.data || [], searchQuery);
+	const filteredTools = filterToolInstances(
+		toolInstances?.data || [],
+		searchQuery,
+	);
+
+	const sortedTools = [...filteredTools].sort((a, b) => {
+		if (statusSort === null) return 0;
+		if (statusSort === "asc") {
+			return a.status.localeCompare(b.status);
+		}
+		return b.status.localeCompare(a.status);
+	});
+
+	const toggleStatusSort = () => {
+		setStatusSort((current) => {
+			if (current === null) return "asc";
+			if (current === "asc") return "desc";
+			return null;
+		});
+	};
+
+	if (!toolInstances && !error) {
+		return <LoadingState />;
+	}
+
+	if (error) {
+		return <ErrorState />;
+	}
 
 	return (
-		// Use flex-col and h-full to fill available space
 		<div className="border rounded-lg p-6 flex flex-col h-full overflow-hidden">
 			{/* Header section with fixed height */}
 			<div className="flex items-center justify-between mb-6 flex-shrink-0">
 				<h3 className="text-xl font-medium">
 					Tool Settings
 					<span className="ml-2 text-muted-foreground">
-						({filteredTools.length})
+						({sortedTools.length})
 					</span>
 				</h3>
 				<div className="flex items-center gap-4">
@@ -47,7 +77,11 @@ export function SettingsTab({ appId }: SettingsTabProps) {
 
 			{/* Table section that fills remaining space and scrolls */}
 			<div className="flex-grow overflow-hidden">
-				<ToolInstancesTable tools={filteredTools} />
+				<ToolInstancesTable
+					tools={sortedTools}
+					onSortStatus={toggleStatusSort}
+					statusSort={statusSort}
+				/>
 			</div>
 		</div>
 	);

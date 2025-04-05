@@ -1,273 +1,272 @@
 from collections.abc import Callable
-from datetime import datetime
 from inspect import Parameter, Signature
-from typing import Any, Literal, get_type_hints
+from typing import Any, Union, get_type_hints
 
 from pydantic import BaseModel, Field, create_model
-from pydantic.fields import FieldInfo, PydanticUndefined
-
-from .executor import execute_dynamic_function
+from pydantic.fields import PydanticUndefined
 
 
-def get_field_constraints(schema: dict[str, Any]) -> dict[str, Any]:
-    """Helper to extract all possible constraints from schema"""
-    constraints = {
-        # String constraints
-        "min_length": schema.get("minLength"),
-        "max_length": schema.get("maxLength"),
-        "pattern": schema.get("pattern"),
-        # Number constraints
-        "gt": schema.get("exclusiveMinimum"),
-        "ge": schema.get("minimum"),
-        "lt": schema.get("exclusiveMaximum"),
-        "le": schema.get("maximum"),
-        "multiple_of": schema.get("multipleOf"),
-        # Array constraints
-        "min_items": schema.get("minItems"),
-        "max_items": schema.get("maxItems"),
-        "unique_items": schema.get("uniqueItems"),
-    }
-    return {k: v for k, v in constraints.items() if v is not None}
-
-
-def create_field_metadata(schema: dict[str, Any]) -> dict[str, Any]:
-    """Create clean field metadata from schema"""
-    base_metadata = {
-        "description": schema.get("description"),
-        "title": schema.get("title"),
-        "examples": schema.get("examples"),
-        "deprecated": schema.get("deprecated", False),
-    }
-
-    # Filter out None values from base metadata
-    base_metadata = {k: v for k, v in base_metadata.items() if v is not None}
-
-    # Get all x- metadata including x-category
-    extra_metadata = {
-        key: value
-        for key, value in schema.items()
-        if key.startswith("x-") and value is not None
-    }
-
-    # Ensure x-category has a default value if not present
-    if "x-category" not in extra_metadata:
-        extra_metadata["x-category"] = "body"
-
-    # Merge dictionaries using update instead of |
-    merged_metadata = base_metadata.copy()
-    merged_metadata.update(extra_metadata)
-
-    return merged_metadata
-
-
-def create_field(
-    field_type: type,
-    field_schema: dict[str, Any],
-    field_name: str,
-    is_required: bool,
-    field_default: Any = None,
-) -> tuple[type, Field]:
-    """Create a Pydantic field with proper metadata and validation"""
-    metadata = create_field_metadata(field_schema)
-    constraints = get_field_constraints(field_schema)
-
-    default_value = (
-        field_default
-        if field_default is not None
-        else PydanticUndefined
-        if is_required
-        else None
-    )
-
-    return (
-        field_type,
-        Field(
-            default=default_value,
-            description=metadata.get("description", ""),
-            title=metadata.get("title", field_name),
-            json_schema_extra={
-                k: v for k, v in metadata.items() if k not in ["description", "title"]
-            },
-            **constraints,
-        ),
-    )
-
-
-def create_parameter(
-    field_name: str,
-    field: FieldInfo,
-    type_hint: type,
-    is_required: bool,
+def _create_parameter(
+    name: str, prop: dict[str, Any], field_type: type, is_required: bool
 ) -> Parameter:
-    """Create an inspect.Parameter with proper configuration"""
+    """Create a parameter with FieldInfo as default value."""
+    # Create FieldInfo with proper required status
     param_field = Field(
-        default=PydanticUndefined if is_required else field.default,
-        description=field.description,
-        title=field.title,
-        json_schema_extra=field.json_schema_extra,
+        default=PydanticUndefined if is_required else prop.get("default"),
+        description=prop.get("description", ""),
+        title=prop.get("title"),
     )
 
     return Parameter(
-        field_name,
-        Parameter.KEYWORD_ONLY,
-        default=param_field,
-        annotation=type_hint,
+        name, Parameter.KEYWORD_ONLY, default=param_field, annotation=field_type
     )
 
 
-def _get_pydantic_type(
-    prop_schema: dict[str, Any],
-    field_name: str = "",
-    required: list[str] | None = None,
-) -> tuple[type, Any]:
-    """Maps JSON schema types to Python/Pydantic types and constraints"""
-    type_mapping = {
-        "string": (str, None),
-        "integer": (int, None),
-        "number": (float, None),
-        "boolean": (bool, None),
-        "array": (list, None),
-        "object": (dict, None),
-    }
-
-    required = required or []
-    schema_default = prop_schema.get("default")
-    is_nullable = (
-        isinstance(prop_schema.get("type"), list) and "null" in prop_schema["type"]
-    ) or (schema_default is None and field_name not in required)
-
-    # Handle special types
-    if prop_schema.get("format") == "date-time":
-        return (datetime | None if is_nullable else datetime, schema_default)
-
-    if prop_schema.get("type") == "array" and "items" in prop_schema:
-        item_type, _ = _get_pydantic_type(prop_schema["items"], field_name, required)
-        array_type = list[item_type]
-        return (array_type | None if is_nullable else array_type, schema_default)
-
-    if prop_schema.get("type") == "object" and "properties" in prop_schema:
-        required_fields = prop_schema.get("required", [])
-        nested_fields = {}
-
-        for nested_name, nested_schema in prop_schema["properties"].items():
-            field_type, field_default = _get_pydantic_type(
-                nested_schema, nested_name, required_fields
-            )
-            nested_fields[nested_name] = create_field(
-                field_type,
-                nested_schema,
-                nested_name,
-                nested_name in required_fields,
-                field_default,
-            )
-
-        model_name = prop_schema.get("title", "NestedModel")
-        model = create_model(
-            model_name,
-            __base__=BaseModel,
-            __module__=__name__,
-            model_config={
-                "arbitrary_types_allowed": True,
-                "extra": "allow"
-                if prop_schema.get("additionalProperties", True)
-                else "forbid",
-                "json_schema_extra": create_field_metadata(prop_schema),
-            },
-            **nested_fields,
-        )
-        return (model | None if is_nullable else model, None)
-
-    if "enum" in prop_schema:
-        enum_type = Literal[tuple(prop_schema["enum"])]
-        return (enum_type | None if is_nullable else enum_type, schema_default)
-
-    if is_nullable:
-        base_type = (
-            next(t for t in prop_schema["type"] if t != "null")
-            if isinstance(prop_schema.get("type"), list)
-            else prop_schema.get("type", "string")
-        )
-        type_tuple, _ = type_mapping.get(base_type, (Any, None))
-        return (type_tuple | None, schema_default)
-
-    type_tuple, default = type_mapping.get(
-        prop_schema.get("type", "string"), (Any, None)
-    )
-    return (type_tuple, schema_default if schema_default is not None else default)
-
-
-def create_dynamic_function_from_schema(
-    schema: dict[str, Any],
-    # method: Literal["GET", "PUT", "DELETE", "POST", "PATCH"] = "GET",
-    # path: str = "",
-    connection: Any | None = None,
+def schema_to_function(
+    schema: dict[str, Any], metadata: dict[str, Any] = None
 ) -> Callable:
-    """Creates a dynamic function based on a JSON schema using Pydantic for validation."""
+    """
+    Creates a dynamic function based on a JSON schema using Pydantic for validation.
 
-    # Create model fields from properties
-    field_definitions = {}
-    required_fields = schema.get("required", [])
+    Args:
+        schema: A JSON schema describing the function and its parameters
+        metadata: Additional metadata for the function (default: {})
 
-    for field_name, field_schema in schema.get("properties", {}).items():
-        field_type, field_default = _get_pydantic_type(
-            field_schema,
-            field_name,
-            required_fields,
-        )
-        field_definitions[field_name] = create_field(
-            field_type,
-            field_schema,
-            field_name,
-            field_name in required_fields,
-            field_default,
-        )
+    Returns:
+        A callable function with proper signature and validation
+    """
+    metadata = metadata or {}
+
+    # Extract properties and required fields based on schema structure
+    if "parameters" in schema and isinstance(schema["parameters"], dict):
+        properties = schema["parameters"].get("properties", {})
+        required = schema["parameters"].get("required", [])
+    else:
+        properties = schema.get("properties", {})
+        required = schema.get("required", [])
+
+    # Create model fields
+    fields = {}
+    for name, prop in properties.items():
+        is_required = name in required
+        field_type, default_value = _get_type(prop, name, required)
+        fields[name] = (field_type, _create_field(prop, is_required, default_value))
 
     # Create Pydantic model
+    model_name = schema.get("name", "DynamicModel")
     InputModel = create_model(
-        schema.get("title", "DynamicModel"),
+        model_name,
         __base__=BaseModel,
         __module__=__name__,
-        model_config={"arbitrary_types_allowed": True},
-        **field_definitions,
+        model_config={
+            "arbitrary_types_allowed": True,
+            "extra": "allow" if schema.get("additionalProperties", True) else "forbid",
+            "json_schema_extra": metadata,
+        },
+        **fields,
     )
 
-    # Create parameters for function signature
+    # Create function parameters
     parameters = [
-        create_parameter(
-            field_name,
-            field,
-            get_type_hints(InputModel)[field_name],
-            field_name in required_fields,
+        _create_parameter(
+            name, properties[name], get_type_hints(InputModel)[name], name in required
         )
-        for field_name, field in InputModel.model_fields.items()
+        for name in fields
     ]
 
-    async def dynamic_function(*args, **kwargs):
-        bound_args = Signature(parameters=parameters, return_annotation=Any).bind(
-            *args, **kwargs
-        )
-        bound_args.apply_defaults()
+    # Create dynamic function
+    async def dynamic_function(**kwargs):
+        """Dynamic function generated from schema."""
+        validated = InputModel(**kwargs)
+        return validated
 
-        # Clean arguments and create model instance
-        cleaned_args = {
-            name: value.default if isinstance(value, FieldInfo) else value
-            for name, value in bound_args.arguments.items()
-        }
-        model_instance = InputModel(**cleaned_args)
-
-        # Store bound arguments for endpoint configuration
-        dynamic_function.__bound_args__ = cleaned_args
-
-        return await execute_dynamic_function(
-            model_instance, connection, dynamic_function
-        )
-
-    # Add metadata
-    dynamic_function.__signature__ = Signature(
-        parameters=parameters, return_annotation=Any
-    )
+    # Add metadata to function
+    dynamic_function.__signature__ = Signature(parameters=parameters)
     dynamic_function.__annotations__ = {p.name: p.annotation for p in parameters}
-    dynamic_function.__name__ = schema.get("title", "dynamic_function")
+    dynamic_function.__name__ = schema.get("name", "dynamic_function")
+    dynamic_function.__doc__ = schema.get("description", "")
     dynamic_function.model = InputModel
 
     return dynamic_function
+
+
+def _create_field(schema: dict[str, Any], required: bool, default: Any = None) -> Field:
+    """Create a Pydantic field with proper metadata and validation."""
+    from pydantic.fields import PydanticUndefined
+
+    constraints = _extract_constraints(schema)
+
+    # Use PydanticUndefined (or ...) for required fields with no default
+    default_value = (
+        default if default is not None else PydanticUndefined if required else None
+    )
+
+    return Field(
+        default=default_value, description=schema.get("description", ""), **constraints
+    )
+
+
+def _extract_constraints(schema: dict[str, Any]) -> dict[str, Any]:
+    """Extract validation constraints from schema."""
+    constraints = {}
+
+    # String constraints
+    if schema.get("minLength") is not None:
+        constraints["min_length"] = schema["minLength"]
+    if schema.get("maxLength") is not None:
+        constraints["max_length"] = schema["maxLength"]
+    if schema.get("pattern") is not None:
+        constraints["pattern"] = schema["pattern"]
+
+    # Number constraints
+    if schema.get("minimum") is not None:
+        constraints["ge"] = schema["minimum"]
+    if schema.get("maximum") is not None:
+        constraints["le"] = schema["maximum"]
+    if schema.get("exclusiveMinimum") is not None:
+        constraints["gt"] = schema["exclusiveMinimum"]
+    if schema.get("exclusiveMaximum") is not None:
+        constraints["lt"] = schema["exclusiveMaximum"]
+    if schema.get("multipleOf") is not None:
+        constraints["multiple_of"] = schema["multipleOf"]
+
+    # Array constraints
+    if schema.get("minItems") is not None:
+        constraints["min_items"] = schema["minItems"]
+    if schema.get("maxItems") is not None:
+        constraints["max_items"] = schema["maxItems"]
+    if schema.get("uniqueItems") is not None:
+        constraints["unique_items"] = schema["uniqueItems"]
+
+    # Handle enums
+    if "enum" in schema:
+        enum_values = schema["enum"]
+        if all(isinstance(v, str) for v in enum_values):
+            constraints["pattern"] = f"^({'|'.join(map(str, enum_values))})$"
+
+    # Handle date-time format
+    if schema.get("format") == "date-time":
+        constraints[
+            "pattern"
+        ] = r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?$"
+
+    return constraints
+
+
+def _get_type(
+    schema: dict[str, Any], field_name: str = "", required: list[str] = None
+) -> tuple[type, Any]:
+    """Map JSON schema types to Python/Pydantic types and handle defaults."""
+    required = required or []
+    is_required = field_name in required
+    default = schema.get("default")
+
+    # Basic type mapping
+    type_map = {
+        "string": str,
+        "integer": int,
+        "number": float,
+        "boolean": bool,
+        "array": list,
+        "object": dict,
+    }
+
+    # Special handling for OpenAI's oneOf/anyOf patterns
+    if "oneOf" in schema or "anyOf" in schema:
+        # Get the list of possible types
+        variants = schema.get("oneOf", schema.get("anyOf", []))
+
+        # For the specific case of Union[str, List[str]] pattern
+        if (
+            len(variants) == 2
+            and any(v.get("type") == "string" for v in variants)
+            and any(v.get("type") == "array" and "items" in v for v in variants)
+        ):
+            # Find the array variant
+            array_variant = next(v for v in variants if v.get("type") == "array")
+
+            # If array items are strings, use the exact Union[str, List[str]] pattern
+            if array_variant.get("items", {}).get("type") == "string":
+                return (str | list[str], default)
+
+        # For other union types, process normally
+        union_types = []
+        for variant in variants:
+            type_obj, _ = _get_type(
+                variant, "", []
+            )  # Don't pass required here to avoid recursion issues
+            union_types.append(type_obj)
+
+        # Create the Union type
+        result_type = Union[tuple(union_types)]  # noqa: UP007
+
+        # Only add nullable if not required
+        if not is_required and default is None:
+            return (result_type | None, default)
+        return (result_type, default)
+
+    # Handle arrays with item type
+    if schema.get("type") == "array" and "items" in schema:
+        # Get the item type, but make sure we don't make it nullable
+        items_schema = schema["items"]
+        if "oneOf" in items_schema or "anyOf" in items_schema:
+            # Handle union types in array items
+            item_type, _ = _get_type(items_schema)
+        else:
+            # For simple types, use the direct mapping
+            item_type = type_map.get(items_schema.get("type", "string"), Any)
+
+        # Create the list type
+        array_type = list[item_type]
+
+        # Only add nullable if not required
+        if not is_required and default is None:
+            return (array_type | None, default)
+        return (array_type, default)
+
+    # Handle nested objects
+    if schema.get("type") == "object" and "properties" in schema:
+        nested_fields = {}
+        nested_required = schema.get("required", [])
+
+        for name, prop in schema["properties"].items():
+            field_type, field_default = _get_type(prop, name, nested_required)
+            nested_fields[name] = (
+                field_type,
+                _create_field(prop, name in nested_required, field_default),
+            )
+
+        model_name = schema.get("title", "NestedModel")
+        model = create_model(
+            model_name,
+            __base__=BaseModel,
+            model_config={
+                "arbitrary_types_allowed": True,
+                "extra": "allow"
+                if schema.get("additionalProperties", True)
+                else "forbid",
+            },
+            **nested_fields,
+        )
+
+        # Only add nullable if not required
+        if not is_required and default is None:
+            return (model | None, None)
+        return (model, None)
+
+    # Get base type
+    schema_type = schema.get("type", "string")
+    if isinstance(schema_type, list):
+        # Handle type: ["string", "null"] pattern
+        if "null" in schema_type:
+            non_null_type = next((t for t in schema_type if t != "null"), "string")
+            base_type = type_map.get(non_null_type, Any)
+            return (base_type | None, default)
+        schema_type = schema_type[0]  # Use the first type if multiple
+
+    base_type = type_map.get(schema_type, Any)
+
+    # Return nullable type only if not required and no default
+    if not is_required and default is None:
+        return (base_type | None, default)
+    return (base_type, default)
