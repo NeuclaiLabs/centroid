@@ -16,7 +16,6 @@ ALGORITHM = "HS256"
 def get_encryption_key() -> bytes:
     """Get or generate a Fernet encryption key from settings."""
     key = getattr(settings, "ENCRYPTION_KEY", None)
-    print(f"ENCRYPTION_KEY: {key}")
     if not key:
         key = Fernet.generate_key()
         # In production, this key should be stored securely and loaded from environment

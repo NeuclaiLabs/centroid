@@ -1,101 +1,10 @@
 from collections.abc import Callable
-from typing import Literal
 
 from mcp.server.fastmcp import FastMCP
 from pydantic import Field
+from sqlmodel import Session
 
-# Type for HTTP methods
-HttpMethod = Literal["GET", "POST", "PUT", "PATCH", "DELETE"]
-
-github_schema = {
-    "app_id": "github",
-    "id": "list_github_issues",
-    "tool_schema": {
-        "name": "ListGitHubIssues",
-        "description": "Parameters for fetching GitHub issues via REST API",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "owner": {
-                    "type": "string",
-                    "description": "The account owner of the repository",
-                },
-                "repo": {
-                    "type": "string",
-                    "description": "The name of the repository",
-                },
-                "state": {
-                    "type": "string",
-                    "enum": ["open", "closed", "all"],
-                    "default": "open",
-                    "description": "Indicates the state of issues to return",
-                },
-                "assignee": {
-                    "type": "string",
-                    "description": "Filter issues by assignee. Can be 'none' for unassigned issues",
-                },
-                "creator": {
-                    "type": "string",
-                    "description": "Filter issues by creator",
-                },
-                "mentioned": {
-                    "type": "string",
-                    "description": "Filter issues by user mentioned in them",
-                },
-                "labels": {
-                    "type": "string",
-                    "description": "Comma-separated list of label names",
-                },
-                "sort": {
-                    "type": "string",
-                    "enum": ["created", "updated", "comments"],
-                    "default": "created",
-                    "description": "What to sort results by",
-                },
-                "direction": {
-                    "type": "string",
-                    "enum": ["asc", "desc"],
-                    "default": "desc",
-                    "description": "The direction of the sort",
-                },
-                "since": {
-                    "type": "string",
-                    "format": "date-time",
-                    "description": "Only show issues updated at or after this time",
-                },
-                "per_page": {
-                    "type": "integer",
-                    "default": 30,
-                    "description": "Number of results per page",
-                },
-                "page": {
-                    "type": "integer",
-                    "default": 1,
-                    "description": "Page number of the results",
-                },
-            },
-            "required": ["owner", "repo"],
-        },
-    },
-    "tool_metadata": {
-        "path": "/repos/{owner}/{repo}/issues",
-        "method": "GET",
-        "tags": ["issues", "list", "query"],
-        "owner": {"type": "parameter", "in": "path"},
-        "repo": {"type": "parameter", "in": "path"},
-        "state": {"type": "parameter", "in": "query"},
-        "assignee": {"type": "parameter", "in": "query"},
-        "creator": {"type": "parameter", "in": "query"},
-        "mentioned": {"type": "parameter", "in": "query"},
-        "labels": {"type": "parameter", "in": "query"},
-        "sort": {"type": "parameter", "in": "query"},
-        "direction": {"type": "parameter", "in": "query"},
-        "since": {"type": "parameter", "in": "query"},
-        "per_page": {"type": "parameter", "in": "query"},
-        "page": {"type": "parameter", "in": "query"},
-    },
-}
-
+from app.core.db import engine
 
 mcp = FastMCP("OpenAstra - MCP gateway for third party APIs")
 
@@ -153,3 +62,23 @@ def deregister_tool(tool_name: str) -> None:
     if tool_name in mcp._tool_manager._tools:
         del mcp._tool_manager._tools[tool_name]
         print(f"Deleted tool: {tool_name}")
+
+
+# Function to load active tool instances
+def load_active_tool_instances() -> None:
+    """Load and register all active tool instances from the database."""
+    try:
+        with Session(engine) as session:
+            # Import here to avoid circular imports
+            from app.services.tool_registration import ToolRegistrationService
+
+            print("Loading active tool instances from database...")
+            ToolRegistrationService.load_active_tool_instances(session)
+    except ImportError as e:
+        print(f"Warning: Could not load active tool instances: {e}")
+    except Exception as e:
+        print(f"Error loading active tool instances: {e}")
+
+
+# Load active tool instances when this module is imported
+load_active_tool_instances()
