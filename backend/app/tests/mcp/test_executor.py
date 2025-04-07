@@ -1,8 +1,9 @@
 import json
+from typing import Any
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from pydantic.fields import PydanticUndefined
+from pydantic import BaseModel
 
 from app.mcp.openapi.executor import (
     EndpointConfig,
@@ -11,32 +12,96 @@ from app.mcp.openapi.executor import (
 )
 from app.mcp.openapi.schema_to_func import schema_to_function
 
-# Simplified GitHub schema with only parameters
-github_schema = {
-    "title": "GetGitHubIssues",
-    "description": "Parameters for fetching GitHub issues via REST API",
-    "type": "object",
-    "properties": {
-        "owner": {
-            "type": "string",
-            "description": "The account owner of the repository",
-            "x-category": "parameters",
+
+class TestModel(BaseModel):
+    """Test model for validation testing."""
+
+    test_field: str = "test"
+
+
+# Test schemas
+@pytest.fixture
+def github_schema() -> tuple[dict[str, Any], dict[str, Any]]:
+    """GitHub list issues schema and metadata fixture"""
+    schema = {
+        "name": "ListGitHubIssues",
+        "title": "ListGitHubIssues",
+        "description": "Parameters for fetching GitHub issues via REST API",
+        "type": "object",
+        "properties": {
+            "owner": {
+                "type": "string",
+                "description": "The account owner of the repository",
+            },
+            "repo": {"type": "string", "description": "The name of the repository"},
+            "state": {
+                "type": "string",
+                "enum": ["open", "closed", "all"],
+                "default": "open",
+                "description": "Indicates the state of issues to return",
+            },
+            "assignee": {
+                "type": "string",
+                "description": "Filter issues by assignee. Can be 'none' for unassigned issues",
+            },
+            "creator": {"type": "string", "description": "Filter issues by creator"},
+            "mentioned": {
+                "type": "string",
+                "description": "Filter issues by user mentioned in them",
+            },
+            "labels": {
+                "type": "string",
+                "description": "Comma-separated list of label names",
+            },
+            "sort": {
+                "type": "string",
+                "enum": ["created", "updated", "comments"],
+                "default": "created",
+                "description": "What to sort results by",
+            },
+            "direction": {
+                "type": "string",
+                "enum": ["asc", "desc"],
+                "default": "desc",
+                "description": "The direction of the sort",
+            },
+            "since": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Only show issues updated at or after this time",
+            },
+            "per_page": {
+                "type": "integer",
+                "default": 30,
+                "description": "Number of results per page",
+            },
+            "page": {
+                "type": "integer",
+                "default": 1,
+                "description": "Page number of the results",
+            },
         },
-        "repo": {
-            "type": "string",
-            "description": "The name of the repository",
-            "x-category": "parameters",
-        },
-        "state": {
-            "type": "string",
-            "enum": ["open", "closed", "all"],
-            "default": "open",
-            "description": "Indicates the state of issues to return",
-            "x-category": "parameters",
-        },
-    },
-    "required": ["owner", "repo"],
-}
+        "required": ["owner", "repo"],
+    }
+
+    metadata = {
+        "path": "/repos/{owner}/{repo}/issues",
+        "method": "GET",
+        "tags": ["issues", "list", "query"],
+        "owner": {"type": "parameter", "in": "path"},
+        "repo": {"type": "parameter", "in": "path"},
+        "state": {"type": "parameter", "in": "query"},
+        "assignee": {"type": "parameter", "in": "query"},
+        "creator": {"type": "parameter", "in": "query"},
+        "mentioned": {"type": "parameter", "in": "query"},
+        "labels": {"type": "parameter", "in": "query"},
+        "sort": {"type": "parameter", "in": "query"},
+        "direction": {"type": "parameter", "in": "query"},
+        "since": {"type": "parameter", "in": "query"},
+        "per_page": {"type": "parameter", "in": "query"},
+        "page": {"type": "parameter", "in": "query"},
+    }
+    return schema, metadata
 
 
 @pytest.fixture
@@ -45,52 +110,76 @@ def github_function():
 
 
 @pytest.mark.asyncio
-async def test_translate_fn_parameters(github_function):
+async def test_translate_fn_parameters(github_schema):
     """Test function translation with different parameter scenarios."""
-    # Test with required parameters
+    schema, metadata = github_schema
+    fn = schema_to_function(schema, metadata)
+
+    # Create a model instance with required parameters
+    model_instance = fn.model(
+        owner="microsoft",
+        repo="typescript",
+        state="closed",
+    )
+
+    # Test with model instance
     config = translate_fn_to_endpoint(
-        base_url="https://api.github.com",
-        method="GET",
-        path="/repos/{owner}/{repo}/issues",
-        connection="test_connection",
-        fn=github_function,
+        metadata=metadata,
+        connection=None,
+        fn=fn,
+        model_instance=model_instance,
     )
 
     # Verify basic configuration
     assert isinstance(config, EndpointConfig)
-    assert config.url == "https://api.github.com/repos/{owner}/{repo}/issues"
+    assert config.url.endswith("/repos/microsoft/typescript/issues")
     assert config.method == "GET"
     assert config.timeout == 30.0
     assert config.headers is None
     assert config.body is None
 
-    # Verify default parameters
-    params = config.params
-    assert params["owner"] is PydanticUndefined
-    assert params["repo"] is PydanticUndefined
-    assert params["state"] == "open"
-
-    # Set runtime arguments and verify they're used in translation
-    github_function.__bound_args__ = {
-        "owner": "microsoft",
-        "repo": "typescript",
+    # Verify parameters (including defaults)
+    expected_params = {
         "state": "closed",
+        "direction": "desc",  # default value
+        "sort": "created",  # default value
+        "per_page": 30,  # default value
+        "page": 1,  # default value
     }
+    assert config.params == expected_params
 
-    config = translate_fn_to_endpoint(
-        base_url="https://api.github.com",
-        method="GET",
-        path="/repos/{owner}/{repo}/issues",
-        connection="test_connection",
-        fn=github_function,
+    # Test with different model instance and explicit values
+    model_instance2 = fn.model(
+        owner="facebook",
+        repo="react",
+        state="open",
+        labels="bug",
+        assignee="octocat",
+        direction="asc",
+        sort="updated",
+        per_page=50,
+        page=2,
     )
 
-    # Verify parameters with runtime values
-    assert config.params == {
-        "owner": "microsoft",
-        "repo": "typescript",
-        "state": "closed",  # Overridden value
+    config = translate_fn_to_endpoint(
+        metadata=metadata,
+        connection=None,
+        fn=fn,
+        model_instance=model_instance2,
+    )
+
+    # Verify parameters with different values
+    assert config.url.endswith("/repos/facebook/react/issues")
+    expected_params = {
+        "state": "open",
+        "labels": "bug",
+        "assignee": "octocat",
+        "direction": "asc",
+        "sort": "updated",
+        "per_page": 50,
+        "page": 2,
     }
+    assert config.params == expected_params
 
 
 @pytest.mark.asyncio
@@ -168,9 +257,8 @@ def test_translate_fn_validation():
 
     with pytest.raises(ValueError, match="Function must have a model attribute"):
         translate_fn_to_endpoint(
-            base_url="https://api.github.com",
-            method="GET",
-            path="/test",
-            connection="test_connection",
+            metadata={},
+            connection=None,
             fn=invalid_fn,
+            model_instance=TestModel(test_field="test"),
         )

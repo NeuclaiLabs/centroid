@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 import nanoid
-from sqlalchemy import JSON, DateTime, func
+from sqlalchemy import JSON, DateTime, event, func
 from sqlmodel import Field, Relationship, SQLModel
 
 from .base import CamelModel
@@ -59,14 +59,41 @@ class ToolInstance(ToolInstanceBase, SQLModel, table=True):
         sa_type=DateTime(timezone=True),
         sa_column_kwargs={"onupdate": func.now(), "server_default": func.now()},
     )
-    definition: ToolDefinition = Relationship(
-        back_populates="tool_instances",
-        sa_relationship_kwargs={"lazy": "selectin"},
-    )
-    owner: User = Relationship(
-        back_populates="tool_instances",
-        sa_relationship_kwargs={"lazy": "selectin"},
-    )
+    definition: ToolDefinition = Relationship(back_populates="tool_instances")
+    owner: User = Relationship(back_populates="tool_instances")
+
+
+# SQLAlchemy event listeners for handling tool registration
+@event.listens_for(ToolInstance, "before_insert")
+def handle_initial_registration(mapper, connection, target: ToolInstance) -> None:  # noqa: ARG001
+    """Handle tool registration for newly created instances."""
+    from app.services.tool_registration import ToolRegistrationService
+
+    if target.status == ToolInstanceStatus.ACTIVE:
+        ToolRegistrationService.sync_registration_state(
+            target.status,
+            None,
+            target.definition.tool_schema,
+            target.definition.tool_metadata,
+            target.config,
+        )
+
+
+@event.listens_for(ToolInstance, "before_update")
+def handle_status_change(mapper, connection, target: ToolInstance) -> None:  # noqa: ARG001
+    """Handle tool registration/deregistration when status changes."""
+    from app.services.tool_registration import ToolRegistrationService
+
+    history = target._sa_instance_state.attrs.status.history
+    if history.has_changes():
+        old_status = history.deleted[0] if history.deleted else None
+        ToolRegistrationService.sync_registration_state(
+            target.status,
+            old_status,
+            target.definition.tool_schema,
+            target.definition.tool_metadata,
+            target.config,
+        )
 
 
 class ToolInstanceOut(ToolInstanceBase):

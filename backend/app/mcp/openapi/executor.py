@@ -10,6 +10,7 @@ from sqlmodel import Session
 
 from app.core.db import engine
 from app.models import Connection
+from app.models.connection import AuthType
 
 
 class APIResponse(BaseModel):
@@ -102,6 +103,7 @@ def translate_fn_to_endpoint(
     metadata: dict[str, Any],
     connection: Connection | None,
     fn: Callable,
+    model_instance: BaseModel,
 ) -> EndpointConfig:
     """
     Translate a function to an EndpointConfig object based on the function's model metadata.
@@ -110,6 +112,7 @@ def translate_fn_to_endpoint(
         metadata: Metadata from the function's model
         connection: Connection object
         fn: Generated function from schema_to_func
+        model_instance: Validated model instance containing the runtime values
 
     Returns:
         EndpointConfig configured based on the function's model metadata
@@ -120,8 +123,8 @@ def translate_fn_to_endpoint(
     model = fn.model
     fields = model.model_fields
 
-    # Get runtime arguments if they exist
-    runtime_args = getattr(fn, "__bound_args__", {})
+    # Get runtime values from the validated model instance
+    runtime_values = model_instance.model_dump()
 
     # Initialize parameter containers
     headers: dict[str, str] = {}
@@ -132,11 +135,13 @@ def translate_fn_to_endpoint(
 
     # Extract base path and method from metadata
     base_url = connection.base_url if connection else ""
+    if not base_url and metadata.get("app_id") == "github":
+        base_url = "https://api.github.com"
     path = metadata.get("path", "")
     method = metadata.get("method", "GET")
 
     # Get values from the function attributes
-    for field_name, field in fields.items():
+    for field_name, _ in fields.items():
         # Get parameter metadata
         param_meta = metadata.get(field_name, {})
         is_parameter = (
@@ -151,16 +156,12 @@ def translate_fn_to_endpoint(
             else field_name
         )
 
-        # Get value from runtime arguments
-        value = runtime_args.get(field_name)
+        # Get value from runtime values
+        value = runtime_values.get(field_name)
 
-        # Skip if no value and no default
-        if value is None and field.default is None:
-            continue
-
-        # Use default if no runtime value
+        # Skip if no value
         if value is None:
-            value = field.default
+            continue
 
         # Handle parameters based on their location
         if is_parameter and param_in:
@@ -209,44 +210,49 @@ async def execute_dynamic_function(
     try:
         # Get connection details if connection_id is provided
         connection_id = metadata.get("connection_id")
+        print(f"Connection ID: {connection_id}")
         connection = None
         if connection_id:
             with Session(engine) as session:
                 connection = session.get(Connection, connection_id)
+        print(f"Connection: {connection}")
 
         endpoint_config = translate_fn_to_endpoint(
             metadata=metadata,
             connection=connection,
             fn=dynamic_function,
+            model_instance=model_instance,
         )
-
+        # print(f"Endpoint config: {endpoint_config}")
         # If we have a connection, add its auth configuration to headers
         if connection_id and connection and connection.auth:
             auth_config = connection.auth
+            print(f"Auth config: {auth_config}")
             headers = endpoint_config.headers or {}
 
-            if auth_config.type == "token":
-                headers["Authorization"] = f"Bearer {auth_config.config.token}"
-            elif auth_config.type == "api_key":
-                if auth_config.config.location == "header":
-                    headers[auth_config.config.key] = auth_config.config.value
-                elif auth_config.config.location == "query":
+            if auth_config.type == AuthType.TOKEN:
+                print(f"Token config: {auth_config.config}")
+                headers["Authorization"] = f"Bearer {auth_config.config['token']}"
+            elif auth_config.type == AuthType.API_KEY:
+                config = auth_config.config
+                if config["location"] == "header":
+                    headers[config["key"]] = config["value"]
+                elif config["location"] == "query":
                     params = endpoint_config.params or {}
-                    params[auth_config.config.key] = auth_config.config.value
+                    params[config["key"]] = config["value"]
                     endpoint_config.params = params
-            elif auth_config.type == "basic":
+            elif auth_config.type == AuthType.BASIC:
                 import base64
 
-                auth_string = (
-                    f"{auth_config.config.username}:{auth_config.config.password}"
-                )
+                config = auth_config.config
+                auth_string = f"{config['username']}:{config['password']}"
                 encoded = base64.b64encode(auth_string.encode()).decode()
                 headers["Authorization"] = f"Basic {encoded}"
 
             endpoint_config.headers = headers
 
         response = await execute_endpoint(endpoint_config)
-        return response.data if response.data is not None else response.error
+        return response
 
     except Exception as e:
         import traceback

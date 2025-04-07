@@ -62,6 +62,9 @@
     "tool_metadata": {
       "path": "/gmail/v1/users/me/messages/send",
       "method": "POST",
+      "defaults": {
+        "status": "active"
+      },
       "to": {
         "type": "parameter",
         "in": "body"
@@ -139,6 +142,9 @@
     "tool_metadata": {
       "path": "/gmail/v1/users/me/messages",
       "method": "GET",
+      "defaults": {
+        "status": "active"
+      },
       "query": {
         "type": "parameter",
         "in": "query",
@@ -214,6 +220,9 @@
     "tool_metadata": {
       "path": "/gmail/v1/users/me/labels",
       "method": "POST",
+      "defaults": {
+        "status": "inactive"
+      },
       "action": {
         "type": "parameter",
         "in": "body"
@@ -287,6 +296,9 @@
     "tool_metadata": {
       "path": "/api/chat.postMessage",
       "method": "POST",
+      "defaults": {
+        "status": "active"
+      },
       "channel": {
         "type": "parameter",
         "in": "body"
@@ -357,6 +369,9 @@
     "tool_metadata": {
       "path": "/api/conversations.create",
       "method": "POST",
+      "defaults": {
+        "status": "inactive"
+      },
       "name": {
         "type": "parameter",
         "in": "body"
@@ -427,6 +442,9 @@
     "tool_metadata": {
       "path": "/api/conversations.invite",
       "method": "POST",
+      "defaults": {
+        "status": "inactive"
+      },
       "channel": {
         "type": "parameter",
         "in": "body"
@@ -517,6 +535,9 @@
     "tool_metadata": {
       "path": "/v1/chat/completions",
       "method": "POST",
+      "defaults": {
+        "status": "active"
+      },
       "model": {
         "type": "parameter",
         "in": "body"
@@ -610,6 +631,9 @@
     "tool_metadata": {
       "path": "/v1/images/generations",
       "method": "POST",
+      "defaults": {
+        "status": "active"
+      },
       "prompt": {
         "type": "parameter",
         "in": "body"
@@ -683,6 +707,9 @@
     "tool_metadata": {
       "path": "/v1/embeddings",
       "method": "POST",
+      "defaults": {
+        "status": "inactive"
+      },
       "model": {
         "type": "parameter",
         "in": "body"
@@ -741,6 +768,9 @@
     "tool_metadata": {
       "path": "/2/files/upload",
       "method": "POST",
+      "defaults": {
+        "status": "active"
+      },
       "file_path": {
         "type": "parameter",
         "in": "body"
@@ -810,6 +840,9 @@
     "tool_metadata": {
       "path": "/2/sharing/create_shared_link_with_settings",
       "method": "POST",
+      "defaults": {
+        "status": "active"
+      },
       "file_path": {
         "type": "parameter",
         "in": "body"
@@ -881,6 +914,9 @@
     "tool_metadata": {
       "path": "/2/files/list_folder",
       "method": "POST",
+      "defaults": {
+        "status": "active"
+      },
       "folder_path": {
         "type": "parameter",
         "in": "body"
@@ -1033,6 +1069,9 @@
     "tool_metadata": {
       "path": "/calendar/v3/calendars/{calendar_id}/events",
       "method": "POST",
+      "defaults": {
+        "status": "active"
+      },
       "calendar_id": {
         "type": "parameter",
         "in": "path"

@@ -63,9 +63,17 @@ def create_tool_instances_for_connection(
     tool_instances = []
     # Create tool instances for each definition
     for definition in tool_definitions:
+        # Get status from defaults, fallback to INACTIVE if not specified
+        status = (
+            ToolInstanceStatus.ACTIVE
+            if definition.tool_metadata.get("defaults", {}).get("status") == "active"
+            else ToolInstanceStatus.INACTIVE
+        )
+
         tool_instance = ToolInstance(
             definition_id=definition.id,
-            status=ToolInstanceStatus.ACTIVE,
+            definition=definition,
+            status=status,
             owner_id=owner_id,
             app_id=connection.app_id,
             config={

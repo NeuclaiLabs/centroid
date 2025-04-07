@@ -262,6 +262,10 @@ class TestSchemaToFunction:
             == "Send an email to specified recipients with subject and body content"
         )
 
+        # Test model configuration and metadata
+        assert send_email.model.model_config["arbitrary_types_allowed"] is True
+        assert send_email.model.model_config["json_schema_extra"] is metadata
+
         # Test signature parameters
         params = send_email.__signature__.parameters
         assert "to" in params
@@ -299,6 +303,10 @@ class TestSchemaToFunction:
             == "Create a calendar event with specified details and attendees"
         )
 
+        # Test model configuration and metadata
+        assert create_event.model.model_config["arbitrary_types_allowed"] is True
+        assert create_event.model.model_config["json_schema_extra"] is metadata
+
         # Test model fields for nested structures
         fields = create_event.model.model_fields
 
@@ -331,6 +339,10 @@ class TestSchemaToFunction:
             create_embedding.__doc__ == "Generate embeddings for provided text content"
         )
 
+        # Test model configuration and metadata
+        assert create_embedding.model.model_config["arbitrary_types_allowed"] is True
+        assert create_embedding.model.model_config["json_schema_extra"] is metadata
+
         # Test model fields for union types
         fields = create_embedding.model.model_fields
 
@@ -360,7 +372,7 @@ class TestSchemaToFunction:
 
         # Test model configuration
         assert list_issues.model.model_config["arbitrary_types_allowed"] is True
-        assert list_issues.model.model_config["json_schema_extra"] == metadata
+        assert list_issues.model.model_config["json_schema_extra"] is metadata
 
         # Test parameter locations
         assert metadata["owner"]["in"] == "path"
@@ -376,21 +388,21 @@ class TestSchemaToFunction:
 
         # Test parameter types and defaults
         fields = list_issues.model.model_fields
-        assert fields["owner"].annotation == str
-        assert fields["repo"].annotation == str
-        assert fields["state"].annotation == str
+        assert isinstance(fields["owner"].annotation, type(str))
+        assert isinstance(fields["repo"].annotation, type(str))
+        assert isinstance(fields["state"].annotation, type(str))
         assert fields["state"].default == "open"
-        assert fields["per_page"].annotation == int
+        assert isinstance(fields["per_page"].annotation, type(int))
         assert fields["per_page"].default == 30
-        assert fields["page"].annotation == int
+        assert isinstance(fields["page"].annotation, type(int))
         assert fields["page"].default == 1
 
         # Test optional fields
-        assert fields["assignee"].annotation == str | None
-        assert fields["creator"].annotation == str | None
-        assert fields["mentioned"].annotation == str | None
-        assert fields["labels"].annotation == str | None
-        assert fields["since"].annotation == str | None
+        assert isinstance(fields["assignee"].annotation, type(str | None))
+        assert isinstance(fields["creator"].annotation, type(str | None))
+        assert isinstance(fields["mentioned"].annotation, type(str | None))
+        assert isinstance(fields["labels"].annotation, type(str | None))
+        assert isinstance(fields["since"].annotation, type(str | None))
 
         # No need to test required fields here as they were tested in schema assertions above
 

@@ -2,8 +2,10 @@ from collections.abc import Callable
 from inspect import Parameter, Signature
 from typing import Any, Union, get_type_hints
 
-from pydantic import BaseModel, Field, create_model
+from pydantic import BaseModel, ConfigDict, Field, create_model
 from pydantic.fields import PydanticUndefined
+
+from .executor import execute_dynamic_function
 
 
 def _create_parameter(
@@ -23,7 +25,9 @@ def _create_parameter(
 
 
 def schema_to_function(
-    schema: dict[str, Any], metadata: dict[str, Any] = None
+    schema: dict[str, Any],
+    metadata: dict[str, Any] = None,
+    config: dict[str, Any] = None,
 ) -> Callable:
     """
     Creates a dynamic function based on a JSON schema using Pydantic for validation.
@@ -31,11 +35,13 @@ def schema_to_function(
     Args:
         schema: A JSON schema describing the function and its parameters
         metadata: Additional metadata for the function (default: {})
+        config: Additional configuration for the model (default: {})
 
     Returns:
         A callable function with proper signature and validation
     """
     metadata = metadata or {}
+    config = config or {}
 
     # Extract properties and required fields based on schema structure
     if "parameters" in schema and isinstance(schema["parameters"], dict):
@@ -58,11 +64,11 @@ def schema_to_function(
         model_name,
         __base__=BaseModel,
         __module__=__name__,
-        model_config={
-            "arbitrary_types_allowed": True,
-            "extra": "allow" if schema.get("additionalProperties", True) else "forbid",
-            "json_schema_extra": metadata,
-        },
+        model_config=ConfigDict(
+            arbitrary_types_allowed=True,
+            extra="allow" if schema.get("additionalProperties", True) else "forbid",
+            json_schema_extra={**metadata, **config},
+        ),
         **fields,
     )
 
@@ -78,7 +84,8 @@ def schema_to_function(
     async def dynamic_function(**kwargs):
         """Dynamic function generated from schema."""
         validated = InputModel(**kwargs)
-        return validated
+        print("Input is ", validated)
+        return await execute_dynamic_function(validated, dynamic_function)
 
     # Add metadata to function
     dynamic_function.__signature__ = Signature(parameters=parameters)
@@ -86,6 +93,11 @@ def schema_to_function(
     dynamic_function.__name__ = schema.get("name", "dynamic_function")
     dynamic_function.__doc__ = schema.get("description", "")
     dynamic_function.model = InputModel
+    print("Signature: ", dynamic_function.__signature__)
+    print("Annotations: ", dynamic_function.__annotations__)
+    print("Name: ", dynamic_function.__name__)
+    print("Doc: ", dynamic_function.__doc__)
+    # print("Model: ", dynamic_function.model.model_json_schema())
 
     return dynamic_function
 

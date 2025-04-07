@@ -72,6 +72,9 @@
     "tool_metadata": {
       "path": "/repos/{owner}/{repo}/issues",
       "method": "GET",
+      "defaults": {
+        "status": "active"
+      },
       "tags": ["issues", "list", "query"],
       "owner": {
         "type": "parameter",
@@ -151,6 +154,9 @@
     "tool_metadata": {
       "path": "/repos/{owner}/{repo}/issues/{issue_number}",
       "method": "GET",
+      "defaults": {
+        "status": "active"
+      },
       "tags": ["issues", "read", "single"],
       "owner": {
         "type": "parameter",
@@ -212,6 +218,9 @@
     "tool_metadata": {
       "path": "/repos/{owner}/{repo}/issues",
       "method": "POST",
+      "defaults": {
+        "status": "active"
+      },
       "tags": ["issues", "create"],
       "owner": {
         "type": "parameter",
@@ -293,6 +302,9 @@
     "tool_metadata": {
       "path": "/repos/{owner}/{repo}/issues/{issue_number}",
       "method": "PATCH",
+      "defaults": {
+        "status": "active"
+      },
       "tags": ["issues", "update"],
       "owner": {
         "type": "parameter",
@@ -359,6 +371,9 @@
     "tool_metadata": {
       "path": "/repos/{owner}/{repo}/issues/{issue_number}/lock",
       "method": "PUT",
+      "defaults": {
+        "status": "inactive"
+      },
       "tags": ["issues", "lock", "moderation"],
       "owner": {
         "type": "parameter",
@@ -405,6 +420,9 @@
     "tool_metadata": {
       "path": "/repos/{owner}/{repo}/issues/{issue_number}/lock",
       "method": "DELETE",
+      "defaults": {
+        "status": "inactive"
+      },
       "tags": ["issues", "unlock", "moderation"],
       "owner": {
         "type": "parameter",
@@ -474,6 +492,9 @@
     "tool_metadata": {
       "path": "/search/issues",
       "method": "GET",
+      "defaults": {
+        "status": "active"
+      },
       "tags": ["issues", "search", "query"],
       "q": {
         "type": "parameter",
@@ -535,6 +556,9 @@
     "tool_metadata": {
       "path": "/repos/{owner}/{repo}/issues/{issue_number}/events",
       "method": "GET",
+      "defaults": {
+        "status": "inactive"
+      },
       "tags": ["issues", "events", "list"],
       "owner": {
         "type": "parameter",
@@ -591,6 +615,9 @@
     "tool_metadata": {
       "path": "/repos/{owner}/{repo}/issues/{issue_number}/assignees",
       "method": "POST",
+      "defaults": {
+        "status": "active"
+      },
       "tags": ["issues", "assignees", "add"],
       "owner": {
         "type": "parameter",
@@ -642,6 +669,9 @@
     "tool_metadata": {
       "path": "/repos/{owner}/{repo}/issues/{issue_number}/assignees",
       "method": "DELETE",
+      "defaults": {
+        "status": "active"
+      },
       "tags": ["issues", "assignees", "remove"],
       "owner": {
         "type": "parameter",
