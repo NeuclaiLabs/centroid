@@ -160,9 +160,10 @@ def translate_fn_to_endpoint(
         value = runtime_values.get(field_name)
 
         # Skip if no value
-        if value is None:
-            continue
+        # if value is None:
+        #     continue
 
+        print(f"Processing {param_name} with value {value}")
         # Handle parameters based on their location
         if is_parameter and param_in:
             if param_in == "query":
@@ -174,6 +175,7 @@ def translate_fn_to_endpoint(
             elif param_in == "cookie":
                 cookies[param_name] = str(value)
         else:
+            print(f"Treating {param_name} as body")
             # If not explicitly a parameter or no location specified, treat as body
             body[param_name] = value
 

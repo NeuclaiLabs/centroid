@@ -19,6 +19,19 @@ def _create_parameter(
         title=prop.get("title"),
     )
 
+    # For optional fields with default None, return Parameter without annotation
+    if not is_required and prop.get("default") is None:
+        return Parameter(
+            name,
+            Parameter.KEYWORD_ONLY,
+            default=Field(
+                default=None,
+                description=f"{prop.get('description', '')} (The data type is {field_type.__name__ if hasattr(field_type, '__name__') else str(field_type)})",
+                title=prop.get("title"),
+            ),
+        )
+
+    # Otherwise, return Parameter with annotation
     return Parameter(
         name, Parameter.KEYWORD_ONLY, default=param_field, annotation=field_type
     )

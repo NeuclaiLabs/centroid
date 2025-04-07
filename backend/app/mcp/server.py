@@ -16,9 +16,12 @@ def echo_resource(message: str) -> str:
 
 
 @mcp.tool()
-def echo_tool(message: str) -> str:
+def echo_tool(
+    message: str,
+    message2=Field(default=None, description="Optional title", title="Optional title"),
+) -> str:
     """Echo a message as a tool"""
-    return f"Tool echo: {message}"
+    return f"Tool echo: {message} {message2}"
 
 
 @mcp.tool()
@@ -31,8 +34,11 @@ def greet(
 
 
 # Define example tools WITHOUT decorators - these will be loaded dynamically
-def addition_tool(a: int, b: int) -> int:
+def addition_tool(a: int, b=None) -> int:
     """Add two numbers together"""
+    # Handle the None case
+    if b is None:
+        return a
     return a + b
 
 
