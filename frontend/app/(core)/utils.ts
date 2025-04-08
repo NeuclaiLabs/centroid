@@ -16,13 +16,9 @@ export function filterTools(
   if (!query) return tools;
 
   return tools.filter((tool) => {
-    const name = String(
-      'toolSchema' in tool ? tool.toolSchema?.name || tool.id : tool.name,
-    ).toLowerCase();
+    const name = String(tool.toolMetadata?.name || tool.id).toLowerCase();
     const description = String(
-      'toolSchema' in tool
-        ? tool.toolSchema?.description || ''
-        : tool.description,
+      tool.toolMetadata?.description || '',
     ).toLowerCase();
     return name.includes(query) || description.includes(query);
   });
@@ -33,19 +29,14 @@ export function filterToolInstances(
   searchQuery: string,
 ): ToolInstance[] {
   const query = searchQuery.toLowerCase().trim();
-  console.log(query);
   if (!query) return tools;
 
   return tools.filter((tool) => {
     const name = String(
-      'toolSchema' in tool.definition
-        ? tool.definition.toolSchema?.name || tool.id
-        : tool.name,
+      tool.definition.toolSchema?.name || tool.id,
     ).toLowerCase();
     const description = String(
-      'toolSchema' in tool.definition
-        ? tool.definition.toolSchema?.description || ''
-        : tool.description,
+      tool.definition.toolSchema?.description || '',
     ).toLowerCase();
     return name.includes(query) || description.includes(query);
   });

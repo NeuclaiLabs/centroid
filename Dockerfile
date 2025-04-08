@@ -26,24 +26,32 @@ ENV NEXTAUTH_URL=http://localhost:3000
 # Create dummy .env.local file for Next.js
 RUN touch /app/frontend/.env.local
 # Build frontend app
-RUN --mount=type=cache,id=next-cache,target=/app/frontend/.next/cache \
-    pnpm run build
+# RUN --mount=type=cache,id=next-cache,target=/app/frontend/.next/cache \
+RUN    pnpm run build
 
-# Python base stage
-FROM python:3.10-slim AS python-base
-# Install Poetry
-RUN pip install --no-cache-dir poetry
-# Configure Poetry
-RUN poetry config virtualenvs.create false
+# Python base stage with uv
+FROM python:3.10 AS python-base
+
+ENV PYTHONUNBUFFERED=1
+WORKDIR /app/
+
+# Install uv from official image
+COPY --from=ghcr.io/astral-sh/uv:0.6.13 /uv /uvx /bin/
+
+# Configure Python and uv environment
+ENV PATH="/app/.venv/bin:$PATH"
+ENV UV_COMPILE_BYTECODE=1
+ENV UV_LINK_MODE=copy
+ENV PYTHONPATH=/app
 
 # Backend dependencies stage
 FROM python-base AS backend-deps
 WORKDIR /app/backend
-# Copy backend dependency specification
-COPY backend/pyproject.toml backend/poetry.lock* ./
+
 # Install dependencies
-RUN --mount=type=cache,id=pip,target=/root/.cache/pip \
-    poetry install --no-interaction --no-ansi --no-root
+COPY backend/pyproject.toml backend/uv.lock ./
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-install-project
 
 # Node.js installation for backend stage
 FROM backend-deps AS backend-with-node
@@ -95,14 +103,20 @@ ENV LOG_BACKUP_COUNT=7
 # Add environment variable for migrations
 ENV RUN_MIGRATIONS=true
 
-# Copy backend application
-COPY backend/ /app/backend/
+# Copy backend files
+COPY backend/scripts /app/scripts
+COPY backend/pyproject.toml backend/uv.lock backend/alembic.ini /app/
+COPY backend/app /app/app
 
-# Copy frontend build artifacts from build stage
+# Copy frontend build artifacts
 COPY --from=frontend-builder /app/frontend/.next /app/frontend/.next
 COPY --from=frontend-builder /app/frontend/public /app/frontend/public
 COPY --from=frontend-builder /app/frontend/node_modules /app/frontend/node_modules
 COPY --from=frontend-builder /app/frontend/package*.json /app/frontend/
+
+# Sync the project with uv
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync
 
 # Create logs directory with appropriate permissions
 RUN mkdir -p /app/data/logs && chmod 755 /app/data/logs
@@ -117,4 +131,4 @@ RUN chmod +x /entrypoint.sh
 EXPOSE 3000 8000
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["/app/start.sh"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]

@@ -1,5 +1,5 @@
 import useSWR, { mutate } from 'swr';
-import type { Connection, ConnectionCreate } from '../types';
+import type { Connection, ConnectionCreate } from '@/app/(core)/types';
 
 const fetcher = async (url: string) => {
   const res = await fetch(url);
