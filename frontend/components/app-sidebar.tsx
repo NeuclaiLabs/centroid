@@ -2,7 +2,25 @@
 
 import type { User } from "next-auth";
 import { useRouter } from "next/navigation";
-import { Network } from "lucide-react";
+import {
+	BarChartIcon,
+	ClipboardListIcon,
+	FileCodeIcon,
+	FileIcon,
+	FileTextIcon,
+	HelpCircleIcon,
+	LayoutDashboardIcon,
+	ListIcon,
+	Network,
+	SearchIcon,
+	SettingsIcon,
+	UsersIcon,
+	FolderIcon,
+	CameraIcon,
+	DatabaseIcon,
+	SendIcon,
+	ScrollTextIcon,
+} from "lucide-react";
 
 import { PlusIcon } from "@/components/icons";
 import { SidebarHistory } from "@/components/sidebar-history";
@@ -24,27 +42,156 @@ import {
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
+import { NavDocuments } from "@/components/nav-documents";
+import { NavMain } from "@/components/nav-main";
+import { NavSecondary } from "@/components/nav-secondary";
+
 export function AppSidebar({ user }: { user: User | undefined }) {
 	const router = useRouter();
 	const { setOpenMobile } = useSidebar();
-
+	const data = {
+		user: {
+			name: "shadcn",
+			email: "m@example.com",
+			avatar: "/avatars/shadcn.jpg",
+		},
+		navMain: [
+			{
+				title: "Apps",
+				url: "/apps",
+				icon: LayoutDashboardIcon,
+			},
+			{
+				title: "Logs",
+				url: "/logs",
+				icon: ScrollTextIcon,
+			},
+			// {
+			// 	title: "Lifecycle",
+			// 	url: "#",
+			// 	icon: ListIcon,
+			// },
+			// {
+			// 	title: "Analytics",
+			// 	url: "#",
+			// 	icon: BarChartIcon,
+			// },
+			// {
+			// 	title: "Projects",
+			// 	url: "#",
+			// 	icon: FolderIcon,
+			// },
+			// {
+			// 	title: "Team",
+			// 	url: "#",
+			// 	icon: UsersIcon,
+			// },
+		],
+		navClouds: [
+			{
+				title: "Capture",
+				icon: CameraIcon,
+				isActive: true,
+				url: "#",
+				items: [
+					{
+						title: "Active Proposals",
+						url: "#",
+					},
+					{
+						title: "Archived",
+						url: "#",
+					},
+				],
+			},
+			{
+				title: "Proposal",
+				icon: FileTextIcon,
+				url: "#",
+				items: [
+					{
+						title: "Active Proposals",
+						url: "#",
+					},
+					{
+						title: "Archived",
+						url: "#",
+					},
+				],
+			},
+			{
+				title: "Prompts",
+				icon: FileCodeIcon,
+				url: "#",
+				items: [
+					{
+						title: "Active Proposals",
+						url: "#",
+					},
+					{
+						title: "Archived",
+						url: "#",
+					},
+				],
+			},
+		],
+		navSecondary: [
+			// {
+			// 	title: "Settings",
+			// 	url: "#",
+			// 	icon: SettingsIcon,
+			// },
+			{
+				title: "Get Help",
+				url: "https://discord.com/invite/CNWq2PxX8V",
+				icon: HelpCircleIcon,
+			},
+			{
+				title: "Feedback",
+				url: "https://github.com/srikanth235/openastra/issues/new?template=feedback.yml",
+				icon: SendIcon,
+			},
+			// {
+			// 	title: "Search",
+			// 	url: "#",
+			// 	icon: SearchIcon,
+			// },
+		],
+		documents: [
+			{
+				name: "Data Library",
+				url: "#",
+				icon: DatabaseIcon,
+			},
+			{
+				name: "Reports",
+				url: "#",
+				icon: ClipboardListIcon,
+			},
+			{
+				name: "Word Assistant",
+				url: "#",
+				icon: FileIcon,
+			},
+		],
+	};
 	return (
 		<Sidebar className="group-data-[side=left]:border-r-0">
 			<SidebarHeader>
 				<SidebarMenu>
 					<div className="flex flex-row justify-between items-center">
 						<Link
-							href="/"
+							href="/apps"
 							onClick={() => {
 								setOpenMobile(false);
 							}}
 							className="flex flex-row gap-3 items-center"
 						>
 							<span className="text-lg font-semibold px-2 hover:bg-muted rounded-md cursor-pointer">
-								Chatbot
+								OpenAstra
 							</span>
 						</Link>
-						<Tooltip>
+						{/* <Tooltip>
 							<TooltipTrigger asChild>
 								<Button
 									variant="ghost"
@@ -60,12 +207,12 @@ export function AppSidebar({ user }: { user: User | undefined }) {
 								</Button>
 							</TooltipTrigger>
 							<TooltipContent align="end">New Chat</TooltipContent>
-						</Tooltip>
+						</Tooltip> */}
 					</div>
 				</SidebarMenu>
 			</SidebarHeader>
 			<SidebarContent>
-				<SidebarGroup>
+				{/* <SidebarGroup>
 					<SidebarGroupLabel>Platform</SidebarGroupLabel>
 					<SidebarGroupContent>
 						<SidebarMenu>
@@ -79,8 +226,12 @@ export function AppSidebar({ user }: { user: User | undefined }) {
 							</SidebarMenuItem>
 						</SidebarMenu>
 					</SidebarGroupContent>
-				</SidebarGroup>
-				<SidebarHistory user={user} />
+				</SidebarGroup> */}
+				<NavMain items={data.navMain} />
+				<NavSecondary items={data.navSecondary} className="mt-auto" />
+
+				{/* <NavDocuments items={data.documents} />
+				{/* <SidebarHistory user={user} /> */}
 			</SidebarContent>
 			<SidebarFooter>{user && <SidebarUserNav user={user} />}</SidebarFooter>
 		</Sidebar>
