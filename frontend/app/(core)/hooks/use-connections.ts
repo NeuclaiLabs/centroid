@@ -27,7 +27,6 @@ export function useConnections(options: UseConnectionsOptions = {}) {
     count: number;
   }>(`/api/connection?${params.toString()}`, fetcher);
 
-
   return {
     connections: data?.data ?? [],
     total: data?.count ?? 0,
@@ -112,4 +111,24 @@ export async function updateConnection(
     mutate(`/api/connection/${id}`), // Invalidate single connection
   ]);
   return result;
+}
+
+export async function deleteConnection(id: string) {
+  const response = await fetch(`/api/connection/${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    let errorMessage = 'Failed to delete connection';
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.error || errorData.message || errorMessage;
+    } catch (e) {
+      errorMessage = response.statusText || errorMessage;
+    }
+    throw new Error(errorMessage);
+  }
+
+  await mutate('/api/connection'); // Invalidate connections list
+  return true;
 }

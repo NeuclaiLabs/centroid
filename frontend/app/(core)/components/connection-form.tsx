@@ -38,7 +38,7 @@ import {
 	updateConnection,
 	useConnection,
 	useConnections,
-} from "../hooks/use-connections";
+} from "../../hooks/use-connections";
 
 const AUTH_TYPES = {
 	NONE: AuthType.NONE,
@@ -126,7 +126,6 @@ export function ConnectionForm({
 		mode: "onChange",
 	});
 
-
 	// Reset auth config when auth type changes
 	const authType = form.watch("auth.type");
 	useEffect(() => {
@@ -140,7 +139,6 @@ export function ConnectionForm({
 			},
 			[AUTH_TYPES.BASIC]: { username: "", password: "" },
 		} as const;
-
 
 		// Only set default config for new connections or when auth type changes for existing ones
 		if (!initialData || initialData?.auth?.type !== authType) {
@@ -164,7 +162,6 @@ export function ConnectionForm({
 						config: data.auth.type === AUTH_TYPES.NONE ? {} : data.auth.config,
 					},
 				};
-
 
 				if (initialData?.id) {
 					await updateConnection(initialData.id, formattedData);
@@ -421,23 +418,11 @@ export function ConnectionDialog({
 	connectionId,
 	onSelectConnection,
 }: ConnectionDialogProps) {
-	const { connections, isLoading: isLoadingConnections } = useConnections({
-		appId,
-	});
 	const { connection, isLoading: isLoadingConnection } = useConnection(
 		connectionId ?? "",
 	);
 
-
-	// If we're opening the dialog and there's exactly one connection, use that
-	useEffect(() => {
-		if (isOpen && !connectionId && connections.length === 1) {
-			// Auto-select the only connection
-			onSelectConnection(connections[0].id);
-		}
-	}, [isOpen, connectionId, connections, onSelectConnection]);
-
-	const isLoading = isLoadingConnections || isLoadingConnection;
+	const isLoading = isLoadingConnection;
 
 	if (isLoading) {
 		return (
@@ -446,40 +431,6 @@ export function ConnectionDialog({
 					<DialogHeader>
 						<DialogTitle className="text-center">Loading...</DialogTitle>
 					</DialogHeader>
-				</DialogContent>
-			</Dialog>
-		);
-	}
-
-	// If there's no specific connection selected and we have multiple connections,
-	// show the connection list
-	if (!connectionId && connections.length > 0) {
-		return (
-			<Dialog open={isOpen} onOpenChange={onOpenChange}>
-				<DialogContent className="sm:max-w-[600px]">
-					<DialogHeader>
-						<DialogTitle className="text-center">Select Connection</DialogTitle>
-					</DialogHeader>
-					<div className="grid gap-4">
-						{connections.map((conn) => (
-							<Button
-								key={conn.id}
-								variant="outline"
-								className="flex flex-col items-start p-4 h-auto"
-								onClick={() => onSelectConnection(conn.id)}
-							>
-								<div className="font-medium">{conn.name}</div>
-								{conn.description && (
-									<div className="text-sm text-muted-foreground mt-1">
-										{conn.description}
-									</div>
-								)}
-							</Button>
-						))}
-						<Button onClick={() => onSelectConnection()}>
-							Create New Connection
-						</Button>
-					</div>
 				</DialogContent>
 			</Dialog>
 		);

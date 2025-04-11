@@ -1,7 +1,7 @@
 "use client";
 
 import { appRegistry } from "@/lib/registry";
-import { AppCard } from "./components/app-card";
+import { AppCard } from "../components/app-card";
 
 export default function AppsPage() {
 	return (

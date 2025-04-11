@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Pencil } from "lucide-react";
 import { appRegistry } from "@/lib/registry";
-import { useConnections } from "../hooks/use-connections";
+import { useConnections } from "../../hooks/use-connections";
 
 interface AppHeaderProps {
 	appId: string;
@@ -39,20 +39,11 @@ export function AppHeader({ appId, onConnect }: AppHeaderProps) {
 					<Button
 						size="lg"
 						className="h-11 shrink-0"
-						onClick={() => onConnect(existingConnection?.id)}
+						onClick={() => onConnect(undefined)}
 						disabled={isLoading}
 					>
-						{existingConnection ? (
-							<>
-								Edit Connection
-								<Pencil className="ml-2 size-4" />
-							</>
-						) : (
-							<>
-								Connect
-								<ArrowRight className="ml-2 size-4" />
-							</>
-						)}
+						Create Connection
+						<ArrowRight className="ml-2 size-4" />
 					</Button>
 				</div>
 			</div>

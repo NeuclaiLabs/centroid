@@ -7,6 +7,7 @@ import { OverviewTab } from "../components/overview-tab";
 import { SettingsTab } from "../components/settings-tab";
 import { SchemaDialog } from "../components/schema-dialog";
 import { ConnectionDialog } from "@/app/(core)/apps/components/connection-form";
+import { ConnectionsTab } from "../components/connections-tab";
 import type { ToolDefinition } from "../../types";
 
 interface PageProps {
@@ -43,6 +44,7 @@ export default function ConnectionPage({ params }: PageProps) {
 					<Tabs defaultValue="overview" className="flex flex-col h-full">
 						<TabsList className="flex-shrink-0 mb-4 w-fit">
 							<TabsTrigger value="overview">Overview</TabsTrigger>
+							<TabsTrigger value="connections">Connections</TabsTrigger>
 							<TabsTrigger value="settings">Settings</TabsTrigger>
 						</TabsList>
 
@@ -51,6 +53,16 @@ export default function ConnectionPage({ params }: PageProps) {
 							className="flex-1 m-0 data-[state=active]:block"
 						>
 							<OverviewTab appId={id} onOpenSchema={handleOpenSchema} />
+						</TabsContent>
+
+						<TabsContent
+							value="connections"
+							className="flex-1 m-0 data-[state=active]:block"
+						>
+							<ConnectionsTab
+								appId={id}
+								onEditConnection={handleOpenConnectionForm}
+							/>
 						</TabsContent>
 
 						<TabsContent

@@ -20,6 +20,8 @@ import {
 	DatabaseIcon,
 	SendIcon,
 	ScrollTextIcon,
+	WrenchIcon,
+	BotIcon,
 } from "lucide-react";
 
 import { PlusIcon } from "@/components/icons";
@@ -60,6 +62,16 @@ export function AppSidebar({ user }: { user: User | undefined }) {
 				title: "Apps",
 				url: "/apps",
 				icon: LayoutDashboardIcon,
+			},
+			{
+				title: "Tools",
+				url: "/tools",
+				icon: WrenchIcon,
+			},
+			{
+				title: "Agents",
+				url: "/agents",
+				icon: BotIcon,
 			},
 			{
 				title: "Logs",
