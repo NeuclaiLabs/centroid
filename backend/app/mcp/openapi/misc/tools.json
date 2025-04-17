@@ -1,6 +1,6 @@
 [
   {
-    "app_id": "gmail",
+    "provider_id": "gmail",
     "id": "send_email",
     "tool_schema": {
       "name": "SendEmail",
@@ -96,7 +96,7 @@
     }
   },
   {
-    "app_id": "gmail",
+    "provider_id": "gmail",
     "id": "search_emails",
     "tool_schema": {
       "name": "SearchEmails",
@@ -177,7 +177,7 @@
     }
   },
   {
-    "app_id": "gmail",
+    "provider_id": "gmail",
     "id": "manage_labels",
     "tool_schema": {
       "name": "ManageLabels",
@@ -250,7 +250,7 @@
     }
   },
   {
-    "app_id": "slack",
+    "provider_id": "slack",
     "id": "post_message",
     "tool_schema": {
       "name": "PostMessage",
@@ -326,7 +326,7 @@
     }
   },
   {
-    "app_id": "slack",
+    "provider_id": "slack",
     "id": "create_channel",
     "tool_schema": {
       "name": "CreateChannel",
@@ -400,7 +400,7 @@
     }
   },
   {
-    "app_id": "slack",
+    "provider_id": "slack",
     "id": "invite_users",
     "tool_schema": {
       "name": "InviteUsers",
@@ -468,7 +468,7 @@
     }
   },
   {
-    "app_id": "openai",
+    "provider_id": "openai",
     "id": "generate_completion",
     "tool_schema": {
       "name": "GenerateCompletion",
@@ -569,7 +569,7 @@
     }
   },
   {
-    "app_id": "openai",
+    "provider_id": "openai",
     "id": "create_image",
     "tool_schema": {
       "name": "CreateImage",
@@ -665,7 +665,7 @@
     }
   },
   {
-    "app_id": "openai",
+    "provider_id": "openai",
     "id": "create_embedding",
     "tool_schema": {
       "name": "CreateEmbedding",
@@ -729,7 +729,7 @@
     }
   },
   {
-    "app_id": "dropbox",
+    "provider_id": "dropbox",
     "id": "upload_file",
     "tool_schema": {
       "name": "UploadFile",
@@ -794,7 +794,7 @@
     }
   },
   {
-    "app_id": "dropbox",
+    "provider_id": "dropbox",
     "id": "share_file",
     "tool_schema": {
       "name": "ShareFile",
@@ -870,7 +870,7 @@
     }
   },
   {
-    "app_id": "dropbox",
+    "provider_id": "dropbox",
     "id": "list_folder",
     "tool_schema": {
       "name": "ListFolder",
@@ -944,7 +944,7 @@
     }
   },
   {
-    "app_id": "google_calendar",
+    "provider_id": "google_calendar",
     "id": "create_event",
     "tool_schema": {
       "name": "CreateEvent",

@@ -1,6 +1,6 @@
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
@@ -8,7 +8,6 @@ from app.models import (
     ToolInstance,
     ToolInstanceCreate,
     ToolInstanceOut,
-    ToolInstanceSearch,
     ToolInstancesOut,
     ToolInstanceUpdate,
     UtilsMessage,
@@ -21,7 +20,6 @@ router = APIRouter()
 def read_tool_instances(
     session: SessionDep,
     current_user: CurrentUser,
-    search: ToolInstanceSearch = Depends(),
     skip: int = 0,
     limit: int = 100,
 ) -> Any:
@@ -31,10 +29,6 @@ def read_tool_instances(
     """
     # Build base query
     query = select(ToolInstance).where(ToolInstance.owner_id == current_user.id)
-
-    # Add app_id filter if provided
-    if search.app_id:
-        query = query.where(ToolInstance.app_id == search.app_id)
 
     # Get total count
     count_query = select(func.count()).select_from(query.subquery())

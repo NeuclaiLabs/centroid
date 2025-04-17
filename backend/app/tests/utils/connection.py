@@ -21,7 +21,7 @@ def create_random_connection(*, session: Session, owner_id: str) -> Connection:
     connection = Connection(
         name=f"Test Connection {random_string()}",
         description=f"Test Description {random_string()}",
-        app_id=random_string(),
+        provider_id=random_string(),
         base_url="https://api.example.com",
         auth=auth_config,
         owner_id=owner_id,

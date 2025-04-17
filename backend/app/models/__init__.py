@@ -26,6 +26,16 @@ from .document import (
     DocumentUpdate,
 )
 from .item import Item, ItemBase, ItemCreate, ItemOut, ItemsOut, ItemUpdate
+from .mcp_instance import (
+    MCPInstance,
+    MCPInstanceBase,
+    MCPInstanceCreate,
+    MCPInstanceOut,
+    MCPInstanceSearch,
+    MCPInstancesOut,
+    MCPInstanceStatus,
+    MCPInstanceUpdate,
+)
 from .message import Message, MessageCreate, MessageOut, MessagesOut
 from .project import (
     Project,
@@ -34,14 +44,6 @@ from .project import (
     ProjectOut,
     ProjectsOut,
     ProjectUpdate,
-)
-from .setting import (
-    Setting,
-    SettingBase,
-    SettingCreate,
-    SettingOut,
-    SettingsOut,
-    SettingUpdate,
 )
 from .suggestion import (
     Suggestion,
@@ -66,15 +68,6 @@ from .team import (
     TeamsOut,
     TeamUpdate,
 )
-from .tool_definition import (
-    ToolDefinition,
-    ToolDefinitionBase,
-    ToolDefinitionCreate,
-    ToolDefinitionOut,
-    ToolDefinitionSearch,
-    ToolDefinitionsOut,
-    ToolDefinitionUpdate,
-)
 from .tool_instance import (
     ToolInstance,
     ToolInstanceBase,
@@ -85,6 +78,8 @@ from .tool_instance import (
     ToolInstanceStatus,
     ToolInstanceUpdate,
 )
+
+# Import base models first
 from .user import (
     UpdatePassword,
     User,
@@ -107,7 +102,6 @@ __all__ = [
     "ProjectOut",
     "ProjectsOut",
     "ProjectUpdate",
-    "Setting",
     "Team",
     "TeamMember",
     "TeamCreate",
@@ -145,12 +139,6 @@ __all__ = [
     "ChatUpdate",
     "ChatOut",
     "ChatsOut",
-    "Setting",
-    "SettingBase",
-    "SettingCreate",
-    "SettingUpdate",
-    "SettingOut",
-    "SettingsOut",
     "SQLModel",
     "Message",
     "MessageCreate",
@@ -187,12 +175,6 @@ __all__ = [
     "TokenAuth",
     "ApiKeyAuth",
     "BasicAuth",
-    "ToolDefinition",
-    "ToolDefinitionBase",
-    "ToolDefinitionCreate",
-    "ToolDefinitionUpdate",
-    "ToolDefinitionOut",
-    "ToolDefinitionsOut",
     "ToolInstance",
     "ToolInstanceBase",
     "ToolInstanceCreate",
@@ -200,6 +182,13 @@ __all__ = [
     "ToolInstanceOut",
     "ToolInstancesOut",
     "ToolInstanceStatus",
-    "ToolDefinitionSearch",
     "ToolInstanceSearch",
+    "MCPInstance",
+    "MCPInstanceBase",
+    "MCPInstanceCreate",
+    "MCPInstanceUpdate",
+    "MCPInstanceOut",
+    "MCPInstancesOut",
+    "MCPInstanceStatus",
+    "MCPInstanceSearch",
 ]

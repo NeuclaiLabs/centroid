@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from .connection import Connection
     from .document import Document
     from .item import Item
-    from .setting import Setting
+    from .mcp_instance import MCPInstance
     from .suggestion import Suggestion
     from .team import TeamMember
     from .tool_instance import ToolInstance
@@ -76,9 +76,6 @@ class User(UserBase, table=True):
         sa_column_kwargs={"onupdate": func.now(), "server_default": func.now()},
     )
     items: list["Item"] = Relationship(back_populates="owner")
-    settings: list["Setting"] = Relationship(
-        cascade_delete=True, back_populates="owner"
-    )
     team_memberships: list["TeamMember"] = Relationship(
         back_populates="user", cascade_delete=True
     )
@@ -91,6 +88,9 @@ class User(UserBase, table=True):
         back_populates="user", cascade_delete=True
     )
     tool_instances: list["ToolInstance"] = Relationship(
+        back_populates="owner", cascade_delete=True
+    )
+    mcp_instances: list["MCPInstance"] = Relationship(
         back_populates="owner", cascade_delete=True
     )
     connections: list["Connection"] = Relationship(

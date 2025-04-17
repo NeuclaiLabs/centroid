@@ -3,7 +3,7 @@ import logging
 
 from sqlmodel import Session, select
 
-from app.core.db import engine, get_tool_files, init_db, populate_tool_definitions
+from app.core.db import engine, init_db
 from app.models import (  # Adjust import based on your model structure
     User,
 )
@@ -22,7 +22,6 @@ async def init() -> None:
     with Session(engine) as session:
         # Always populate tool definitions on startup
         logger.info("Ensuring tool definitions are up to date...")
-        populate_tool_definitions(session, get_tool_files())
 
         # Initialize other data only if database is empty
         if await is_db_empty(session):

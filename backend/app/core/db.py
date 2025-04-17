@@ -1,7 +1,4 @@
-import json
 import logging
-from collections.abc import Sequence
-from pathlib import Path
 
 from sqlmodel import Session, create_engine, select
 
@@ -10,8 +7,6 @@ from app.core.config import settings
 from app.models import (
     ProjectCreate,
     TeamCreate,
-    ToolDefinition,
-    ToolDefinitionCreate,
     User,
     UserCreate,
 )
@@ -23,62 +18,6 @@ logger = logging.getLogger(__name__)
 # make sure all SQLModel models are imported (app.models) before initializing DB
 # otherwise, SQLModel might fail to initialize relationships properly
 # for more details: https://github.com/tiangolo/full-stack-fastapi-template/issues/28
-
-
-def get_tool_files() -> list[Path]:
-    """Get the list of tool definition files to load."""
-    base_path = Path(__file__).parent.parent / "mcp" / "openapi"
-    return [base_path / "github" / "tools.json", base_path / "misc" / "tools.json"]
-
-
-def load_tools_from_file(file_path: Path) -> list[dict]:
-    """Load and validate tool definitions from a JSON file."""
-    if file_path.exists():
-        with open(file_path) as f:
-            return json.load(f)
-    return []
-
-
-def populate_tool_definitions(session: Session, tool_files: Sequence[Path]) -> None:
-    """
-    Populate tool definitions from JSON files.
-    This ensures all tool definitions are available and up-to-date on startup.
-
-    Args:
-        session: SQLModel session for database operations
-        tool_files: Sequence of paths to tool definition JSON files
-    """
-    total_tools = 0
-    new_tools = 0
-
-    for tool_file in tool_files:
-        tools_data = load_tools_from_file(tool_file)
-        total_tools += len(tools_data)
-
-        for tool in tools_data:
-            # Get the tool id
-            tool_id = tool["id"]
-            app_id = tool["app_id"]
-
-            # Check if tool definition already exists by id
-            existing_tool = session.exec(
-                select(ToolDefinition).where(ToolDefinition.id == tool_id)
-            ).first()
-
-            if not existing_tool:
-                logger.info(f"Adding new tool: {app_id}/{tool_id}")
-                tool_in = ToolDefinitionCreate(
-                    app_id=tool["app_id"],
-                    id=tool["id"],
-                    tool_schema=tool["tool_schema"],
-                    tool_metadata=tool["tool_metadata"],
-                )
-                crud.create_tool_definition(session=session, tool_definition=tool_in)
-                new_tools += 1
-
-    logger.info(
-        f"Tool population complete. Total tools: {total_tools}, New tools added: {new_tools}"
-    )
 
 
 async def init_db(session: Session) -> None:

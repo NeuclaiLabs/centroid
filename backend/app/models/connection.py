@@ -44,13 +44,13 @@ class AuthConfig(CamelModel):
 class ConnectionBase(CamelModel, SQLModel):
     name: str
     description: str | None = None
-    app_id: str
+    provider_id: str
     base_url: str | None = Field(default=None)
     owner_id: str | None = Field(default=None, foreign_key="users.id")
 
 
 class ConnectionSearch(CamelModel):
-    app_id: str | None = None
+    provider_id: str | None = None
 
 
 class ConnectionCreate(ConnectionBase):
@@ -61,7 +61,7 @@ class ConnectionUpdate(CamelModel):
     name: str | None = None
     description: str | None = None
     base_url: str | None = Field(default=None)
-    app_id: str | None = Field(default=None)
+    provider_id: str | None = Field(default=None)
     auth: AuthConfig | None = None
 
 
@@ -73,6 +73,9 @@ class Connection(ConnectionBase, SQLModel, table=True):
     )
 
     owner: "User" = Relationship(back_populates="connections")
+    # mcp_instances: list["MCPInstance"] | None = Relationship(
+    #     back_populates="connection",
+    # )
 
     created_at: datetime | None = Field(
         default=None,
@@ -155,7 +158,7 @@ class ConnectionOut(CamelModel):
     id: str
     name: str
     description: str | None = None
-    app_id: str
+    provider_id: str
     base_url: str | None = None
     auth: AuthConfig | None = None
     owner_id: str

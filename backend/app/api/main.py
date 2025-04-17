@@ -15,12 +15,11 @@ from app.api.routes import (
     items,
     llm,
     login,
+    mcp_instances,
     messages,
     projects,
-    settings,
     suggestions,
     teams,
-    tool_definitions,
     tool_instances,
     users,
     utils,
@@ -231,7 +230,6 @@ api_router.include_router(
     suggestions.router, prefix="/suggestions", tags=["suggestions"]
 )
 api_router.include_router(votes.router, prefix="/votes", tags=["votes"])
-api_router.include_router(settings.router, prefix="/settings", tags=["settings"])
 api_router.include_router(teams.router, prefix="/teams", tags=["teams"])
 api_router.include_router(projects.router, prefix="/projects", tags=["projects"])
 api_router.include_router(files.router, prefix="/files", tags=["files"])
@@ -239,9 +237,10 @@ api_router.include_router(llm.router, prefix="/llm", tags=["llm"])
 api_router.include_router(
     connections.router, prefix="/connections", tags=["connections"]
 )
-api_router.include_router(
-    tool_definitions.router, prefix="/tool-definitions", tags=["tool-definitions"]
-)
+
 api_router.include_router(
     tool_instances.router, prefix="/tool-instances", tags=["tool-instances"]
+)
+api_router.include_router(
+    mcp_instances.router, prefix="/mcp-instances", tags=["mcp-instances"]
 )

@@ -23,7 +23,7 @@ def mock_active_tool_instances():
         definition_id="def1",
         status=ToolInstanceStatus.ACTIVE,
         owner_id="user1",
-        app_id="app1",
+        provider_id="app1",
         config={"key": "value1"},
     )
 
@@ -32,21 +32,21 @@ def mock_active_tool_instances():
         definition_id="def2",
         status=ToolInstanceStatus.ACTIVE,
         owner_id="user1",
-        app_id="app1",
+        provider_id="app1",
         config={"key": "value2"},
     )
 
     # Create definitions for the instances
     definition1 = ToolDefinition(
         id="def1",
-        app_id="app1",
+        provider_id="app1",
         tool_schema={"name": "tool1", "description": "Test tool 1"},
         tool_metadata={"path": "/test1", "method": "GET"},
     )
 
     definition2 = ToolDefinition(
         id="def2",
-        app_id="app1",
+        provider_id="app1",
         tool_schema={"name": "tool2", "description": "Test tool 2"},
         tool_metadata={"path": "/test2", "method": "POST"},
     )

@@ -5,12 +5,11 @@ from sqlmodel import Session, delete
 from app.core.config import settings
 from app.core.security import get_password_hash
 from app.crud import get_user_by_email
-from app.models import User
+from app.models import Connection, MCPInstance, User
 from app.models.connection import (
     ApiKeyAuth,
     AuthConfig,
     AuthType,
-    Connection,
 )
 from app.tests.utils.connection import create_random_connection
 from app.tests.utils.utils import random_string
@@ -19,6 +18,9 @@ from app.tests.utils.utils import random_string
 @pytest.fixture(autouse=True)
 def cleanup_connections(db: Session):
     """Clean up connections before each test."""
+    # Clean up in reverse order of dependencies
+    statement = delete(MCPInstance)
+    db.execute(statement)
     statement = delete(Connection)
     db.execute(statement)
     db.commit()
@@ -30,7 +32,7 @@ def valid_connection_data():
     return {
         "name": "Test Connection",
         "description": "A test connection",
-        "app_id": random_string(),
+        "provider_id": random_string(),
         "base_url": "https://api.example.com",
         "auth": {
             "type": AuthType.BASIC,
@@ -57,7 +59,7 @@ def test_create_connection_success(
     content = response.json()
     assert content["name"] == valid_connection_data["name"]
     assert content["description"] == valid_connection_data["description"]
-    assert content["appId"] == valid_connection_data["app_id"]
+    assert content["providerId"] == valid_connection_data["provider_id"]
     assert content["baseUrl"] == valid_connection_data["base_url"]
     assert content["auth"] == valid_connection_data["auth"]
     assert "id" in content
@@ -267,7 +269,7 @@ def test_connection_auth_encryption(db: Session):
 
     connection = Connection(
         name="Test",
-        app_id=random_string(),
+        provider_id=random_string(),
         base_url="https://api.test.com",
         auth=auth_config,
         owner_id=user.id,

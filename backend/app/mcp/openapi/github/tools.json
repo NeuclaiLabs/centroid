@@ -1,6 +1,6 @@
 [
   {
-    "app_id": "github",
+    "provider_id": "github",
     "id": "list_github_issues",
     "tool_schema": {
       "name": "ListGitHubIssues",
@@ -127,7 +127,7 @@
     }
   },
   {
-    "app_id": "github",
+    "provider_id": "github",
     "id": "get_github_issue",
     "tool_schema": {
       "name": "GetGitHubIssue",
@@ -173,7 +173,7 @@
     }
   },
   {
-    "app_id": "github",
+    "provider_id": "github",
     "id": "create_github_issue",
     "tool_schema": {
       "name": "CreateGitHubIssue",
@@ -248,7 +248,7 @@
     }
   },
   {
-    "app_id": "github",
+    "provider_id": "github",
     "id": "update_github_issue",
     "tool_schema": {
       "name": "UpdateGitHubIssue",
@@ -339,7 +339,7 @@
     }
   },
   {
-    "app_id": "github",
+    "provider_id": "github",
     "id": "lock_github_issue",
     "tool_schema": {
       "name": "LockGitHubIssue",
@@ -393,7 +393,7 @@
     }
   },
   {
-    "app_id": "github",
+    "provider_id": "github",
     "id": "unlock_github_issue",
     "tool_schema": {
       "name": "UnlockGitHubIssue",
@@ -439,7 +439,7 @@
     }
   },
   {
-    "app_id": "github",
+    "provider_id": "github",
     "id": "search_github_issues",
     "tool_schema": {
       "name": "SearchGitHubIssues",
@@ -519,7 +519,7 @@
     }
   },
   {
-    "app_id": "github",
+    "provider_id": "github",
     "id": "list_repo_issue_events",
     "tool_schema": {
       "name": "ListRepoIssueEvents",
@@ -583,7 +583,7 @@
     }
   },
   {
-    "app_id": "github",
+    "provider_id": "github",
     "id": "add_assignees_to_issue",
     "tool_schema": {
       "name": "AddAssigneesToIssue",
@@ -637,7 +637,7 @@
     }
   },
   {
-    "app_id": "github",
+    "provider_id": "github",
     "id": "remove_assignees_from_issue",
     "tool_schema": {
       "name": "RemoveAssigneesFromIssue",

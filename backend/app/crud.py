@@ -11,15 +11,11 @@ from app.models import (
     ItemCreate,
     Project,
     ProjectCreate,
-    Setting,
-    SettingCreate,
     Team,
     TeamCreate,
     TeamInvitationStatus,
     TeamMember,
     TeamRole,
-    ToolDefinition,
-    ToolDefinitionCreate,
     ToolInstance,
     ToolInstanceCreate,
     User,
@@ -35,7 +31,6 @@ def create_user(*, session: Session, user_create: UserCreate) -> User:
     session.add(db_obj)
     session.commit()
     session.refresh(db_obj)
-    create_setting(session=session, setting_create=SettingCreate(), owner_id=db_obj.id)
     return db_obj
 
 
@@ -84,16 +79,6 @@ def create_chat(*, session: Session, chat: Chat) -> Chat:
     return db_chat
 
 
-def create_setting(
-    *, session: Session, setting_create: SettingCreate, owner_id: str
-) -> Setting:
-    db_setting = Setting.model_validate(setting_create, update={"owner_id": owner_id})
-    session.add(db_setting)
-    session.commit()
-    session.refresh(db_setting)
-    return db_setting
-
-
 def create_team(*, session: Session, team_create: TeamCreate, owner_id: str) -> Team:
     team = Team.model_validate(team_create)
     session.add(team)
@@ -123,17 +108,6 @@ def create_project(*, session: Session, project_create: ProjectCreate) -> Projec
     session.commit()
     session.refresh(db_project)
     return db_project
-
-
-def create_tool_definition(
-    session: Session, *, tool_definition: ToolDefinition | ToolDefinitionCreate
-) -> ToolDefinition:
-    """Create a new tool definition."""
-    db_obj = ToolDefinition.model_validate(tool_definition)
-    session.add(db_obj)
-    session.commit()
-    session.refresh(db_obj)
-    return db_obj
 
 
 def create_tool_instance(
