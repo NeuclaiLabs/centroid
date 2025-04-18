@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import enum
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
@@ -11,6 +9,7 @@ from sqlmodel import Column, Field, Relationship, SQLModel
 from .base import CamelModel
 
 if TYPE_CHECKING:
+    from .mcp_instance import MCPInstance
     from .user import User
 
 
@@ -26,7 +25,7 @@ class ToolInstanceSearch(CamelModel):
 class ToolInstanceBase(CamelModel):
     status: ToolInstanceStatus = Field(default=ToolInstanceStatus.ACTIVE)
     owner_id: str = Field(foreign_key="users.id")
-    mcp_instance_id: str = Field(foreign_key="mcp_instances.id")
+    mcp_instance_id: str | None = Field(default=None, foreign_key="mcp_instances.id")
     config: dict[str, Any] | None = Field(default=None, sa_type=JSON)
     tool_schema: dict[str, Any] | None = Field(
         default=None, sa_column=Column("schema", JSON)
@@ -61,9 +60,9 @@ class ToolInstance(ToolInstanceBase, SQLModel, table=True):
         sa_type=DateTime(timezone=True),
         sa_column_kwargs={"onupdate": func.now(), "server_default": func.now()},
     )
-    mcp_instance_id: str = Field(foreign_key="mcp_instances.id")
-    owner: User = Relationship(back_populates="tool_instances")
-    # mcp_instance: MCPInstance = Relationship(back_populates="tool_instances")
+    mcp_instance_id: str | None = Field(default=None, foreign_key="mcp_instances.id")
+    owner: "User" = Relationship(back_populates="tool_instances")
+    mcp_instance: "MCPInstance" = Relationship(back_populates="tool_instances")
 
 
 @event.listens_for(ToolInstance, "before_update")

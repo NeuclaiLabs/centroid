@@ -9,9 +9,10 @@ from sqlmodel import Field, Relationship, SQLModel
 from app.core.security import decrypt_dict, encrypt_dict
 
 from .base import CamelModel
+from .user import User
 
 if TYPE_CHECKING:
-    from .user import User
+    from .mcp_instance import MCPInstance
 
 
 class AuthType(str, Enum):
@@ -72,10 +73,10 @@ class Connection(ConnectionBase, SQLModel, table=True):
         default=None, sa_column=Column("encrypted_auth", String)
     )
 
-    owner: "User" = Relationship(back_populates="connections")
-    # mcp_instances: list["MCPInstance"] | None = Relationship(
-    #     back_populates="connection",
-    # )
+    owner: User = Relationship(back_populates="connections")
+    mcp_instances: list["MCPInstance"] = Relationship(
+        back_populates="connection",
+    )
 
     created_at: datetime | None = Field(
         default=None,

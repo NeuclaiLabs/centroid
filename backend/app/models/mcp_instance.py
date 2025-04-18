@@ -1,18 +1,15 @@
-from __future__ import annotations
-
 import enum
 from datetime import datetime
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import nanoid
 from sqlalchemy import JSON, DateTime, event, func
 from sqlmodel import Field, Relationship, SQLModel
 
 from .base import CamelModel
+from .connection import Connection
+from .tool_instance import ToolInstance
 from .user import User
-
-if TYPE_CHECKING:
-    pass  # Import only for type checking
 
 
 class MCPInstanceStatus(str, enum.Enum):
@@ -63,12 +60,10 @@ class MCPInstance(MCPInstanceBase, SQLModel, table=True):
         sa_column_kwargs={"onupdate": func.now(), "server_default": func.now()},
     )
     owner: User = Relationship(back_populates="mcp_instances")
-    # connection: Mapped[Optional["Connection"]] = Relationship(
-    #     back_populates="mcp_instances", sa_relationship_kwargs={"lazy": "selectin"}
-    # )
-    # tool_instances: list[ForwardRef("ToolInstance")] = Relationship(
-    #     back_populates="mcp_instance"
-    # )
+    connection: Connection = Relationship(back_populates="mcp_instances")
+    tool_instances: list[ToolInstance] | None = Relationship(
+        back_populates="mcp_instance"
+    )
 
     @property
     def mount_path(self) -> str:
