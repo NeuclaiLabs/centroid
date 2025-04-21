@@ -45,6 +45,16 @@ from .project import (
     ProjectsOut,
     ProjectUpdate,
 )
+from .secret import (
+    Secret,
+    SecretBase,
+    SecretCreate,
+    SecretOut,
+    SecretSearch,
+    SecretsOut,
+    SecretUpdate,
+    SecretWithValueOut,
+)
 from .suggestion import (
     Suggestion,
     SuggestionBase,
@@ -191,4 +201,12 @@ __all__ = [
     "ToolInstancesOut",
     "ToolInstanceStatus",
     "ToolInstanceSearch",
+    "Secret",
+    "SecretBase",
+    "SecretCreate",
+    "SecretUpdate",
+    "SecretOut",
+    "SecretsOut",
+    "SecretSearch",
+    "SecretWithValueOut",
 ]

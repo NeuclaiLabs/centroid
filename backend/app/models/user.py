@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from .document import Document
     from .item import Item
     from .mcp_instance import MCPInstance
+    from .secret import Secret
     from .suggestion import Suggestion
     from .team import TeamMember
     from .tool_instance import ToolInstance
@@ -96,6 +97,7 @@ class User(UserBase, table=True):
     connections: list["Connection"] = Relationship(
         back_populates="owner", cascade_delete=True
     )
+    secrets: list["Secret"] = Relationship(back_populates="owner", cascade_delete=True)
 
 
 # Properties to return via API, id is always required

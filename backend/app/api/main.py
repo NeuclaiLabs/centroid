@@ -18,6 +18,7 @@ from app.api.routes import (
     mcp_instances,
     messages,
     projects,
+    secrets,
     suggestions,
     teams,
     tool_instances,
@@ -244,3 +245,5 @@ api_router.include_router(
 api_router.include_router(
     mcp_instances.router, prefix="/mcp-instances", tags=["mcp-instances"]
 )
+
+api_router.include_router(secrets.router, prefix="/secrets", tags=["secrets"])

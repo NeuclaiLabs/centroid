@@ -60,7 +60,7 @@ class MCPInstance(MCPInstanceBase, SQLModel, table=True):
         sa_column_kwargs={"onupdate": func.now(), "server_default": func.now()},
     )
     owner: User = Relationship(back_populates="mcp_instances")
-    connection: Connection = Relationship(back_populates="mcp_instances")
+    connection: Connection | None = Relationship(back_populates="mcp_instances")
     tool_instances: list[ToolInstance] | None = Relationship(
         back_populates="mcp_instance"
     )

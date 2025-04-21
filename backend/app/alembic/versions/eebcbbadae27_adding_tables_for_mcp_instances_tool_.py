@@ -1,8 +1,8 @@
-"""Adding mcp and tools
+"""Adding tables for mcp instances, tool instance and secrets
 
-Revision ID: 928d638dd9b3
+Revision ID: eebcbbadae27
 Revises: 6415c4591871
-Create Date: 2025-04-16 15:55:05.193349
+Create Date: 2025-04-21 20:06:54.984401
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ import sqlmodel.sql.sqltypes
 from sqlalchemy.dialects import sqlite
 
 # revision identifiers, used by Alembic.
-revision = '928d638dd9b3'
+revision = 'eebcbbadae27'
 down_revision = '6415c4591871'
 branch_labels = None
 depends_on = None
@@ -27,6 +27,18 @@ def upgrade():
     sa.Column('owner_id', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('encrypted_auth', sa.String(), nullable=True),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
+    sa.ForeignKeyConstraint(['owner_id'], ['users.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('secrets',
+    sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('description', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('owner_id', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('environment', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('encrypted_value', sa.String(), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
     sa.ForeignKeyConstraint(['owner_id'], ['users.id'], ),
@@ -56,7 +68,7 @@ def upgrade():
     sa.Column('id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
-    sa.Column('mcp_instance_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('mcp_instance_id', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.ForeignKeyConstraint(['mcp_instance_id'], ['mcp_instances.id'], ),
     sa.ForeignKeyConstraint(['owner_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
@@ -92,5 +104,6 @@ def downgrade():
     )
     op.drop_table('tool_instances')
     op.drop_table('mcp_instances')
+    op.drop_table('secrets')
     op.drop_table('connections')
     # ### end Alembic commands ###

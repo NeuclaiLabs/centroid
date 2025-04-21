@@ -1,6 +1,6 @@
 import enum
 from datetime import datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Optional
 
 import nanoid
 from sqlalchemy import JSON, DateTime, event, func
@@ -62,7 +62,9 @@ class ToolInstance(ToolInstanceBase, SQLModel, table=True):
     )
     mcp_instance_id: str | None = Field(default=None, foreign_key="mcp_instances.id")
     owner: "User" = Relationship(back_populates="tool_instances")
-    mcp_instance: "MCPInstance" = Relationship(back_populates="tool_instances")
+    mcp_instance: Optional["MCPInstance"] = Relationship(
+        back_populates="tool_instances"
+    )
 
 
 @event.listens_for(ToolInstance, "before_update")

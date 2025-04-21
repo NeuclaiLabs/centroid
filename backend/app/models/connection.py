@@ -74,7 +74,7 @@ class Connection(ConnectionBase, SQLModel, table=True):
     )
 
     owner: User = Relationship(back_populates="connections")
-    mcp_instances: list["MCPInstance"] = Relationship(
+    mcp_instances: list["MCPInstance"] | None = Relationship(
         back_populates="connection",
     )
 
