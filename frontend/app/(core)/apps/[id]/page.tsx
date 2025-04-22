@@ -2,12 +2,12 @@
 
 import { useState, use } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AppHeader } from "../components/app-header";
-import { OverviewTab } from "../components/overview-tab";
-import { SettingsTab } from "../components/settings-tab";
-import { SchemaDialog } from "../components/schema-dialog";
-import { ConnectionDialog } from "@/app/(core)/apps/components/connection-form";
-import { ConnectionsTab } from "../components/connections-tab";
+import { AppHeader } from "../../components/app-header";
+import { OverviewTab } from "../../components/overview-tab";
+import { SettingsTab } from "../../components/settings-tab";
+import { SchemaDialog } from "../../components/schema-dialog";
+import { ConnectionDialog } from "../../components/connection-form";
+import { ConnectionsTab } from "../../components/connections-tab";
 import type { ToolDefinition } from "../../types";
 
 interface PageProps {

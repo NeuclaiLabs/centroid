@@ -7,7 +7,6 @@ from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from .chat import Chat
-    from .connection import Connection
     from .document import Document
     from .item import Item
     from .mcp_instance import MCPInstance
@@ -92,9 +91,6 @@ class User(UserBase, table=True):
         back_populates="owner", cascade_delete=True
     )
     mcp_instances: list["MCPInstance"] = Relationship(
-        back_populates="owner", cascade_delete=True
-    )
-    connections: list["Connection"] = Relationship(
         back_populates="owner", cascade_delete=True
     )
     secrets: list["Secret"] = Relationship(back_populates="owner", cascade_delete=True)

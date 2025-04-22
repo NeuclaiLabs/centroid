@@ -5,7 +5,13 @@ from sqlmodel import Session, delete
 from app.core.config import settings
 from app.core.security import get_password_hash
 from app.crud import get_user_by_email
-from app.models import Secret, User
+from app.models.secret import (
+    ApiKeyAuth,
+    AuthConfig,
+    AuthType,
+    Secret,
+    User,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -24,6 +30,21 @@ def valid_secret_data():
         "description": "A test secret",
         "value": "super-secret-value",
         "environment": "development",
+        "kind": "ENV",
+    }
+
+
+@pytest.fixture
+def valid_auth_config_secret_data():
+    return {
+        "name": "TEST_AUTH_CONFIG",
+        "description": "A test auth config secret",
+        "value": AuthConfig(
+            type=AuthType.API_KEY,
+            config=ApiKeyAuth(key="X-API-Key", value="test-api-key", location="header"),
+        ),
+        "environment": "development",
+        "kind": "AUTH",
     }
 
 
@@ -43,6 +64,7 @@ def test_create_secret_success(
     assert content["name"] == valid_secret_data["name"]
     assert content["description"] == valid_secret_data["description"]
     assert content["environment"] == valid_secret_data["environment"]
+    assert content["kind"] == valid_secret_data["kind"]
     assert "id" in content
     assert "createdAt" in content
     assert "updatedAt" in content
@@ -53,6 +75,46 @@ def test_create_secret_success(
     # Verify owner is the test user
     user = get_user_by_email(session=db, email=settings.EMAIL_TEST_USER)
     assert content["ownerId"] == user.id
+
+
+def test_secret_value_types(db: Session):
+    """Test that secret values can be stored as different types"""
+    # Get or create test user
+    user = get_user_by_email(session=db, email=settings.EMAIL_TEST_USER)
+    if not user:
+        user = User(
+            email=settings.EMAIL_TEST_USER,
+            hashed_password=get_password_hash("testpass123"),
+            full_name="Test User",
+            is_active=True,
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    # Test string value
+    string_secret = Secret(
+        name="STRING_SECRET",
+        value="string-value",
+        owner_id=user.id,
+        kind="ENV",
+    )
+    db.add(string_secret)
+    db.commit()
+    db.refresh(string_secret)
+    assert string_secret.value == "string-value"
+
+    # Test dict value
+    dict_secret = Secret(
+        name="DICT_SECRET",
+        value={"key": "value", "nested": {"key": "value"}},
+        owner_id=user.id,
+        kind="API_KEY",
+    )
+    db.add(dict_secret)
+    db.commit()
+    db.refresh(dict_secret)
+    assert dict_secret.value == {"key": "value", "nested": {"key": "value"}}
 
 
 def test_create_duplicate_secret(

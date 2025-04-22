@@ -9,7 +9,6 @@ from starlette.responses import Response
 from app.analytics import AnalyticsService
 from app.api.routes import (
     chats,
-    connections,
     documents,
     files,
     items,
@@ -235,9 +234,7 @@ api_router.include_router(teams.router, prefix="/teams", tags=["teams"])
 api_router.include_router(projects.router, prefix="/projects", tags=["projects"])
 api_router.include_router(files.router, prefix="/files", tags=["files"])
 api_router.include_router(llm.router, prefix="/llm", tags=["llm"])
-api_router.include_router(
-    connections.router, prefix="/connections", tags=["connections"]
-)
+
 
 api_router.include_router(
     tool_instances.router, prefix="/tool-instances", tags=["tool-instances"]

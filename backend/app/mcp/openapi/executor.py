@@ -6,11 +6,8 @@ from urllib.parse import urljoin
 import httpx
 from fastapi import HTTPException
 from pydantic import BaseModel, ValidationError
-from sqlmodel import Session
 
-from app.core.db import engine
-from app.models import Connection
-from app.models.connection import AuthType
+from app.models.secret import AuthType
 
 
 class APIResponse(BaseModel):
@@ -101,7 +98,7 @@ async def execute_endpoint(
 
 def translate_fn_to_endpoint(
     metadata: dict[str, Any],
-    connection: Connection | None,
+    connection: Any | None,
     fn: Callable,
     model_instance: BaseModel,
 ) -> EndpointConfig:
@@ -215,8 +212,9 @@ async def execute_dynamic_function(
         print(f"Connection ID: {connection_id}")
         connection = None
         if connection_id:
-            with Session(engine) as session:
-                connection = session.get(Connection, connection_id)
+            pass
+            # with Session(engine) as session:
+            #     connection = session.get(Connection, connection_id)
         print(f"Connection: {connection}")
 
         endpoint_config = translate_fn_to_endpoint(

@@ -91,8 +91,6 @@ def create_secret(
                 detail="A secret with this name already exists.",
             )
 
-        print(f"Secret in: {secret_in}")
-        # Create secret using the same pattern as Connection
         secret = Secret.model_validate(secret_in)
         secret.owner_id = current_user.id
         if secret_in.value is not None:

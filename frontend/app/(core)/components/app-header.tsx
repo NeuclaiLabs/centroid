@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Pencil } from "lucide-react";
 import { appRegistry } from "@/lib/registry";
-import { useConnections } from "../../hooks/use-connections";
+import { useConnections } from "../hooks/use-connections";
 
 interface AppHeaderProps {
 	appId: string;

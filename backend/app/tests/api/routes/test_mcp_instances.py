@@ -12,6 +12,7 @@ from app.crud import get_user_by_email
 from app.models import (
     MCPInstance,
     MCPInstanceStatus,
+    Secret,
     User,
 )
 from app.services.mcp_manager import MCPManager
@@ -64,8 +65,10 @@ def mock_event_listeners():
 
 
 @pytest.fixture(autouse=True)
-def cleanup_mcp_instances(db: Session):
-    """Clean up MCP instances before each test."""
+def cleanup_mcp_instances_and_secrets(db: Session):
+    """Clean up MCP instances and secrets before each test."""
+    statement = delete(Secret)
+    db.execute(statement)
     statement = delete(MCPInstance)
     db.execute(statement)
     db.commit()
@@ -395,3 +398,129 @@ def test_mcp_instance_owner_access(
     )
     assert response.status_code == status.HTTP_403_FORBIDDEN
     assert response.json()["detail"] == "Not enough permissions"
+
+
+def test_mcp_instance_with_secrets(
+    client: TestClient,
+    normal_user_token_headers: dict[str, str],
+    mcp_instance: MCPInstance,
+):
+    # Create a secret associated with the MCP instance
+    secret_data = {
+        "name": "TEST_SECRET",
+        "description": "Test Secret",
+        "value": "secret-value",
+        "environment": "development",
+        "mcp_instance_id": mcp_instance.id,
+    }
+    response = client.post(
+        f"{settings.API_V1_STR}/secrets/",
+        headers=normal_user_token_headers,
+        json=secret_data,
+    )
+    assert response.status_code == status.HTTP_200_OK
+    secret_id = response.json()["id"]
+
+    # Verify the secret is associated with the MCP instance
+    response = client.get(
+        f"{settings.API_V1_STR}/mcp-instances/{mcp_instance.id}",
+        headers=normal_user_token_headers,
+    )
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    assert len(data["secrets"]) == 1
+    assert data["secrets"][0]["id"] == secret_id
+
+    # Verify the MCP instance is associated with the secret
+    response = client.get(
+        f"{settings.API_V1_STR}/secrets/{secret_id}",
+        headers=normal_user_token_headers,
+    )
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    assert data["mcp_instance_id"] == mcp_instance.id
+
+
+def test_mcp_instance_delete_cascades_secrets(
+    client: TestClient,
+    normal_user_token_headers: dict[str, str],
+    mcp_instance: MCPInstance,
+    db: Session,
+):
+    # Create a secret associated with the MCP instance
+    secret = Secret(
+        name="TEST_SECRET",
+        value="secret-value",
+        owner_id=mcp_instance.owner_id,
+        mcp_instance_id=mcp_instance.id,
+    )
+    db.add(secret)
+    db.commit()
+    db.refresh(secret)
+
+    # Delete the MCP instance
+    response = client.delete(
+        f"{settings.API_V1_STR}/mcp-instances/{mcp_instance.id}",
+        headers=normal_user_token_headers,
+    )
+    assert response.status_code == status.HTTP_200_OK
+
+    # Verify the secret is deleted
+    response = client.get(
+        f"{settings.API_V1_STR}/secrets/{secret.id}",
+        headers=normal_user_token_headers,
+    )
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+def test_mcp_instance_update_secrets_relationship(
+    client: TestClient,
+    normal_user_token_headers: dict[str, str],
+    mcp_instance: MCPInstance,
+    db: Session,
+):
+    # Create a new MCP instance
+    new_instance_data = {
+        "name": "New MCP Instance",
+        "description": "New Description",
+        "status": MCPInstanceStatus.ACTIVE,
+        "url": "http://localhost:8001",
+    }
+    response = client.post(
+        f"{settings.API_V1_STR}/mcp-instances/",
+        headers=normal_user_token_headers,
+        json=new_instance_data,
+    )
+    assert response.status_code == status.HTTP_200_OK
+    new_instance_id = response.json()["id"]
+
+    # Create a secret associated with the first MCP instance
+    secret = Secret(
+        name="TEST_SECRET",
+        value="secret-value",
+        owner_id=mcp_instance.owner_id,
+        mcp_instance_id=mcp_instance.id,
+    )
+    db.add(secret)
+    db.commit()
+    db.refresh(secret)
+
+    # Update the secret to be associated with the new MCP instance
+    update_data = {
+        "mcp_instance_id": new_instance_id,
+    }
+    response = client.put(
+        f"{settings.API_V1_STR}/secrets/{secret.id}",
+        headers=normal_user_token_headers,
+        json=update_data,
+    )
+    assert response.status_code == status.HTTP_200_OK
+
+    # Verify the secret is now associated with the new MCP instance
+    response = client.get(
+        f"{settings.API_V1_STR}/secrets/{secret.id}",
+        headers=normal_user_token_headers,
+    )
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    assert data["mcp_instance_id"] == new_instance_id

@@ -3,8 +3,8 @@ import useSWR from "swr";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { fetcher } from "@/lib/utils";
-import type { ToolInstance, ToolInstancesResponse } from "../../types";
-import { filterToolInstances } from "../../utils";
+import type { ToolInstance, ToolInstancesResponse } from "../types";
+import { filterToolInstances } from "../utils";
 import { ToolInstancesTable } from "./tool-instances-table";
 import { ErrorState, LoadingState } from "./states";
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useConnections, deleteConnection } from "../../hooks/use-connections";
+import { useConnections, deleteConnection } from "../hooks/use-connections";
 import { Button } from "@/components/ui/button";
 import { Edit, Search, Plus, Pencil, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";

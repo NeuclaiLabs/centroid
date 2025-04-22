@@ -1,15 +1,17 @@
 import enum
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import nanoid
 from sqlalchemy import JSON, DateTime, event, func
 from sqlmodel import Field, Relationship, SQLModel
 
 from .base import CamelModel
-from .connection import Connection
 from .tool_instance import ToolInstance
 from .user import User
+
+if TYPE_CHECKING:
+    from .secret import Secret
 
 
 class MCPInstanceStatus(str, enum.Enum):
@@ -25,7 +27,6 @@ class MCPInstanceBase(CamelModel):
     name: str | None = None
     description: str | None = None
     status: MCPInstanceStatus = Field(default=MCPInstanceStatus.ACTIVE)
-    connection_id: str | None = Field(default=None, foreign_key="connections.id")
     url: str = Field(default="http://localhost:8000")
     config: dict[str, Any] | None = Field(default=None, sa_type=JSON)
     owner_id: str | None = Field(default=None, foreign_key="users.id")
@@ -39,7 +40,6 @@ class MCPInstanceUpdate(CamelModel):
     name: str | None = None
     description: str | None = None
     status: MCPInstanceStatus | None = None
-    connection_id: str | None = None
     url: str | None = None
     config: dict[str, Any] | None = None
 
@@ -60,10 +60,10 @@ class MCPInstance(MCPInstanceBase, SQLModel, table=True):
         sa_column_kwargs={"onupdate": func.now(), "server_default": func.now()},
     )
     owner: User = Relationship(back_populates="mcp_instances")
-    connection: Connection | None = Relationship(back_populates="mcp_instances")
     tool_instances: list[ToolInstance] | None = Relationship(
         back_populates="mcp_instance"
     )
+    secrets: list["Secret"] | None = Relationship(back_populates="mcp_instance")
 
     @property
     def mount_path(self) -> str:

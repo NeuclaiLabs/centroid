@@ -25,8 +25,8 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import type { Connection, ConnectionCreate } from "../../types";
-import { AuthType } from "../../types";
+import type { Connection, ConnectionCreate } from "../types";
+import { AuthType } from "../types";
 import {
 	Dialog,
 	DialogContent,
@@ -38,7 +38,7 @@ import {
 	updateConnection,
 	useConnection,
 	useConnections,
-} from "../../hooks/use-connections";
+} from "../hooks/use-connections";
 
 const AUTH_TYPES = {
 	NONE: AuthType.NONE,

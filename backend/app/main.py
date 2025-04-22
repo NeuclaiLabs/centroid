@@ -3,9 +3,21 @@ import warnings
 import sentry_sdk
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlmodel import Session
 
 from app.api.main import LoggingMiddleware, api_router
 from app.core.config import settings
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+from app.core.db import engine
+from app.core.security import load_secrets_to_env
+>>>>>>> 38d3373 (refactor: remove connection model and related tests, update MCP instance and secret management)
+=======
+from app.core.db import engine
+from app.core.security import load_secrets_to_env
+from app.mcp.mcp_manager import MCPManager
+>>>>>>> a1a04fc (fix: fixing unit tests)
 
 # Suppress specific Pydantic warnings
 warnings.filterwarnings(
@@ -33,17 +45,17 @@ app.add_middleware(LoggingMiddleware)
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 
-# @app.on_event("startup")
-# async def startup_event():
-#     from sqlmodel import Session
+@app.on_event("startup")
+async def startup_event():
+    # Use the same session approach as in deps.py
+    with Session(engine) as session:
+        await load_secrets_to_env(session)
+        manager = MCPManager.get_instance()
 
-#     # Use the same session approach as in deps.py
-#     with Session(engine) as session:
-#         manager = MCPManager.get_instance()
-#         await manager.initialize(session)
+        await manager.initialize(session)
+        # Start health checks
+        # MCPManager.schedule_health_checks(BackgroundTasks())
 
-#         # Start health checks
-#         MCPManager.schedule_health_checks(BackgroundTasks())
 
 
 # Run the server if this file is executed directly

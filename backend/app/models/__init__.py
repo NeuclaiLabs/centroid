@@ -2,20 +2,6 @@
 from sqlmodel import SQLModel
 
 from .chat import Chat, ChatBase, ChatOut, ChatsOut, ChatUpdate
-from .connection import (
-    ApiKeyAuth,
-    AuthConfig,
-    AuthType,
-    BasicAuth,
-    Connection,
-    ConnectionBase,
-    ConnectionCreate,
-    ConnectionOut,
-    ConnectionSearch,
-    ConnectionsOut,
-    ConnectionUpdate,
-    TokenAuth,
-)
 from .document import (
     Document,
     DocumentBase,
@@ -173,13 +159,6 @@ __all__ = [
     "SuggestionUpdate",
     "SuggestionOut",
     "SuggestionsOut",
-    "Connection",
-    "ConnectionBase",
-    "ConnectionCreate",
-    "ConnectionUpdate",
-    "ConnectionOut",
-    "ConnectionsOut",
-    "ConnectionSearch",
     "AuthType",
     "AuthConfig",
     "TokenAuth",

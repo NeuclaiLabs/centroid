@@ -3,9 +3,9 @@ import useSWR from "swr";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { fetcher } from "@/lib/utils";
-import type { ToolDefinition, ToolDefinitionsResponse } from "../../types";
+import type { ToolDefinition, ToolDefinitionsResponse } from "../types";
 import { ErrorState, LoadingState } from "./states";
-import { filterTools } from "../../utils";
+import { filterTools } from "../utils";
 import { ToolsTable } from "./tools-table";
 
 interface OverviewTabProps {
