@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'frontend/docs/**'
+      - 'docs/**'
   workflow_dispatch:
 
 permissions:
@@ -31,8 +31,10 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install pnpm
-        run: npm install -g pnpm@8
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
 
       - name: Install dependencies
         run: |
