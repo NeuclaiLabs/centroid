@@ -19,7 +19,18 @@ const config = {
             },
           ],
           destination: '/docs/:path*',
-        }
+        },
+        {
+          source: '/docs/:path*',
+          has: [
+            {
+              type: 'host',
+              value: 'docs.centroid.run',
+            },
+          ],
+          destination: '/:path*',
+        },
+
       ]
     };
   },
