@@ -4,7 +4,6 @@ import pytest
 from sqlmodel import Session
 
 from app.models import MCPInstance, MCPInstanceStatus
-from app.models.tool_instance import ToolInstance, ToolInstanceStatus
 
 
 @pytest.fixture
@@ -23,32 +22,6 @@ def mcp_instance():
         status=MCPInstanceStatus.ACTIVE,
         url="http://localhost:8000",
         config={"timeout": 30},
-        owner_id="test-owner-id",
-    )
-
-
-@pytest.fixture
-def tool_instance(mcp_instance):
-    """Create a sample tool instance."""
-    return ToolInstance(
-        id="test-tool-id",
-        tool_schema={
-            "name": "test_tool",
-            "description": "A test tool",
-            "parameters": {
-                "properties": {
-                    "param1": {
-                        "type": "string",
-                        "description": "Test parameter",
-                    }
-                },
-                "required": ["param1"],
-            },
-        },
-        tool_metadata={"version": "1.0.0"},
-        config={"timeout": 30},
-        status=ToolInstanceStatus.ACTIVE,
-        mcp_instance_id=mcp_instance.id,
         owner_id="test-owner-id",
     )
 

@@ -9,11 +9,10 @@ if TYPE_CHECKING:
     from .chat import Chat
     from .document import Document
     from .item import Item
-    from .mcp_instance import MCPInstance
+    from .mcp_server import MCPServer
     from .secret import Secret
     from .suggestion import Suggestion
     from .team import TeamMember
-    from .tool_instance import ToolInstance
     from .vote import Vote
 
 
@@ -87,10 +86,7 @@ class User(UserBase, table=True):
     suggestions: list["Suggestion"] = Relationship(
         back_populates="user", cascade_delete=True
     )
-    tool_instances: list["ToolInstance"] = Relationship(
-        back_populates="owner", cascade_delete=True
-    )
-    mcp_instances: list["MCPInstance"] = Relationship(
+    mcp_servers: list["MCPServer"] = Relationship(
         back_populates="owner", cascade_delete=True
     )
     secrets: list["Secret"] = Relationship(back_populates="owner", cascade_delete=True)

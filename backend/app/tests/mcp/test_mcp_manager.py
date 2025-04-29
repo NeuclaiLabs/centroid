@@ -5,7 +5,7 @@ from sqlmodel import Session
 
 from app.mcp.mcp_manager import MCPManager, RegistryEntry
 from app.mcp.mcp_server import MCPServerConfig
-from app.models import MCPInstance, MCPInstanceStatus
+from app.models import MCPInstance, MCPInstanceStatus, MCPServer, MCPServerStatus
 
 
 @pytest.fixture
@@ -50,16 +50,30 @@ def registry_entry(mcp_instance, mock_mcp_server):
     )
 
 
+@pytest.fixture
+def mcp_server_config():
+    """Create a sample MCP server configuration."""
+    return MCPServer(
+        id="test-mcp-id",
+        name="Test MCP Server",
+        description="Test MCP server configuration for testing",
+        status=MCPServerStatus.ACTIVE,
+        url="http://localhost:8000",
+        settings={"timeout": 30},
+        owner_id="test-owner-id",
+    )
+
+
 @pytest.fixture(autouse=True)
 def reset_mcp_manager():
     """Reset the MCPManager singleton and registry before each test."""
     # Reset the singleton instance
-    MCPManager._instance = None
+    MCPManager._server = None
     # Reset the registry
     MCPManager._registry = {}
     yield
     # Clean up after the test
-    MCPManager._instance = None
+    MCPManager._server = None
     MCPManager._registry = {}
 
 
@@ -179,6 +193,74 @@ class TestMCPManager:
 
         with pytest.raises(
             ValueError, match="MCP instance with ID 'nonexistent-id' not found"
+        ):
+            await manager.health_check("nonexistent-id")
+
+    @pytest.mark.asyncio
+    async def test_register_server_config(self, mock_db, mcp_server_config):
+        """Test registering an MCP server configuration and creating its proxy."""
+        manager = MCPManager()
+        manager.set_session(mock_db)
+
+        # Register the MCP server configuration
+        await manager._register_server(mcp_server_config)
+
+        # Check that the proxy was created and registered
+        assert mcp_server_config.id in manager._registry
+        proxy = manager._registry[mcp_server_config.id]
+        assert proxy.mcp_server_config == mcp_server_config
+        assert proxy.mount_path == mcp_server_config.mount_path
+
+    @pytest.mark.asyncio
+    async def test_register_duplicate_server_config(self, mock_db, mcp_server_config):
+        """Test registering a duplicate MCP server configuration raises an error."""
+        manager = MCPManager()
+        manager.set_session(mock_db)
+
+        # Register the MCP server configuration first time
+        await manager._register_server(mcp_server_config)
+
+        # Try to register the same configuration again
+        with pytest.raises(
+            ValueError,
+            match=f"MCP server configuration '{mcp_server_config.id}' already exists",
+        ):
+            await manager._register_server(mcp_server_config)
+
+    @pytest.mark.asyncio
+    async def test_deregister_server_config(self, mock_db, mcp_server_config):
+        """Test deregistering an MCP server configuration and its proxy."""
+        manager = MCPManager()
+        manager.set_session(mock_db)
+
+        # Register the MCP server configuration first
+        await manager._register_server(mcp_server_config)
+
+        # Then deregister it
+        await manager._deregister_server(mcp_server_config.id)
+
+        # Check that the proxy was deregistered
+        assert mcp_server_config.id not in manager._registry
+
+    @pytest.mark.asyncio
+    async def test_deregister_nonexistent_server_config(self, mock_db):
+        """Test deregistering a nonexistent MCP server configuration raises an error."""
+        manager = MCPManager()
+        manager.set_session(mock_db)
+
+        with pytest.raises(
+            ValueError, match="MCP server with ID 'nonexistent-id' not found"
+        ):
+            await manager._deregister_server("nonexistent-id")
+
+    @pytest.mark.asyncio
+    async def test_health_check_nonexistent_server_config(self, mock_db):
+        """Test performing a health check on a nonexistent MCP server configuration raises an error."""
+        manager = MCPManager()
+        manager.set_session(mock_db)
+
+        with pytest.raises(
+            ValueError, match="MCP server with ID 'nonexistent-id' not found"
         ):
             await manager.health_check("nonexistent-id")
 

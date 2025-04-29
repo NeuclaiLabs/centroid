@@ -16,8 +16,6 @@ from app.models import (
     TeamInvitationStatus,
     TeamMember,
     TeamRole,
-    ToolInstance,
-    ToolInstanceCreate,
     User,
     UserCreate,
     UserUpdate,
@@ -108,17 +106,6 @@ def create_project(*, session: Session, project_create: ProjectCreate) -> Projec
     session.commit()
     session.refresh(db_project)
     return db_project
-
-
-def create_tool_instance(
-    session: Session, *, tool_instance: ToolInstance | ToolInstanceCreate
-) -> ToolInstance:
-    """Create a new tool instance."""
-    db_obj = ToolInstance.model_validate(tool_instance)
-    session.add(db_obj)
-    session.commit()
-    session.refresh(db_obj)
-    return db_obj
 
 
 def random_lower_string() -> str:

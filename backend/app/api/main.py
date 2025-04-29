@@ -14,13 +14,11 @@ from app.api.routes import (
     items,
     llm,
     login,
-    mcp_instances,
+    mcp_servers,
     messages,
     projects,
-    secrets,
     suggestions,
     teams,
-    tool_instances,
     users,
     utils,
     votes,
@@ -237,10 +235,5 @@ api_router.include_router(llm.router, prefix="/llm", tags=["llm"])
 
 
 api_router.include_router(
-    tool_instances.router, prefix="/tool-instances", tags=["tool-instances"]
+    mcp_servers.router, prefix="/mcp-servers", tags=["mcp-servers"]
 )
-api_router.include_router(
-    mcp_instances.router, prefix="/mcp-instances", tags=["mcp-instances"]
-)
-
-api_router.include_router(secrets.router, prefix="/secrets", tags=["secrets"])

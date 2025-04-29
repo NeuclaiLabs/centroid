@@ -22,6 +22,7 @@ import {
 	ScrollTextIcon,
 	WrenchIcon,
 	BotIcon,
+	ServerIcon,
 } from "lucide-react";
 
 import { PlusIcon } from "@/components/icons";
@@ -62,6 +63,16 @@ export function AppSidebar({ user }: { user: User | undefined }) {
 				title: "Apps",
 				url: "/apps",
 				icon: LayoutDashboardIcon,
+			},
+			{
+				title: "Templates",
+				url: "/mcp-templates",
+				icon: LayoutDashboardIcon,
+			},
+			{
+				title: "Servers",
+				url: "/mcp",
+				icon: ServerIcon,
 			},
 			{
 				title: "Tools",

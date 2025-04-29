@@ -12,15 +12,14 @@ from .document import (
     DocumentUpdate,
 )
 from .item import Item, ItemBase, ItemCreate, ItemOut, ItemsOut, ItemUpdate
-from .mcp_instance import (
-    MCPInstance,
-    MCPInstanceBase,
-    MCPInstanceCreate,
-    MCPInstanceOut,
-    MCPInstanceSearch,
-    MCPInstancesOut,
-    MCPInstanceStatus,
-    MCPInstanceUpdate,
+from .mcp_server import (
+    MCPServer,
+    MCPServerBase,
+    MCPServerCreate,
+    MCPServerOut,
+    MCPServersOut,
+    MCPServerStatus,
+    MCPServerUpdate,
 )
 from .message import Message, MessageCreate, MessageOut, MessagesOut
 from .project import (
@@ -63,16 +62,6 @@ from .team import (
     TeamRole,
     TeamsOut,
     TeamUpdate,
-)
-from .tool_instance import (
-    ToolInstance,
-    ToolInstanceBase,
-    ToolInstanceCreate,
-    ToolInstanceOut,
-    ToolInstanceSearch,
-    ToolInstancesOut,
-    ToolInstanceStatus,
-    ToolInstanceUpdate,
 )
 
 # Import base models first
@@ -164,22 +153,13 @@ __all__ = [
     "TokenAuth",
     "ApiKeyAuth",
     "BasicAuth",
-    "MCPInstance",
-    "MCPInstanceBase",
-    "MCPInstanceCreate",
-    "MCPInstanceUpdate",
-    "MCPInstanceOut",
-    "MCPInstancesOut",
-    "MCPInstanceStatus",
-    "MCPInstanceSearch",
-    "ToolInstance",
-    "ToolInstanceBase",
-    "ToolInstanceCreate",
-    "ToolInstanceUpdate",
-    "ToolInstanceOut",
-    "ToolInstancesOut",
-    "ToolInstanceStatus",
-    "ToolInstanceSearch",
+    "MCPServer",
+    "MCPServerBase",
+    "MCPServerCreate",
+    "MCPServerUpdate",
+    "MCPServerOut",
+    "MCPServersOut",
+    "MCPServerStatus",
     "Secret",
     "SecretBase",
     "SecretCreate",

@@ -38,10 +38,6 @@ def db() -> Generator[Session, None, None]:
         asyncio.run(init_db(session))
         yield session
         # Clean up in reverse order of dependencies
-        # statement = delete(ToolInstance)
-        # session.execute(statement)
-        # statement = delete(Connection)
-        # session.execute(statement)
         # statement = delete(Item)
         # session.execute(statement)
         # statement = delete(User)

@@ -8,12 +8,12 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import type { ToolDefinition } from "../../types";
+import type { MCPTool } from "@/lib/mcp-templates";
 
 interface SchemaDialogProps {
 	isOpen: boolean;
 	onOpenChange: (open: boolean) => void;
-	tool: ToolDefinition | null;
+	tool: MCPTool | null;
 }
 
 export function SchemaDialog({
@@ -33,13 +33,13 @@ export function SchemaDialog({
 			<DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
 				<DialogHeader className="flex-none">
 					<DialogTitle className="flex items-center gap-2">
-						<span>{String(tool?.toolSchema?.name || tool?.id)}</span>
+						<span>{String(tool?.name || tool?.id)}</span>
 						<Button
 							variant="outline"
 							size="icon"
 							className="h-6 w-6"
 							onClick={() => {
-								const schema = tool?.toolSchema;
+								const schema = tool?.parameters;
 								if (schema) {
 									navigator.clipboard.writeText(
 										JSON.stringify(schema, null, 2),
@@ -52,9 +52,7 @@ export function SchemaDialog({
 						</Button>
 					</DialogTitle>
 					<DialogDescription>
-						{String(
-							tool?.toolSchema?.description || "No description available",
-						)}
+						{String(tool?.description || "No description available")}
 					</DialogDescription>
 				</DialogHeader>
 				<div className="flex-1 min-h-0 mt-4">
@@ -68,7 +66,7 @@ export function SchemaDialog({
 						}}
 					>
 						<pre id="schema-content" className="text-sm">
-							{JSON.stringify(tool?.toolSchema || null, null, 2)}
+							{JSON.stringify(tool || null, null, 2)}
 						</pre>
 					</div>
 				</div>

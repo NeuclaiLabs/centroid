@@ -10,7 +10,6 @@ from app.core.logger import get_logger
 from app.core.security import decrypt_dict, encrypt_dict
 
 from .base import CamelModel
-from .mcp_instance import MCPInstance
 from .user import User
 
 logger = get_logger(__name__, service="secrets")
@@ -77,7 +76,7 @@ class Secret(SecretBase, SQLModel, table=True):
     )
 
     owner: User = Relationship(back_populates="secrets")
-    mcp_instance: MCPInstance | None = Relationship(back_populates="secrets")
+    # mcp_instance: MCPInstance | None = Relationship(back_populates="secrets")
 
     created_at: datetime | None = Field(
         default=None,
