@@ -59,7 +59,6 @@ class MCPProxy(FastMCPProxy):
         self.messages_path = f"{self.mount_path}/messages/"
         self.transports: dict[str, SseServerTransport] = {}
         self.client_initialized = False
-        print("Creating client...")
         self.client = Client(
             transport=StdioTransport(
                 command=mcp_server.run.command,
