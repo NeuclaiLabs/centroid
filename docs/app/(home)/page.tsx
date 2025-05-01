@@ -2,9 +2,10 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { Github, Server, Code, Globe, Shield, Zap, ChevronRight, Star, GitFork, Users } from "lucide-react"
+import { Github, Code, Globe, Shield, Zap, ChevronRight, Users, Server, CircleDot } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Header from "@/components/header"
+import { GitHubStats } from "@/components/github-stats"
 
 export default function Home() {
   return (
@@ -22,7 +23,7 @@ export default function Home() {
               Deploy your applications <span className="text-primary">anywhere</span>
             </h1>
             <p className="max-w-[700px] text-muted-foreground text-lg md:text-xl">
-              OpenDeploy is a powerful, self-hostable platform that makes deploying and managing your applications
+              Centroid is a powerful, self-hostable platform that makes deploying and managing your applications
               simple, secure, and scalable.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 mt-4">
@@ -39,7 +40,7 @@ export default function Home() {
           <div className="relative mx-auto aspect-video overflow-hidden rounded-xl border bg-muted/50 md:w-full lg:w-10/12 xl:w-9/12">
             <Image
               src="/placeholder.svg?height=720&width=1280"
-              alt="OpenDeploy Dashboard"
+              alt="Centroid Dashboard"
               width={1280}
               height={720}
               className="object-cover"
@@ -51,36 +52,7 @@ export default function Home() {
         {/* GitHub Stats */}
         <section className="border-y bg-muted/50">
           <div className="container py-12">
-            <div className="flex flex-wrap justify-center gap-8 text-center">
-              <div className="flex items-center gap-2">
-                <Star className="h-5 w-5 text-yellow-500" />
-                <div>
-                  <p className="text-2xl font-bold">5.2k</p>
-                  <p className="text-sm text-muted-foreground">GitHub Stars</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <GitFork className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="text-2xl font-bold">1.3k</p>
-                  <p className="text-sm text-muted-foreground">Forks</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-green-500" />
-                <div>
-                  <p className="text-2xl font-bold">120+</p>
-                  <p className="text-sm text-muted-foreground">Contributors</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Server className="h-5 w-5 text-purple-500" />
-                <div>
-                  <p className="text-2xl font-bold">10k+</p>
-                  <p className="text-sm text-muted-foreground">Deployments</p>
-                </div>
-              </div>
-            </div>
+            <GitHubStats />
           </div>
         </section>
 
@@ -91,7 +63,7 @@ export default function Home() {
               Everything you need to deploy with confidence
             </h2>
             <p className="max-w-[700px] mx-auto text-muted-foreground text-lg">
-              OpenDeploy provides a complete platform for deploying and managing your applications, with all the
+              Centroid provides a complete platform for deploying and managing your applications, with all the
               features you need and none of the complexity.
             </p>
           </div>
@@ -148,7 +120,7 @@ export default function Home() {
             <div className="text-center space-y-4">
               <h2 className="text-3xl md:text-4xl font-bold tracking-tighter">Self-host in minutes, not days</h2>
               <p className="max-w-[700px] mx-auto text-muted-foreground text-lg">
-                Getting started with OpenDeploy is simple. Follow these steps to deploy your first application.
+                Getting started with Centroid is simple. Follow these steps to deploy your first application.
               </p>
             </div>
 
@@ -157,13 +129,13 @@ export default function Home() {
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
                   <span className="text-2xl font-bold">1</span>
                 </div>
-                <h3 className="text-xl font-bold">Install OpenDeploy</h3>
+                <h3 className="text-xl font-bold">Install Centroid</h3>
                 <p className="text-muted-foreground">
                   Clone the repository and run our simple installation script on your server.
                 </p>
                 <div className="w-full max-w-md rounded-md bg-muted p-4">
                   <pre className="text-sm text-left overflow-x-auto">
-                    <code>git clone https://github.com/yourusername/opendeploy</code>
+                    <code>git clone https://github.com/yourusername/Centroid</code>
                   </pre>
                 </div>
               </div>
@@ -212,7 +184,7 @@ export default function Home() {
           <div className="text-center space-y-4">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tighter">Loved by developers worldwide</h2>
             <p className="max-w-[700px] mx-auto text-muted-foreground text-lg">
-              Join thousands of developers who trust OpenDeploy for their deployment needs.
+              Join thousands of developers who trust Centroid for their deployment needs.
             </p>
           </div>
 
@@ -232,7 +204,7 @@ export default function Home() {
                 </div>
               </div>
               <p className="text-muted-foreground">
-                "OpenDeploy has transformed how our team handles deployments. The self-hosted aspect gives us the
+                "Centroid has transformed how our team handles deployments. The self-hosted aspect gives us the
                 control we need while maintaining simplicity."
               </p>
             </div>
@@ -252,7 +224,7 @@ export default function Home() {
               </div>
               <p className="text-muted-foreground">
                 "As a startup, we needed a deployment solution that could grow with us without breaking the bank.
-                OpenDeploy has been perfect for our needs."
+                Centroid has been perfect for our needs."
               </p>
             </div>
             <div className="p-6 border rounded-lg">
@@ -270,7 +242,7 @@ export default function Home() {
                 </div>
               </div>
               <p className="text-muted-foreground">
-                "The ability to customize OpenDeploy to our specific workflow has been a game-changer. We've reduced
+                "The ability to customize Centroid to our specific workflow has been a game-changer. We've reduced
                 deployment times by 70%."
               </p>
             </div>
@@ -286,7 +258,7 @@ export default function Home() {
                   Ready to take control of your deployments?
                 </h2>
                 <p className="text-muted-foreground text-lg">
-                  Start deploying your applications with OpenDeploy today. It's free, open source, and designed for
+                  Start deploying your applications with Centroid today. It's free, open source, and designed for
                   developers like you.
                 </p>
               </div>
@@ -310,8 +282,8 @@ export default function Home() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <Server className="h-6 w-6" />
-                <span className="text-xl font-bold">OpenDeploy</span>
+                <CircleDot className="h-6 w-6" />
+                <span className="text-xl font-bold">Centroid</span>
               </div>
               <p className="text-sm text-muted-foreground">Open source deployment platform for modern applications.</p>
             </div>
@@ -393,7 +365,7 @@ export default function Home() {
           </div>
           <div className="flex flex-col sm:flex-row justify-between items-center mt-12 pt-8 border-t">
             <p className="text-sm text-muted-foreground">
-              &copy; {new Date().getFullYear()} OpenDeploy. All rights reserved.
+              &copy; {new Date().getFullYear()} Centroid. All rights reserved.
             </p>
             <div className="flex items-center gap-4 mt-4 sm:mt-0">
               <Link href="#" className="text-muted-foreground hover:text-primary">

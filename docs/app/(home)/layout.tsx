@@ -7,9 +7,9 @@ import { ThemeToggle } from "@/components/theme-toggle"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
-  title: "OpenDeploy - Self-Hostable Open Source Deployment Platform",
+  title: "Centroid - Self-Hostable Open Source Deployment Platform",
   description:
-    "OpenDeploy is a powerful, self-hostable platform that makes deploying and managing your applications simple, secure, and scalable.",
+    "Centroid is a powerful, self-hostable platform that makes deploying and managing your applications simple, secure, and scalable.",
 }
 
 export default function RootLayout({

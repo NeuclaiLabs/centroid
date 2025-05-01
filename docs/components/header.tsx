@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Github, Menu, X, Server } from 'lucide-react'
+import { Github, Menu, X, CircleDot as Logo } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/theme-toggle'
@@ -44,8 +44,8 @@ const Header = () => {
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
             <Link href="/" className="flex items-center gap-2">
-              <Server className="h-6 w-6" />
-              <span className="text-xl font-bold">OpenDeploy</span>
+              <Logo className="h-6 w-6" />
+              <span className="text-xl font-bold">Centroid</span>
             </Link>
           </div>
 
@@ -68,7 +68,7 @@ const Header = () => {
           <div className="hidden md:flex items-center space-x-4">
             <ThemeToggle />
             <Link
-              href="https://github.com/yourusername/opendeploy"
+              href="https://github.com/yourusername/Centroid"
               target="_blank"
               rel="noopener noreferrer"
               className="p-2 rounded-full hover:bg-muted transition-colors"
@@ -133,7 +133,7 @@ const Header = () => {
             </nav>
             <div className="mt-4 flex items-center space-x-4">
               <Link
-                href="https://github.com/yourusername/opendeploy"
+                href="https://github.com/yourusername/Centroid"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 rounded-full hover:bg-muted transition-colors"
