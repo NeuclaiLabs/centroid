@@ -1,4 +1,4 @@
-name: Deploy Docs
+name: Deploy
 
 on:
   push:
@@ -30,5 +30,6 @@ jobs:
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: docs
-          command: pages deploy out
+          command: pages deploy out --project-name=centroid-docs
