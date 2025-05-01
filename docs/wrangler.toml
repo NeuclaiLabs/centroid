@@ -1,0 +1,8 @@
+# https://developers.cloudflare.com/pages/configuration/build-configuration/
+name = "centroid"
+compatibility_date = "2024-03-20"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "out"
+
+[env.production]
+name = "centroid-prod"
