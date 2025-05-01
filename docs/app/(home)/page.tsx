@@ -204,8 +204,8 @@ export default function Home() {
                 </div>
               </div>
               <p className="text-muted-foreground">
-                "Centroid has transformed how our team handles deployments. The self-hosted aspect gives us the
-                control we need while maintaining simplicity."
+                &ldquo;Centroid has transformed how our team handles deployments. The self-hosted aspect gives us the
+                control we need while maintaining simplicity.&rdquo;
               </p>
             </div>
             <div className="p-6 border rounded-lg">
@@ -223,8 +223,8 @@ export default function Home() {
                 </div>
               </div>
               <p className="text-muted-foreground">
-                "As a startup, we needed a deployment solution that could grow with us without breaking the bank.
-                Centroid has been perfect for our needs."
+                &ldquo;As a startup, we needed a deployment solution that could grow with us without breaking the bank.
+                Centroid has been perfect for our needs.&rdquo;
               </p>
             </div>
             <div className="p-6 border rounded-lg">
@@ -242,8 +242,8 @@ export default function Home() {
                 </div>
               </div>
               <p className="text-muted-foreground">
-                "The ability to customize Centroid to our specific workflow has been a game-changer. We've reduced
-                deployment times by 70%."
+                &ldquo;The ability to customize Centroid to our specific workflow has been a game-changer. We&apos;ve reduced
+                deployment times by 70%.&rdquo;
               </p>
             </div>
           </div>
@@ -258,7 +258,7 @@ export default function Home() {
                   Ready to take control of your deployments?
                 </h2>
                 <p className="text-muted-foreground text-lg">
-                  Start deploying your applications with Centroid today. It's free, open source, and designed for
+                  Start deploying your applications with Centroid today. It&apos;s free, open source, and designed for
                   developers like you.
                 </p>
               </div>
