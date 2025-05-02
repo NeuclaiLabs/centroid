@@ -6,8 +6,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.main import LoggingMiddleware, api_router
 from app.core.config import settings
-from app.mcp.proxy import MCPProxy
-from app.models.mcp_server import MCPServer, MCPServerRunConfig
 
 # from app.core.security import load_secrets_to_env
 # from app.mcp.mcp_manager import MCPManager
@@ -38,31 +36,31 @@ app.add_middleware(LoggingMiddleware)
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 
-@app.on_event("startup")
-async def startup_event():
-    proxy = MCPProxy(
-        MCPServer(
-            name="github",
-            description="GitHub MCP server",
-            run=MCPServerRunConfig(
-                command="docker",
-                args=[
-                    "run",
-                    "--rm",
-                    "-i",
-                    "-e",
-                    "GITHUB_PERSONAL_ACCESS_TOKEN",
-                    "ghcr.io/github/github-mcp-server",
-                ],
-                env={
-                    "GITHUB_PERSONAL_ACCESS_TOKEN": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                },
-            ),
-        ),
-    )
+# @app.on_event("startup")
+# async def startup_event():
+#     proxy = MCPProxy(
+#         MCPServer(
+#             name="github",
+#             description="GitHub MCP server",
+#             run=MCPServerRunConfig(
+#                 command="docker",
+#                 args=[
+#                     "run",
+#                     "--rm",
+#                     "-i",
+#                     "-e",
+#                     "GITHUB_PERSONAL_ACCESS_TOKEN",
+#                     "ghcr.io/github/github-mcp-server",
+#                 ],
+#                 env={
+#                     "GITHUB_PERSONAL_ACCESS_TOKEN": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+#                 },
+#             ),
+#         ),
+#     )
 
-    proxy.mount(app)
-    await proxy.initialize()
+#     proxy.mount(app)
+#     await proxy.initialize()
 
 
 # @app.on_event("startup")

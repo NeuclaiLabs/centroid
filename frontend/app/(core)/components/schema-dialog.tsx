@@ -8,7 +8,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import type { MCPTool } from "@/lib/mcp-templates";
+import type { MCPTool } from "@/app/(core)/types";
 
 interface SchemaDialogProps {
 	isOpen: boolean;

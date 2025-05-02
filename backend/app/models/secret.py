@@ -46,7 +46,7 @@ class SecretBase(CamelModel, SQLModel):
     name: str
     description: str | None = None
     owner_id: str | None = Field(default=None, foreign_key="users.id")
-    mcp_instance_id: str | None = Field(default=None, foreign_key="mcp_instances.id")
+    mcp_server_id: str | None = Field(default=None, foreign_key="mcp_servers.id")
     environment: str = Field(
         default="development"
     )  # e.g., development, staging, production

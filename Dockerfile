@@ -80,7 +80,7 @@ ENV BACKEND_CORS_ORIGINS=http://localhost:3000
 ENV SECRET_KEY=yBUzteofjwxyj4b3RLGJGntojhb8B_i0mt2Oy7T-gIU
 ENV TELEMETRY_ENABLED=true
 ENV BASE_DIR=/app/data
-ENV PROJECT_NAME=OpenAstra
+ENV PROJECT_NAME=Centroid
 
 # User Management
 ENV FIRST_SUPERUSER=admin@example.com

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, use } from "react";
 import useSWR from "swr";
 import { ArrowLeft, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -20,36 +20,35 @@ import { useConnection } from "../../hooks/use-connections";
 type SortDirection = "asc" | "desc" | null;
 
 interface ConnectionDetailPageProps {
-	params: {
+	params: Promise<{
 		id: string;
-	};
+	}>;
 }
 
-export default function ConnectionDetailPage({
-	params,
-}: ConnectionDetailPageProps) {
-	const router = useRouter();
-	const [searchQuery, setSearchQuery] = useState("");
-	const [statusSort, setStatusSort] = useState<SortDirection>(null);
+export default function ConnectionDetailPage(props: ConnectionDetailPageProps) {
+    const params = use(props.params);
+    const router = useRouter();
+    const [searchQuery, setSearchQuery] = useState("");
+    const [statusSort, setStatusSort] = useState<SortDirection>(null);
 
-	const {
+    const {
 		connection,
 		isLoading: connectionLoading,
 		error: connectionError,
 	} = useConnection(params.id);
 
-	const { data: toolInstances, error: toolsError } =
+    const { data: toolInstances, error: toolsError } =
 		useSWR<ToolInstancesResponse>(
 			`/api/tool-instances?connectionId=${params.id}`,
 			fetcher,
 		);
 
-	const filteredTools = filterToolInstances(
+    const filteredTools = filterToolInstances(
 		toolInstances?.data || [],
 		searchQuery,
 	);
 
-	const sortedTools = [...filteredTools].sort((a, b) => {
+    const sortedTools = [...filteredTools].sort((a, b) => {
 		if (statusSort === null) return 0;
 		if (statusSort === "asc") {
 			return a.status.localeCompare(b.status);
@@ -57,7 +56,7 @@ export default function ConnectionDetailPage({
 		return b.status.localeCompare(a.status);
 	});
 
-	const toggleStatusSort = () => {
+    const toggleStatusSort = () => {
 		setStatusSort((current) => {
 			if (current === null) return "asc";
 			if (current === "asc") return "desc";
@@ -65,15 +64,15 @@ export default function ConnectionDetailPage({
 		});
 	};
 
-	if (connectionLoading || (!toolInstances && !toolsError)) {
+    if (connectionLoading || (!toolInstances && !toolsError)) {
 		return <LoadingState />;
 	}
 
-	if (connectionError || toolsError || !connection) {
+    if (connectionError || toolsError || !connection) {
 		return <ErrorState />;
 	}
 
-	return (
+    return (
 		<div className="flex-1 p-6">
 			<div className="mb-8">
 				<Button

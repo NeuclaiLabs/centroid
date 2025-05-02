@@ -20,7 +20,7 @@ export default async function Layout({
 			<AppSidebar user={session?.user} />
 			<SidebarInset>
 				<ConnectionHeader />
-				<div className="max-w-6xl mx-auto ">{children}</div>
+				<div className="max-w-6xl w-full px-6 mx-auto">{children}</div>
 			</SidebarInset>
 		</SidebarProvider>
 	);

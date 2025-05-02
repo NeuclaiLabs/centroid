@@ -23,6 +23,7 @@ import {
 	WrenchIcon,
 	BotIcon,
 	ServerIcon,
+	CircleDot,
 } from "lucide-react";
 
 import { PlusIcon } from "@/components/icons";
@@ -60,29 +61,14 @@ export function AppSidebar({ user }: { user: User | undefined }) {
 		},
 		navMain: [
 			{
-				title: "Apps",
-				url: "/apps",
-				icon: LayoutDashboardIcon,
-			},
-			{
 				title: "Templates",
 				url: "/mcp-templates",
 				icon: LayoutDashboardIcon,
 			},
 			{
 				title: "Servers",
-				url: "/mcp",
+				url: "/mcp-servers",
 				icon: ServerIcon,
-			},
-			{
-				title: "Tools",
-				url: "/tools",
-				icon: WrenchIcon,
-			},
-			{
-				title: "Agents",
-				url: "/agents",
-				icon: BotIcon,
 			},
 			{
 				title: "Logs",
@@ -210,8 +196,9 @@ export function AppSidebar({ user }: { user: User | undefined }) {
 							}}
 							className="flex flex-row gap-3 items-center"
 						>
-							<span className="text-lg font-semibold px-2 hover:bg-muted rounded-md cursor-pointer">
-								OpenAstra
+							<span className="text-lg font-semibold px-2 hover:bg-muted rounded-md cursor-pointer flex items-center gap-1">
+								<CircleDot className="h-5 w-5" />
+								Centroid
 							</span>
 						</Link>
 						{/* <Tooltip>

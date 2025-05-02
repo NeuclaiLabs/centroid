@@ -37,10 +37,10 @@ export interface MCPRunConfig {
   command: string;
   args?: string[];
   env?: Record<string, string>;
-  cwd: string;
-  timeout: number;
-  maxRetries: number;
-  retryDelay: number;
+  cwd?: string;
+  timeout?: number;
+  maxRetries?: number;
+  retryDelay?: number;
 }
 
 export interface MCPTemplate {
@@ -71,21 +71,91 @@ export const mcpTemplates: MCPTemplate[] = [
     transport: 'http',
     version: '1.0.0',
     run: {
-      command: 'npm',
-      args: ['start'],
+      command: 'docker',
+      args: [
+        'run',
+        '-i',
+        '--rm',
+        '-e',
+        'GITHUB_PERSONAL_ACCESS_TOKEN',
+        'ghcr.io/github/github-mcp-server',
+      ],
       env: {
-        PORT: '3000',
-        NODE_ENV: 'production',
-        GITHUB_TOKEN: '${GITHUB_TOKEN}',
+        GITHUB_PERSONAL_ACCESS_TOKEN: '${input:github_token}',
       },
-      cwd: '/app',
-      timeout: 300,
-      maxRetries: 3,
-      retryDelay: 5,
     },
     tools: [
       {
         name: 'retrieveRepositoryContext',
+        description:
+          'Retrieves context from GitHub repositories based on the query',
+        parameters: {
+          type: 'object',
+          properties: {
+            repository: {
+              type: 'string',
+              description: 'The repository in owner/repo format',
+            },
+            query: {
+              type: 'string',
+              description: 'The search query',
+            },
+            limit: {
+              type: 'integer',
+              description: 'Maximum number of results to return',
+            },
+          },
+        },
+        status: true,
+      },
+      {
+        name: 'retrieveRepositoryContext-3',
+        description:
+          'Retrieves context from GitHub repositories based on the query',
+        parameters: {
+          type: 'object',
+          properties: {
+            repository: {
+              type: 'string',
+              description: 'The repository in owner/repo format',
+            },
+            query: {
+              type: 'string',
+              description: 'The search query',
+            },
+            limit: {
+              type: 'integer',
+              description: 'Maximum number of results to return',
+            },
+          },
+        },
+        status: true,
+      },
+      {
+        name: 'retrieveRepositoryContext-2',
+        description:
+          'Retrieves context from GitHub repositories based on the query',
+        parameters: {
+          type: 'object',
+          properties: {
+            repository: {
+              type: 'string',
+              description: 'The repository in owner/repo format',
+            },
+            query: {
+              type: 'string',
+              description: 'The search query',
+            },
+            limit: {
+              type: 'integer',
+              description: 'Maximum number of results to return',
+            },
+          },
+        },
+        status: true,
+      },
+      {
+        name: 'retrieveRepositoryContext-1',
         description:
           'Retrieves context from GitHub repositories based on the query',
         parameters: {
@@ -470,7 +540,7 @@ export const mcpTemplates: MCPTemplate[] = [
   },
   {
     id: 'template_01HZY0N5W8TGVP',
-    name: 'aws-lambda-mcp-server',
+    name: 'aws-lambda-mcp-serverfaas-again',
     description: 'Serverless MCP implementation using AWS Lambda',
     status: MCPTemplateStatus.ACTIVE,
     kind: MCPTemplateKind.EXTERNAL,

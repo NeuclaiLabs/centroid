@@ -8,7 +8,9 @@ from app.models import (
     MCPServer,
     MCPServerCreate,
     MCPServerOut,
+    MCPServerOutWithTemplate,
     MCPServersOut,
+    MCPServersOutWithTemplate,
     MCPServerUpdate,
     UtilsMessage,
 )
@@ -22,6 +24,7 @@ def read_mcp_servers(
     current_user: CurrentUser,
     skip: int = 0,
     limit: int = 100,
+    template_id: str | None = None,
 ) -> Any:
     """
     Retrieve MCP servers.
@@ -29,6 +32,10 @@ def read_mcp_servers(
     """
     # Build base query
     query = select(MCPServer).where(MCPServer.owner_id == current_user.id)
+
+    # Add template_id filter if provided
+    if template_id:
+        query = query.where(MCPServer.template_id == template_id)
 
     # Get total count
     count_query = select(func.count()).select_from(query.subquery())
@@ -39,6 +46,41 @@ def read_mcp_servers(
     mcp_servers = session.exec(query).all()
 
     return MCPServersOut(data=mcp_servers, count=count)
+
+
+@router.get("/templates", response_model=MCPServersOutWithTemplate)
+def read_mcp_servers_with_templates(
+    session: SessionDep,
+    current_user: CurrentUser,
+    skip: int = 0,
+    limit: int = 100,
+) -> Any:
+    """
+    Retrieve MCP servers with their template information.
+    Returns a simplified view containing only server IDs and their associated template IDs.
+    """
+    # Build base query for servers with templates
+    query = (
+        select(MCPServer.id, MCPServer.template_id)
+        .where(MCPServer.owner_id == current_user.id)
+        .where(MCPServer.template_id.is_not(None))
+    )
+
+    # Get total count
+    count_query = select(func.count()).select_from(query.subquery())
+    count = session.exec(count_query).one()
+
+    # Get paginated results
+    query = query.offset(skip).limit(limit)
+    results = session.exec(query).all()
+
+    # Convert results to MCPServerOutWithTemplate objects
+    servers_with_templates = [
+        MCPServerOutWithTemplate(id=id, template_id=template_id)
+        for id, template_id in results
+    ]
+
+    return MCPServersOutWithTemplate(data=servers_with_templates, count=count)
 
 
 @router.get("/{id}", response_model=MCPServerOut)
@@ -65,8 +107,9 @@ def create_mcp_server(
     """
     Create new MCP server.
     """
-    mcp_server = MCPServer.model_validate(mcp_server_in)
-    mcp_server.owner_id = current_user.id
+    mcp_server = MCPServer(
+        **mcp_server_in.model_dump(exclude_unset=True), owner_id=current_user.id
+    )
     session.add(mcp_server)
     session.commit()
     session.refresh(mcp_server)
@@ -92,11 +135,19 @@ def update_mcp_server(
 
     # Only update the fields that were provided
     update_dict = mcp_server_in.model_dump(exclude_unset=True)
+
+    # Handle secrets separately since it's a property with custom getter/setter
+    if "secrets" in update_dict:
+        # This will use the property setter which handles encryption
+        mcp_server.secrets = update_dict.pop("secrets")
+
+    # Update the remaining fields
     if update_dict:
         mcp_server.sqlmodel_update(update_dict)
-        session.add(mcp_server)
-        session.commit()
-        session.refresh(mcp_server)
+
+    session.add(mcp_server)
+    session.commit()
+    session.refresh(mcp_server)
 
     return mcp_server
 

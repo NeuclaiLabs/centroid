@@ -10,8 +10,9 @@ export async function GET(request: NextRequest, props: { params: Promise<{ id: s
       return new Response('Unauthorized', { status: 401 });
     }
 
+    const id = params.id;
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/connections/${params.id}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mcp-servers/${id}`,
       {
         headers: {
           accept: 'application/json',
@@ -24,19 +25,19 @@ export async function GET(request: NextRequest, props: { params: Promise<{ id: s
     if (!response.ok) {
       if (response.status === 404) {
         return NextResponse.json(
-          { error: 'Connection not found' },
+          { error: 'MCP server not found' },
           { status: 404 },
         );
       }
-      throw new Error('Failed to fetch connection');
+      throw new Error('Failed to fetch MCP server');
     }
 
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Failed to fetch connection:', error);
+    console.error('Failed to fetch MCP server:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch connection' },
+      { error: 'Failed to fetch MCP server' },
       { status: 500 },
     );
   }
@@ -50,9 +51,10 @@ export async function PUT(request: NextRequest, props: { params: Promise<{ id: s
       return new Response('Unauthorized', { status: 401 });
     }
 
+    const id = params.id;
     const body = await request.json();
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/connections/${params.id}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mcp-servers/${id}`,
       {
         method: 'PUT',
         headers: {
@@ -68,7 +70,7 @@ export async function PUT(request: NextRequest, props: { params: Promise<{ id: s
     if (!response.ok) {
       if (response.status === 404) {
         return NextResponse.json(
-          { error: 'Connection not found' },
+          { error: 'MCP server not found' },
           { status: 404 },
         );
       }
@@ -78,15 +80,15 @@ export async function PUT(request: NextRequest, props: { params: Promise<{ id: s
           { status: 403 },
         );
       }
-      throw new Error('Failed to update connection');
+      throw new Error('Failed to update MCP server');
     }
 
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Failed to update connection:', error);
+    console.error('Failed to update MCP server:', error);
     return NextResponse.json(
-      { error: 'Failed to update connection' },
+      { error: 'Failed to update MCP server' },
       { status: 500 },
     );
   }
@@ -100,8 +102,9 @@ export async function DELETE(request: NextRequest, props: { params: Promise<{ id
       return new Response('Unauthorized', { status: 401 });
     }
 
+    const id = params.id;
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/connections/${params.id}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mcp-servers/${id}`,
       {
         method: 'DELETE',
         headers: {
@@ -115,7 +118,7 @@ export async function DELETE(request: NextRequest, props: { params: Promise<{ id
     if (!response.ok) {
       if (response.status === 404) {
         return NextResponse.json(
-          { error: 'Connection not found' },
+          { error: 'MCP server not found' },
           { status: 404 },
         );
       }
@@ -125,15 +128,15 @@ export async function DELETE(request: NextRequest, props: { params: Promise<{ id
           { status: 403 },
         );
       }
-      throw new Error('Failed to delete connection');
+      throw new Error('Failed to delete MCP server');
     }
 
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Failed to delete connection:', error);
+    console.error('Failed to delete MCP server:', error);
     return NextResponse.json(
-      { error: 'Failed to delete connection' },
+      { error: 'Failed to delete MCP server' },
       { status: 500 },
     );
   }

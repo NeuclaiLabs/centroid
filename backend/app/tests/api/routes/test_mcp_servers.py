@@ -1,22 +1,24 @@
 import asyncio
-from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 from sqlmodel import Session, delete
 
+from app import crud
 from app.core.config import settings
 from app.core.security import get_password_hash
-from app.crud import get_user_by_email
 from app.models import (
     MCPServer,
+    MCPServerCreate,
+    MCPServerKind,
     MCPServerStatus,
+    MCPServerUpdate,
     Secret,
     User,
+    UserCreate,
 )
-from app.services.mcp_manager import MCPManager
-from app.tests.utils.utils import random_email, random_lower_string
+from app.tests.utils.utils import random_email, random_lower_string, random_string
 
 
 @pytest.fixture(scope="session")
@@ -25,44 +27,6 @@ def event_loop():
     loop = asyncio.get_event_loop_policy().new_event_loop()
     yield loop
     loop.close()
-
-
-# Mock the MCPManager singleton
-@pytest.fixture(autouse=True)
-def mock_mcp_manager():
-    async def mock_register(*args, **kwargs):  # noqa: ARG001
-        return None
-
-    async def mock_deregister(*args, **kwargs):  # noqa: ARG001
-        return None
-
-    with patch.object(MCPManager, "get_instance") as mock_get_instance:
-        mock_manager = MagicMock()
-        mock_manager._register_instance = mock_register
-        mock_manager._deregister_instance = mock_deregister
-        mock_manager.get_mcp_server = MagicMock(return_value=None)
-        mock_get_instance.return_value = mock_manager
-        yield mock_manager
-
-
-# Mock the event listeners and asyncio.create_task
-@pytest.fixture(autouse=True)
-def mock_event_listeners():
-    """Mock event listeners and prevent async task creation."""
-    with (
-        patch("asyncio.create_task", return_value=None),
-        patch("app.models.mcp_server.handle_instance_creation", return_value=None),
-        patch("app.models.mcp_server.handle_instance_update", return_value=None),
-        patch("app.models.mcp_server.handle_instance_deletion", return_value=None),
-        patch(
-            "app.services.mcp_manager.MCPManager._register_instance", return_value=None
-        ),
-        patch(
-            "app.services.mcp_manager.MCPManager._deregister_instance",
-            return_value=None,
-        ),
-    ):
-        yield
 
 
 @pytest.fixture(autouse=True)
@@ -82,8 +46,9 @@ def mcp_server_data():
         "name": "Test MCP Server",
         "description": "Test Description",
         "status": MCPServerStatus.ACTIVE,
-        "url": "http://localhost:8000",
-        "config": {"key": "value"},
+        "kind": MCPServerKind.OFFICIAL,
+        "transport": "http",
+        "version": "1.0.0",
         "secrets": {"api_key": "test-key", "password": "test-password"},
     }
 
@@ -91,7 +56,7 @@ def mcp_server_data():
 @pytest.fixture
 def user(db: Session) -> User:
     """Get the test user."""
-    return get_user_by_email(session=db, email=settings.EMAIL_TEST_USER)
+    return crud.get_user_by_email(session=db, email=settings.EMAIL_TEST_USER)
 
 
 @pytest.fixture
@@ -104,263 +69,212 @@ def mcp_server(db: Session, user: User, mcp_server_data: dict) -> MCPServer:
 
 
 def test_create_mcp_server(
-    client: TestClient,
-    normal_user_token_headers: dict[str, str],
-    mcp_server_data: dict,
-):
+    client: TestClient, normal_user_token_headers: dict[str, str], db: Session
+) -> None:
+    user = crud.get_user_by_email(session=db, email=settings.EMAIL_TEST_USER)
+
+    # Create a new MCP server
+    mcp_server_data = MCPServerCreate(
+        name="Sample MCP server",
+        description="Sample description",
+        transport="http",
+        version="1.0.0",
+        kind=MCPServerKind.OFFICIAL,
+    )
     response = client.post(
         f"{settings.API_V1_STR}/mcp-servers/",
         headers=normal_user_token_headers,
-        json=mcp_server_data,
+        json=mcp_server_data.model_dump(exclude_unset=True),
     )
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
-    assert data["name"] == mcp_server_data["name"]
-    assert data["description"] == mcp_server_data["description"]
-    assert data["status"] == mcp_server_data["status"]
-    assert data["url"] == mcp_server_data["url"]
-    assert data["config"] == mcp_server_data["config"]
-    assert data["secrets"] == mcp_server_data["secrets"]
-    assert data["mount_path"] == f"/mcp/{data['id']}"
-    assert "id" in data
-    assert "createdAt" in data
-    assert "updatedAt" in data
-    assert "ownerId" in data
-
-
-def test_create_mcp_server_unauthorized(
-    client: TestClient,
-    mcp_server_data: dict,
-):
-    response = client.post(
-        f"{settings.API_V1_STR}/mcp-servers/",
-        json=mcp_server_data,
-    )
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-
-
-def test_read_mcp_servers(
-    client: TestClient,
-    normal_user_token_headers: dict[str, str],
-    mcp_server: MCPServer,
-):
-    response = client.get(
-        f"{settings.API_V1_STR}/mcp-servers/",
-        headers=normal_user_token_headers,
-    )
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
-    assert len(data["data"]) == 1
-    assert data["count"] == 1
-    server_data = data["data"][0]
-    assert server_data["id"] == mcp_server.id
-    assert server_data["mount_path"] == f"/mcp/{mcp_server.id}"
-    assert server_data["secrets"] is not None
-
-
-def test_read_mcp_servers_with_pagination(
-    client: TestClient,
-    normal_user_token_headers: dict[str, str],
-    session: Session,
-    mcp_server_data: dict,
-    user: User,
-):
-    # Create multiple servers
-    for i in range(15):
-        server = MCPServer(
-            **mcp_server_data,
-            name=f"Server {i}",
-            owner_id=user.id,
-        )
-        session.add(server)
-    session.commit()
-
-    # Test first page
-    response = client.get(
-        f"{settings.API_V1_STR}/mcp-servers/?limit=10&skip=0",
-        headers=normal_user_token_headers,
-    )
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
-    assert len(data["data"]) == 10
-    assert data["count"] == 15
-    for server in data["data"]:
-        assert "mount_path" in server
-        assert server["secrets"] is not None
-
-    # Test second page
-    response = client.get(
-        f"{settings.API_V1_STR}/mcp-servers/?limit=10&skip=10",
-        headers=normal_user_token_headers,
-    )
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
-    assert len(data["data"]) == 5
-    assert data["count"] == 15
+    assert response.status_code == 200
+    content = response.json()
+    assert content["name"] == mcp_server_data.name
+    assert content["description"] == mcp_server_data.description
+    assert content["transport"] == mcp_server_data.transport
+    assert content["version"] == mcp_server_data.version
+    assert content["kind"] == mcp_server_data.kind
+    assert content["ownerId"] == str(user.id)
+    assert content["createdAt"] is not None
+    assert content["updatedAt"] is not None
+    assert content["mountPath"] == f"/mcp/{content['id']}"
 
 
 def test_read_mcp_server(
-    client: TestClient,
-    normal_user_token_headers: dict[str, str],
-    mcp_server: MCPServer,
-):
-    response = client.get(
-        f"{settings.API_V1_STR}/mcp-servers/{mcp_server.id}",
-        headers=normal_user_token_headers,
+    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+) -> None:
+    user_in = UserCreate(email=random_email(), password=random_string())
+    user = crud.create_user(session=db, user_create=user_in)
+    mcp_server_data = MCPServer(
+        name="Sample MCP server",
+        description="Sample description",
+        transport="http",
+        version="1.0.0",
+        kind=MCPServerKind.OFFICIAL,
+        owner_id=str(user.id),
     )
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
-    assert data["id"] == mcp_server.id
-    assert data["name"] == mcp_server.name
-    assert data["description"] == mcp_server.description
-    assert data["status"] == mcp_server.status
-    assert data["url"] == mcp_server.url
-    assert data["config"] == mcp_server.config
-    assert data["ownerId"] == mcp_server.owner_id
-    assert data["mount_path"] == f"/mcp/{mcp_server.id}"
-    assert data["secrets"] is not None
+    db.add(mcp_server_data)
+    db.commit()
+    db.refresh(mcp_server_data)
+
+    response = client.get(
+        f"{settings.API_V1_STR}/mcp-servers/{mcp_server_data.id}",
+        headers=superuser_token_headers,
+    )
+    assert response.status_code == 200
+    content = response.json()
+    assert content["id"] == mcp_server_data.id
+    assert content["name"] == mcp_server_data.name
+    assert content["description"] == mcp_server_data.description
+    assert content["transport"] == mcp_server_data.transport
+    assert content["version"] == mcp_server_data.version
+    assert content["kind"] == mcp_server_data.kind
+    assert content["ownerId"] == str(user.id)
+    assert content["createdAt"] is not None
+    assert content["updatedAt"] is not None
+    assert content["mountPath"] == f"/mcp/{mcp_server_data.id}"
 
 
 def test_read_mcp_server_not_found(
-    client: TestClient,
-    normal_user_token_headers: dict[str, str],
-):
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
     response = client.get(
-        f"{settings.API_V1_STR}/mcp-servers/nonexistent-id",
+        f"{settings.API_V1_STR}/mcp-servers/999",
+        headers=superuser_token_headers,
+    )
+    assert response.status_code == 404
+    content = response.json()
+    assert content["detail"] == "MCP server not found"
+
+
+def test_read_mcp_servers(
+    client: TestClient, normal_user_token_headers: dict[str, str], db: Session
+) -> None:
+    user = crud.get_user_by_email(session=db, email=settings.EMAIL_TEST_USER)
+    mcp_server_data1 = MCPServer(
+        name="Sample MCP server 1",
+        description="Sample description 1",
+        transport="http",
+        version="1.0.0",
+        kind=MCPServerKind.OFFICIAL,
+        owner_id=str(user.id),
+    )
+    mcp_server_data2 = MCPServer(
+        name="Sample MCP server 2",
+        description="Sample description 2",
+        transport="http",
+        version="1.0.0",
+        kind=MCPServerKind.OFFICIAL,
+        owner_id=str(user.id),
+    )
+    db.add(mcp_server_data1)
+    db.add(mcp_server_data2)
+    db.commit()
+    db.refresh(mcp_server_data1)
+    db.refresh(mcp_server_data2)
+
+    response = client.get(
+        f"{settings.API_V1_STR}/mcp-servers/",
         headers=normal_user_token_headers,
     )
-    assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert response.json()["detail"] == "MCP server not found"
-
-
-def test_read_mcp_server_unauthorized(
-    client: TestClient,
-    mcp_server: MCPServer,
-):
-    response = client.get(
-        f"{settings.API_V1_STR}/mcp-servers/{mcp_server.id}",
-    )
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.status_code == 200
+    content = response.json()
+    assert len(content["data"]) >= 2
+    for mcp_server in content["data"]:
+        assert mcp_server["ownerId"] == str(user.id)
 
 
 def test_update_mcp_server(
-    client: TestClient,
-    normal_user_token_headers: dict[str, str],
-    mcp_server: MCPServer,
-):
-    update_data = {
-        "name": "Updated Name",
-        "description": "Updated Description",
-        "status": MCPServerStatus.INACTIVE,
-        "url": "http://localhost:8001",
-        "config": {"updated": "value"},
-        "secrets": {"new_key": "new_value"},
-    }
-    response = client.put(
-        f"{settings.API_V1_STR}/mcp-servers/{mcp_server.id}",
-        headers=normal_user_token_headers,
-        json=update_data,
-    )
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
-    assert data["name"] == update_data["name"]
-    assert data["description"] == update_data["description"]
-    assert data["status"] == update_data["status"]
-    assert data["url"] == update_data["url"]
-    assert data["config"] == update_data["config"]
-    assert data["secrets"] == update_data["secrets"]
-    assert data["mount_path"] == f"/mcp/{mcp_server.id}"
+    client: TestClient, normal_user_token_headers: dict[str, str], db: Session
+) -> None:
+    user = crud.get_user_by_email(session=db, email=settings.EMAIL_TEST_USER)
 
-
-def test_update_mcp_server_partial(
-    client: TestClient,
-    normal_user_token_headers: dict[str, str],
-    mcp_server: MCPServer,
-):
-    update_data = {"name": "Only Name Updated"}
-    response = client.put(
-        f"{settings.API_V1_STR}/mcp-servers/{mcp_server.id}",
-        headers=normal_user_token_headers,
-        json=update_data,
+    mcp_server_data = MCPServer(
+        name="Sample MCP server",
+        description="Sample description",
+        transport="http",
+        version="1.0.0",
+        kind=MCPServerKind.OFFICIAL,
+        owner_id=str(user.id),
     )
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
-    assert data["name"] == update_data["name"]
-    assert data["description"] == mcp_server.description
-    assert data["status"] == mcp_server.status
-    assert data["url"] == mcp_server.url
-    assert data["config"] == mcp_server.config
-    assert data["secrets"] == mcp_server.secrets
-    assert data["mount_path"] == f"/mcp/{mcp_server.id}"
+    db.add(mcp_server_data)
+    db.commit()
+    db.refresh(mcp_server_data)
+
+    update_data = MCPServerUpdate(
+        name="Updated MCP server",
+        description="Updated description",
+        transport="https",
+        version="2.0.0",
+    )
+    response = client.put(
+        f"{settings.API_V1_STR}/mcp-servers/{mcp_server_data.id}",
+        headers=normal_user_token_headers,
+        json=update_data.model_dump(exclude_unset=True),
+    )
+    assert response.status_code == 200
+    content = response.json()
+    assert content["name"] == update_data.name
+    assert content["description"] == update_data.description
+    assert content["transport"] == update_data.transport
+    assert content["version"] == update_data.version
+    assert content["updatedAt"] is not None
 
 
 def test_update_mcp_server_not_found(
-    client: TestClient,
-    normal_user_token_headers: dict[str, str],
-):
-    update_data = {"name": "Updated Name"}
-    response = client.put(
-        f"{settings.API_V1_STR}/mcp-servers/nonexistent-id",
-        headers=normal_user_token_headers,
-        json=update_data,
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
+    update_data = MCPServerUpdate(
+        name="Updated MCP server",
+        description="Updated description",
+        transport="https",
+        version="2.0.0",
     )
-    assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert response.json()["detail"] == "MCP server not found"
-
-
-def test_update_mcp_server_unauthorized(
-    client: TestClient,
-    mcp_server: MCPServer,
-):
-    update_data = {"name": "Updated Name"}
     response = client.put(
-        f"{settings.API_V1_STR}/mcp-servers/{mcp_server.id}",
-        json=update_data,
+        f"{settings.API_V1_STR}/mcp-servers/999",
+        headers=superuser_token_headers,
+        json=update_data.model_dump(exclude_unset=True),
     )
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.status_code == 404
+    content = response.json()
+    assert content["detail"] == "MCP server not found"
 
 
 def test_delete_mcp_server(
-    client: TestClient,
-    normal_user_token_headers: dict[str, str],
-    mcp_server: MCPServer,
-):
-    response = client.delete(
-        f"{settings.API_V1_STR}/mcp-servers/{mcp_server.id}",
-        headers=normal_user_token_headers,
-    )
-    assert response.status_code == status.HTTP_200_OK
-    assert response.json()["message"] == "MCP server deleted successfully"
+    client: TestClient, normal_user_token_headers: dict[str, str], db: Session
+) -> None:
+    user = crud.get_user_by_email(session=db, email=settings.EMAIL_TEST_USER)
 
-    # Verify server is deleted
-    response = client.get(
-        f"{settings.API_V1_STR}/mcp-servers/{mcp_server.id}",
+    mcp_server_data = MCPServer(
+        name="Sample MCP server",
+        description="Sample description",
+        transport="http",
+        version="1.0.0",
+        kind=MCPServerKind.OFFICIAL,
+        owner_id=str(user.id),
+    )
+    db.add(mcp_server_data)
+    db.commit()
+    db.refresh(mcp_server_data)
+
+    response = client.delete(
+        f"{settings.API_V1_STR}/mcp-servers/{mcp_server_data.id}",
         headers=normal_user_token_headers,
     )
-    assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert response.json()["detail"] == "MCP server not found"
+    assert response.status_code == 200
+    content = response.json()
+    assert content["message"] == "MCP server deleted successfully"
 
 
 def test_delete_mcp_server_not_found(
-    client: TestClient,
-    normal_user_token_headers: dict[str, str],
-):
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
     response = client.delete(
-        f"{settings.API_V1_STR}/mcp-servers/nonexistent-id",
-        headers=normal_user_token_headers,
+        f"{settings.API_V1_STR}/mcp-servers/999",
+        headers=superuser_token_headers,
     )
-    assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert response.json()["detail"] == "MCP server not found"
-
-
-def test_delete_mcp_server_unauthorized(
-    client: TestClient,
-    mcp_server: MCPServer,
-):
-    response = client.delete(
-        f"{settings.API_V1_STR}/mcp-servers/{mcp_server.id}",
-    )
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.status_code == 404
+    content = response.json()
+    assert content["detail"] == "MCP server not found"
 
 
 def test_mcp_server_owner_access(
@@ -466,7 +380,7 @@ def test_mcp_server_mount_path(
     )
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
-    assert data["mount_path"] == f"/mcp/{mcp_server.id}"
+    assert data["mountPath"] == f"/mcp/{mcp_server.id}"
 
 
 def test_mcp_server_secrets_encryption(

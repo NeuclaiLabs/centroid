@@ -3,320 +3,26 @@ import random
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import JSON, Column, DateTime, String, event, func
+from sqlalchemy import JSON, Column, DateTime, String, func
 from sqlmodel import Field, Relationship, SQLModel
 
 from app.core.logger import get_logger
 from app.core.security import decrypt_dict, encrypt_dict
 
 from .base import CamelModel
-
-# from .mcp_template import MCPTool
 from .user import User
+from .utils import ADJECTIVES, NAMES
 
 logger = get_logger(__name__, service="mcp_server")
 
-# Lists for generating Docker-style names
-ADJECTIVES = [
-    "admiring",
-    "adoring",
-    "affectionate",
-    "agitated",
-    "amazing",
-    "angry",
-    "awesome",
-    "beautiful",
-    "blissful",
-    "bold",
-    "boring",
-    "brave",
-    "busy",
-    "charming",
-    "clever",
-    "compassionate",
-    "competent",
-    "condescending",
-    "confident",
-    "cranky",
-    "crazy",
-    "dazzling",
-    "determined",
-    "distracted",
-    "dreamy",
-    "eager",
-    "ecstatic",
-    "elastic",
-    "elated",
-    "elegant",
-    "eloquent",
-    "epic",
-    "exciting",
-    "fervent",
-    "festive",
-    "flamboyant",
-    "focused",
-    "friendly",
-    "frosty",
-    "funny",
-    "gallant",
-    "gifted",
-    "goofy",
-    "gracious",
-    "happy",
-    "hardcore",
-    "heuristic",
-    "hopeful",
-    "hungry",
-    "infallible",
-    "inspiring",
-    "intelligent",
-    "interesting",
-    "jolly",
-    "jovial",
-    "keen",
-    "kind",
-    "laughing",
-    "loving",
-    "lucid",
-    "magical",
-    "modest",
-    "musing",
-    "mystifying",
-    "naughty",
-    "nervous",
-    "nice",
-    "nifty",
-    "nostalgic",
-    "objective",
-    "optimistic",
-    "peaceful",
-    "pedantic",
-    "pensive",
-    "practical",
-    "priceless",
-    "quirky",
-    "quizzical",
-    "relaxed",
-    "reverent",
-    "romantic",
-    "sad",
-    "serene",
-    "sharp",
-    "silly",
-    "sleepy",
-    "stoic",
-    "strange",
-    "suspicious",
-    "sweet",
-    "tender",
-    "thirsty",
-    "trusting",
-    "unruffled",
-    "upbeat",
-    "vibrant",
-    "vigilant",
-    "vigorous",
-    "wizardly",
-    "wonderful",
-    "xenodochial",
-    "youthful",
-    "zealous",
-]
 
-NAMES = [
-    "albattani",
-    "allen",
-    "almeida",
-    "antonelli",
-    "agnesi",
-    "archimedes",
-    "ardinghelli",
-    "aryabhata",
-    "austin",
-    "babbage",
-    "banach",
-    "banzai",
-    "bardeen",
-    "bartik",
-    "bassi",
-    "beaver",
-    "bell",
-    "benz",
-    "bhabha",
-    "bhaskara",
-    "black",
-    "blackburn",
-    "blackwell",
-    "bohr",
-    "booth",
-    "borg",
-    "bose",
-    "boyd",
-    "brahmagupta",
-    "brattain",
-    "brown",
-    "carson",
-    "chandrasekhar",
-    "shannon",
-    "clarke",
-    "colden",
-    "cori",
-    "cray",
-    "curran",
-    "curie",
-    "darwin",
-    "davinci",
-    "dijkstra",
-    "dubinsky",
-    "easley",
-    "edison",
-    "einstein",
-    "elion",
-    "engelbart",
-    "euclid",
-    "euler",
-    "fermat",
-    "fermi",
-    "feynman",
-    "franklin",
-    "galileo",
-    "gates",
-    "goldberg",
-    "goldstine",
-    "goldwasser",
-    "golick",
-    "goodall",
-    "gould",
-    "greider",
-    "grothendieck",
-    "hamilton",
-    "haslett",
-    "hawking",
-    "heisenberg",
-    "hermann",
-    "herschel",
-    "hertz",
-    "heyrovsky",
-    "hodgkin",
-    "hoover",
-    "hopper",
-    "hugle",
-    "hypatia",
-    "ishizaka",
-    "jackson",
-    "jang",
-    "jennings",
-    "jepsen",
-    "johnson",
-    "joliot",
-    "jones",
-    "kalam",
-    "kapitsa",
-    "kare",
-    "keldysh",
-    "keller",
-    "kepler",
-    "khorana",
-    "kilby",
-    "kirch",
-    "knuth",
-    "kowalevski",
-    "lalande",
-    "lamarr",
-    "lamport",
-    "leakey",
-    "leavitt",
-    "lichterman",
-    "liskov",
-    "lovelace",
-    "lumiere",
-    "mahavira",
-    "margulis",
-    "matsumoto",
-    "maxwell",
-    "mayer",
-    "mccarthy",
-    "mcclintock",
-    "mclean",
-    "mcnulty",
-    "meitner",
-    "meninsky",
-    "mestorf",
-    "mirzakhani",
-    "moore",
-    "morse",
-    "murdock",
-    "moser",
-    "napier",
-    "nash",
-    "neumann",
-    "newton",
-    "nightingale",
-    "nobel",
-    "noether",
-    "northcutt",
-    "noyce",
-    "panini",
-    "pare",
-    "pascal",
-    "pasteur",
-    "payne",
-    "perlman",
-    "pike",
-    "poincare",
-    "poitras",
-    "proskuriakova",
-    "ptolemy",
-    "raman",
-    "ramanujan",
-    "ride",
-    "montalcini",
-    "ritchie",
-    "rhodes",
-    "robinson",
-    "roentgen",
-    "rosalind",
-    "rubin",
-    "saha",
-    "sammet",
-    "sanderson",
-    "satoshi",
-    "shamir",
-    "shaw",
-    "shirley",
-    "shockley",
-    "shtern",
-    "sinoussi",
-    "snyder",
-    "solomon",
-    "spence",
-    "stallman",
-    "stonebraker",
-    "swanson",
-    "swartz",
-    "swirles",
-    "taussig",
-    "tesla",
-    "tharp",
-    "thompson",
-    "torvalds",
-    "turing",
-    "varahamihira",
-    "vaughan",
-    "visvesvaraya",
-    "volhard",
-    "villani",
-    "wescoff",
-    "wilbur",
-    "wiles",
-    "williams",
-    "wilson",
-    "wing",
-    "wozniak",
-    "wright",
-    "yalow",
-    "yonath",
-]
+class MCPTool(CamelModel):
+    """Model for MCP tool."""
+
+    name: str = Field(description="Name of the tool")
+    description: str = Field(description="Description of the tool")
+    parameters: dict[str, Any] = Field(description="Parameters of the tool")
+    status: bool = Field(description="Status of the tool")
 
 
 def generate_docker_style_name() -> str:
@@ -373,8 +79,9 @@ class MCPServerBase(CamelModel):
     )
     transport: str = Field(description="Transport type for the MCP server")
     version: str = Field(description="Version of the MCP server")
-    url: str = Field(
-        default="http://localhost:8000", description="URL of the MCP server"
+    template_id: str | None = Field(
+        default=None,
+        description="ID of the template used to create the MCP server",
     )
     run: MCPServerRunConfig | None = Field(
         default=None,
@@ -384,20 +91,43 @@ class MCPServerBase(CamelModel):
     settings: dict[str, Any] | None = Field(
         default=None, description="Settings for the MCP server", sa_column=Column(JSON)
     )
-    # metadata: dict[str, Any] | None = Field(
-    #     default=None,
-    #     description="Additional metadata for the MCP server",
-    #     sa_column=Column(JSON),
-    # )
-    owner_id: str = Field(
-        description="ID of the owner of the MCP server", foreign_key="users.id"
+    owner_id: str | None = Field(
+        default=None,
+        description="ID of the owner of the MCP server",
+        foreign_key="users.id",
+    )
+    tools: list[MCPTool] | None = Field(
+        default=None,
+        description="Tools used to create the MCP server",
+        sa_column=Column(JSON),
     )
 
 
 class MCPServerCreate(MCPServerBase):
     """Model for creating an MCP server."""
 
-    pass
+    name: str = Field(description="Name of the MCP server")
+    description: str = Field(description="Description of the MCP server")
+    status: MCPServerStatus = Field(
+        default=MCPServerStatus.ACTIVE, description="Status of the MCP server"
+    )
+    kind: MCPServerKind = Field(
+        default=MCPServerKind.OFFICIAL, description="Kind of MCP server"
+    )
+    transport: str = Field(description="Transport type for the MCP server")
+    version: str = Field(description="Version of the MCP server")
+    template_id: str | None = Field(
+        default=None,
+        description="ID of the template used to create the MCP server",
+    )
+    run: MCPServerRunConfig | None = Field(
+        default=None,
+        description="Run configuration for the MCP server",
+    )
+    settings: dict[str, Any] | None = Field(
+        default=None, description="Settings for the MCP server"
+    )
+    secrets: dict[str, Any] | None = None
 
 
 class MCPServerUpdate(CamelModel):
@@ -413,6 +143,8 @@ class MCPServerUpdate(CamelModel):
     run: MCPServerRunConfig | None = None
     settings: dict[str, Any] | None = None
     metadata: dict[str, Any] | None = None
+    secrets: dict[str, Any] | None = None
+    tools: list[MCPTool] | None = None
 
 
 class MCPServer(MCPServerBase, SQLModel, table=True):
@@ -499,53 +231,67 @@ class MCPServer(MCPServerBase, SQLModel, table=True):
         return f"/mcp/{self.id}"
 
 
-# Event listeners for MCP server lifecycle management
-@event.listens_for(MCPServer, "after_insert")
-def handle_instance_creation(mapper, connection, target: MCPServer) -> None:  # noqa: ARG001
-    """Handle MCP server creation."""
-    import asyncio
+# # Event listeners for MCP server lifecycle management
+# @event.listens_for(MCPServer, "after_insert")
+# def handle_instance_creation(mapper, connection, target: MCPServer) -> None:  # noqa: ARG001
+#     """Handle MCP server creation."""
+#     import asyncio
 
-    # Lazy import to avoid circular dependency
-    from app.mcp.mcp_manager import MCPManager
+#     # Lazy import to avoid circular dependency
+#     from app.mcp.mcp_manager import MCPManager
 
-    async def register_and_create_tools():
-        manager = MCPManager.get_instance()
-        await manager._register_instance(target)
-        # Get the MCP server and create tools
-        mcp_server = manager.get_mcp_server(target.id)
-        if mcp_server:
-            mcp_server.create_tools()
+#     async def register_and_create_tools():
+#         manager = MCPManager.get_instance()
+#         await manager._register_instance(target)
+#         # Get the MCP server and create tools
+#         mcp_server = manager.get_mcp_server(target.id)
+#         if mcp_server:
+#             mcp_server.create_tools()
 
-    asyncio.create_task(register_and_create_tools())
-
-
-@event.listens_for(MCPServer, "after_update")
-def handle_instance_update(mapper, connection, target: MCPServer) -> None:  # noqa: ARG001
-    """Handle MCP server update."""
-    import asyncio
-
-    # Lazy import to avoid circular dependency
-    from app.mcp.mcp_manager import MCPManager
-
-    manager = MCPManager.get_instance()
-    # Check if status changed to inactive
-    if target.status == MCPServerStatus.INACTIVE:
-        asyncio.create_task(manager._deregister_instance(target.id))
-    # Check if status changed to active
-    elif target.status == MCPServerStatus.ACTIVE:
-        asyncio.create_task(manager._register_instance(target))
+#     asyncio.create_task(register_and_create_tools())
 
 
-@event.listens_for(MCPServer, "after_delete")
-def handle_instance_deletion(mapper, connection, target: MCPServer) -> None:  # noqa: ARG001
-    """Handle MCP server deletion."""
-    import asyncio
+# @event.listens_for(MCPServer, "after_update")
+# def handle_instance_update(mapper, connection, target: MCPServer) -> None:  # noqa: ARG001
+#     """Handle MCP server update."""
+#     import asyncio
 
-    # Lazy import to avoid circular dependency
-    from app.mcp.mcp_manager import MCPManager
+#     # Lazy import to avoid circular dependency
+#     from app.mcp.mcp_manager import MCPManager
 
-    if target.id in MCPManager.get_instance()._registry:
-        asyncio.create_task(MCPManager.get_instance()._deregister_instance(target.id))
+#     # Get the state and history of the status attribute
+#     state = inspect(target)
+#     history = state.attrs.status.history
+
+#     # If status hasn't changed, return early
+#     if not history.has_changes():
+#         return
+
+#     manager = MCPManager.get_instance()
+#     # Check if status changed to inactive from active
+#     if (
+#         target.status == MCPServerStatus.INACTIVE
+#         and MCPServerStatus.ACTIVE in history.deleted
+#     ):
+#         asyncio.create_task(manager._deregister_instance(target.id))
+#     # Check if status changed to active from inactive
+#     elif (
+#         target.status == MCPServerStatus.ACTIVE
+#         and MCPServerStatus.INACTIVE in history.deleted
+#     ):
+#         asyncio.create_task(manager._register_instance(target))
+
+
+# @event.listens_for(MCPServer, "after_delete")
+# def handle_instance_deletion(mapper, connection, target: MCPServer) -> None:  # noqa: ARG001
+#     """Handle MCP server deletion."""
+#     import asyncio
+
+#     # Lazy import to avoid circular dependency
+#     from app.mcp.mcp_manager import MCPManager
+
+#     if target.id in MCPManager.get_instance()._registry:
+#         asyncio.create_task(MCPManager.get_instance()._deregister_instance(target.id))
 
 
 class MCPServerOut(MCPServerBase):
@@ -571,4 +317,18 @@ class MCPServersOut(CamelModel):
     """Model for MCP servers output."""
 
     data: list[MCPServerOut]
+    count: int
+
+
+class MCPServerOutWithTemplate(CamelModel):
+    """Model for MCP server output with template."""
+
+    id: str
+    template_id: str
+
+
+class MCPServersOutWithTemplate(CamelModel):
+    """Model for MCP servers output with template."""
+
+    data: list[MCPServerOutWithTemplate]
     count: int

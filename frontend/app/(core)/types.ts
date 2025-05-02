@@ -93,3 +93,98 @@ export interface ConnectionCreate {
 export interface UtilsMessage {
   message: string;
 }
+
+export interface MCPInstance {
+  id: string;
+  name: string;
+  description: string;
+  status: 'running' | 'stopped';
+  created_at: string;
+  owner_id: string;
+}
+
+export type MCPServerStatus = 'active' | 'inactive';
+
+export type MCPServerKind = 'official' | 'external' | 'openapi';
+
+export interface MCPServerRunConfig {
+  command: string;
+  args?: string[];
+  env?: Record<string, string>;
+  cwd?: string;
+}
+
+export interface MCPServerMetadata {
+  icon?: {
+    path: string;
+  };
+  homepage?: string;
+  [key: string]: unknown;
+}
+
+export interface MCPToolParameter {
+  type: string;
+  properties: Record<string, unknown>;
+}
+
+export interface MCPTool {
+  name: string;
+  description: string;
+  parameters: MCPToolParameter;
+  status: boolean;
+}
+
+export interface MCPServer {
+  id: string;
+  name: string;
+  description: string;
+  status: MCPServerStatus;
+  kind: MCPServerKind;
+  transport: string;
+  version: string;
+  templateId?: string;
+  run?: MCPServerRunConfig;
+  settings?: {
+    metadata?: MCPServerMetadata;
+  };
+  secrets?: Record<string, string | number | boolean | null>;
+  tools?: MCPTool[];
+  ownerId: string;
+  createdAt: string;
+  updatedAt: string;
+  mountPath: string;
+}
+
+export interface MCPServerCreate {
+  name: string;
+  description: string;
+  status?: MCPServerStatus;
+  kind?: MCPServerKind;
+  transport: string;
+  version: string;
+  templateId?: string;
+  run?: MCPServerRunConfig;
+  settings?: {
+    metadata?: MCPServerMetadata;
+  };
+  secrets?: Record<string, string | number | boolean | null>;
+}
+
+export interface MCPServerUpdate {
+  name?: string;
+  description?: string;
+  status?: MCPServerStatus;
+  kind?: MCPServerKind;
+  transport?: string;
+  version?: string;
+  run?: MCPServerRunConfig;
+  settings?: {
+    metadata?: MCPServerMetadata;
+  };
+  secrets?: Record<string, string | number | boolean | null>;
+}
+
+export interface MCPServersResponse {
+  data: MCPServer[];
+  count: number;
+}

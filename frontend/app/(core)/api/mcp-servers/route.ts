@@ -12,32 +12,39 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const skip = searchParams.get('skip');
     const limit = searchParams.get('limit');
+    const templateId = searchParams.get('template_id');
+    const path = request.nextUrl.pathname;
+
+    // Determine if we're requesting templates endpoint or regular servers
+    const isTemplatesRequest = path.endsWith('/templates');
 
     const params = new URLSearchParams();
     if (skip) params.append('skip', skip);
     if (limit) params.append('limit', limit);
+    if (templateId) params.append('template_id', templateId);
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mcp-instances/?${params}`,
-      {
-        headers: {
-          accept: 'application/json',
-          // @ts-ignore
-          Authorization: `Bearer ${session.user.token}`,
-        },
+    const endpoint = isTemplatesRequest
+      ? `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mcp-servers/templates`
+      : `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mcp-servers`;
+
+    const response = await fetch(`${endpoint}?${params}`, {
+      headers: {
+        accept: 'application/json',
+        // @ts-ignore
+        Authorization: `Bearer ${session.user.token}`,
       },
-    );
+    });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch MCP instances');
+      throw new Error(`Failed to fetch MCP servers: ${response.statusText}`);
     }
 
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Failed to fetch MCP instances:', error);
+    console.error('Failed to fetch MCP servers:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch MCP instances' },
+      { error: 'Failed to fetch MCP servers' },
       { status: 500 },
     );
   }
@@ -52,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mcp-instances/`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mcp-servers/`,
       {
         method: 'POST',
         headers: {
@@ -66,15 +73,15 @@ export async function POST(request: NextRequest) {
     );
 
     if (!response.ok) {
-      throw new Error('Failed to create MCP instance');
+      throw new Error('Failed to create MCP server');
     }
 
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Failed to create MCP instance:', error);
+    console.error('Failed to create MCP server:', error);
     return NextResponse.json(
-      { error: 'Failed to create MCP instance' },
+      { error: 'Failed to create MCP server' },
       { status: 500 },
     );
   }
