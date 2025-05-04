@@ -68,7 +68,7 @@ class Settings(BaseSettings):
     @computed_field  # type: ignore[misc]
     @property
     def UPLOAD_DIR(self) -> str:
-        upload_path = Path(self.BASE_DIR) / ".openastra" / "uploads"
+        upload_path = Path(self.BASE_DIR) / ".centroid" / "uploads"
         upload_path.mkdir(parents=True, exist_ok=True)
         return str(upload_path)
 
@@ -99,7 +99,7 @@ class Settings(BaseSettings):
         list[AnyUrl] | str, BeforeValidator(parse_cors)
     ] = []
 
-    PROJECT_NAME: str = "OpenAstra"
+    PROJECT_NAME: str = "Centroid"
     SENTRY_DSN: HttpUrl | None = None
     POSTGRES_SERVER: str | None = None
     POSTGRES_PORT: int | None = None
@@ -112,7 +112,7 @@ class Settings(BaseSettings):
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> PostgresDsn | Any:
         if self.DB_TYPE == "sqlite":
-            db_path = Path(self.BASE_DIR) / ".openastra" / "app.db"
+            db_path = Path(self.BASE_DIR) / ".centroid" / "app.db"
             db_path.parent.mkdir(parents=True, exist_ok=True)
             return f"sqlite:///{db_path}"
 
@@ -132,8 +132,8 @@ class Settings(BaseSettings):
     SMTP_USER: str | None = None
     SMTP_PASSWORD: str | None = None
     # TODO: update type to EmailStr when sqlmodel supports it
-    EMAILS_FROM_EMAIL: str | None = "info@openastra.com"
-    EMAILS_FROM_NAME: str | None = "Team OpenAstra"
+    EMAILS_FROM_EMAIL: str | None = "info@centroid.run"
+    EMAILS_FROM_NAME: str | None = "Team Centroid"
 
     @model_validator(mode="after")
     def _set_default_emails_from(self) -> Self:

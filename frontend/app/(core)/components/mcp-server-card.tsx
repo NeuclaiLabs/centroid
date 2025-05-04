@@ -169,11 +169,17 @@ export function MCPServerCard({ server }: MCPServerCardProps) {
 							disabled={isTogglingStatus}
 						>
 							{isTogglingStatus ? (
-								<span className="size-3.5 border-2 border-current border-r-transparent rounded-full animate-spin" />
+								<></>
 							) : server.status === "active" ? (
-								<StopCircle className="h-3.5 w-3.5" />
+								<>
+									<StopCircle className="h-3.5 w-3.5" />
+									Stop
+								</>
 							) : (
-								<Play className="h-3.5 w-3.5" />
+								<>
+									<Play className="h-3.5 w-3.5" />
+									Start
+								</>
 							)}
 						</Button>
 					</CardFooter>

@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from sqlmodel import Session
 
-from app.mcp.mcp_manager import MCPManager, RegistryEntry
+from app.mcp.manager import MCPManager, RegistryEntry
 from app.mcp.mcp_server import MCPServerConfig
 from app.models import MCPInstance, MCPInstanceStatus, MCPServer, MCPServerStatus
 
@@ -17,7 +17,7 @@ def mock_db():
 @pytest.fixture
 def mock_mcp_server():
     """Create a mock MCP server."""
-    with patch("app.mcp.mcp_manager.MCPServer") as mock:
+    with patch("app.mcp.manager.MCPServer") as mock:
         server = MagicMock()
         mock.return_value = server
         yield mock

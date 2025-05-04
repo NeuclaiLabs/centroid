@@ -167,3 +167,112 @@ def delete_mcp_server(
     session.delete(mcp_server)
     session.commit()
     return UtilsMessage(message="MCP server deleted successfully")
+
+
+@router.post("/{id}/start", response_model=MCPServerOut)
+async def start_mcp_server(
+    session: SessionDep, current_user: CurrentUser, id: str
+) -> Any:
+    """
+    Start an MCP server.
+    """
+    mcp_server = session.get(MCPServer, id)
+    if not mcp_server:
+        raise HTTPException(status_code=404, detail="MCP server not found")
+    if not current_user.is_superuser and mcp_server.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    # Start the server
+    success = await mcp_server.start()
+    if not success:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to start MCP server: {mcp_server.connection_errors.get('last_error')}",
+        )
+
+    # Update the database with the new state
+    session.add(mcp_server)
+    session.commit()
+    session.refresh(mcp_server)
+
+    return mcp_server
+
+
+@router.post("/{id}/stop", response_model=MCPServerOut)
+async def stop_mcp_server(
+    session: SessionDep, current_user: CurrentUser, id: str
+) -> Any:
+    """
+    Stop an MCP server.
+    """
+    mcp_server = session.get(MCPServer, id)
+    if not mcp_server:
+        raise HTTPException(status_code=404, detail="MCP server not found")
+    if not current_user.is_superuser and mcp_server.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    # Stop the server
+    success = await mcp_server.stop()
+    if not success:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to stop MCP server: {mcp_server.connection_errors.get('last_error')}",
+        )
+
+    # Update the database with the new state
+    session.add(mcp_server)
+    session.commit()
+    session.refresh(mcp_server)
+
+    return mcp_server
+
+
+@router.post("/{id}/restart", response_model=MCPServerOut)
+async def restart_mcp_server(
+    session: SessionDep, current_user: CurrentUser, id: str
+) -> Any:
+    """
+    Restart an MCP server.
+    """
+    mcp_server = session.get(MCPServer, id)
+    if not mcp_server:
+        raise HTTPException(status_code=404, detail="MCP server not found")
+    if not current_user.is_superuser and mcp_server.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    # Restart the server
+    success = await mcp_server.restart()
+    if not success:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to restart MCP server: {mcp_server.connection_errors.get('last_error')}",
+        )
+
+    # Update the database with the new state
+    session.add(mcp_server)
+    session.commit()
+    session.refresh(mcp_server)
+
+    return mcp_server
+
+
+@router.get("/{id}/state")
+def get_mcp_server_state(
+    session: SessionDep, current_user: CurrentUser, id: str
+) -> dict[str, Any]:
+    """
+    Get the current state of an MCP server.
+    """
+    mcp_server = session.get(MCPServer, id)
+    if not mcp_server:
+        raise HTTPException(status_code=404, detail="MCP server not found")
+    if not current_user.is_superuser and mcp_server.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    return {
+        "id": mcp_server.id,
+        "state": mcp_server.state,
+        "last_ping_time": mcp_server.last_ping_time,
+        "connection_errors": mcp_server.connection_errors,
+        "stats": mcp_server.stats,
+    }

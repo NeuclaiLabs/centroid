@@ -1,7 +1,8 @@
-from typing import Any
+from datetime import datetime
+from typing import Any, Literal
 
 import mcp.types
-from fastapi import FastAPI, Path
+from fastapi import FastAPI
 from fastmcp.client import Client
 from fastmcp.client.transports import StdioTransport
 from fastmcp.server.proxy import FastMCPProxy
@@ -19,7 +20,7 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 from app.core.logger import get_logger
-from app.models.mcp_server import MCPServer as MCPServerConfig
+from app.models.mcp import MCPServer
 
 logger = get_logger(__name__)
 
@@ -49,16 +50,39 @@ class ProxyTool(Tool):
 class MCPProxy(FastMCPProxy):
     def __init__(
         self,
-        mcp_server: MCPServerConfig,
-        mount_path: str = "/mcp",
+        mcp_server: MCPServer,
+        tool_group: str = None,
         **kwargs,
     ):
         self.mcp_server = mcp_server
-        self.base_path = mount_path
-        self.mount_path = f"{mount_path}/{{tool_group}}/servers/{{server_type}}"
-        self.messages_path = f"{self.mount_path}/messages/"
         self.transports: dict[str, SseServerTransport] = {}
         self.client_initialized = False
+
+        # Runtime state variables moved from MCPServer
+        self.state: Literal[
+            "pending",
+            "initializing",
+            "running",
+            "stopping",
+            "stopped",
+            "restarting",
+            "terminated",
+            "shutting-down",
+            "disconnected",
+            "error",
+        ] = "pending"
+        self.last_ping_time: datetime | None = None
+        self.connection_errors: dict[str, Any] = {
+            "count": 0,
+            "last_error": None,
+        }
+        self.stats: dict[str, Any] = {
+            "requests": 0,
+            "errors": 0,
+            "last_response_time": None,
+        }
+        self.tool_group = tool_group
+
         self.client = Client(
             transport=StdioTransport(
                 command=mcp_server.run.command,
@@ -69,21 +93,63 @@ class MCPProxy(FastMCPProxy):
         )
         super().__init__(self.client, **kwargs)
 
-    async def initialize(self) -> None:
-        """Initialize the client connection asynchronously."""
-        if not self.client_initialized:
-            await self.client.__aenter__()
-            self.client_initialized = True
+    async def initialize(self) -> bool:
+        """
+        Initialize the client connection asynchronously.
 
-    async def cleanup(self) -> None:
-        """Clean up the client connection asynchronously."""
-        if self.client_initialized:
-            await self.client.__aexit__(None, None, None)
-            self.client_initialized = False
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            if not self.client_initialized:
+                self.state = "initializing"
+                await self.client.__aenter__()
+                self.client_initialized = True
+                self.state = "running"
+                self.last_ping_time = datetime.now()
+                logger.info(
+                    f"Successfully initialized MCP proxy for server {self.mcp_server.id}"
+                )
+                return True
+            return True
+        except Exception as e:
+            self.state = "error"
+            self.connection_errors["count"] += 1
+            self.connection_errors["last_error"] = str(e)
+            logger.error(
+                f"Error initializing MCP proxy for server {self.mcp_server.id}: {e}"
+            )
+            return False
 
-    def get_transport_key(self, tool_group: str, server_type: str) -> str:
+    async def shutdown(self) -> bool:
+        """
+        Clean up the client connection asynchronously.
+
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            self.state = "stopping"
+            if self.client_initialized:
+                await self.client.__aexit__(None, None, None)
+                self.client_initialized = False
+            self.state = "stopped"
+            logger.info(
+                f"Successfully shut down MCP proxy for server {self.mcp_server.id}"
+            )
+            return True
+        except Exception as e:
+            self.state = "error"
+            self.connection_errors["count"] += 1
+            self.connection_errors["last_error"] = str(e)
+            logger.error(
+                f"Error shutting down MCP proxy for server {self.mcp_server.id}: {e}"
+            )
+            return False
+
+    def get_transport_key(self) -> str:
         """Get a unique key for storing transports."""
-        return f"{tool_group}:{server_type}"
+        return f"{self.mcp_server.id}"
 
     async def get_tools(self) -> dict[str, Tool]:
         tools = await super().get_tools()
@@ -106,10 +172,19 @@ class MCPProxy(FastMCPProxy):
         self, key: str, arguments: dict[str, Any]
     ) -> list[TextContent | ImageContent | EmbeddedResource]:
         try:
+            self.stats["requests"] += 1
+            start_time = datetime.now()
             result = await self.client.call_tool(key, arguments)
+            self.stats["last_response_time"] = (
+                datetime.now() - start_time
+            ).total_seconds()
+            self.last_ping_time = datetime.now()
             return result
         except Exception as e:
-            print("Error: ", e)
+            self.stats["errors"] += 1
+            self.connection_errors["count"] += 1
+            self.connection_errors["last_error"] = str(e)
+            logger.error(f"Error calling tool {key}: {e}")
             return []
 
     def mount(self, app: FastAPI) -> None:
@@ -121,19 +196,17 @@ class MCPProxy(FastMCPProxy):
         """
 
         # Define MCP connection handler with path parameters
-        @app.get(self.mount_path)
+        @app.get(self.mcp_server.mount_path)
         async def handle_mcp_connection(
             request: Request,
-            tool_group: str = Path(..., description="Tool group name"),
-            server_type: str = Path(
-                ..., description="Server type (e.g. github, gitlab)"
-            ),
         ):
-            transport_key = self.get_transport_key(tool_group, server_type)
+            transport_key = self.get_transport_key()
             if transport_key not in self.transports:
-                print("Creating transport and adding to transports")
+                logger.info(
+                    f"Creating transport and adding to transports for {self.mcp_server.id}"
+                )
                 self.transports[transport_key] = SseServerTransport(
-                    f"{self.base_path}/{tool_group}/servers/{server_type}/messages/"
+                    f"{self.mcp_server.mount_path}/messages/"
                 )
             transport = self.transports[transport_key]
             async with transport.connect_sse(
@@ -144,26 +217,22 @@ class MCPProxy(FastMCPProxy):
                     streams[1],
                     self._mcp_server.create_initialization_options(
                         experimental_capabilities={
-                            "tool_filtering": {"name": tool_group}
+                            "tool_filtering": {"name": self.tool_group}
                         }
                     ),
                 )
 
         # Handle POST messages with path parameters
-        @app.post(self.messages_path)
+        @app.post(f"{self.mcp_server.mount_path}/messages/")
         async def handle_post_message(
             request: Request,
-            tool_group: str = Path(..., description="Tool group name"),
-            server_type: str = Path(
-                ..., description="Server type (e.g. github, gitlab)"
-            ),
         ) -> Response:
-            transport_key = self.get_transport_key(tool_group, server_type)
+            transport_key = self.get_transport_key()
             transport = self.transports.get(transport_key)
             if not transport:
                 return Response(
                     status_code=404,
-                    content=f"No active transport for {tool_group}/{server_type}",
+                    content=f"No active transport for {self.mcp_server.id}",
                 )
 
             return await transport.handle_post_message(

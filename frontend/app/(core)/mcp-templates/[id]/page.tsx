@@ -63,7 +63,7 @@ export default function MCPTemplatePage({ params }: PageProps) {
 							className="flex-1 m-0 data-[state=active]:block"
 						>
 							<ScrollArea className="h-[calc(100vh-350px)]">
-								<div className="space-y-4 pr-2">
+								<div className="space-y-4">
 									{template.tools.map((tool) => (
 										<Card key={tool.name}>
 											<CardHeader className="flex flex-row items-center justify-between space-y-0">

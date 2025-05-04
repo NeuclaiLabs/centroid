@@ -49,7 +49,7 @@ def mock_sse_transport():
 @pytest.fixture
 def mock_mcp_server():
     """Create a mock MCP server."""
-    with patch("app.mcp.mcp_manager.MCPServer") as mock:
+    with patch("app.mcp.manager.MCPServer") as mock:
         server = MagicMock()
         mock.return_value = server
         yield mock

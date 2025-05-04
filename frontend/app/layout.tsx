@@ -6,9 +6,9 @@ import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-	metadataBase: new URL("https://github.com/srikanth235/openastra"),
+	metadataBase: new URL("https://github.com/NeuclaiLabs/centroid"),
 	title: "Centroid",
-	description: "OpenAstra is a platform for building and sharing AI agents.",
+	description: "Centroid is a platform for hosting and running MCP servers.",
 };
 
 export const viewport = {

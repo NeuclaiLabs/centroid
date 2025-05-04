@@ -82,7 +82,7 @@ def get_logger_config() -> dict:
             "LOG_FORMAT",
             "%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s",
         ),
-        "log_dir": os.getenv("LOG_DIR", str(Path.home() / ".openastra" / "logs")),
+        "log_dir": os.getenv("LOG_DIR", str(Path.home() / ".centroid" / "logs")),
         "log_file": os.getenv("LOG_FILE", "app.log"),
         "rotation_interval": os.getenv("LOG_ROTATION_INTERVAL", "midnight"),
         "backup_count": int(os.getenv("LOG_BACKUP_COUNT", "7")),

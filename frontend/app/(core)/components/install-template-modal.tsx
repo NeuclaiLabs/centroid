@@ -51,6 +51,7 @@ export function InstallTemplateModal({
 					templateId: template.id,
 					run: template.run,
 					settings: { metadata: template.metadata },
+					tools: template.tools,
 					secrets,
 				}),
 			});

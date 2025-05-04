@@ -1,14 +1,14 @@
 [project]
 name = "app"
 version = "0.1.0"
-description = "OpenAstra application backend"
+description = "Centroid application backend"
 license = "Apache-2.0"
 requires-python = ">=3.10"
 authors = [
-    {name = "Admin", email = "admin@openastra.com"}
+    {name = "Admin", email = "admin@centroid.run"}
 ]
 maintainers = [
-    {name = "OpenAstra Team", email = "team@openastra.com"}
+    {name = "Centroid Team", email = "team@centroid.run"}
 ]
 keywords = ["api", "backend", "fastapi"]
 classifiers = [
@@ -65,11 +65,11 @@ build-backend = "hatchling.build"
 
 
 [project.urls]
-"Homepage" = "https://openastra.com"
-"Repository" = "https://github.com/openastra/"
-"Documentation" = "https://docs.openastra.com"
-"Bug Tracker" = "https://github.com/openastra/app/issues"
-"Changelog" = "https://github.com/openastra/app/blob/main/CHANGELOG.md"
+"Homepage" = "https://centroid.run"
+"Repository" = "https://github.com/NeuclaiLabs/centroid"
+"Documentation" = "https://docs.centroid.run"
+"Bug Tracker" = "https://github.com/NeuclaiLabs/centroid/issues"
+"Changelog" = "https://github.com/NeuclaiLabs/centroid/blob/main/CHANGELOG.md"
 
 [tool.mypy]
 strict = true

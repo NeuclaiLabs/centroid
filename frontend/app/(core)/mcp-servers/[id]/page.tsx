@@ -245,7 +245,7 @@ export default function MCPServerPage({ params }: PageProps) {
 		: undefined;
 
 	return (
-		<div className="flex-1 p-6">
+		<div className="flex flex-col">
 			{/* Header takes its natural height */}
 			<div className="flex-shrink-0 px-6 pt-6">
 				<MCPServerHeader
@@ -360,9 +360,9 @@ export default function MCPServerPage({ params }: PageProps) {
 							className="flex-1 m-0 data-[state=active]:block"
 						>
 							<ScrollArea className="h-[calc(100vh-350px)]">
-								<div className="space-y-4 pr-2">
-									{template?.tools ? (
-										template.tools.map((tool) => {
+								<div className="space-y-4">
+									{server?.tools ? (
+										server.tools.map((tool) => {
 											// Find if we have the tool in the server's tools array
 											const serverTool = server.tools?.find(
 												(t) => t.name === tool.name,
@@ -430,7 +430,7 @@ export default function MCPServerPage({ params }: PageProps) {
 							className="flex-1 m-0 data-[state=active]:block"
 						>
 							<ScrollArea className="h-[calc(100vh-350px)]">
-								<div className="space-y-4">
+								<div className="space-y-8">
 									{/* Run Configuration */}
 									{server.run && (
 										<div className="space-y-4 mb-6">

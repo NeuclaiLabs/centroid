@@ -54,7 +54,7 @@ async def init_db(session: Session) -> None:
             # Create default project
             project_in = ProjectCreate(
                 title="Sample Project",
-                description="This is a sample project with OpenAstra backend API collection.",
+                description="This is a sample project with Centroid backend API collection.",
                 model=settings.LLM_DEFAULT_MODEL,
                 instructions="""For baseUrl, use host as localhost and port as 8000.
                  Health endpoint is hosted at GET /api/v1/utils/health.""",

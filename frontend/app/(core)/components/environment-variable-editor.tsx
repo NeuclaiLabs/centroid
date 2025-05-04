@@ -89,7 +89,7 @@ export function EnvironmentVariableEditor({
 						variant="ghost"
 						size="icon"
 						onClick={toggleValueVisibility}
-						className="h-8 w-8"
+						className="h-8 w-8 transition-opacity"
 						type="button"
 					>
 						{isValueVisible ? (
@@ -136,7 +136,7 @@ export function EnvironmentVariableEditor({
 					variant="ghost"
 					size="icon"
 					onClick={toggleValueVisibility}
-					className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+					className="h-8 w-8 transition-opacity"
 					type="button"
 				>
 					{isValueVisible ? (
@@ -149,7 +149,7 @@ export function EnvironmentVariableEditor({
 					variant="ghost"
 					size="icon"
 					onClick={handleEdit}
-					className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+					className="h-8 w-8 transition-opacity"
 					type="button"
 				>
 					<Pencil className="size-4" />

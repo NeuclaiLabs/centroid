@@ -1,16 +1,9 @@
-"""
-This file re-exports all MCP server models from the new modular structure.
-It maintains backward compatibility with existing imports.
-"""
+"""MCP-related models."""
 
-from app.models.mcp import (
-    # Main model
-    MCPServer,
+from .base import (
     MCPServerBase,
     MCPServerCreate,
-    # Base models and utilities
     MCPServerKind,
-    # Output schemas
     MCPServerOut,
     MCPServerOutNoSecrets,
     MCPServerOutWithTemplate,
@@ -20,10 +13,10 @@ from app.models.mcp import (
     MCPServersOutWithTemplate,
     MCPServerStatus,
     MCPServerUpdate,
-    # Tool models
     MCPTool,
     generate_docker_style_name,
 )
+from .server import MCPServer
 
 __all__ = [
     "MCPServerKind",

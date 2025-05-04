@@ -157,7 +157,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
 			},
 			{
 				title: "Feedback",
-				url: "https://github.com/srikanth235/openastra/issues/new?template=feedback.yml",
+				url: "https://github.com/NeuclaiLabs/centroid/issues/new?template=feedback.yml",
 				icon: SendIcon,
 			},
 			// {
