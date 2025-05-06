@@ -7,20 +7,16 @@ from fastmcp.client import Client
 from fastmcp.client.transports import StdioTransport
 from fastmcp.server.proxy import FastMCPProxy
 from fastmcp.tools.tool import Tool
-from fastmcp.utilities.func_metadata import func_metadata
 from mcp.server.sse import SseServerTransport
 from mcp.shared.exceptions import McpError
 from mcp.types import (
     METHOD_NOT_FOUND,
-    EmbeddedResource,
-    ImageContent,
-    TextContent,
 )
 from starlette.requests import Request
 from starlette.responses import Response
 
 from app.core.logger import get_logger
-from app.models.mcp import MCPServer
+from app.models.mcp.server import MCPServer
 
 logger = get_logger(__name__)
 
@@ -42,7 +38,6 @@ class ProxyTool(Tool):
             description=tool.description,
             parameters=tool.inputSchema,
             fn=_proxy_passthrough,
-            fn_metadata=func_metadata(_proxy_passthrough),
             is_async=True,
         )
 
@@ -82,15 +77,25 @@ class MCPProxy(FastMCPProxy):
             "last_response_time": None,
         }
         self.tool_group = tool_group
-
+        logger.info(f"Initializing MCP proxy for server {self.mcp_server.secrets}")
+        print(
+            {
+                **(self.mcp_server.secrets or {}),
+                **(self.mcp_server.run.env or {}),
+            },
+        )
         self.client = Client(
             transport=StdioTransport(
-                command=mcp_server.run.command,
-                cwd=mcp_server.run.cwd,
-                env=mcp_server.run.env,
-                args=mcp_server.run.args,
+                command=self.mcp_server.run.command,
+                cwd=self.mcp_server.run.cwd,
+                env={
+                    **(self.mcp_server.run.env or {}),
+                    **(self.mcp_server.secrets or {}),
+                },
+                args=self.mcp_server.run.args,
             ),
         )
+
         super().__init__(self.client, **kwargs)
 
     async def initialize(self) -> bool:
@@ -168,16 +173,18 @@ class MCPProxy(FastMCPProxy):
 
         return tools
 
-    async def _mcp_call_tool(
-        self, key: str, arguments: dict[str, Any]
-    ) -> list[TextContent | ImageContent | EmbeddedResource]:
+    async def _mcp_call_tool(self, key: str, arguments: dict[str, Any]) -> Any:
         try:
+            logger.info(f"Calling tool {key} with arguments {arguments}")
             self.stats["requests"] += 1
             start_time = datetime.now()
-            result = await self.client.call_tool(key, arguments)
-            self.stats["last_response_time"] = (
-                datetime.now() - start_time
-            ).total_seconds()
+            result = []
+            if self.client.is_connected():
+                logger.info("Client is connected")
+                result = await self.client.call_tool(key, arguments)
+                self.stats["last_response_time"] = (
+                    datetime.now() - start_time
+                ).total_seconds()
             self.last_ping_time = datetime.now()
             return result
         except Exception as e:

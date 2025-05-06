@@ -1,13 +1,14 @@
 import asyncio
-import logging
 import threading
 
+from fastapi import FastAPI
 from sqlmodel import Session
 
+from app.core.logger import get_logger
 from app.mcp.proxy import MCPProxy
 from app.models import MCPServer
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class MCPManager:
@@ -15,6 +16,7 @@ class MCPManager:
     _lock = threading.Lock()
     _registry: dict[str, MCPProxy] = {}
     _db_session: Session | None = None
+    _app: FastAPI | None = None
 
     def __new__(cls):
         with cls._lock:
@@ -30,6 +32,12 @@ class MCPManager:
                 if cls._server is None:
                     cls._server = cls()
         return cls._server
+
+    def set_app(self, app: FastAPI) -> None:
+        self._app = app
+
+    def set_session(self, session: Session) -> None:
+        self._db_session = session
 
     async def initialize(self, servers: list[MCPServer]) -> None:
         """
@@ -68,7 +76,7 @@ class MCPManager:
         Returns:
             MCPProxy | None: The initialized proxy instance or None if failed
         """
-        logger.info(f"Starting MCP server '{server.id}'")
+        logger.info(f"Starting MCP server: '{server.id}'")
 
         # Check if we already have a proxy for this server
         if server.id in self._registry:
@@ -82,12 +90,12 @@ class MCPManager:
             from app.mcp.proxy import MCPProxy
 
             proxy = MCPProxy(mcp_server=server)
+            proxy.mount(self._app)
 
             # Initialize the proxy
             success = await proxy.initialize()
 
             if success:
-                server.mcp_proxy_instance = proxy
                 # Add to registry
                 self._registry[server.id] = proxy
                 logger.info(f"Successfully started MCP server {server.id}")

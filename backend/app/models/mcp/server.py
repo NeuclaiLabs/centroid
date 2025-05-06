@@ -9,10 +9,13 @@ from sqlmodel import Field, Relationship, SQLModel
 
 from app.core.logger import get_logger
 from app.core.security import decrypt_dict, encrypt_dict
-from app.mcp.proxy import MCPProxy
 
 from ..user import User
-from .base import MCPServerBase, MCPServerStatus, generate_docker_style_name
+from ..utils import generate_docker_style_name
+from .base import (
+    MCPServerBase,
+    MCPServerStatus,
+)
 
 logger = get_logger(__name__, service="mcp_server")
 
@@ -48,9 +51,6 @@ class MCPServer(MCPServerBase, SQLModel, table=True):
         sa_column=Column("encrypted_secrets", String),
         description="Encrypted secrets for the MCP server",
     )
-
-    # Reference to the proxy instance - not stored in DB
-    mcp_proxy_instance: MCPProxy | None = Field(default=None, sa_column=None)
 
     def __init__(self, **data):
         secrets = data.pop("secrets", None)
@@ -120,18 +120,6 @@ class MCPServer(MCPServerBase, SQLModel, table=True):
         """Compute the messages path based on the mount path."""
         return f"{self.mount_path}/messages/"
 
-    @property
-    def state(self) -> str:
-        """Get the current state from the proxy if available."""
-        # Get the proxy from MCPManager to ensure we have the most up-to-date instance
-        from app.mcp.manager import MCPManager
-
-        proxy = MCPManager.get_singleton().get_mcp_proxy(self.id)
-
-        if proxy:
-            return proxy.state
-        return "disconnected"
-
 
 # Event listeners for MCP server lifecycle management
 @event.listens_for(MCPServer, "after_insert")
@@ -141,7 +129,7 @@ def handle_instance_creation(mapper, connection, target: MCPServer) -> None:  # 
     # Lazy import to avoid circular dependency
     from app.mcp.manager import MCPManager
 
-    asyncio.create_task(MCPManager.get_singleton().register_server(target))
+    asyncio.create_task(MCPManager.get_singleton().start_server(target))
 
 
 @event.listens_for(MCPServer, "after_update")
@@ -165,13 +153,13 @@ def handle_instance_update(mapper, connection, target: MCPServer) -> None:  # no
         target.status == MCPServerStatus.INACTIVE
         and MCPServerStatus.ACTIVE in history.deleted
     ):
-        asyncio.create_task(manager.deregister_server(target.id))
+        asyncio.create_task(manager.stop_server(target))
     # Check if status changed to active from inactive
     elif (
         target.status == MCPServerStatus.ACTIVE
         and MCPServerStatus.INACTIVE in history.deleted
     ):
-        asyncio.create_task(manager.register_server(target))
+        asyncio.create_task(manager.start_server(target))
 
 
 @event.listens_for(MCPServer, "after_delete")
@@ -181,4 +169,4 @@ def handle_instance_deletion(mapper, connection, target: MCPServer) -> None:  # 
     # Lazy import to avoid circular dependency
     from app.mcp.manager import MCPManager
 
-    asyncio.create_task(MCPManager.get_singleton().deregister_server(target.id))
+    asyncio.create_task(MCPManager.get_singleton().stop_server(target))

@@ -1,5 +1,8 @@
 """MCP-related models."""
 
+from app.models.mcp.server import MCPServer
+
+from ..utils import generate_docker_style_name
 from .base import (
     MCPServerBase,
     MCPServerCreate,
@@ -14,9 +17,7 @@ from .base import (
     MCPServerStatus,
     MCPServerUpdate,
     MCPTool,
-    generate_docker_style_name,
 )
-from .server import MCPServer
 
 __all__ = [
     "MCPServerKind",

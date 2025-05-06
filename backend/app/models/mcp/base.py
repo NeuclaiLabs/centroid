@@ -1,24 +1,13 @@
 """Base models and utilities for MCP servers."""
 
 import enum
-import random
 from datetime import datetime
-from typing import Any, Literal
+from typing import Any
 
 from sqlalchemy import JSON, Column
 from sqlmodel import Field
 
 from ..base import CamelModel
-from ..utils import ADJECTIVES, NAMES
-
-
-def generate_docker_style_name() -> str:
-    """Generate a Docker-style name combining an adjective, a name, and random digits."""
-    adjective = random.choice(ADJECTIVES)
-    name = random.choice(NAMES)
-    # Generate a random 4-digit number
-    random_digits = str(random.randint(1000, 9999))
-    return f"{adjective}_{name}_{random_digits}"
 
 
 class MCPTool(CamelModel):
@@ -81,6 +70,21 @@ class MCPServerConnectionErrors(CamelModel):
     last_error: str | None = Field(default=None, description="Last error message")
 
 
+class MCPServerState(str, enum.Enum):
+    """State of an MCP server."""
+
+    PENDING = "pending"
+    INITIALIZING = "initializing"
+    RUNNING = "running"
+    STOPPING = "stopping"
+    STOPPED = "stopped"
+    RESTARTING = "restarting"
+    TERMINATED = "terminated"
+    SHUTTING_DOWN = "shutting-down"
+    DISCONNECTED = "disconnected"
+    ERROR = "error"
+
+
 class MCPServerBase(CamelModel):
     """Base model for MCP servers."""
 
@@ -121,27 +125,16 @@ class MCPServerBase(CamelModel):
 class MCPServerCreate(MCPServerBase):
     """Model for creating an MCP server."""
 
-    name: str = Field(description="Name of the MCP server")
-    description: str = Field(description="Description of the MCP server")
-    status: MCPServerStatus = Field(
-        default=MCPServerStatus.ACTIVE, description="Status of the MCP server"
-    )
-    kind: MCPServerKind = Field(
-        default=MCPServerKind.OFFICIAL, description="Kind of MCP server"
-    )
-    transport: str = Field(description="Transport type for the MCP server")
-    version: str = Field(description="Version of the MCP server")
-    template_id: str | None = Field(
-        default=None,
-        description="ID of the template used to create the MCP server",
-    )
+    # Override run without sa_column for creation
     run: MCPServerRunConfig | None = Field(
         default=None,
         description="Run configuration for the MCP server",
     )
+    # Override settings without sa_column for creation
     settings: dict[str, Any] | None = Field(
         default=None, description="Settings for the MCP server"
     )
+    # Add fields specific to creation
     secrets: dict[str, Any] | None = None
 
 
@@ -157,9 +150,8 @@ class MCPServerUpdate(CamelModel):
     url: str | None = None
     run: MCPServerRunConfig | None = None
     settings: dict[str, Any] | None = None
-    metadata: dict[str, Any] | None = None
     secrets: dict[str, Any] | None = None
-    tools: list["MCPTool"] | None = None
+    tools: list[MCPTool] | None = None
 
 
 class MCPServerOut(MCPServerBase):
@@ -170,22 +162,6 @@ class MCPServerOut(MCPServerBase):
     updated_at: datetime
     mount_path: str
     secrets: dict[str, Any] | None = None
-    # Proxy runtime state
-    state: (
-        Literal[
-            "pending",
-            "initializing",
-            "running",
-            "stopping",
-            "stopped",
-            "restarting",
-            "terminated",
-            "shutting-down",
-            "disconnected",
-            "error",
-        ]
-        | None
-    ) = Field(default="disconnected", description="Current runtime state of the server")
     last_ping_time: datetime | None = Field(
         default=None, description="Last time the server was pinged"
     )
@@ -204,22 +180,6 @@ class MCPServerOutNoSecrets(MCPServerBase):
     created_at: datetime
     updated_at: datetime
     mount_path: str
-    # Proxy runtime state
-    state: (
-        Literal[
-            "pending",
-            "initializing",
-            "running",
-            "stopping",
-            "stopped",
-            "restarting",
-            "terminated",
-            "shutting-down",
-            "disconnected",
-            "error",
-        ]
-        | None
-    ) = Field(default="disconnected", description="Current runtime state of the server")
     last_ping_time: datetime | None = Field(
         default=None, description="Last time the server was pinged"
     )

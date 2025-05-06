@@ -1,3 +1,5 @@
+import random
+
 from sqlmodel import SQLModel  # Shared properties
 
 # Lists for generating Docker-style names
@@ -301,6 +303,15 @@ NAMES = [
     "yalow",
     "yonath",
 ]
+
+
+def generate_docker_style_name() -> str:
+    """Generate a Docker-style name combining an adjective, a name, and random digits."""
+    adjective = random.choice(ADJECTIVES)
+    name = random.choice(NAMES)
+    # Generate a random 4-digit number
+    random_digits = str(random.randint(1000, 9999))
+    return f"{adjective}_{name}_{random_digits}"
 
 
 # Generic message
