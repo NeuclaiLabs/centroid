@@ -1,6 +1,6 @@
-from typing import Any
+from typing import Any, Literal
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, BackgroundTasks, HTTPException, status
 from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
@@ -11,11 +11,15 @@ from app.models import (
     MCPServerOutWithTemplate,
     MCPServersOut,
     MCPServersOutWithTemplate,
+    MCPServerStatus,
     MCPServerUpdate,
     UtilsMessage,
 )
 
 router = APIRouter()
+
+
+# Helper function to get MCP server or raise 404
 
 
 @router.get("/", response_model=MCPServersOut)
@@ -45,7 +49,8 @@ def read_mcp_servers(
     query = query.offset(skip).limit(limit)
     mcp_servers = session.exec(query).all()
 
-    return MCPServersOut(data=mcp_servers, count=count)
+    data = [MCPServerOut.model_validate(server.model_dump()) for server in mcp_servers]
+    return MCPServersOut(data=data, count=count)
 
 
 @router.get("/templates", response_model=MCPServersOutWithTemplate)
@@ -88,50 +93,74 @@ def read_mcp_server(session: SessionDep, current_user: CurrentUser, id: str) -> 
     """
     Get MCP server by ID.
     """
-    mcp_server = session.get(MCPServer, id)
+    db_mcp_server = session.get(MCPServer, id)
 
-    if not mcp_server:
+    if not db_mcp_server:
         raise HTTPException(status_code=404, detail="MCP server not found")
-    if not current_user.is_superuser and mcp_server.owner_id != current_user.id:
+    if not current_user.is_superuser and db_mcp_server.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    return mcp_server
+
+    return MCPServerOut.model_validate(db_mcp_server.model_dump())
 
 
 @router.post("/", response_model=MCPServerOut)
-def create_mcp_server(
+async def create_mcp_server(
     *,
     session: SessionDep,
     current_user: CurrentUser,
     mcp_server_in: MCPServerCreate,
+    background_tasks: BackgroundTasks,
 ) -> Any:
     """
     Create new MCP server.
     """
-    mcp_server = MCPServer(
+    from app.mcp.manager import MCPManager
+
+    # Create the server instance
+    db_mcp_server = MCPServer(
         **mcp_server_in.model_dump(exclude_unset=True), owner_id=current_user.id
     )
-    session.add(mcp_server)
+
+    # Add to database
+    session.add(db_mcp_server)
     session.commit()
-    session.refresh(mcp_server)
-    return mcp_server
+    session.refresh(db_mcp_server)
+
+    # Create a validated model for the background task
+    mcp_server = MCPServer.model_validate(db_mcp_server)
+
+    # Start the server in the background only after DB commit is complete
+    if mcp_server.status == MCPServerStatus.ACTIVE:
+        background_tasks.add_task(MCPManager.get_singleton().start_server, mcp_server)
+
+    return MCPServerOut.model_validate(
+        {**mcp_server.model_dump(), "state": "initializing"}
+    )
 
 
 @router.put("/{id}", response_model=MCPServerOut)
-def update_mcp_server(
+async def update_mcp_server(
     *,
     session: SessionDep,
     current_user: CurrentUser,
     id: str,
     mcp_server_in: MCPServerUpdate,
+    background_tasks: BackgroundTasks,
 ) -> Any:
     """
     Update an MCP server.
     """
-    mcp_server = session.get(MCPServer, id)
-    if not mcp_server:
+    from app.mcp.manager import MCPManager
+
+    # Get the raw database instance
+    db_mcp_server = session.get(MCPServer, id)
+    if not db_mcp_server:
         raise HTTPException(status_code=404, detail="MCP server not found")
-    if not current_user.is_superuser and mcp_server.owner_id != current_user.id:
+    if not current_user.is_superuser and db_mcp_server.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    # Store the old status to check for status changes
+    old_status = db_mcp_server.status
 
     # Only update the fields that were provided
     update_dict = mcp_server_in.model_dump(exclude_unset=True)
@@ -139,140 +168,122 @@ def update_mcp_server(
     # Handle secrets separately since it's a property with custom getter/setter
     if "secrets" in update_dict:
         # This will use the property setter which handles encryption
-        mcp_server.secrets = update_dict.pop("secrets")
+        db_mcp_server.secrets = update_dict.pop("secrets")
 
     # Update the remaining fields
     if update_dict:
-        mcp_server.sqlmodel_update(update_dict)
+        db_mcp_server.sqlmodel_update(update_dict)
 
-    session.add(mcp_server)
+    # Commit changes to database first
+    session.add(db_mcp_server)
     session.commit()
-    session.refresh(mcp_server)
+    session.refresh(db_mcp_server)
 
-    return mcp_server
+    # Create a validated model for background tasks
+    mcp_server = MCPServer.model_validate(db_mcp_server)
+
+    # Handle server updates based on status and configuration changes
+    manager = MCPManager.get_singleton()
+
+    # If status changed, handle start/stop
+    if "status" in update_dict and old_status != mcp_server.status:
+        if (
+            mcp_server.status == MCPServerStatus.ACTIVE
+            and old_status == MCPServerStatus.INACTIVE
+        ):
+            background_tasks.add_task(manager.start_server, mcp_server)
+        elif (
+            mcp_server.status == MCPServerStatus.INACTIVE
+            and old_status == MCPServerStatus.ACTIVE
+        ):
+            background_tasks.add_task(manager.stop_server, mcp_server)
+    # If server is active and configuration changed, refresh it
+    elif mcp_server.status == MCPServerStatus.ACTIVE:
+        background_tasks.add_task(manager.refresh_server, mcp_server)
+
+    return MCPServerOut.model_validate(mcp_server.model_dump())
 
 
 @router.delete("/{id}")
-def delete_mcp_server(
-    session: SessionDep, current_user: CurrentUser, id: str
+async def delete_mcp_server(
+    session: SessionDep,
+    current_user: CurrentUser,
+    id: str,
+    background_tasks: BackgroundTasks,
 ) -> UtilsMessage:
     """
     Delete an MCP server.
     """
-    mcp_server = session.get(MCPServer, id)
-    if not mcp_server:
+    from app.mcp.manager import MCPManager
+
+    # Get the raw database instance
+    db_mcp_server = session.get(MCPServer, id)
+    if not db_mcp_server:
         raise HTTPException(status_code=404, detail="MCP server not found")
-    if not current_user.is_superuser and mcp_server.owner_id != current_user.id:
+    if not current_user.is_superuser and db_mcp_server.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    session.delete(mcp_server)
+
+    # Create a validated model for the background task before deletion
+    mcp_server = MCPServer.model_validate(db_mcp_server)
+
+    # Delete from database first
+    session.delete(db_mcp_server)
     session.commit()
+
+    # Stop the server in the background only after DB commit is complete
+    background_tasks.add_task(MCPManager.get_singleton().stop_server, mcp_server)
+
     return UtilsMessage(message="MCP server deleted successfully")
 
 
-@router.post("/{id}/start", response_model=MCPServerOut)
-async def start_mcp_server(
-    session: SessionDep, current_user: CurrentUser, id: str
+@router.post("/{id}/{action}", response_model=MCPServerOut)
+async def mcp_server_action(
+    session: SessionDep,
+    current_user: CurrentUser,
+    id: str,
+    action: Literal["start", "stop", "restart"],
 ) -> Any:
     """
-    Start an MCP server.
-    """
-    mcp_server = session.get(MCPServer, id)
-    if not mcp_server:
-        raise HTTPException(status_code=404, detail="MCP server not found")
-    if not current_user.is_superuser and mcp_server.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
+    Perform an action on an MCP server.
 
-    # Start the server
-    success = await mcp_server.start()
-    if not success:
+    - action: The action to perform (start, stop, restart)
+    """
+    from app.mcp.manager import MCPManager
+
+    # Get the raw database instance
+    db_mcp_server = session.get(MCPServer, id)
+    if not db_mcp_server:
         raise HTTPException(
-            status_code=500,
-            detail=f"Failed to start MCP server: {mcp_server.connection_errors.get('last_error')}",
+            status_code=status.HTTP_404_NOT_FOUND, detail="MCP server not found"
+        )
+    if not current_user.is_superuser and db_mcp_server.owner_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions"
         )
 
-    # Update the database with the new state
-    session.add(mcp_server)
-    session.commit()
-    session.refresh(mcp_server)
+    # Create a validated model for the action
+    server = MCPServer.model_validate(db_mcp_server)
 
-    return mcp_server
+    manager = MCPManager.get_singleton()
 
+    match action:
+        case "start":
+            success = await manager.start_server(server)
+        case "stop":
+            success = await manager.stop_server(server)
+        case "restart":
+            success = await manager.restart_server(server)
+        case _:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unsupported action: {action}",
+            )
 
-@router.post("/{id}/stop", response_model=MCPServerOut)
-async def stop_mcp_server(
-    session: SessionDep, current_user: CurrentUser, id: str
-) -> Any:
-    """
-    Stop an MCP server.
-    """
-    mcp_server = session.get(MCPServer, id)
-    if not mcp_server:
-        raise HTTPException(status_code=404, detail="MCP server not found")
-    if not current_user.is_superuser and mcp_server.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-
-    # Stop the server
-    success = await mcp_server.stop()
     if not success:
         raise HTTPException(
-            status_code=500,
-            detail=f"Failed to stop MCP server: {mcp_server.connection_errors.get('last_error')}",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to {action} MCP server",
         )
 
-    # Update the database with the new state
-    session.add(mcp_server)
-    session.commit()
-    session.refresh(mcp_server)
-
-    return mcp_server
-
-
-@router.post("/{id}/restart", response_model=MCPServerOut)
-async def restart_mcp_server(
-    session: SessionDep, current_user: CurrentUser, id: str
-) -> Any:
-    """
-    Restart an MCP server.
-    """
-    mcp_server = session.get(MCPServer, id)
-    if not mcp_server:
-        raise HTTPException(status_code=404, detail="MCP server not found")
-    if not current_user.is_superuser and mcp_server.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-
-    # Restart the server
-    success = await mcp_server.restart()
-    if not success:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to restart MCP server: {mcp_server.connection_errors.get('last_error')}",
-        )
-
-    # Update the database with the new state
-    session.add(mcp_server)
-    session.commit()
-    session.refresh(mcp_server)
-
-    return mcp_server
-
-
-@router.get("/{id}/state")
-def get_mcp_server_state(
-    session: SessionDep, current_user: CurrentUser, id: str
-) -> dict[str, Any]:
-    """
-    Get the current state of an MCP server.
-    """
-    mcp_server = session.get(MCPServer, id)
-    if not mcp_server:
-        raise HTTPException(status_code=404, detail="MCP server not found")
-    if not current_user.is_superuser and mcp_server.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-
-    return {
-        "id": mcp_server.id,
-        "state": mcp_server.state,
-        "last_ping_time": mcp_server.last_ping_time,
-        "connection_errors": mcp_server.connection_errors,
-        "stats": mcp_server.stats,
-    }
+    # Refresh the server from db to get updated status
+    return MCPServerOut.model_validate(server.model_dump())

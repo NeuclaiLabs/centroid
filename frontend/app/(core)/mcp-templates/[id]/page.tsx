@@ -8,8 +8,8 @@ import { Code2, FileText, Key, Terminal, Settings } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MCPTemplateHeader } from "../../components/mcp-template-header";
 import { SchemaDialog } from "../../components/schema-dialog";
-import { getMCPTemplateById } from "@/lib/mcp-templates";
-import type { MCPTool } from "@/lib/mcp-templates";
+import { getMCPTemplateById } from "@/lib/mcp-templates/index";
+import type { MCPTool } from "@/lib/mcp-templates/types";
 
 interface PageProps {
 	params: Promise<{ id: string }>;

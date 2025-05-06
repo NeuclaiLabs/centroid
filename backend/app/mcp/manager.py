@@ -63,7 +63,7 @@ class MCPManager:
             f"Successfully initialized {started_count}/{len(servers)} MCP servers"
         )
 
-    async def start_server(self, server: MCPServer) -> MCPProxy | None:
+    async def start_server(self, server: MCPServer) -> bool:
         """
         Start an MCP server and register it in the manager.
 
@@ -74,7 +74,7 @@ class MCPManager:
             server: The MCP server to start
 
         Returns:
-            MCPProxy | None: The initialized proxy instance or None if failed
+            bool: True if successful, False otherwise
         """
         logger.info(f"Starting MCP server: '{server.id}'")
 
@@ -83,7 +83,7 @@ class MCPManager:
             proxy = self._registry[server.id]
             if proxy.state in ["running", "initializing"]:
                 logger.warning(f"Server {server.id} is already {proxy.state}")
-                return proxy
+                return True
 
         try:
             # Create a new proxy instance
@@ -99,16 +99,16 @@ class MCPManager:
                 # Add to registry
                 self._registry[server.id] = proxy
                 logger.info(f"Successfully started MCP server {server.id}")
-                return proxy
+                return True
             else:
                 logger.error(f"Failed to start MCP server {server.id}")
-                return None
+                return False
 
         except Exception as e:
             logger.error(f"Error starting MCP server {server.id}: {e}")
-            return None
+            return False
 
-    async def stop_server(self, server: MCPServer) -> bool:
+    async def stop_server(self, server: str | MCPServer) -> bool:
         """
         Stop an MCP server and remove it from the registry.
 
@@ -120,12 +120,17 @@ class MCPManager:
         Returns:
             bool: True if successful, False otherwise
         """
-        logger.info(f"Stopping MCP server '{server.id}'")
+        if isinstance(server, str):
+            server_id = server
+        else:
+            server_id = server.id
+
+        logger.info(f"Stopping MCP server '{server_id}'")
 
         # Get the proxy from the registry
-        proxy = self._registry.get(server.id)
+        proxy = self._registry.get(server_id)
         if not proxy:
-            logger.warning(f"No proxy found for server {server.id}")
+            logger.warning(f"No proxy found for server {server_id}")
             return True
 
         try:
@@ -134,16 +139,16 @@ class MCPManager:
 
             if success:
                 # Remove from registry if shutdown was successful
-                if server.id in self._registry:
-                    del self._registry[server.id]
-                logger.info(f"Successfully stopped MCP server {server.id}")
+                if server_id in self._registry:
+                    del self._registry[server_id]
+                logger.info(f"Successfully stopped MCP server {server_id}")
                 return True
             else:
-                logger.error(f"Failed to stop MCP server {server.id}")
+                logger.error(f"Failed to stop MCP server {server_id}")
                 return False
 
         except Exception as e:
-            logger.error(f"Error stopping MCP server {server.id}: {e}")
+            logger.error(f"Error stopping MCP server {server_id}: {e}")
             return False
 
     async def restart_server(self, server: MCPServer) -> bool:
@@ -169,8 +174,8 @@ class MCPManager:
         await asyncio.sleep(1)
 
         # Start the server again
-        proxy = await self.start_server(server)
-        return proxy is not None
+        start_result = await self.start_server(server)
+        return start_result
 
     def get_mcp_proxy(self, server_id: str) -> MCPProxy | None:
         """
@@ -216,3 +221,39 @@ class MCPManager:
         logger.info(
             f"Successfully shut down {success_count}/{len(server_ids)} MCP servers"
         )
+
+    async def refresh_server(self, server: MCPServer) -> bool:
+        """
+        Refresh an MCP server's configuration.
+
+        This method updates the proxy's configuration with the latest server state.
+        If critical configuration has changed, it will restart the server.
+
+        Args:
+            server: The updated MCP server instance
+
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        logger.info(f"Refreshing MCP server: '{server.id}'")
+
+        # Get the proxy from the registry
+        proxy = self._registry.get(server.id)
+        if not proxy:
+            logger.warning(f"No proxy found for server {server.id}")
+            return False
+
+        try:
+            # Refresh the proxy's configuration
+            success = await proxy.refresh_configuration(server)
+
+            if success:
+                logger.info(f"Successfully refreshed MCP server {server.id}")
+                return True
+            else:
+                logger.error(f"Failed to refresh MCP server {server.id}")
+                return False
+
+        except Exception as e:
+            logger.error(f"Error refreshing MCP server {server.id}: {e}")
+            return False

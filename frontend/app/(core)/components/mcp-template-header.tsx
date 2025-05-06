@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getMCPTemplateById, MCPTemplateKind } from "@/lib/mcp-templates";
+import { getMCPTemplateById, MCPTemplateKind } from "@/lib/mcp-templates/index";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -50,7 +50,13 @@ export function MCPTemplateHeader({ templateId }: MCPTemplateHeaderProps) {
 									fill="currentColor"
 									aria-label={`${template.name} icon`}
 								>
-									<path d={icon.path} />
+									{Array.isArray(template.metadata.icon) ? (
+										template.metadata.icon.map((p, i) => (
+											<path key={i} d={p.d} />
+										))
+									) : (
+										<path d={template.metadata.icon.path} />
+									)}
 								</svg>
 							</div>
 						)}

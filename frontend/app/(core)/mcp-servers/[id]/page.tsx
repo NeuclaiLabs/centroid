@@ -22,7 +22,7 @@ import {
 	Settings,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getMCPTemplateById, MCPTemplateKind } from "@/lib/mcp-templates";
+import { getMCPTemplateById } from "@/lib/mcp-templates/index";
 import {
 	Dialog,
 	DialogContent,
@@ -58,7 +58,7 @@ export default function MCPServerPage({ params }: PageProps) {
 	const [isTogglingTool, setIsTogglingTool] = useState<string | null>(null);
 	const [activeTools, setActiveTools] = useState<Record<string, boolean>>({});
 	const [isUpdatingEnv, setIsUpdatingEnv] = useState(false);
-	const { toggleServerStatus, updateEnvironmentVariable, toggleToolStatus } =
+	const { changeServerState, updateEnvironmentVariable, toggleToolStatus } =
 		useMCPServers();
 
 	const {
@@ -74,7 +74,8 @@ export default function MCPServerPage({ params }: PageProps) {
 	});
 
 	const handleStartStop = async () => {
-		const updatedServer = await toggleServerStatus(id);
+		const action = server?.status === "active" ? "stop" : "start";
+		const updatedServer = await changeServerState(id, action);
 		if (updatedServer) {
 			mutate();
 		}
@@ -153,7 +154,7 @@ export default function MCPServerPage({ params }: PageProps) {
 
 	if (isLoading) {
 		return (
-			<div className="flex-1 p-6">
+			<div className="flex flex-col">
 				{/* Header skeleton */}
 				<div className="flex-shrink-0 px-6 pt-6">
 					<div className="animate-pulse">
@@ -173,7 +174,7 @@ export default function MCPServerPage({ params }: PageProps) {
 									</div>
 								</div>
 							</div>
-							<div className="px-6 pb-6 pt-2">
+							<div className="px-6 pb-9 pt-2">
 								<div className="flex gap-2">
 									<div className="h-6 w-20 bg-muted rounded-full" />
 								</div>
@@ -185,39 +186,51 @@ export default function MCPServerPage({ params }: PageProps) {
 				{/* Main content skeleton */}
 				<div className="flex-1 px-6 mt-8 min-h-0">
 					<div className="w-full h-full">
-						<div className="flex flex-col h-full">
-							{/* Tabs skeleton */}
-							<div className="inline-flex h-9 items-center mb-4 border-b">
-								<div className="h-9 px-4 border-b-2 border-primary font-semibold text-sm">
+						<Tabs defaultValue="details" className="flex flex-col h-full">
+							<TabsList className="inline-flex h-9 items-center text-muted-foreground w-full justify-start rounded-none border-b bg-transparent p-0 flex-shrink-0 mb-4">
+								<TabsTrigger
+									className="inline-flex items-center justify-center whitespace-nowrap py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+									value="details"
+								>
 									Details
-								</div>
-								<div className="h-9 px-4 text-muted-foreground text-sm">
+								</TabsTrigger>
+								<TabsTrigger
+									className="inline-flex items-center justify-center whitespace-nowrap py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+									value="tools"
+								>
 									Tools
-								</div>
-								<div className="h-9 px-4 text-muted-foreground text-sm">
+								</TabsTrigger>
+								<TabsTrigger
+									className="inline-flex items-center justify-center whitespace-nowrap py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+									value="settings"
+								>
 									Settings
-								</div>
-							</div>
+								</TabsTrigger>
+							</TabsList>
 
-							{/* Tab content skeleton */}
-							<div className="h-[calc(100vh-350px)]">
-								<div className="space-y-8">
-									<div className="rounded-lg border bg-card shadow">
-										<div className="p-6 space-y-2">
-											<div className="h-6 w-36 bg-muted rounded mb-4" />
-											<div className="space-y-6">
-												{[1, 2, 3, 4, 5, 6].map((i) => (
-													<div key={i} className="flex justify-between">
-														<div className="h-5 w-32 bg-muted rounded" />
-														<div className="h-5 w-40 bg-muted rounded" />
-													</div>
-												))}
+							<TabsContent
+								value="details"
+								className="flex-1 m-0 data-[state=active]:block"
+							>
+								<div className="h-[calc(100vh-350px)]">
+									<div className="space-y-8">
+										<div className="rounded-lg border bg-card shadow animate-pulse">
+											<div className="p-6 space-y-2">
+												<div className="h-6 w-36 bg-muted rounded mb-4" />
+												<div className="space-y-6">
+													{[1, 2, 3, 4, 5, 6].map((i) => (
+														<div key={i} className="flex justify-between">
+															<div className="h-5 w-32 bg-muted rounded" />
+															<div className="h-5 w-40 bg-muted rounded" />
+														</div>
+													))}
+												</div>
 											</div>
 										</div>
 									</div>
 								</div>
-							</div>
-						</div>
+							</TabsContent>
+						</Tabs>
 					</div>
 				</div>
 			</div>
@@ -226,7 +239,7 @@ export default function MCPServerPage({ params }: PageProps) {
 
 	if (!server) {
 		return (
-			<div className="flex-1 p-6">
+			<div className="flex flex-col">
 				<div className="text-center">
 					<h1 className="text-2xl font-bold tracking-tight">
 						Server not found

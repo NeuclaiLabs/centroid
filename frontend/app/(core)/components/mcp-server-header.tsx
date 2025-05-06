@@ -2,11 +2,7 @@
 
 import { useState } from "react";
 import type { MCPServer } from "@/app/(core)/types";
-import {
-	getMCPTemplateById,
-	MCPTemplateKind,
-	type MCPTemplate,
-} from "@/lib/mcp-templates";
+import { getMCPTemplateById, MCPTemplateKind } from "@/lib/mcp-templates/index";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -53,6 +49,7 @@ export function MCPServerHeader({
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 	const [isDeleting, setIsDeleting] = useState(false);
 	const [showConnectModal, setShowConnectModal] = useState(false);
+	const [isStartingOrStopping, setIsStartingOrStopping] = useState(false);
 
 	const template = server.templateId
 		? getMCPTemplateById(server.templateId)
@@ -73,6 +70,17 @@ export function MCPServerHeader({
 		// No finally block to set isDeleting false, parent handles dialog closing
 	};
 
+	const handleStartStop = async () => {
+		try {
+			setIsStartingOrStopping(true);
+			await onStartStop();
+		} catch (error) {
+			console.error("Error starting/stopping server:", error);
+		} finally {
+			setIsStartingOrStopping(false);
+		}
+	};
+
 	return (
 		<>
 			<Card>
@@ -87,7 +95,13 @@ export function MCPServerHeader({
 									fill="currentColor"
 									aria-label={`${template?.name || server.name} icon`}
 								>
-									<path d={icon.path} />
+									{Array.isArray(template?.metadata.icon) ? (
+										template?.metadata.icon.map((p) => (
+											<path key={`path-${p.d.substring(0, 8)}`} d={p.d} />
+										))
+									) : (
+										<path d={template?.metadata.icon.path} />
+									)}
 								</svg>
 							</div>
 						)}
@@ -136,24 +150,10 @@ export function MCPServerHeader({
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end">
-								<DropdownMenuItem onClick={onStartStop}>
-									{server.status === "active" ? (
-										<>
-											<StopCircle className="mr-2 h-4 w-4 text-destructive" />
-											<span>Stop Server</span>
-										</>
-									) : (
-										<>
-											<Play className="mr-2 h-4 w-4 text-green-500" />
-											<span>Start Server</span>
-										</>
-									)}
-								</DropdownMenuItem>
 								{/* <DropdownMenuItem onClick={onEdit}>
 									<Pencil className="mr-2 h-4 w-4" />
 									<span>Edit Server</span>
 								</DropdownMenuItem> */}
-								<DropdownMenuSeparator />
 								<DropdownMenuItem
 									className="text-destructive focus:text-destructive"
 									onClick={() => setIsDeleteDialogOpen(true)}
@@ -166,13 +166,51 @@ export function MCPServerHeader({
 					</div>
 				</CardHeader>
 				<CardContent>
-					<div className="flex items-center gap-2">
-						{server.version && (
-							<Badge variant="outline">v{server.version}</Badge>
-						)}
-						{server.kind && server.kind !== "official" && (
-							<Badge variant="secondary">{server.kind}</Badge>
-						)}
+					<div className="flex items-center justify-between">
+						<div className="flex items-center gap-2">
+							{server.version && (
+								<Badge variant="outline">v{server.version}</Badge>
+							)}
+							{server.kind && server.kind !== "official" && (
+								<Badge variant="secondary">{server.kind}</Badge>
+							)}
+							<Badge
+								variant="secondary"
+								className={
+									server.status === "active"
+										? "bg-green-500/15 text-green-600 hover:bg-green-500/20"
+										: ""
+								}
+							>
+								{server.status === "active" ? "Running" : "Stopped"}
+							</Badge>
+						</div>
+
+						<Button
+							variant={server.status === "active" ? "destructive" : "outline"}
+							size="sm"
+							className={
+								server.status !== "active"
+									? "bg-green-500/15 text-green-600 hover:bg-green-500/20 border-green-200"
+									: ""
+							}
+							onClick={handleStartStop}
+							disabled={isStartingOrStopping}
+						>
+							{isStartingOrStopping ? (
+								<>Loading...</>
+							) : server.status === "active" ? (
+								<>
+									<StopCircle className="mr-2 h-4 w-4" />
+									Stop
+								</>
+							) : (
+								<>
+									<Play className="mr-2 h-4 w-4" />
+									Start
+								</>
+							)}
+						</Button>
 					</div>
 				</CardContent>
 			</Card>

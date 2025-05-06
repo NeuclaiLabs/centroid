@@ -107,6 +107,16 @@ export type MCPServerStatus = 'active' | 'inactive';
 
 export type MCPServerKind = 'official' | 'external' | 'openapi';
 
+export type MCPServerState =
+  | 'pending'
+  | 'initializing'
+  | 'running'
+  | 'stopping'
+  | 'stopped'
+  | 'restarting'
+  | 'disconnected'
+  | 'error';
+
 export interface MCPServerRunConfig {
   command: string;
   args?: string[];
@@ -128,6 +138,7 @@ export interface MCPToolParameter {
 }
 
 export interface MCPTool {
+  id?: string;
   name: string;
   description: string;
   parameters: MCPToolParameter;
@@ -139,6 +150,7 @@ export interface MCPServer {
   name: string;
   description: string;
   status: MCPServerStatus;
+  state?: MCPServerState;
   kind: MCPServerKind;
   transport: string;
   version: string;

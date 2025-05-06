@@ -1,12 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { mcpTemplates } from "@/lib/mcp-templates";
+import { mcpTemplates } from "@/lib/mcp-templates/index";
+import type { MCPTemplate } from "@/lib/mcp-templates/types";
 import { MCPTemplateCard } from "../components/mcp-template-card";
-import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
 import { InstallTemplateModal } from "../components/install-template-modal";
 import { useMCPServers } from "@/app/(core)/hooks/use-mcp-servers";
+import {
+	Card,
+	CardHeader,
+	CardContent,
+	CardFooter,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function MCPTemplatesPage() {
 	const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
@@ -21,7 +27,7 @@ export default function MCPTemplatesPage() {
 	}, [servers, isLoading, error]);
 
 	const selectedTemplateData = selectedTemplate
-		? mcpTemplates.find((t) => t.id === selectedTemplate)
+		? mcpTemplates.find((t: MCPTemplate) => t.id === selectedTemplate)
 		: null;
 
 	return (
@@ -34,22 +40,74 @@ export default function MCPTemplatesPage() {
 			</div>
 
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-				{mcpTemplates.map((template) => {
-					const serverWithTemplate = servers.find(
-						(server) => server.templateId === template.id,
-					);
-					const isInstalled = !!serverWithTemplate;
+				{isLoading
+					? // Skeleton UI for loading state
+						Array.from({ length: 6 }).map((_, index) => (
+							<Card
+								key={`skeleton-template-${crypto.randomUUID()}`}
+								className="hover:shadow-md transition-shadow flex flex-col h-full cursor-pointer"
+							>
+								<CardHeader className="p-6 flex flex-row items-start justify-between space-y-0">
+									<div className="flex flex-col gap-2 flex-1 min-w-0 pr-2">
+										<div className="flex items-start gap-2">
+											<Skeleton className="size-8 rounded-lg shrink-0" />
+											<div className="flex flex-col min-w-0 flex-1">
+												<div className="flex items-start gap-1">
+													<div className="flex gap-1 items-center">
+														<Skeleton className="h-4 w-24 mr-1" />
+														<Skeleton className="h-4 w-4 rounded-full shrink-0" />
+													</div>
+												</div>
+												<Skeleton className="h-3 w-16 mt-1" />
+											</div>
+										</div>
+									</div>
+									<Skeleton className="h-9 w-24 flex-shrink-0" />
+								</CardHeader>
+								<CardContent className="px-6 py-2 space-y-4 flex-grow">
+									<div className="space-y-1.5">
+										<Skeleton className="h-4 w-full" />
+										<Skeleton className="h-4 w-5/6" />
+										<Skeleton className="h-4 w-4/6" />
+									</div>
+								</CardContent>
+								<CardFooter className="px-6 py-4 mt-auto border-t border-border/40">
+									<div className="flex items-center justify-between w-full text-sm">
+										<div className="flex items-center gap-2">
+											<Skeleton className="h-3 w-3" />
+											<Skeleton className="h-4 w-16" />
+										</div>
+										<div className="flex items-center gap-1">
+											<Skeleton className="h-3 w-3" />
+											<Skeleton className="h-4 w-20" />
+										</div>
+									</div>
+								</CardFooter>
+							</Card>
+						))
+					: mcpTemplates.map((template: MCPTemplate) => {
+							const serverWithTemplate = servers.find(
+								(server) => server.templateId === template.id,
+							);
+							const isInstalled = !!serverWithTemplate;
 
-					return (
-						<MCPTemplateCard
-							key={template.id}
-							template={template}
-							isInstalled={isInstalled}
-							server={serverWithTemplate}
-							onInstall={() => setSelectedTemplate(template.id)}
-						/>
-					);
-				})}
+							return (
+								<MCPTemplateCard
+									key={template.id}
+									template={template}
+									isInstalled={isInstalled}
+									server={
+										serverWithTemplate?.templateId
+											? {
+													id: serverWithTemplate.id,
+													templateId: serverWithTemplate.templateId,
+												}
+											: undefined
+									}
+									onInstall={() => setSelectedTemplate(template.id)}
+								/>
+							);
+						})}
 			</div>
 
 			{selectedTemplateData && (

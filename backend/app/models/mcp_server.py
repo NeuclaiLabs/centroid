@@ -1,6 +1,5 @@
 """
 This file re-exports all MCP server models from the new modular structure.
-It maintains backward compatibility with existing imports.
 """
 
 from app.models.mcp import (
@@ -12,7 +11,6 @@ from app.models.mcp import (
     MCPServerKind,
     # Output schemas
     MCPServerOut,
-    MCPServerOutNoSecrets,
     MCPServerOutWithTemplate,
     MCPServerRunConfig,
     MCPServerSearch,
@@ -37,7 +35,6 @@ __all__ = [
     "MCPServer",
     "MCPTool",
     "MCPServerOut",
-    "MCPServerOutNoSecrets",
     "MCPServersOut",
     "MCPServerOutWithTemplate",
     "MCPServersOutWithTemplate",

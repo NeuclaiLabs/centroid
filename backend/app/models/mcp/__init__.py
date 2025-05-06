@@ -8,7 +8,6 @@ from .base import (
     MCPServerCreate,
     MCPServerKind,
     MCPServerOut,
-    MCPServerOutNoSecrets,
     MCPServerOutWithTemplate,
     MCPServerRunConfig,
     MCPServerSearch,

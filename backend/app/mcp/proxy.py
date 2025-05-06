@@ -136,8 +136,19 @@ class MCPProxy(FastMCPProxy):
         try:
             self.state = "stopping"
             if self.client_initialized:
-                await self.client.__aexit__(None, None, None)
-                self.client_initialized = False
+                logger.info(f"Shutting down MCP proxy for server {self.mcp_server.id}")
+                try:
+                    # Close any active transports first
+                    self.transports.clear()
+                    # Create a new task in the same event loop
+                    await self.client.__aexit__(None, None, None)
+                    async with self.client:
+                        pass
+                except Exception as e:
+                    logger.error(f"Error during client cleanup: {e}")
+                finally:
+                    self.client_initialized = False
+
             self.state = "stopped"
             logger.info(
                 f"Successfully shut down MCP proxy for server {self.mcp_server.id}"
@@ -158,6 +169,7 @@ class MCPProxy(FastMCPProxy):
 
     async def get_tools(self) -> dict[str, Tool]:
         tools = await super().get_tools()
+        server_tools = {tool.name: tool for tool in (self.mcp_server.tools or [])}
 
         try:
             client_tools = await self.client.list_tools()
@@ -168,25 +180,46 @@ class MCPProxy(FastMCPProxy):
                 raise e
 
         for tool in client_tools:
-            tool_proxy = await ProxyTool.from_client(self.client, tool)
-            tools[tool_proxy.name] = tool_proxy
+            if tool.name in server_tools and not server_tools[tool.name].status:
+                logger.info(
+                    f"Skipping tool {tool.name} because it is not enabled in the server configuration"
+                )
+                del tools[tool.name]
+            else:
+                tool_proxy = await ProxyTool.from_client(self.client, tool)
+                tools[tool_proxy.name] = tool_proxy
 
         return tools
 
     async def _mcp_call_tool(self, key: str, arguments: dict[str, Any]) -> Any:
+        """Call a tool with the given arguments, respecting MCP server tool configuration."""
         try:
+            # Check if tool is configured and enabled in MCP server
+            server_tools = {tool.name: tool for tool in (self.mcp_server.tools or [])}
+            if key in server_tools and not server_tools[key].status:
+                raise McpError(
+                    error=mcp.types.Error(
+                        code="TOOL_DISABLED",
+                        message=f"Tool {key} is disabled in MCP server configuration",
+                    )
+                )
+
+            # Execute tool call
             logger.info(f"Calling tool {key} with arguments {arguments}")
             self.stats["requests"] += 1
             start_time = datetime.now()
-            result = []
-            if self.client.is_connected():
-                logger.info("Client is connected")
-                result = await self.client.call_tool(key, arguments)
-                self.stats["last_response_time"] = (
-                    datetime.now() - start_time
-                ).total_seconds()
+
+            if not self.client.is_connected():
+                return []
+
+            result = await self.client.call_tool(key, arguments)
+            self.stats["last_response_time"] = (
+                datetime.now() - start_time
+            ).total_seconds()
             self.last_ping_time = datetime.now()
+
             return result
+
         except Exception as e:
             self.stats["errors"] += 1
             self.connection_errors["count"] += 1
@@ -245,3 +278,52 @@ class MCPProxy(FastMCPProxy):
             return await transport.handle_post_message(
                 request.scope, request.receive, request._send
             )
+
+    async def refresh_configuration(self, updated_server: MCPServer) -> bool:
+        """
+        Refresh the proxy's configuration with an updated MCP server instance.
+        This method handles updates to the server configuration without requiring a full restart.
+
+        Args:
+            updated_server: The updated MCP server instance
+
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            # Store old state
+            old_state = self.state
+            self.state = "restarting"
+
+            # Check if critical configuration has changed
+            needs_restart = (
+                self.mcp_server.run != updated_server.run
+                or self.mcp_server.secrets != updated_server.secrets
+                or self.mcp_server.settings != updated_server.settings
+            )
+
+            # Update the server reference
+            self.mcp_server = updated_server
+
+            if needs_restart:
+                # If critical config changed, we need to restart the client
+                if self.client_initialized:
+                    await self.shutdown()
+                await self.initialize()
+            else:
+                # For non-critical updates, just update the state
+                self.state = old_state
+
+            logger.info(
+                f"Successfully refreshed configuration for server {self.mcp_server.id}"
+            )
+            return True
+
+        except Exception as e:
+            self.state = "error"
+            self.connection_errors["count"] += 1
+            self.connection_errors["last_error"] = str(e)
+            logger.error(
+                f"Error refreshing configuration for server {self.mcp_server.id}: {e}"
+            )
+            return False

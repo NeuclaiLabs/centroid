@@ -1,30 +1,7 @@
 import useSWR from 'swr';
 import { toast } from 'sonner';
+import type { MCPServer, MCPTool } from '@/app/(core)/types';
 
-export interface MCPTool {
-  name: string;
-  description: string;
-  parameters: Record<string, unknown>;
-  status: boolean;
-}
-
-export interface MCPServer {
-  id: string;
-  templateId: string;
-  name: string;
-  description: string;
-  status: 'active' | 'inactive';
-  version: string;
-  mountPath: string;
-  tools?: MCPTool[];
-  secrets?: Record<string, string>;
-  run?: {
-    command?: string;
-    args?: string[];
-    env?: Record<string, string>;
-    cwd?: string;
-  };
-}
 
 interface MCPServersResponse {
   data: MCPServer[];
@@ -54,21 +31,22 @@ export function useMCPServers(options: UseMCPServersOptions = {}) {
     fetcher,
   );
 
-  const toggleServerStatus = async (serverId: string) => {
+  const changeServerState = async (
+    serverId: string,
+    action: 'start' | 'stop',
+  ) => {
     const server = data?.data.find((s) => s.id === serverId);
     if (!server) return null;
 
-    const newStatus = server.status === 'active' ? 'inactive' : 'active';
-    const actionVerb = server.status === 'active' ? 'stopping' : 'starting';
+    const actionVerb = action === 'start' ? 'starting' : 'stopping';
     const toastId = `toggle-status-${serverId}`;
 
     try {
       toast.loading(`${actionVerb} ${server.name}...`, { id: toastId });
 
-      const response = await fetch(`/api/mcp-servers/${serverId}`, {
-        method: 'PUT',
+      const response = await fetch(`/api/mcp-servers/${serverId}/${action}`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
       });
 
       if (!response.ok) {
@@ -78,9 +56,10 @@ export function useMCPServers(options: UseMCPServersOptions = {}) {
       }
 
       const updatedServer = await response.json();
-      const resultMessage = `${
-        updatedServer.status === 'active' ? 'Started' : 'Stopped'
-      } successfully`;
+      const resultMessage =
+        updatedServer.state === 'running'
+          ? 'Started successfully'
+          : 'Stopped successfully';
 
       toast.success(resultMessage, { id: toastId });
 
@@ -100,7 +79,7 @@ export function useMCPServers(options: UseMCPServersOptions = {}) {
       const errorMessage =
         error instanceof Error
           ? error.message
-          : 'Failed to update server status';
+          : 'Failed to update server state';
       toast.error(errorMessage, { id: toastId });
       return null;
     }
@@ -232,11 +211,14 @@ export function useMCPServers(options: UseMCPServersOptions = {}) {
       });
 
       // If the tool wasn't found in the array (unlikely but possible), we'll add it with the status
-      if (!currentTools.some((tool) => tool.name === toolName)) {
+      if (!currentTools.some((tool: MCPTool) => tool.name === toolName)) {
         updatedTools.push({
           name: toolName,
           description: '', // We don't have this info, so using empty string
-          parameters: {}, // We don't have this info, so using empty object
+          parameters: {
+            type: 'object',
+            properties: {},
+          }, // We don't have this info, so using empty object
           status,
         });
       }
@@ -290,7 +272,7 @@ export function useMCPServers(options: UseMCPServersOptions = {}) {
     error,
     isLoading,
     mutate,
-    toggleServerStatus,
+    changeServerState,
     deleteServer,
     updateEnvironmentVariable,
     toggleToolStatus,

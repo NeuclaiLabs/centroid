@@ -1,10 +1,9 @@
 """Main MCPServer model with lifecycle methods."""
 
-import asyncio
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import Column, DateTime, String, event, func, inspect
+from sqlalchemy import Column, DateTime, String, func
 from sqlmodel import Field, Relationship, SQLModel
 
 from app.core.logger import get_logger
@@ -14,7 +13,6 @@ from ..user import User
 from ..utils import generate_docker_style_name
 from .base import (
     MCPServerBase,
-    MCPServerStatus,
 )
 
 logger = get_logger(__name__, service="mcp_server")
@@ -82,19 +80,22 @@ class MCPServer(MCPServerBase, SQLModel, table=True):
         self.encrypted_secrets = encrypt_dict(value)
 
     def model_dump(self, *args, **kwargs) -> dict[str, Any]:
-        """Override model_dump to include secrets in the output if requested."""
+        """Override model_dump to include secrets and mount_path in the output if requested."""
         exclude = kwargs.pop("exclude", set())
         data = super().model_dump(
             *args, exclude=exclude | {"encrypted_secrets"}, **kwargs
         )
 
-        if "secrets" not in exclude:
-            try:
-                secrets = self.secrets
-                data["secrets"] = secrets
-            except Exception as e:
-                logger.error(f"Error including secrets in model_dump: {e}")
-                data["secrets"] = None
+        # Include secrets if not excluded
+        try:
+            secrets = self.secrets
+            data["secrets"] = secrets
+        except Exception as e:
+            logger.error(f"Error including secrets in model_dump: {e}")
+            data["secrets"] = None
+
+        # Always include mount_path
+        data["mount_path"] = self.mount_path
 
         # Get the proxy from MCPManager to ensure we have the most up-to-date instance
         from app.mcp.manager import MCPManager
@@ -119,54 +120,3 @@ class MCPServer(MCPServerBase, SQLModel, table=True):
     def messages_path(self) -> str:
         """Compute the messages path based on the mount path."""
         return f"{self.mount_path}/messages/"
-
-
-# Event listeners for MCP server lifecycle management
-@event.listens_for(MCPServer, "after_insert")
-def handle_instance_creation(mapper, connection, target: MCPServer) -> None:  # noqa: ARG001
-    """Handle MCP server creation."""
-
-    # Lazy import to avoid circular dependency
-    from app.mcp.manager import MCPManager
-
-    asyncio.create_task(MCPManager.get_singleton().start_server(target))
-
-
-@event.listens_for(MCPServer, "after_update")
-def handle_instance_update(mapper, connection, target: MCPServer) -> None:  # noqa: ARG001
-    """Handle MCP server update."""
-
-    # Lazy import to avoid circular dependency
-    from app.mcp.manager import MCPManager
-
-    # Get the state and history of the status attribute
-    state = inspect(target)
-    history = state.attrs.status.history
-
-    # If status hasn't changed, return early
-    if not history.has_changes():
-        return
-
-    manager = MCPManager.get_singleton()
-    # Check if status changed to inactive from active
-    if (
-        target.status == MCPServerStatus.INACTIVE
-        and MCPServerStatus.ACTIVE in history.deleted
-    ):
-        asyncio.create_task(manager.stop_server(target))
-    # Check if status changed to active from inactive
-    elif (
-        target.status == MCPServerStatus.ACTIVE
-        and MCPServerStatus.INACTIVE in history.deleted
-    ):
-        asyncio.create_task(manager.start_server(target))
-
-
-@event.listens_for(MCPServer, "after_delete")
-def handle_instance_deletion(mapper, connection, target: MCPServer) -> None:  # noqa: ARG001
-    """Handle MCP server deletion."""
-
-    # Lazy import to avoid circular dependency
-    from app.mcp.manager import MCPManager
-
-    asyncio.create_task(MCPManager.get_singleton().stop_server(target))

@@ -5,7 +5,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { MCPServer } from "@/app/(core)/hooks/use-mcp-servers";
+import type { MCPServer } from "@/app/(core)/types";
 
 interface MCPServerConnectionModalProps {
 	isOpen: boolean;

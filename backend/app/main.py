@@ -42,30 +42,6 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
         # Initialize the manager with active servers
         await manager.initialize(active_servers)
         logger.info(f"Manager initialized with {len(active_servers)} active servers")
-        # proxy = MCPProxy(
-        #     MCPServer(
-        #         id="github_direct",
-        #         name="github",
-        #         description="GitHub MCP server",
-        #         secrets={},
-        #         run=MCPServerRunConfig(
-        #             command="docker",
-        #             args=[
-        #                 "run",
-        #                 "--rm",
-        #                 "-i",
-        #                 "-e",
-        #                 "GITHUB_PERSONAL_ACCESS_TOKEN",
-        #                 "ghcr.io/github/github-mcp-server",
-        #             ],
-        #             env={
-        #                 "GITHUB_PERSONAL_ACCESS_TOKEN": "xxxx"
-        #             },
-        #         ),
-        #     ),
-        # )
-        # proxy.mount(app)
-        # await proxy.initialize()
 
     yield  # This is where FastAPI serves requests
 

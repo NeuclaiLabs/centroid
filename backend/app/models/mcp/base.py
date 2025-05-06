@@ -53,23 +53,6 @@ class MCPServerSearch(CamelModel):
     pass
 
 
-class MCPServerConnectionStats(CamelModel):
-    """Model for MCP server connection statistics."""
-
-    requests: int = Field(default=0, description="Number of requests processed")
-    errors: int = Field(default=0, description="Number of errors encountered")
-    last_response_time: float | None = Field(
-        default=None, description="Last response time in seconds"
-    )
-
-
-class MCPServerConnectionErrors(CamelModel):
-    """Model for MCP server connection errors."""
-
-    count: int = Field(default=0, description="Number of connection errors")
-    last_error: str | None = Field(default=None, description="Last error message")
-
-
 class MCPServerState(str, enum.Enum):
     """State of an MCP server."""
 
@@ -79,8 +62,6 @@ class MCPServerState(str, enum.Enum):
     STOPPING = "stopping"
     STOPPED = "stopped"
     RESTARTING = "restarting"
-    TERMINATED = "terminated"
-    SHUTTING_DOWN = "shutting-down"
     DISCONNECTED = "disconnected"
     ERROR = "error"
 
@@ -158,37 +139,15 @@ class MCPServerOut(MCPServerBase):
     """Model for MCP server output."""
 
     id: str
+    mount_path: str
     created_at: datetime
     updated_at: datetime
-    mount_path: str
+    owner_id: str
+    state: MCPServerState | None = None
+    last_ping_time: datetime | None = None
+    connection_errors: dict[str, Any] | None = None
+    stats: dict[str, Any] | None = None
     secrets: dict[str, Any] | None = None
-    last_ping_time: datetime | None = Field(
-        default=None, description="Last time the server was pinged"
-    )
-    connection_errors: MCPServerConnectionErrors | None = Field(
-        default=None, description="Connection error information"
-    )
-    stats: MCPServerConnectionStats | None = Field(
-        default=None, description="Server statistics"
-    )
-
-
-class MCPServerOutNoSecrets(MCPServerBase):
-    """Model for MCP server output without secrets."""
-
-    id: str
-    created_at: datetime
-    updated_at: datetime
-    mount_path: str
-    last_ping_time: datetime | None = Field(
-        default=None, description="Last time the server was pinged"
-    )
-    connection_errors: MCPServerConnectionErrors | None = Field(
-        default=None, description="Connection error information"
-    )
-    stats: MCPServerConnectionStats | None = Field(
-        default=None, description="Server statistics"
-    )
 
 
 class MCPServersOut(CamelModel):
