@@ -155,6 +155,30 @@ export function MCPServerHeader({
 									<span>Edit Server</span>
 								</DropdownMenuItem> */}
 								<DropdownMenuItem
+									onClick={handleStartStop}
+									disabled={isStartingOrStopping}
+									className={
+										server.status === "active"
+											? "text-destructive focus:text-destructive"
+											: "text-green-600 focus:text-green-600"
+									}
+								>
+									{isStartingOrStopping ? (
+										<>Loading...</>
+									) : server.status === "active" ? (
+										<>
+											<StopCircle className="mr-2 h-4 w-4" />
+											Stop Server
+										</>
+									) : (
+										<>
+											<Play className="mr-2 h-4 w-4" />
+											Start Server
+										</>
+									)}
+								</DropdownMenuItem>
+								<DropdownMenuSeparator />
+								<DropdownMenuItem
 									className="text-destructive focus:text-destructive"
 									onClick={() => setIsDeleteDialogOpen(true)}
 								>
@@ -185,32 +209,6 @@ export function MCPServerHeader({
 								{server.status === "active" ? "Running" : "Stopped"}
 							</Badge>
 						</div>
-
-						<Button
-							variant={server.status === "active" ? "destructive" : "outline"}
-							size="sm"
-							className={
-								server.status !== "active"
-									? "bg-green-500/15 text-green-600 hover:bg-green-500/20 border-green-200"
-									: ""
-							}
-							onClick={handleStartStop}
-							disabled={isStartingOrStopping}
-						>
-							{isStartingOrStopping ? (
-								<>Loading...</>
-							) : server.status === "active" ? (
-								<>
-									<StopCircle className="mr-2 h-4 w-4" />
-									Stop
-								</>
-							) : (
-								<>
-									<Play className="mr-2 h-4 w-4" />
-									Start
-								</>
-							)}
-						</Button>
 					</div>
 				</CardContent>
 			</Card>

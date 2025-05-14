@@ -1,5 +1,4 @@
 import asyncio
-import json
 import os
 import subprocess
 from datetime import datetime, timezone
@@ -18,10 +17,57 @@ LOG_DIR = Path(logger_config["log_dir"])
 logger = get_logger(__name__)
 
 
+def build_log_command(
+    file_path: str,
+    max_lines: int | None = None,
+    since: datetime | None = None,
+    follow: bool = False,
+) -> list[str]:
+    """
+    Build command for filtering logs based on criteria.
+
+    Args:
+        file_path: Path to the log file
+        max_lines: Maximum number of lines to return
+        since: Only return logs newer than this timestamp
+        follow: Whether to follow the log file (only for async mode)
+
+    Returns:
+        List representing the command to execute
+    """
+    if since is not None:
+        # Format timestamp for grep
+        since_str = since.isoformat().replace("+00:00", "Z")
+
+        if max_lines is not None:
+            # Use bash to combine grep and tail efficiently
+            return [
+                "bash",
+                "-c",
+                f"grep -a -A 999999 '{since_str}' {file_path} | tail -n {max_lines}",
+            ]
+        else:
+            # Just filter by timestamp
+            cmd = ["grep", "-a", "-A", "999999", since_str, file_path]
+            if follow:
+                # Add follow flag for async mode
+                cmd.extend(["|", "tail", "-f"])
+                return ["bash", "-c", " ".join(cmd)]
+            return cmd
+    else:
+        # No timestamp filtering, just use tail
+        cmd = ["tail"]
+        if max_lines is not None:
+            cmd.extend(["-n", str(max_lines)])
+        if follow:
+            cmd.append("-f")
+        cmd.append(file_path)
+        return cmd
+
+
 async def async_tail_file(file_path, max_lines=None, since=None):
     """
-    Asynchronously stream the content of a file using tail command.
-    This function uses a different approach to ensure proper streaming.
+    Asynchronously stream the content of a file using command line tools.
     """
     file_path_str = str(file_path)
     process = None
@@ -30,13 +76,10 @@ async def async_tail_file(file_path, max_lines=None, since=None):
         yield f"Log file not found: {file_path_str}\n".encode()
         return
 
-    # Build the tail command
-    cmd = ["tail"]
-    if max_lines is not None:
-        cmd.extend(["-n", str(max_lines)])
-    cmd.extend(["-f", file_path_str])
-
     try:
+        # Build command using the shared function
+        cmd = build_log_command(file_path_str, max_lines, since, follow=True)
+
         # Create a subprocess that we can communicate with asynchronously
         process = await asyncio.create_subprocess_exec(
             *cmd,
@@ -53,34 +96,6 @@ async def async_tail_file(file_path, max_lines=None, since=None):
             if not line:  # EOF reached
                 break
 
-            # If we have a 'since' timestamp, filter by it
-            if since is not None:
-                try:
-                    log_entry = json.loads(line)
-                    log_timestamp = log_entry.get("timestamp")
-
-                    # Skip this log if it doesn't have a timestamp
-                    if not log_timestamp:
-                        continue
-
-                    # Convert log timestamp to datetime if it's a string
-                    if isinstance(log_timestamp, str):
-                        log_time = datetime.fromisoformat(
-                            log_timestamp.replace("Z", "+00:00")
-                        )
-                    else:
-                        # If it's a number, assume it's Unix timestamp
-                        log_time = datetime.fromtimestamp(
-                            log_timestamp, tz=timezone.utc
-                        )
-
-                    # Skip logs older than the specified timestamp
-                    if log_time <= since:
-                        continue
-                except (json.JSONDecodeError, ValueError, TypeError):
-                    # If we can't parse the log or its timestamp, include it by default
-                    pass
-
             # Make sure we're yielding proper bytes
             if isinstance(line, str):
                 line = line.encode("utf-8")
@@ -89,7 +104,7 @@ async def async_tail_file(file_path, max_lines=None, since=None):
             yield line
 
             # Ensure proper flushing by yielding a small delay
-            await asyncio.sleep(0.01)  # Slightly longer delay for better buffering
+            await asyncio.sleep(0.01)
 
         # Check if there are any errors from stderr after stdout closes
         if process.stderr:
@@ -153,7 +168,9 @@ async def async_tail_file(file_path, max_lines=None, since=None):
 
 
 def tail_file_sync(file_path, max_lines=None, since=None):
-    """Synchronous version for non-follow mode."""
+    """
+    Synchronous version for non-follow mode.
+    """
     file_path_str = str(file_path)
 
     if not os.path.exists(file_path_str):
@@ -161,56 +178,18 @@ def tail_file_sync(file_path, max_lines=None, since=None):
         return
 
     try:
-        if since is not None:
-            # Read the whole file and filter by timestamp
-            with open(file_path_str, "rb") as f:
-                lines = f.readlines()
+        # Build command using the shared function
+        cmd = build_log_command(file_path_str, max_lines, since, follow=False)
 
-            filtered_lines = []
-            for line in lines:
-                try:
-                    log_entry = json.loads(line)
-                    log_timestamp = log_entry.get("timestamp")
+        # Run the command and capture output
+        result = subprocess.run(cmd, capture_output=True, check=True)
 
-                    # Skip this log if it doesn't have a timestamp
-                    if not log_timestamp:
-                        continue
+        # Return the output
+        yield result.stdout
 
-                    # Convert log timestamp to datetime if it's a string
-                    if isinstance(log_timestamp, str):
-                        log_time = datetime.fromisoformat(
-                            log_timestamp.replace("Z", "+00:00")
-                        )
-                    else:
-                        # If it's a number, assume it's Unix timestamp
-                        log_time = datetime.fromtimestamp(
-                            log_timestamp, tz=timezone.utc
-                        )
-
-                    # Include logs newer than the specified timestamp
-                    if log_time > since:
-                        filtered_lines.append(line)
-                except (json.JSONDecodeError, ValueError, TypeError):
-                    # If it's not valid JSON or timestamp, skip
-                    continue
-
-            # If max_lines is specified, only return the last max_lines
-            if max_lines and len(filtered_lines) > max_lines:
-                filtered_lines = filtered_lines[-max_lines:]
-
-            for line in filtered_lines:
-                yield line
-        else:
-            # Use tail command if no timestamp filtering is needed
-            cmd = ["tail"]
-            if max_lines is not None:
-                cmd.extend(["-n", str(max_lines)])
-            cmd.append(file_path_str)
-
-            result = subprocess.run(cmd, capture_output=True, check=True)
-            yield result.stdout
-            if result.stderr:
-                yield result.stderr
+        # Yield stderr if any
+        if result.stderr:
+            yield result.stderr
     except Exception as e:
         yield f"Error reading log file: {e}\n".encode()
 
