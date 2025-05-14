@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
     const logFile = url.searchParams.get('log_file') || 'app.log.json';
     const format = url.searchParams.get('format') || 'json';
     const maxLines = url.searchParams.get('max_lines') || '100';
+    const since = url.searchParams.get('since') || null;
     const follow = url.searchParams.get('follow') || 'true';
 
     // Build the backend URL with query parameters
@@ -26,6 +27,9 @@ export async function GET(request: NextRequest) {
     backendUrl.searchParams.append('format', format);
     backendUrl.searchParams.append('max_lines', maxLines);
     backendUrl.searchParams.append('follow', follow);
+    if (since) {
+      backendUrl.searchParams.append('since', since);
+    }
 
     // Make the request to the backend
     const response = await fetch(backendUrl.toString(), {

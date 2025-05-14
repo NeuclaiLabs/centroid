@@ -23,7 +23,7 @@ export default function LogsPage() {
 			<div className="flex flex-col">
 				<h1 className="text-3xl font-bold tracking-tight">Application Logs</h1>
 				<p className="text-muted-foreground">
-					Monitor system activity in real-time
+					Monitor and analyze system activity with user-friendly controls
 				</p>
 			</div>
 
@@ -32,8 +32,8 @@ export default function LogsPage() {
 					<CardContent className="p-0">
 						<LogViewer
 							initialLogFile="app.log"
-							initialFormat="json"
 							maxHeight="75vh"
+							initialMaxLines={200}
 						/>
 					</CardContent>
 				</Card>

@@ -2,7 +2,7 @@ import asyncio
 import json
 import os
 import subprocess
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import APIRouter, Query
@@ -45,7 +45,6 @@ async def async_tail_file(file_path, max_lines=None, since=None):
         )
         # Store pid early for reliable logging
         pid = process.pid
-        print(f"Executing streaming command: {' '.join(cmd)} (PID: {pid})")
 
         # Using asyncio to read lines asynchronously
         while True:
@@ -54,7 +53,33 @@ async def async_tail_file(file_path, max_lines=None, since=None):
             if not line:  # EOF reached
                 break
 
-            print(f"Line read: {line}")
+            # If we have a 'since' timestamp, filter by it
+            if since is not None:
+                try:
+                    log_entry = json.loads(line)
+                    log_timestamp = log_entry.get("timestamp")
+
+                    # Skip this log if it doesn't have a timestamp
+                    if not log_timestamp:
+                        continue
+
+                    # Convert log timestamp to datetime if it's a string
+                    if isinstance(log_timestamp, str):
+                        log_time = datetime.fromisoformat(
+                            log_timestamp.replace("Z", "+00:00")
+                        )
+                    else:
+                        # If it's a number, assume it's Unix timestamp
+                        log_time = datetime.fromtimestamp(
+                            log_timestamp, tz=timezone.utc
+                        )
+
+                    # Skip logs older than the specified timestamp
+                    if log_time <= since:
+                        continue
+                except (json.JSONDecodeError, ValueError, TypeError):
+                    # If we can't parse the log or its timestamp, include it by default
+                    pass
 
             # Make sure we're yielding proper bytes
             if isinstance(line, str):
@@ -145,21 +170,28 @@ def tail_file_sync(file_path, max_lines=None, since=None):
             for line in lines:
                 try:
                     log_entry = json.loads(line)
-                    log_time = log_entry.get("timestamp", 0)
+                    log_timestamp = log_entry.get("timestamp")
 
-                    if isinstance(log_time, str):
-                        # Convert ISO format to timestamp if needed
-                        try:
-                            log_time = datetime.fromisoformat(
-                                log_time.replace("Z", "+00:00")
-                            ).timestamp()
-                        except (ValueError, TypeError):
-                            log_time = 0
+                    # Skip this log if it doesn't have a timestamp
+                    if not log_timestamp:
+                        continue
 
+                    # Convert log timestamp to datetime if it's a string
+                    if isinstance(log_timestamp, str):
+                        log_time = datetime.fromisoformat(
+                            log_timestamp.replace("Z", "+00:00")
+                        )
+                    else:
+                        # If it's a number, assume it's Unix timestamp
+                        log_time = datetime.fromtimestamp(
+                            log_timestamp, tz=timezone.utc
+                        )
+
+                    # Include logs newer than the specified timestamp
                     if log_time > since:
                         filtered_lines.append(line)
-                except json.JSONDecodeError:
-                    # If it's not valid JSON, skip
+                except (json.JSONDecodeError, ValueError, TypeError):
+                    # If it's not valid JSON or timestamp, skip
                     continue
 
             # If max_lines is specified, only return the last max_lines
@@ -183,6 +215,23 @@ def tail_file_sync(file_path, max_lines=None, since=None):
         yield f"Error reading log file: {e}\n".encode()
 
 
+def parse_iso_timestamp(timestamp: str | None) -> datetime | None:
+    """Parse ISO timestamp string to datetime object."""
+    if not timestamp:
+        return None
+
+    try:
+        # Handle 'Z' UTC indicator by replacing with +00:00
+        return datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+    except ValueError:
+        # If string parsing fails, try to interpret as Unix timestamp
+        try:
+            timestamp_float = float(timestamp)
+            return datetime.fromtimestamp(timestamp_float, tz=timezone.utc)
+        except (ValueError, TypeError):
+            return None
+
+
 @router.get("/stream")
 async def stream_logs(
     current_user: CurrentUser,  # noqa: ARG001
@@ -195,8 +244,9 @@ async def stream_logs(
     follow: bool = Query(
         True, description="Whether to follow the log file as it grows"
     ),
-    since: float | None = Query(
-        None, description="Only return logs newer than this timestamp"
+    since: str | None = Query(
+        None,
+        description="Only return logs newer than this ISO timestamp (e.g. '2023-04-01T12:00:00Z')",
     ),
 ) -> StreamingResponse:
     """
@@ -204,14 +254,14 @@ async def stream_logs(
 
     - max_lines: number of initial lines to return
     - follow: whether to follow the log file as it grows
-    - since: only return logs newer than this timestamp (unix timestamp in seconds)
+    - since: only return logs newer than this ISO timestamp (e.g. '2023-04-01T12:00:00Z')
 
     ```bash
     # View the last 10 lines and follow new content
     curl -N "http://localhost:8000/api/v1/logs/stream?log_file=app.log&max_lines=10&follow=true"
 
     # View logs since a specific timestamp
-    curl -N "http://localhost:8000/api/v1/logs/stream?log_file=app.log&since=1617269245.123"
+    curl -N "http://localhost:8000/api/v1/logs/stream?log_file=app.log&since=2023-04-01T12:00:00Z"
 
     # View the entire log file without following
     curl "http://localhost:8000/api/v1/logs/stream?log_file=app.log&max_lines=1000&follow=false"
@@ -224,11 +274,14 @@ async def stream_logs(
     log_path = LOG_DIR / log_file
     logger.info(f"Streaming JSON log from: {log_path} (since: {since})")
 
+    # Parse the since parameter to a datetime object if provided
+    since_datetime = parse_iso_timestamp(since) if since else None
+
     # Choose the appropriate streaming method based on follow mode
     generator = (
-        async_tail_file(log_path, max_lines, since)
+        async_tail_file(log_path, max_lines, since_datetime)
         if follow
-        else tail_file_sync(log_path, max_lines, since)
+        else tail_file_sync(log_path, max_lines, since_datetime)
     )
 
     return StreamingResponse(

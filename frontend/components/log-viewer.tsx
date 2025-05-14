@@ -13,7 +13,16 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Badge } from "./ui/badge";
 import { Checkbox } from "./ui/checkbox";
-import { Filter, AlertCircle, Info, Search } from "lucide-react";
+import {
+	Filter,
+	AlertCircle,
+	Info,
+	Search,
+	Pause,
+	Play,
+	Download,
+	RefreshCw,
+} from "lucide-react";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -25,7 +34,6 @@ import {
 
 interface LogViewerProps {
 	initialLogFile?: string;
-	initialFormat?: "text" | "json";
 	maxHeight?: string;
 	initialMaxLines?: number;
 	maxStoredLogs?: number;
@@ -50,20 +58,20 @@ interface LogEntry {
 
 export function LogViewer({
 	initialLogFile = "app.log",
-	initialFormat = "text",
 	maxHeight = "calc(100vh - 200px)",
 	initialMaxLines = 100,
 	maxStoredLogs = 10000,
 	fullHeight = false,
 }: LogViewerProps) {
 	const [logFile] = useState(initialLogFile);
-	const [format] = useState<"text" | "json">(initialFormat);
-	const [follow] = useState(true);
+	const [follow, setFollow] = useState(false); // Start with follow disabled
 	const [maxLines] = useState(initialMaxLines);
 	const [logs, setLogs] = useState<string[]>([]);
 	const [isStreaming, setIsStreaming] = useState(false);
+	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [searchQuery, setSearchQuery] = useState("");
+	const [latestTimestamp, setLatestTimestamp] = useState<string | null>(null);
 	const [filters, setFilters] = useState<LogFilter[]>([
 		{ level: "DEBUG", enabled: true },
 		{ level: "INFO", enabled: true },
@@ -74,59 +82,157 @@ export function LogViewer({
 
 	const scrollAreaRef = useRef<HTMLDivElement>(null);
 	const abortControllerRef = useRef<AbortController | null>(null);
-	const logsRef = useRef<string[]>([]);
 
-	// Auto-scroll to bottom whenever logs change and follow is true
-	const scrollToBottom = useCallback(() => {
-		if (!follow) return;
+	// Parse and extract timestamp from a log entry
+	const extractTimestamp = useCallback(
+		(logEntry: LogEntry | Record<string, unknown>): string | null => {
+			if (!logEntry || !logEntry.timestamp) return null;
 
-		const scrollContainer = scrollAreaRef.current?.querySelector(
-			"[data-radix-scroll-area-viewport]",
-		);
-		if (scrollContainer) {
-			// Since logs are now prepended, we scroll to the top instead of bottom
-			scrollContainer.scrollTop = 0;
-		}
-	}, [follow]);
+			try {
+				// Handle different timestamp formats
+				if (typeof logEntry.timestamp === "string") {
+					// Already an ISO string, just return it
+					return logEntry.timestamp;
+				}
+				if (typeof logEntry.timestamp === "number") {
+					// Convert Unix timestamp to ISO string
+					return new Date(logEntry.timestamp * 1000).toISOString();
+				}
+			} catch (e) {
+				console.error("Error extracting timestamp:", e);
+			}
+			return null;
+		},
+		[],
+	);
 
 	// Prepend new logs to the front instead of appending to the end
 	// Only keep up to maxStoredLogs to prevent memory issues
 	const addNewLogs = useCallback(
 		(newLines: string[]) => {
+			// For streaming updates, backend returns logs in chronological order (oldest first)
+			// We need to reverse them to show newest first
+			const reversedLines = [...newLines].reverse();
+
 			setLogs((prev) => {
-				const combined = [...newLines, ...prev];
+				const combined = [...reversedLines, ...prev];
 				// Limit to maxStoredLogs if needed
 				return combined.length > maxStoredLogs
 					? combined.slice(0, maxStoredLogs)
 					: combined;
 			});
+
+			// Update latest timestamp using the newest log (after reversing, it's at index 0)
+			if (newLines.length > 0) {
+				try {
+					// The newest log is the last one from the backend (first after reversing)
+					const newestLog = JSON.parse(reversedLines[0]);
+					const timestamp = extractTimestamp(newestLog);
+					if (timestamp !== null) {
+						setLatestTimestamp(timestamp);
+					}
+				} catch (e) {
+					// If parsing fails, don't update the timestamp
+				}
+			}
 		},
-		[maxStoredLogs],
+		[maxStoredLogs, extractTimestamp],
 	);
 
-	// Define startStreaming with useCallback
-	const startStreaming = useCallback(async () => {
-		// Reset state
-		setLogs([]);
+	// Load initial logs synchronously (non-streaming)
+	const loadInitialLogs = useCallback(async () => {
+		setIsLoading(true);
 		setError(null);
 
+		try {
+			// Build URL with query params for non-streaming initial load
+			const url = new URL("/api/logs/stream", window.location.origin);
+			url.searchParams.append("log_file", logFile);
+			url.searchParams.append("max_lines", maxLines.toString());
+			url.searchParams.append("follow", "false"); // Explicitly request non-streaming
+
+			const response = await fetch(url.toString());
+
+			if (!response.ok) {
+				throw new Error(
+					`HTTP error ${response.status}: ${response.statusText}`,
+				);
+			}
+
+			const text = await response.text();
+			let lines = text.split("\n").filter((line) => line.trim());
+
+			// Backend returns logs in chronological order (oldest first, newest last)
+			// We need to reverse them to show newest first
+			lines = lines.reverse();
+
+			// Set logs and update the timestamp of the newest log
+			if (lines.length > 0) {
+				setLogs(lines);
+
+				// Try to find the latest timestamp from the newest log (now at index 0 after reversing)
+				try {
+					const newestLog = JSON.parse(lines[0]);
+					const timestamp = extractTimestamp(newestLog);
+					if (timestamp !== null) {
+						console.log(
+							"Setting latest timestamp from initial load:",
+							timestamp,
+						);
+						setLatestTimestamp(timestamp);
+					}
+				} catch (e) {
+					console.error("Error parsing newest log for timestamp:", e);
+					// If parsing fails, don't update the timestamp
+				}
+			}
+		} catch (error) {
+			const err = error as Error;
+			console.error("Error loading initial logs:", err);
+			setError(err.message || "Failed to load logs");
+		} finally {
+			setIsLoading(false);
+		}
+	}, [logFile, maxLines, extractTimestamp]);
+
+	// Stream logs with useCallback
+	const streamLogs = useCallback(async () => {
 		// Cancel any existing stream
 		if (abortControllerRef.current) {
 			abortControllerRef.current.abort();
+			abortControllerRef.current = null;
 		}
+
+		// Don't start a new stream if we're already streaming
+		if (isStreaming) return;
 
 		// Create a new abort controller
 		abortControllerRef.current = new AbortController();
 
 		try {
 			setIsStreaming(true);
+			setError(null);
 
 			// Build URL with query params
 			const url = new URL("/api/logs/stream", window.location.origin);
 			url.searchParams.append("log_file", logFile);
-			// Request a much larger initial set of logs
-			url.searchParams.append("max_lines", "500");
-			url.searchParams.append("follow", follow.toString());
+			url.searchParams.append("follow", "true");
+
+			// Use the latest timestamp if available to only get new logs
+			if (latestTimestamp) {
+				console.log("Streaming logs since timestamp:", latestTimestamp);
+				// Make sure the since parameter is explicitly set
+				url.searchParams.set("since", latestTimestamp);
+			} else {
+				// If no timestamp is available, get the last few logs
+				console.log(
+					"No timestamp available for streaming, using max_lines instead",
+				);
+				url.searchParams.append("max_lines", "50");
+			}
+
+			// Log the complete request URL for debugging
+			console.log("Streaming logs URL:", url.toString());
 
 			// Start fetch request with the abort signal
 			const response = await fetch(url.toString(), {
@@ -178,39 +284,42 @@ export function LogViewer({
 			}
 			setIsStreaming(false);
 		}
-	}, [logFile, follow, addNewLogs]);
+	}, [logFile, latestTimestamp, addNewLogs, isStreaming]);
 
-	// Update logs ref and scroll when logs change
-	useEffect(() => {
-		logsRef.current = logs;
-		scrollToBottom();
-	}, [logs, scrollToBottom]);
+	// Refresh logs and update timestamp for streaming
+	const refreshLogs = useCallback(() => {
+		// Reset timestamp to get a fresh set of logs
+		setLatestTimestamp(null);
+		loadInitialLogs();
+	}, [loadInitialLogs]);
 
-	// Cleanup stream on unmount
-	useEffect(() => {
-		return () => {
-			if (abortControllerRef.current) {
-				abortControllerRef.current.abort();
-				setIsStreaming(false);
+	// Toggle streaming state with proper timestamp
+	const toggleStreaming = useCallback(() => {
+		// If we're enabling streaming and don't have a timestamp,
+		// but we have logs, try to extract the latest timestamp
+		if (!follow && !latestTimestamp && logs.length > 0) {
+			try {
+				// Get the newest log (first in the reversed array)
+				const newestLog = JSON.parse(logs[0]);
+				const timestamp = extractTimestamp(newestLog);
+				if (timestamp !== null) {
+					console.log(
+						"Setting timestamp before enabling streaming:",
+						timestamp,
+					);
+					setLatestTimestamp(timestamp);
+					// We'll set follow in the next tick after the timestamp is set
+					setTimeout(() => setFollow(true), 0);
+					return;
+				}
+			} catch (e) {
+				console.error("Error extracting timestamp before streaming:", e);
 			}
-		};
-	}, []);
-
-	// Start streaming logs automatically on mount
-	useEffect(() => {
-		// Start streaming when component mounts or when streaming parameters change
-		startStreaming();
-
-		// Cleanup function will be handled by the separate cleanup effect
-	}, [startStreaming]); // Dependencies are now encapsulated in startStreaming
-
-	const stopStreaming = () => {
-		if (abortControllerRef.current) {
-			abortControllerRef.current.abort();
-			abortControllerRef.current = null;
-			setIsStreaming(false);
 		}
-	};
+
+		// Normal toggle if we don't need to set timestamp
+		setFollow((prevFollow) => !prevFollow);
+	}, [follow, latestTimestamp, logs, extractTimestamp]);
 
 	const downloadLogs = () => {
 		const blob = new Blob([logs.join("\n")], { type: "text/plain" });
@@ -238,72 +347,81 @@ export function LogViewer({
 	const filteredLogs = useMemo(() => {
 		// Filter logs based on criteria
 		return logs.filter((log) => {
-			// Apply level filters for JSON logs
-			if (format === "json") {
-				try {
-					const parsed = JSON.parse(log);
-					const level = parsed.level as LogLevel;
-					const shouldShow = filters.some(
-						(filter) => filter.level === level && filter.enabled,
-					);
+			try {
+				const parsed = JSON.parse(log);
+				const level = parsed.level as LogLevel;
+				const shouldShow = filters.some(
+					(filter) => filter.level === level && filter.enabled,
+				);
 
-					// Apply search filter if provided
-					if (searchQuery) {
-						return (
-							shouldShow &&
-							JSON.stringify(parsed)
-								.toLowerCase()
-								.includes(searchQuery.toLowerCase())
-						);
-					}
-
-					return shouldShow;
-				} catch (e) {
-					// If parsing fails, include the log if no search query or if it matches
+				// Apply search filter if provided
+				if (searchQuery) {
 					return (
-						!searchQuery ||
-						log.toLowerCase().includes(searchQuery.toLowerCase())
+						shouldShow &&
+						JSON.stringify(parsed)
+							.toLowerCase()
+							.includes(searchQuery.toLowerCase())
 					);
 				}
-			}
 
-			// For text logs, apply search filter and try to detect log levels
-			if (
-				searchQuery &&
-				!log.toLowerCase().includes(searchQuery.toLowerCase())
-			) {
-				return false;
+				return shouldShow;
+			} catch (e) {
+				// If parsing fails, include the log if no search query or if it matches
+				return (
+					!searchQuery || log.toLowerCase().includes(searchQuery.toLowerCase())
+				);
 			}
-
-			// Try to detect log level in text logs
-			for (const filter of filters) {
-				if (
-					(!filter.enabled && log.includes(`"${filter.level}"`)) ||
-					log.includes(` ${filter.level} `)
-				) {
-					return false;
-				}
-			}
-
-			return true;
 		});
-	}, [logs, filters, searchQuery, format]);
+	}, [logs, filters, searchQuery]);
 
 	// Parse JSON logs for formatted view
 	const formattedLogs = useMemo(() => {
-		if (format !== "json") {
-			return filteredLogs;
-		}
-
 		return filteredLogs.map((log) => {
 			try {
-				const parsed = JSON.parse(log);
-				return parsed;
+				return JSON.parse(log);
 			} catch (e) {
 				return log;
 			}
 		});
-	}, [filteredLogs, format]);
+	}, [filteredLogs]);
+
+	// Cleanup stream on unmount
+	useEffect(() => {
+		return () => {
+			if (abortControllerRef.current) {
+				abortControllerRef.current.abort();
+				setIsStreaming(false);
+			}
+		};
+	}, []);
+
+	// Load initial logs on mount
+	useEffect(() => {
+		loadInitialLogs();
+	}, [loadInitialLogs]);
+
+	// Toggle streaming state when follow changes
+	useEffect(() => {
+		// Only handle changes if isLoading is false (initial load completed)
+		if (isLoading) return;
+
+		if (follow) {
+			// Only start streaming if we're not already streaming
+			if (!isStreaming) {
+				streamLogs();
+			}
+		} else {
+			stopStreaming();
+		}
+	}, [follow, streamLogs, isStreaming, isLoading]);
+
+	const stopStreaming = useCallback(() => {
+		if (abortControllerRef.current) {
+			abortControllerRef.current.abort();
+			abortControllerRef.current = null;
+			setIsStreaming(false);
+		}
+	}, []);
 
 	// Render a formatted log entry
 	const renderLogEntry = (log: string | LogEntry, index: number) => {
@@ -366,11 +484,47 @@ export function LogViewer({
 				<div className="flex items-center justify-between">
 					<div>
 						<CardTitle>Log Viewer</CardTitle>
-						<CardDescription>
-							Stream and view application logs in real-time
-						</CardDescription>
+						<CardDescription>View and manage application logs</CardDescription>
 					</div>
 					<div className="flex gap-2">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={toggleStreaming}
+							disabled={isLoading}
+							className="gap-1"
+						>
+							{follow ? (
+								<>
+									<Pause className="h-4 w-4" /> Pause
+								</>
+							) : (
+								<>
+									<Play className="h-4 w-4" /> Live
+								</>
+							)}
+						</Button>
+
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={refreshLogs}
+							disabled={isLoading || isStreaming}
+							className="gap-1"
+						>
+							<RefreshCw className="h-4 w-4" /> Refresh
+						</Button>
+
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={downloadLogs}
+							disabled={logs.length === 0}
+							className="gap-1"
+						>
+							<Download className="h-4 w-4" /> Download
+						</Button>
+
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button variant="outline" size="sm" className="gap-1">
@@ -425,11 +579,18 @@ export function LogViewer({
 					</div>
 				)}
 
-				{isStreaming && (
-					<div className="text-primary flex items-center gap-2 justify-center py-2 sticky top-0 bg-muted/80 backdrop-blur-sm z-10">
+				{isLoading ? (
+					<div className="text-primary flex items-center gap-2 justify-center py-4">
 						<div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-						<span className="text-xs animate-pulse">Streaming logs...</span>
+						<span className="text-xs animate-pulse">Loading logs...</span>
 					</div>
+				) : (
+					isStreaming && (
+						<div className="text-primary flex items-center gap-2 justify-center py-2 sticky top-0 bg-muted/80 backdrop-blur-sm z-10">
+							<div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+							<span className="text-xs animate-pulse">Streaming logs...</span>
+						</div>
+					)
 				)}
 
 				<ScrollArea
@@ -447,21 +608,14 @@ export function LogViewer({
 							<span className="text-xs">
 								{logs.length > 0
 									? "All logs filtered out by current filters"
-									: "Waiting for logs..."}
+									: isLoading
+										? "Loading logs..."
+										: "No logs available"}
 							</span>
 						</div>
 					) : (
 						<div className="space-y-1 w-full">
-							{format === "json"
-								? formattedLogs.map((log, i) => renderLogEntry(log, i))
-								: filteredLogs.map((line, i) => (
-										<div
-											key={`log-${i}-${line.substring(0, 8)}`}
-											className="whitespace-pre-wrap text-xs py-0.5 w-full"
-										>
-											{line}
-										</div>
-									))}
+							{formattedLogs.map((log, i) => renderLogEntry(log, i))}
 						</div>
 					)}
 				</ScrollArea>
@@ -472,7 +626,13 @@ export function LogViewer({
 						{filteredLogs.length} logs displayed | {logs.length} total
 						{logs.length >= maxStoredLogs && " (max capacity reached)"}
 					</div>
-					<div>{isStreaming ? "Streaming active" : "Stream inactive"}</div>
+					<div>
+						{isLoading
+							? "Loading logs..."
+							: isStreaming
+								? "Live streaming"
+								: "Paused"}
+					</div>
 				</div>
 			</CardFooter>
 		</Card>
