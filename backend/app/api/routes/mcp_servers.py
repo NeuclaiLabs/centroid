@@ -11,6 +11,7 @@ from app.models import (
     MCPServerOutWithTemplate,
     MCPServersOut,
     MCPServersOutWithTemplate,
+    MCPServerState,
     MCPServerStatus,
     MCPServerUpdate,
     UtilsMessage,
@@ -239,6 +240,15 @@ async def mcp_server_action(
     server = MCPServer.model_validate(db_mcp_server)
     manager = MCPManager.get_singleton()
 
+    # Map action to valid server state
+    action_state_map = {
+        "start": MCPServerState.INITIALIZING,
+        "stop": MCPServerState.STOPPING,
+        "restart": MCPServerState.RESTARTING,
+    }
+
+    state = action_state_map[action]
+
     # Schedule the action to run in the background
     match action:
         case "start":
@@ -254,6 +264,4 @@ async def mcp_server_action(
             )
 
     # Return current state immediately, the actual action happens in background
-    return MCPServerOut.model_validate(
-        {**server.model_dump(), "state": f"{action}_in_progress"}
-    )
+    return MCPServerOut.model_validate({**server.model_dump(), "state": state})

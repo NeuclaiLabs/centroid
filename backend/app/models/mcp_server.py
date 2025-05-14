@@ -16,6 +16,7 @@ from app.models.mcp import (
     MCPServerSearch,
     MCPServersOut,
     MCPServersOutWithTemplate,
+    MCPServerState,
     MCPServerStatus,
     MCPServerUpdate,
     # Tool models
@@ -25,6 +26,7 @@ from app.models.mcp import (
 
 __all__ = [
     "MCPServerKind",
+    "MCPServerState",
     "MCPServerRunConfig",
     "MCPServerSearch",
     "MCPServerStatus",

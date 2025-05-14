@@ -38,6 +38,7 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
         logger.info(f"Starting {len(active_servers)} active MCP servers")
         # Get the MCP manager singleton
         manager = MCPManager()
+        manager.set_session(session)
         manager.set_app(app)
         logger.info(f"Manager: {manager}")
 

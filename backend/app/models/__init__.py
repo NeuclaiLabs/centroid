@@ -22,6 +22,7 @@ from .mcp_server import (
     MCPServerRunConfig,
     MCPServersOut,
     MCPServersOutWithTemplate,
+    MCPServerState,
     MCPServerStatus,
     MCPServerUpdate,
 )
@@ -161,6 +162,7 @@ __all__ = [
     "MCPServerBase",
     "MCPServerCreate",
     "MCPServerUpdate",
+    "MCPServerState",
     "MCPServerOut",
     "MCPServersOut",
     "MCPServerStatus",

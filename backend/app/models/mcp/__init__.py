@@ -13,6 +13,7 @@ from .base import (
     MCPServerSearch,
     MCPServersOut,
     MCPServersOutWithTemplate,
+    MCPServerState,
     MCPServerStatus,
     MCPServerUpdate,
     MCPTool,
@@ -34,4 +35,5 @@ __all__ = [
     "MCPServersOut",
     "MCPServerOutWithTemplate",
     "MCPServersOutWithTemplate",
+    "MCPServerState",
 ]

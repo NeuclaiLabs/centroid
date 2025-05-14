@@ -5,12 +5,11 @@ import subprocess
 from datetime import datetime
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Query
 from fastapi.responses import StreamingResponse
 
-from app.api.dependencies.auth import get_current_user
+from app.api.deps import CurrentUser
 from app.core.logger import get_logger, get_logger_config
-from app.schemas.user import CurrentUser
 
 router = APIRouter()
 
@@ -186,6 +185,7 @@ def tail_file_sync(file_path, max_lines=None, since=None):
 
 @router.get("/stream")
 async def stream_logs(
+    current_user: CurrentUser,  # noqa: ARG001
     log_file: str = Query(
         "app.log", description="Name of the log file to stream (will use JSON format)"
     ),
@@ -198,7 +198,6 @@ async def stream_logs(
     since: float | None = Query(
         None, description="Only return logs newer than this timestamp"
     ),
-    current_user: CurrentUser = Depends(get_current_user),  # noqa: ARG001
 ) -> StreamingResponse:
     """
     Stream JSON logs from a file in real-time.
