@@ -145,12 +145,10 @@ async def update_mcp_server(
     current_user: CurrentUser,
     id: str,
     mcp_server_in: MCPServerUpdate,
-    background_tasks: BackgroundTasks,
 ) -> Any:
     """
     Update an MCP server.
     """
-    from app.mcp.manager import MCPManager
 
     # Get the raw database instance
     db_mcp_server = session.get(MCPServer, id)
@@ -158,9 +156,6 @@ async def update_mcp_server(
         raise HTTPException(status_code=404, detail="MCP server not found")
     if not current_user.is_superuser and db_mcp_server.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
-
-    # Store the old status to check for status changes
-    old_status = db_mcp_server.status
 
     # Only update the fields that were provided
     update_dict = mcp_server_in.model_dump(exclude_unset=True)
@@ -179,29 +174,7 @@ async def update_mcp_server(
     session.commit()
     session.refresh(db_mcp_server)
 
-    # Create a validated model for background tasks
-    mcp_server = MCPServer.model_validate(db_mcp_server)
-
-    # Handle server updates based on status and configuration changes
-    manager = MCPManager.get_singleton()
-
-    # If status changed, handle start/stop
-    if "status" in update_dict and old_status != mcp_server.status:
-        if (
-            mcp_server.status == MCPServerStatus.ACTIVE
-            and old_status == MCPServerStatus.INACTIVE
-        ):
-            background_tasks.add_task(manager.start_server, mcp_server)
-        elif (
-            mcp_server.status == MCPServerStatus.INACTIVE
-            and old_status == MCPServerStatus.ACTIVE
-        ):
-            background_tasks.add_task(manager.stop_server, mcp_server)
-    # If server is active and configuration changed, refresh it
-    elif mcp_server.status == MCPServerStatus.ACTIVE:
-        background_tasks.add_task(manager.refresh_server, mcp_server)
-
-    return MCPServerOut.model_validate(mcp_server.model_dump())
+    return MCPServerOut.model_validate(db_mcp_server.model_dump())
 
 
 @router.delete("/{id}")
@@ -242,6 +215,7 @@ async def mcp_server_action(
     current_user: CurrentUser,
     id: str,
     action: Literal["start", "stop", "restart"],
+    background_tasks: BackgroundTasks,
 ) -> Any:
     """
     Perform an action on an MCP server.
@@ -263,27 +237,23 @@ async def mcp_server_action(
 
     # Create a validated model for the action
     server = MCPServer.model_validate(db_mcp_server)
-
     manager = MCPManager.get_singleton()
 
+    # Schedule the action to run in the background
     match action:
         case "start":
-            success = await manager.start_server(server)
+            background_tasks.add_task(manager.start_server, server)
         case "stop":
-            success = await manager.stop_server(server)
+            background_tasks.add_task(manager.stop_server, server)
         case "restart":
-            success = await manager.restart_server(server)
+            background_tasks.add_task(manager.restart_server, server)
         case _:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Unsupported action: {action}",
             )
 
-    if not success:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to {action} MCP server",
-        )
-
-    # Refresh the server from db to get updated status
-    return MCPServerOut.model_validate(server.model_dump())
+    # Return current state immediately, the actual action happens in background
+    return MCPServerOut.model_validate(
+        {**server.model_dump(), "state": f"{action}_in_progress"}
+    )

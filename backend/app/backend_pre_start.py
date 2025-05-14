@@ -21,6 +21,7 @@ wait_seconds = 1
 )
 def init(db_engine: Engine) -> None:
     try:
+        logger.info("Initializing database connection")
         with Session(db_engine) as session:
             # Try to create session to check if DB is awake
             session.exec(select(1))

@@ -54,30 +54,54 @@ class MCPServer(MCPServerBase, SQLModel, table=True):
         secrets = data.pop("secrets", None)
         super().__init__(**data)
         if secrets is not None:
+            logger.info(
+                f"Initializing MCP server with provided secrets, server_id={data.get('id', 'new_server')}"
+            )
             self.secrets = secrets
+        else:
+            logger.info(
+                f"Initializing MCP server without secrets, server_id={data.get('id', 'new_server')}"
+            )
 
     @property
     def secrets(self) -> dict[str, Any] | None:
         """Decrypt and return the secrets."""
         if not self.encrypted_secrets:
+            logger.debug(f"No encrypted secrets to decrypt for server {self.id}")
             return None
         try:
-            return decrypt_dict(self.encrypted_secrets)
+            logger.debug(f"Decrypting secrets for server {self.id}")
+            decrypted = decrypt_dict(self.encrypted_secrets)
+            logger.debug(f"Successfully decrypted secrets for server {self.id}")
+            return decrypted
         except Exception as e:
-            logger.error(f"Error decrypting secrets: {e}")
+            logger.critical(f"Error decrypting secrets for server {self.id}: {e}")
             return None
 
     @secrets.setter
     def secrets(self, value: dict[str, Any] | None) -> None:
         """Encrypt and store the secrets."""
         if value is None:
+            logger.info(f"Clearing secrets for server {self.id}")
             self.encrypted_secrets = None
             return
 
         if not isinstance(value, dict):
-            raise ValueError("Secrets must be a dictionary")
+            error_msg = (
+                f"Secrets must be a dictionary, got {type(value)} for server {self.id}"
+            )
+            logger.critical(error_msg)
+            raise ValueError(error_msg)
 
-        self.encrypted_secrets = encrypt_dict(value)
+        try:
+            logger.info(
+                f"Encrypting secrets for server {self.id} with {len(value)} key(s)"
+            )
+            self.encrypted_secrets = encrypt_dict(value)
+            logger.info(f"Successfully encrypted secrets for server {self.id}")
+        except Exception as e:
+            logger.critical(f"Failed to encrypt secrets for server {self.id}: {e}")
+            raise
 
     def model_dump(self, *args, **kwargs) -> dict[str, Any]:
         """Override model_dump to include secrets and mount_path in the output if requested."""
@@ -88,35 +112,49 @@ class MCPServer(MCPServerBase, SQLModel, table=True):
 
         # Include secrets if not excluded
         try:
+            logger.debug(f"Including secrets in model_dump for server {self.id}")
             secrets = self.secrets
             data["secrets"] = secrets
         except Exception as e:
-            logger.error(f"Error including secrets in model_dump: {e}")
+            logger.critical(
+                f"Error including secrets in model_dump for server {self.id}: {e}"
+            )
             data["secrets"] = None
 
-        # Always include mount_path
         data["mount_path"] = self.mount_path
 
         # Get the proxy from MCPManager to ensure we have the most up-to-date instance
         from app.mcp.manager import MCPManager
 
-        proxy = MCPManager.get_singleton().get_mcp_proxy(self.id)
+        try:
+            logger.debug(f"Getting MCP proxy for server {self.id} from MCPManager")
+            proxy = MCPManager.get_singleton().get_mcp_proxy(self.id)
 
-        # Include proxy state if available
-        if proxy:
-            data["state"] = proxy.state
-            data["last_ping_time"] = proxy.last_ping_time
-            data["connection_errors"] = proxy.connection_errors
-            data["stats"] = proxy.stats
+            # Include proxy state if available
+            if proxy:
+                logger.debug(
+                    f"Including proxy state in model_dump for server {self.id}"
+                )
+                data["last_ping_time"] = proxy.last_ping_time
+                data["connection_errors"] = proxy.connection_errors
+                data["stats"] = proxy.stats
+            else:
+                logger.warning(f"No proxy found for server {self.id} in MCPManager")
+        except Exception as e:
+            logger.critical(f"Error getting proxy data for server {self.id}: {e}")
 
         return data
 
     @property
     def mount_path(self) -> str:
-        """Compute the mount path based on the instance ID."""
-        return f"/mcp/{self.id}"
+        """Get the mount path for this server."""
+        path = f"/mcp/{self.id}"
+        logger.debug(f"Generated mount path {path} for server {self.id}")
+        return path
 
     @property
     def messages_path(self) -> str:
         """Compute the messages path based on the mount path."""
-        return f"{self.mount_path}/messages/"
+        path = f"{self.mount_path}/messages/"
+        logger.debug(f"Generated messages path {path} for server {self.id}")
+        return path

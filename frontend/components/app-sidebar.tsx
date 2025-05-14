@@ -70,11 +70,11 @@ export function AppSidebar({ user }: { user: User | undefined }) {
 				url: "/mcp-servers",
 				icon: ServerIcon,
 			},
-			// {
-			// 	title: "Logs",
-			// 	url: "/logs",
-			// 	icon: ScrollTextIcon,
-			// },
+			{
+				title: "Logs",
+				url: "/logs",
+				icon: ScrollTextIcon,
+			},
 			// {
 			// 	title: "Lifecycle",
 			// 	url: "#",

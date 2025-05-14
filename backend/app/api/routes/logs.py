@@ -1,0 +1,275 @@
+import asyncio
+import json
+import os
+import subprocess
+from datetime import datetime
+from pathlib import Path
+
+from fastapi import APIRouter, Depends, Query
+from fastapi.responses import StreamingResponse
+
+from app.api.dependencies.auth import get_current_user
+from app.core.logger import get_logger, get_logger_config
+from app.schemas.user import CurrentUser
+
+router = APIRouter()
+
+logger_config = get_logger_config()
+LOG_DIR = Path(logger_config["log_dir"])
+logger = get_logger(__name__)
+
+
+async def async_tail_file(file_path, max_lines=None, since=None):
+    """
+    Asynchronously stream the content of a file using tail command.
+    This function uses a different approach to ensure proper streaming.
+    """
+    file_path_str = str(file_path)
+    process = None
+
+    if not os.path.exists(file_path_str):
+        yield f"Log file not found: {file_path_str}\n".encode()
+        return
+
+    # Build the tail command
+    cmd = ["tail"]
+    if max_lines is not None:
+        cmd.extend(["-n", str(max_lines)])
+    cmd.extend(["-f", file_path_str])
+
+    try:
+        # Create a subprocess that we can communicate with asynchronously
+        process = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        # Store pid early for reliable logging
+        pid = process.pid
+        print(f"Executing streaming command: {' '.join(cmd)} (PID: {pid})")
+
+        # Using asyncio to read lines asynchronously
+        while True:
+            # Read a line from stdout asynchronously
+            line = await process.stdout.readline()
+            if not line:  # EOF reached
+                break
+
+            print(f"Line read: {line}")
+
+            # Make sure we're yielding proper bytes
+            if isinstance(line, str):
+                line = line.encode("utf-8")
+
+            # Yield the line to the client immediately
+            yield line
+
+            # Ensure proper flushing by yielding a small delay
+            await asyncio.sleep(0.01)  # Slightly longer delay for better buffering
+
+        # Check if there are any errors from stderr after stdout closes
+        if process.stderr:
+            async for err_line in process.stderr:
+                if isinstance(err_line, str):
+                    err_line = err_line.encode("utf-8")
+                yield err_line
+    except asyncio.CancelledError:
+        # Handle cancellation (e.g., client disconnects)
+        log_pid = pid if "pid" in locals() else (process.pid if process else "N/A")
+        print(
+            f"Stream cancelled for {file_path_str}, PID {log_pid}. Terminating process."
+        )
+        if process and process.returncode is None:
+            try:
+                process.terminate()
+                # Wait for a short period for graceful termination
+                await asyncio.wait_for(process.wait(), timeout=2.0)
+                print(f"Process {log_pid} terminated after cancellation.")
+            except ProcessLookupError:
+                print(f"Process {log_pid} already exited (on cancel).")
+            except asyncio.TimeoutError:
+                print(f"Timeout terminating process {log_pid} on cancel, killing.")
+                if process.returncode is None:  # Check if kill is still needed
+                    process.kill()
+                    await process.wait()  # Wait for kill to complete
+                    print(f"Process {log_pid} killed after timeout on cancel.")
+            except Exception as e:
+                print(f"Error during process termination for {log_pid} on cancel: {e}")
+        raise
+    finally:
+        # Make sure the process is cleaned up if it was started and is still running
+        if process and process.returncode is None:
+            log_pid_final = (
+                pid if "pid" in locals() else (process.pid if process else "N/A")
+            )
+            print(
+                f"Final cleanup: Terminating process {log_pid_final} for {file_path_str}."
+            )
+            try:
+                process.terminate()
+                await process.wait()  # Wait for termination
+                print(f"Process {log_pid_final} terminated in finally block.")
+            except ProcessLookupError:
+                print(f"Process {log_pid_final} already exited (in finally).")
+            except Exception as e:
+                print(f"Error during final termination of process {log_pid_final}: {e}")
+                # Fallback kill if terminate failed and process might still be running
+                if process.returncode is None:
+                    try:
+                        print(
+                            f"Final cleanup: Attempting kill for process {log_pid_final}."
+                        )
+                        process.kill()
+                        await process.wait()
+                        print(f"Process {log_pid_final} killed in finally block.")
+                    except Exception as e_kill:
+                        print(
+                            f"Final cleanup: Error during kill attempt for {log_pid_final}: {e_kill}"
+                        )
+
+
+def tail_file_sync(file_path, max_lines=None, since=None):
+    """Synchronous version for non-follow mode."""
+    file_path_str = str(file_path)
+
+    if not os.path.exists(file_path_str):
+        yield f"Log file not found: {file_path_str}\n".encode()
+        return
+
+    try:
+        if since is not None:
+            # Read the whole file and filter by timestamp
+            with open(file_path_str, "rb") as f:
+                lines = f.readlines()
+
+            filtered_lines = []
+            for line in lines:
+                try:
+                    log_entry = json.loads(line)
+                    log_time = log_entry.get("timestamp", 0)
+
+                    if isinstance(log_time, str):
+                        # Convert ISO format to timestamp if needed
+                        try:
+                            log_time = datetime.fromisoformat(
+                                log_time.replace("Z", "+00:00")
+                            ).timestamp()
+                        except (ValueError, TypeError):
+                            log_time = 0
+
+                    if log_time > since:
+                        filtered_lines.append(line)
+                except json.JSONDecodeError:
+                    # If it's not valid JSON, skip
+                    continue
+
+            # If max_lines is specified, only return the last max_lines
+            if max_lines and len(filtered_lines) > max_lines:
+                filtered_lines = filtered_lines[-max_lines:]
+
+            for line in filtered_lines:
+                yield line
+        else:
+            # Use tail command if no timestamp filtering is needed
+            cmd = ["tail"]
+            if max_lines is not None:
+                cmd.extend(["-n", str(max_lines)])
+            cmd.append(file_path_str)
+
+            result = subprocess.run(cmd, capture_output=True, check=True)
+            yield result.stdout
+            if result.stderr:
+                yield result.stderr
+    except Exception as e:
+        yield f"Error reading log file: {e}\n".encode()
+
+
+@router.get("/stream")
+async def stream_logs(
+    log_file: str = Query(
+        "app.log", description="Name of the log file to stream (will use JSON format)"
+    ),
+    max_lines: int | None = Query(
+        100, description="Number of initial lines to return (0 for all)"
+    ),
+    follow: bool = Query(
+        True, description="Whether to follow the log file as it grows"
+    ),
+    since: float | None = Query(
+        None, description="Only return logs newer than this timestamp"
+    ),
+    current_user: CurrentUser = Depends(get_current_user),  # noqa: ARG001
+) -> StreamingResponse:
+    """
+    Stream JSON logs from a file in real-time.
+
+    - max_lines: number of initial lines to return
+    - follow: whether to follow the log file as it grows
+    - since: only return logs newer than this timestamp (unix timestamp in seconds)
+
+    ```bash
+    # View the last 10 lines and follow new content
+    curl -N "http://localhost:8000/api/v1/logs/stream?log_file=app.log&max_lines=10&follow=true"
+
+    # View logs since a specific timestamp
+    curl -N "http://localhost:8000/api/v1/logs/stream?log_file=app.log&since=1617269245.123"
+
+    # View the entire log file without following
+    curl "http://localhost:8000/api/v1/logs/stream?log_file=app.log&max_lines=1000&follow=false"
+    ```
+    """
+    # Ensure the log file has .json extension
+    if not log_file.endswith(".json"):
+        log_file = f"{log_file}.json"
+
+    log_path = LOG_DIR / log_file
+    logger.info(f"Streaming JSON log from: {log_path} (since: {since})")
+
+    # Choose the appropriate streaming method based on follow mode
+    generator = (
+        async_tail_file(log_path, max_lines, since)
+        if follow
+        else tail_file_sync(log_path, max_lines, since)
+    )
+
+    return StreamingResponse(
+        generator,
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
+@router.get("/files")
+async def list_log_files():
+    """
+    Get a list of available log files.
+
+    Returns:
+        list: List of log file names
+    """
+    try:
+        # Get all files in the log directory
+        files = [f.name for f in LOG_DIR.glob("*.json")]
+
+        # If there are no JSON files, check for regular log files as well
+        if not files:
+            files = [f.name for f in LOG_DIR.glob("*.log")]
+
+        # Add any other common log files that might be present
+        for ext in ["log", "txt"]:
+            for common_name in ["app", "error", "access", "debug", "system"]:
+                potential_file = f"{common_name}.{ext}"
+                if (LOG_DIR / potential_file).exists() and potential_file not in files:
+                    files.append(potential_file)
+
+        # Sort files alphabetically
+        files.sort()
+
+        return files
+    except Exception as e:
+        print(f"Error listing log files: {e}")
+        return []

@@ -23,11 +23,14 @@ class CustomJSONFormatter(logging.Formatter):
         self.kwargs = kwargs
 
     def format(self, record):
+        # Get the message and ensure newlines are preserved in the JSON output
+        message = record.getMessage()
+
         json_record = {
             "timestamp": datetime.now(UTC).isoformat(),
             "level": record.levelname,
             "name": record.name,
-            "message": record.getMessage(),
+            "message": message,  # This will be properly escaped by json.dumps
             "module": record.module,
             "function": record.funcName,
             "line": record.lineno,
@@ -39,6 +42,7 @@ class CustomJSONFormatter(logging.Formatter):
         if hasattr(record, "extra_fields"):
             json_record.update(record.extra_fields)
 
+        # json.dumps will automatically escape newlines as \n in the output
         return json.dumps(json_record)
 
 

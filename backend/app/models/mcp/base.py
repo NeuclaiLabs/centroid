@@ -101,6 +101,10 @@ class MCPServerBase(CamelModel):
         description="Tools used to create the MCP server",
         sa_column=Column(JSON),
     )
+    state: MCPServerState | None = Field(
+        default=None,
+        description="State of the MCP server",
+    )
 
 
 class MCPServerCreate(MCPServerBase):

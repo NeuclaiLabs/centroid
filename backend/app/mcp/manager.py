@@ -7,6 +7,7 @@ from sqlmodel import Session
 from app.core.logger import get_logger
 from app.mcp.proxy import MCPProxy
 from app.models import MCPServer
+from app.models.mcp.base import MCPServerState
 
 logger = get_logger(__name__)
 
@@ -39,6 +40,29 @@ class MCPManager:
     def set_session(self, session: Session) -> None:
         self._db_session = session
 
+    async def update_servers_state(
+        self, servers: list[MCPServer], session: Session, state: MCPServerState
+    ) -> None:
+        """
+        Update servers' state and persist the changes to database.
+
+        Args:
+            servers: List of MCP servers to update
+            session: Database session to use for updates
+            state: New state to set for the servers
+        """
+        for server in servers:
+            server.state = state
+            # Update the database record
+            db_server = session.get(MCPServer, server.id)
+            if db_server:
+                db_server.state = state
+                session.add(db_server)
+        session.commit()
+        logger.info(
+            f"Updated {len(servers)} server states to {state.value} in database"
+        )
+
     async def initialize(self, servers: list[MCPServer]) -> None:
         """
         Load all active MCP server configurations on startup in parallel
@@ -57,7 +81,9 @@ class MCPManager:
 
         # Log the results
         started_count = sum(
-            1 for server_id, proxy in self._registry.items() if proxy.state == "running"
+            1
+            for server_id, proxy in self._registry.items()
+            if proxy.state == MCPServerState.RUNNING.value
         )
         logger.info(
             f"Successfully initialized {started_count}/{len(servers)} MCP servers"
@@ -81,11 +107,20 @@ class MCPManager:
         # Check if we already have a proxy for this server
         if server.id in self._registry:
             proxy = self._registry[server.id]
-            if proxy.state in ["running", "initializing"]:
+            if proxy.state in [
+                MCPServerState.RUNNING.value,
+                MCPServerState.INITIALIZING.value,
+            ]:
                 logger.warning(f"Server {server.id} is already {proxy.state}")
                 return True
 
         try:
+            # Update state to initializing in database
+            if self._db_session:
+                await self.update_servers_state(
+                    [server], self._db_session, MCPServerState.INITIALIZING
+                )
+
             # Create a new proxy instance
             from app.mcp.proxy import MCPProxy
 
@@ -98,13 +133,28 @@ class MCPManager:
             if success:
                 # Add to registry
                 self._registry[server.id] = proxy
+                # Update state to running in database
+                if self._db_session:
+                    await self.update_servers_state(
+                        [server], self._db_session, MCPServerState.RUNNING
+                    )
                 logger.info(f"Successfully started MCP server {server.id}")
                 return True
             else:
+                # Update state to error in database
+                if self._db_session:
+                    await self.update_servers_state(
+                        [server], self._db_session, MCPServerState.ERROR
+                    )
                 logger.error(f"Failed to start MCP server {server.id}")
                 return False
 
         except Exception as e:
+            # Update state to error in database
+            if self._db_session:
+                await self.update_servers_state(
+                    [server], self._db_session, MCPServerState.ERROR
+                )
             logger.error(f"Error starting MCP server {server.id}: {e}")
             return False
 
@@ -122,6 +172,7 @@ class MCPManager:
         """
         if isinstance(server, str):
             server_id = server
+            server = self._db_session.get(MCPServer, server_id)
         else:
             server_id = server.id
 
@@ -134,6 +185,12 @@ class MCPManager:
             return True
 
         try:
+            # Update state to stopping in database
+            if self._db_session and server:
+                await self.update_servers_state(
+                    [server], self._db_session, MCPServerState.STOPPING
+                )
+
             # Shutdown the proxy
             success = await proxy.shutdown()
 
@@ -141,13 +198,28 @@ class MCPManager:
                 # Remove from registry if shutdown was successful
                 if server_id in self._registry:
                     del self._registry[server_id]
+                # Update state to stopped in database
+                if self._db_session and server:
+                    await self.update_servers_state(
+                        [server], self._db_session, MCPServerState.STOPPED
+                    )
                 logger.info(f"Successfully stopped MCP server {server_id}")
                 return True
             else:
+                # Update state to error in database
+                if self._db_session and server:
+                    await self.update_servers_state(
+                        [server], self._db_session, MCPServerState.ERROR
+                    )
                 logger.error(f"Failed to stop MCP server {server_id}")
                 return False
 
         except Exception as e:
+            # Update state to error in database
+            if self._db_session and server:
+                await self.update_servers_state(
+                    [server], self._db_session, MCPServerState.ERROR
+                )
             logger.error(f"Error stopping MCP server {server_id}: {e}")
             return False
 

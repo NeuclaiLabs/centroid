@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import warnings
 from contextlib import asynccontextmanager
@@ -7,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select
 
-from app.api.main import LoggingMiddleware, api_router
+from app.api.main import api_router
 from app.core.config import settings
 from app.core.db import engine
 from app.mcp.manager import MCPManager
@@ -39,9 +40,10 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
         manager = MCPManager()
         manager.set_app(app)
         logger.info(f"Manager: {manager}")
-        # Initialize the manager with active servers
-        await manager.initialize(active_servers)
-        logger.info(f"Manager initialized with {len(active_servers)} active servers")
+
+        # Initialize the manager with active servers in the background
+        asyncio.create_task(manager.initialize(active_servers))
+        logger.info("Server initialization started in background")
 
     yield  # This is where FastAPI serves requests
 
@@ -71,5 +73,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_middleware(LoggingMiddleware)
+# Disabled LoggingMiddleware
+# app.add_middleware(LoggingMiddleware)
 app.include_router(api_router, prefix=settings.API_V1_STR)

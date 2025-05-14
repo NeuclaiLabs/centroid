@@ -45,6 +45,7 @@ dependencies = [
     "datamodel-code-generator>=0.28.5",
     "cryptography>=41.0.1",
     "fastmcp>=2.2.6",
+    "psutil>=5.9.4",
 ]
 
 [tool.uv]
