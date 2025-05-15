@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
-import { LogViewer } from "@/components/log-viewer";
+import { LogViewer } from "@/app/(core)/components/log-viewer";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 

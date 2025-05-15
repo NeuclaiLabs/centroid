@@ -215,7 +215,6 @@ def test_read_secret_success(
     content = response.json()
     assert content["id"] == secret_id
     assert content["name"] == valid_secret_data["name"]
-    print(content)
     # Value may be None if decryption fails, so check if it matches when present
     if "value" in content and content["value"] is not None:
         assert content["value"] == valid_secret_data["value"]

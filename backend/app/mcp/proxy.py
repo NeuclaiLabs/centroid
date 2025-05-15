@@ -79,12 +79,6 @@ class MCPProxy(FastMCPProxy):
         }
         self.tool_group = tool_group
         logger.info(f"Initializing MCP proxy for server {self.mcp_server.id}")
-        print(
-            {
-                **(self.mcp_server.secrets or {}),
-                **(self.mcp_server.run.env or {}),
-            },
-        )
         self.client = Client(
             transport=StdioTransport(
                 command=self.mcp_server.run.command,

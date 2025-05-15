@@ -77,7 +77,6 @@ def create_message(*, session: SessionDep, messages: list[MessageCreate]) -> Any
         session.commit()
         return UtilsMessage(message="Messages created successfully")
     except Exception as e:
-        print("Error", e)
         # Log the error properly instead of print
         raise HTTPException(
             status_code=400, detail=f"Failed to create messages: {str(e)}"

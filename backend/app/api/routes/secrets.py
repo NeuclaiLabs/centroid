@@ -95,7 +95,6 @@ def create_secret(
         secret.owner_id = current_user.id
         if secret_in.value is not None:
             secret.value = secret_in.value
-        print(f"Secret: {secret}")
 
         session.add(secret)
         session.commit()

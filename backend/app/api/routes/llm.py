@@ -48,7 +48,6 @@ async def get_models():
             response.raise_for_status()
             return response.json()
     except httpx.HTTPError as e:
-        print(e)
         raise HTTPException(
             status_code=500, detail=f"Failed to fetch models from LLM service: {str(e)}"
         )

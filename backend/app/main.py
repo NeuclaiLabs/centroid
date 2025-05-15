@@ -34,7 +34,6 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
         query = select(MCPServer).where(MCPServer.status == MCPServerStatus.ACTIVE)
         active_servers = session.exec(query).all()
         active_servers = [MCPServer.model_validate(server) for server in active_servers]
-        print(f"Starting {len(active_servers)} active MCP servers")
         logger.info(f"Starting {len(active_servers)} active MCP servers")
         # Get the MCP manager singleton
         manager = MCPManager()

@@ -1,7 +1,7 @@
 import asyncio
 import os
 import subprocess
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 
 from fastapi import APIRouter, Query
@@ -17,7 +17,7 @@ LOG_DIR = Path(logger_config["log_dir"])
 logger = get_logger(__name__)
 
 
-def build_log_command(
+async def build_log_command(
     file_path: str,
     max_lines: int | None = None,
     since: datetime | None = None,
@@ -25,44 +25,56 @@ def build_log_command(
 ) -> list[str]:
     """
     Build command for filtering logs based on criteria.
+    If a timestamp is provided, finds the appropriate line number to start from.
 
     Args:
         file_path: Path to the log file
         max_lines: Maximum number of lines to return
-        since: Only return logs newer than this timestamp
-        follow: Whether to follow the log file (only for async mode)
+        since: Timestamp to start reading from
+        follow: Whether to follow the log file
 
     Returns:
         List representing the command to execute
     """
-    if since is not None:
-        # Format timestamp for grep
-        since_str = since.isoformat().replace("+00:00", "Z")
+    cmd = ["tail"]
+    line_number = None
 
-        if max_lines is not None:
-            # Use bash to combine grep and tail efficiently
-            return [
-                "bash",
-                "-c",
-                f"grep -a -A 999999 '{since_str}' {file_path} | tail -n {max_lines}",
-            ]
-        else:
-            # Just filter by timestamp
-            cmd = ["grep", "-a", "-A", "999999", since_str, file_path]
-            if follow:
-                # Add follow flag for async mode
-                cmd.extend(["|", "tail", "-f"])
-                return ["bash", "-c", " ".join(cmd)]
-            return cmd
-    else:
-        # No timestamp filtering, just use tail
-        cmd = ["tail"]
-        if max_lines is not None:
-            cmd.extend(["-n", str(max_lines)])
-        if follow:
-            cmd.append("-f")
-        cmd.append(file_path)
-        return cmd
+    # If a timestamp is provided, find the corresponding line number
+    if since is not None:
+        try:
+            # Run grep to find the line number
+            grep_cmd = ["grep", "-a", "-n", since, file_path]
+            process = await asyncio.create_subprocess_exec(
+                *grep_cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            stdout, _ = await process.communicate()
+
+            # Parse the output to get the line number
+            if stdout:
+                # Format is "line_num:content"
+                line = stdout.decode().split("\n")[0]
+                line_number = int(line.split(":", 1)[0])
+            else:
+                line_number = None  # Default to beginning of file if not found
+        except Exception as e:
+            logger.error(f"Error finding timestamp line: {e}")
+            line_number = None  # Default to beginning of file on error
+
+    # Build the tail command based on line number or max_lines
+    if line_number and line_number > 1:
+        # Use "+" to start from specific line number
+        cmd.extend(["-n", f"+{line_number + 1}"])
+    elif max_lines is not None:
+        # Only use max_lines if not starting from a specific line
+        cmd.extend(["-n", str(max_lines)])
+
+    if follow:
+        cmd.append("-f")
+
+    cmd.append(file_path)
+    return cmd
 
 
 async def async_tail_file(file_path, max_lines=None, since=None):
@@ -77,8 +89,8 @@ async def async_tail_file(file_path, max_lines=None, since=None):
         return
 
     try:
-        # Build command using the shared function
-        cmd = build_log_command(file_path_str, max_lines, since, follow=True)
+        # Build command using the timestamp if provided
+        cmd = await build_log_command(file_path_str, max_lines, since, follow=True)
 
         # Create a subprocess that we can communicate with asynchronously
         process = await asyncio.create_subprocess_exec(
@@ -167,7 +179,7 @@ async def async_tail_file(file_path, max_lines=None, since=None):
                         )
 
 
-def tail_file_sync(file_path, max_lines=None, since=None):
+def tail_file_sync(file_path, max_lines=None):
     """
     Synchronous version for non-follow mode.
     """
@@ -178,8 +190,11 @@ def tail_file_sync(file_path, max_lines=None, since=None):
         return
 
     try:
-        # Build command using the shared function
-        cmd = build_log_command(file_path_str, max_lines, since, follow=False)
+        # Build the tail command
+        cmd = ["tail"]
+        if max_lines is not None:
+            cmd.extend(["-n", str(max_lines)])
+        cmd.append(file_path_str)
 
         # Run the command and capture output
         result = subprocess.run(cmd, capture_output=True, check=True)
@@ -192,23 +207,6 @@ def tail_file_sync(file_path, max_lines=None, since=None):
             yield result.stderr
     except Exception as e:
         yield f"Error reading log file: {e}\n".encode()
-
-
-def parse_iso_timestamp(timestamp: str | None) -> datetime | None:
-    """Parse ISO timestamp string to datetime object."""
-    if not timestamp:
-        return None
-
-    try:
-        # Handle 'Z' UTC indicator by replacing with +00:00
-        return datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
-    except ValueError:
-        # If string parsing fails, try to interpret as Unix timestamp
-        try:
-            timestamp_float = float(timestamp)
-            return datetime.fromtimestamp(timestamp_float, tz=timezone.utc)
-        except (ValueError, TypeError):
-            return None
 
 
 @router.get("/stream")
@@ -251,16 +249,13 @@ async def stream_logs(
         log_file = f"{log_file}.json"
 
     log_path = LOG_DIR / log_file
-    logger.info(f"Streaming JSON log from: {log_path} (since: {since})")
-
-    # Parse the since parameter to a datetime object if provided
-    since_datetime = parse_iso_timestamp(since) if since else None
+    # logger.info(f"Streaming JSON log from: {log_path} (since: {since})")
 
     # Choose the appropriate streaming method based on follow mode
     generator = (
-        async_tail_file(log_path, max_lines, since_datetime)
+        async_tail_file(log_path, max_lines, since)
         if follow
-        else tail_file_sync(log_path, max_lines, since_datetime)
+        else tail_file_sync(log_path, max_lines, since)
     )
 
     return StreamingResponse(

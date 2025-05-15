@@ -96,7 +96,7 @@ def store_embeddings(project_id: str, file_id: str, content: dict):
         logger.error(
             f"Error storing embeddings for file_id {file_id}: {str(e)}", exc_info=True
         )
-        print(f"Error storing embeddings: {str(e)}")
+        logger.error(f"Error storing embeddings: {str(e)}")
 
 
 def delete_embeddings(project_id: str, file_id: str):
@@ -112,7 +112,6 @@ def delete_embeddings(project_id: str, file_id: str):
         logger.error(
             f"Error deleting embeddings for file_id {file_id}: {str(e)}", exc_info=True
         )
-        print(f"Error deleting embeddings: {str(e)}")
 
 
 def search_endpoints(

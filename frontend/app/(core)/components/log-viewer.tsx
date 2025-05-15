@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
-import { Button } from "./ui/button";
+import { Button } from "../../../components/ui/button";
 import {
 	Card,
 	CardContent,
@@ -7,12 +7,12 @@ import {
 	CardTitle,
 	CardDescription,
 	CardFooter,
-} from "./ui/card";
-import { ScrollArea } from "./ui/scroll-area";
-import { Label } from "./ui/label";
-import { Input } from "./ui/input";
-import { Badge } from "./ui/badge";
-import { Checkbox } from "./ui/checkbox";
+} from "../../../components/ui/card";
+import { ScrollArea } from "../../../components/ui/scroll-area";
+import { Label } from "../../../components/ui/label";
+import { Input } from "../../../components/ui/input";
+import { Badge } from "../../../components/ui/badge";
+import { Checkbox } from "../../../components/ui/checkbox";
 import {
 	Filter,
 	AlertCircle,
@@ -30,7 +30,7 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+} from "../../../components/ui/dropdown-menu";
 
 interface LogViewerProps {
 	initialLogFile?: string;
