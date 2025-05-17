@@ -12,19 +12,27 @@ from .document import (
     DocumentUpdate,
 )
 from .item import Item, ItemBase, ItemCreate, ItemOut, ItemsOut, ItemUpdate
-from .mcp_server import (
+from .mcp.server import (
+    MCPRunConfig,
     MCPServer,
     MCPServerBase,
     MCPServerCreate,
-    MCPServerKind,
     MCPServerOut,
     MCPServerOutWithTemplate,
-    MCPServerRunConfig,
     MCPServersOut,
     MCPServersOutWithTemplate,
     MCPServerState,
     MCPServerStatus,
     MCPServerUpdate,
+    MCPTool,
+)
+from .mcp.template import (
+    MCPTemplate,
+    MCPTemplateBase,
+    MCPTemplateCreate,
+    MCPTemplateOut,
+    MCPTemplatesOut,
+    MCPTemplateUpdate,
 )
 from .message import Message, MessageCreate, MessageOut, MessagesOut
 from .project import (
@@ -36,6 +44,10 @@ from .project import (
     ProjectUpdate,
 )
 from .secret import (
+    ApiKeyAuth,
+    AuthConfig,
+    AuthType,
+    BasicAuth,
     Secret,
     SecretBase,
     SecretCreate,
@@ -44,6 +56,7 @@ from .secret import (
     SecretsOut,
     SecretUpdate,
     SecretWithValueOut,
+    TokenAuth,
 )
 from .suggestion import (
     Suggestion,
@@ -166,10 +179,16 @@ __all__ = [
     "MCPServerOut",
     "MCPServersOut",
     "MCPServerStatus",
-    "MCPServerKind",
     "MCPServerOutWithTemplate",
     "MCPServersOutWithTemplate",
-    "MCPServerRunConfig",
+    "MCPRunConfig",
+    "MCPTool",
+    "MCPTemplate",
+    "MCPTemplateBase",
+    "MCPTemplateCreate",
+    "MCPTemplateUpdate",
+    "MCPTemplateOut",
+    "MCPTemplatesOut",
     "Secret",
     "SecretBase",
     "SecretCreate",

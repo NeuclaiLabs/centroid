@@ -1,6 +1,6 @@
 "use client";
 
-import { MCPServerCard } from "../components/mcp-server-card";
+import { MCPServerCard } from "../../components/mcp-server-card";
 import { useMCPServers } from "@/app/(core)/hooks/use-mcp-servers";
 import { Plus, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";

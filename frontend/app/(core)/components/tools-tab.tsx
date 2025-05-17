@@ -1,9 +1,8 @@
-import { getMCPTemplateById } from "@/lib/mcp-templates";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Code2, FileText } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { MCPTool } from "@/lib/mcp-templates";
+import type { MCPTool } from "@/app/(core)/types";
 
 interface ToolsTabProps {
 	templateId: string;

@@ -27,7 +27,7 @@ export function useMCPServers(options: UseMCPServersOptions = {}) {
   const { templateId } = options;
 
   const { data, error, isLoading, mutate } = useSWR<MCPServersResponse>(
-    '/api/mcp-servers',
+    '/api/mcp/servers',
     fetcher,
   );
 
@@ -44,7 +44,7 @@ export function useMCPServers(options: UseMCPServersOptions = {}) {
     try {
       toast.loading(`${actionVerb} ${server.name}...`, { id: toastId });
 
-      const response = await fetch(`/api/mcp-servers/${serverId}/${action}`, {
+      const response = await fetch(`/api/mcp/servers/${serverId}/${action}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -94,7 +94,7 @@ export function useMCPServers(options: UseMCPServersOptions = {}) {
     try {
       toast.loading(`Deleting ${server.name}...`, { id: toastId });
 
-      const response = await fetch(`/api/mcp-servers/${serverId}`, {
+      const response = await fetch(`/api/mcp/servers/${serverId}`, {
         method: 'DELETE',
       });
 
@@ -147,7 +147,7 @@ export function useMCPServers(options: UseMCPServersOptions = {}) {
 
       console.log(updatedServerData);
 
-      const response = await fetch(`/api/mcp-servers/${serverId}`, {
+      const response = await fetch(`/api/mcp/servers/${serverId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedServerData),
@@ -224,7 +224,7 @@ export function useMCPServers(options: UseMCPServersOptions = {}) {
       }
 
       // Update the server with the modified tools array
-      const response = await fetch(`/api/mcp-servers/${serverId}`, {
+      const response = await fetch(`/api/mcp/servers/${serverId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tools: updatedTools }),

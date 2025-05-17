@@ -105,7 +105,11 @@ export interface MCPInstance {
 
 export type MCPServerStatus = 'active' | 'inactive';
 
-export type MCPServerKind = 'official' | 'external' | 'openapi';
+export enum MCPTemplateKind {
+  OFFICIAL = 'official',
+  EXTERNAL = 'external',
+  OPENAPI = 'openapi',
+}
 
 export type MCPServerState =
   | 'pending'
@@ -117,11 +121,13 @@ export type MCPServerState =
   | 'disconnected'
   | 'error';
 
-export interface MCPServerRunConfig {
+export interface MCPRunConfig {
   command: string;
   args?: string[];
   env?: Record<string, string>;
   cwd?: string;
+  maxRetries?: number;
+  retryDelay?: number;
 }
 
 export interface MCPServerMetadata {
@@ -151,11 +157,11 @@ export interface MCPServer {
   description: string;
   status: MCPServerStatus;
   state?: MCPServerState;
-  kind: MCPServerKind;
+  kind: MCPTemplateKind;
   transport: string;
   version: string;
   templateId?: string;
-  run?: MCPServerRunConfig;
+  run?: MCPRunConfig;
   settings?: {
     metadata?: MCPServerMetadata;
   };
@@ -165,17 +171,18 @@ export interface MCPServer {
   createdAt: string;
   updatedAt: string;
   mountPath: string;
+  template?: MCPTemplate;
 }
 
 export interface MCPServerCreate {
   name: string;
   description: string;
   status?: MCPServerStatus;
-  kind?: MCPServerKind;
+  kind?: MCPTemplateKind;
   transport: string;
   version: string;
   templateId?: string;
-  run?: MCPServerRunConfig;
+  run?: MCPRunConfig;
   settings?: {
     metadata?: MCPServerMetadata;
   };
@@ -186,10 +193,10 @@ export interface MCPServerUpdate {
   name?: string;
   description?: string;
   status?: MCPServerStatus;
-  kind?: MCPServerKind;
+  kind?: MCPTemplateKind;
   transport?: string;
   version?: string;
-  run?: MCPServerRunConfig;
+  run?: MCPRunConfig;
   settings?: {
     metadata?: MCPServerMetadata;
   };
@@ -198,5 +205,55 @@ export interface MCPServerUpdate {
 
 export interface MCPServersResponse {
   data: MCPServer[];
+  count: number;
+}
+
+export interface MCPTemplate {
+  id: string;
+  name: string;
+  description: string;
+  status: 'active' | 'inactive';
+  kind: MCPTemplateKind;
+  transport: string;
+  version: string;
+  run?: MCPRunConfig;
+  tools?: MCPTool[];
+  details?: {
+    icon?: { path: string } | Array<{ d: string }>;
+    homepage?: string;
+    [key: string]: unknown;
+  };
+  servers?: MCPServer[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MCPTemplateCreate {
+  id: string;
+  name: string;
+  description: string;
+  status?: 'active' | 'inactive';
+  kind?: MCPTemplateKind;
+  transport: string;
+  version: string;
+  run?: MCPRunConfig;
+  tools?: MCPTool[];
+  details?: Record<string, unknown>;
+}
+
+export interface MCPTemplateUpdate {
+  name?: string;
+  description?: string;
+  status?: 'active' | 'inactive';
+  kind?: MCPTemplateKind;
+  transport?: string;
+  version?: string;
+  run?: MCPRunConfig;
+  tools?: MCPTool[];
+  details?: Record<string, unknown>;
+}
+
+export interface MCPTemplatesResponse {
+  data: MCPTemplate[];
   count: number;
 }

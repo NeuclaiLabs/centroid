@@ -255,7 +255,7 @@ async def stream_logs(
     generator = (
         async_tail_file(log_path, max_lines, since)
         if follow
-        else tail_file_sync(log_path, max_lines, since)
+        else tail_file_sync(log_path, max_lines)
     )
 
     return StreamingResponse(

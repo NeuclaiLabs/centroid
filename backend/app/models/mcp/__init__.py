@@ -1,15 +1,12 @@
 """MCP-related models."""
 
-from app.models.mcp.server import MCPServer
-
-from ..utils import generate_docker_style_name
-from .base import (
+from app.models.mcp.server import (
+    MCPRunConfig,
+    MCPServer,
     MCPServerBase,
     MCPServerCreate,
-    MCPServerKind,
     MCPServerOut,
     MCPServerOutWithTemplate,
-    MCPServerRunConfig,
     MCPServerSearch,
     MCPServersOut,
     MCPServersOutWithTemplate,
@@ -18,22 +15,41 @@ from .base import (
     MCPServerUpdate,
     MCPTool,
 )
+from app.models.mcp.template import (
+    MCPTemplate,
+    MCPTemplateBase,
+    MCPTemplateCreate,
+    MCPTemplateOut,
+    MCPTemplatesOut,
+    MCPTemplateUpdate,
+)
+
+from ..utils import generate_docker_style_name
 
 __all__ = [
-    "MCPServerKind",
-    "MCPServerRunConfig",
+    # Base models and utilities
+    "MCPRunConfig",
     "MCPServerSearch",
     "MCPServerStatus",
     "generate_docker_style_name",
+    "MCPTool",
+    "MCPServerState",
+    # Server models
     "MCPServerBase",
     "MCPServerCreate",
     "MCPServerUpdate",
     "MCPServer",
-    "MCPTool",
     "MCPServerOut",
-    "MCPServerOutNoSecrets",
     "MCPServersOut",
     "MCPServerOutWithTemplate",
     "MCPServersOutWithTemplate",
-    "MCPServerState",
+    # Template models
+    "MCPTemplateBase",
+    "MCPTemplateCreate",
+    "MCPTemplateUpdate",
+    "MCPTemplate",
+    "MCPTemplateOut",
+    "MCPTemplatesOut",
 ]
+
+MCPTemplateOut.model_rebuild()

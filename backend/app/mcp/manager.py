@@ -7,7 +7,7 @@ from sqlmodel import Session
 from app.core.logger import get_logger
 from app.mcp.proxy import MCPProxy
 from app.models import MCPServer
-from app.models.mcp.base import MCPServerState
+from app.models.mcp.server import MCPServerState
 
 logger = get_logger(__name__)
 

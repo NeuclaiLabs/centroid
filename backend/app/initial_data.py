@@ -23,12 +23,12 @@ async def init() -> None:
         # Always populate tool definitions on startup
         logger.info("Ensuring tool definitions are up to date...")
 
-        # Initialize other data only if database is empty
-        if await is_db_empty(session):
-            logger.info("Database is empty, initializing with seed data...")
-            await init_db(session)
-        else:
-            logger.info("Database already contains data, skipping user initialization")
+        # # Initialize other data only if database is empty
+        # if await is_db_empty(session):
+        #     logger.info("Database is empty, initializing with seed data...")
+        await init_db(session)
+        # else:
+        #     logger.info("Database already contains data, skipping user initialization")
 
 
 async def main() -> None:

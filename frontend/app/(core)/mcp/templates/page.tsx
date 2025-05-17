@@ -1,11 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { mcpTemplates } from "@/lib/mcp-templates/index";
-import type { MCPTemplate } from "@/lib/mcp-templates/types";
-import { MCPTemplateCard } from "../components/mcp-template-card";
-import { InstallTemplateModal } from "../components/install-template-modal";
-import { useMCPServers } from "@/app/(core)/hooks/use-mcp-servers";
+import type { MCPTemplate, MCPServer } from "@/app/(core)/types";
+import { MCPTemplateCard } from "@/app/(core)/components/mcp-template-card";
+import { InstallTemplateModal } from "@/app/(core)/components/install-template-modal";
+import { useMCPTemplates } from "@/app/(core)/hooks/use-mcp-templates";
 import {
 	Card,
 	CardHeader,
@@ -14,20 +13,20 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
+
 export default function MCPTemplatesPage() {
 	const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
-	const { servers, isLoading, error } = useMCPServers();
+	const { templates, isLoading } = useMCPTemplates();
 
 	useEffect(() => {
 		console.log("Page rendered with data:", {
-			servers,
+			templates,
 			isLoading,
-			error,
 		});
-	}, [servers, isLoading, error]);
+	}, [templates, isLoading]);
 
 	const selectedTemplateData = selectedTemplate
-		? mcpTemplates.find((t: MCPTemplate) => t.id === selectedTemplate)
+		? templates.find((t: MCPTemplate) => t.id === selectedTemplate)
 		: null;
 
 	return (
@@ -85,25 +84,13 @@ export default function MCPTemplatesPage() {
 								</CardFooter>
 							</Card>
 						))
-					: mcpTemplates.map((template: MCPTemplate) => {
-							const serverWithTemplate = servers.find(
-								(server) => server.templateId === template.id,
-							);
-							const isInstalled = !!serverWithTemplate;
+					: templates.map((template: MCPTemplate) => {
 
 							return (
 								<MCPTemplateCard
 									key={template.id}
 									template={template}
-									isInstalled={isInstalled}
-									server={
-										serverWithTemplate?.templateId
-											? {
-													id: serverWithTemplate.id,
-													templateId: serverWithTemplate.templateId,
-												}
-											: undefined
-									}
+									isInstalled={!!template.servers?.length}
 									onInstall={() => setSelectedTemplate(template.id)}
 								/>
 							);

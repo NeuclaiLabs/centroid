@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { MCPServer } from "@/app/(core)/types";
-import { getMCPTemplateById, MCPTemplateKind } from "@/lib/mcp-templates/index";
+import { MCPTemplateKind } from "@/app/(core)/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -51,11 +51,9 @@ export function MCPServerHeader({
 	const [showConnectModal, setShowConnectModal] = useState(false);
 	const [isStartingOrStopping, setIsStartingOrStopping] = useState(false);
 
-	const template = server.templateId
-		? getMCPTemplateById(server.templateId)
-		: undefined;
+	const template = server.template;
 
-	const icon = template?.metadata?.icon as SimpleIcon;
+	const icon = template?.details?.icon as SimpleIcon;
 
 	const handleDeleteConfirm = async () => {
 		try {
@@ -95,12 +93,12 @@ export function MCPServerHeader({
 									fill="currentColor"
 									aria-label={`${template?.name || server.name} icon`}
 								>
-									{Array.isArray(template?.metadata.icon) ? (
-										template?.metadata.icon.map((p) => (
+									{Array.isArray(template?.details?.icon) ? (
+										template?.details?.icon.map((p) => (
 											<path key={`path-${p.d.substring(0, 8)}`} d={p.d} />
 										))
 									) : (
-										<path d={template?.metadata.icon.path} />
+										<path d={template?.details?.icon?.path} />
 									)}
 								</svg>
 							</div>

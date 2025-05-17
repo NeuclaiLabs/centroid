@@ -1,18 +1,23 @@
-import logging
+import glob
+import json
+import os
+from pathlib import Path
 
 from sqlmodel import Session, create_engine, select
 
 from app import crud
 from app.core.config import settings
+from app.core.logger import get_logger
 from app.models import (
     ProjectCreate,
     TeamCreate,
     User,
     UserCreate,
 )
+from app.models.mcp import MCPTemplate, MCPTemplateCreate, MCPTemplateUpdate
 
 engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 # make sure all SQLModel models are imported (app.models) before initializing DB
@@ -61,3 +66,49 @@ async def init_db(session: Session) -> None:
                 team_id=team.id,
             )
             crud.create_project(session=session, project_create=project_in)
+
+        # Process MCP templates from JSON files
+        try:
+            # Path to the templates directory
+            templates_dir = Path(__file__).parent.parent / "data" / "mcp_templates"
+            template_files = glob.glob(os.path.join(templates_dir, "*.json"))
+
+            logger.info(
+                f"Found {len(template_files)} template files in {templates_dir}"
+            )
+
+            for file_path in template_files:
+                try:
+                    with open(file_path) as f:
+                        template_data = json.load(f)
+
+                    template_id = template_data["id"]
+
+                    # Check if template exists
+                    existing_template = session.exec(
+                        select(MCPTemplate).where(MCPTemplate.id == template_id)
+                    ).first()
+
+                    if existing_template:
+                        # Update existing template
+                        update_data = MCPTemplateUpdate(**template_data)
+                        update_dict = update_data.model_dump(exclude_unset=True)
+
+                        for key, value in update_dict.items():
+                            setattr(existing_template, key, value)
+
+                        logger.info(f"Updated template: {template_id}")
+                    else:
+                        # Create new template
+                        template = MCPTemplateCreate(**template_data)
+                        db_template = MCPTemplate(**template.model_dump())
+                        session.add(db_template)
+                        logger.info(f"Added new template: {template_id}")
+
+                except Exception as e:
+                    logger.error(f"Error processing template {file_path}: {e}")
+
+            session.commit()
+            logger.info("MCP templates processed successfully")
+        except Exception as e:
+            logger.error(f"Failed to process MCP templates: {e}")

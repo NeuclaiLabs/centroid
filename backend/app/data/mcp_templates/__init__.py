@@ -1,0 +1,1 @@
+"""MCP template data fixtures."""

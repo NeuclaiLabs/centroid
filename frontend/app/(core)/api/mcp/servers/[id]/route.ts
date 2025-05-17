@@ -12,7 +12,7 @@ export async function GET(request: NextRequest, props: { params: Promise<{ id: s
 
     const id = params.id;
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mcp-servers/${id}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mcp/servers/${id}`,
       {
         headers: {
           accept: 'application/json',
@@ -54,7 +54,7 @@ export async function PUT(request: NextRequest, props: { params: Promise<{ id: s
     const id = params.id;
     const body = await request.json();
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mcp-servers/${id}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mcp/servers/${id}`,
       {
         method: 'PUT',
         headers: {
@@ -104,7 +104,7 @@ export async function DELETE(request: NextRequest, props: { params: Promise<{ id
 
     const id = params.id;
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mcp-servers/${id}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mcp/servers/${id}`,
       {
         method: 'DELETE',
         headers: {

@@ -1,36 +1,33 @@
-import { useState } from "react";
-import { getMCPTemplateById, MCPTemplateKind } from "@/lib/mcp-templates/index";
+import { useState, useEffect } from "react";
+import { MCPTemplateKind } from "@/app/(core)/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import type { SimpleIcon } from "simple-icons";
 import { Button } from "@/components/ui/button";
 import { Download, Check } from "lucide-react";
 import { InstallTemplateModal } from "./install-template-modal";
-import { useMCPServers } from "../hooks/use-mcp-servers";
 import { useRouter } from "next/navigation";
+import type { MCPTemplate } from "@/app/(core)/types";
 
 interface MCPTemplateHeaderProps {
-	templateId: string;
+	template: MCPTemplate;
 }
 
-export function MCPTemplateHeader({ templateId }: MCPTemplateHeaderProps) {
+export function MCPTemplateHeader({ template }: MCPTemplateHeaderProps) {
 	const [isInstallOpen, setIsInstallOpen] = useState(false);
-	const template = getMCPTemplateById(templateId);
-	const { servers, isLoading } = useMCPServers();
 	const router = useRouter();
 
 	if (!template) return null;
 
-	const icon = template.metadata.icon as SimpleIcon;
-	const serverWithTemplate = servers.find(
-		(server) => server.templateId === templateId,
+	const icon = template.details?.icon as SimpleIcon;
+	const serverWithTemplate = template?.servers?.find(
+		(server) => server.templateId === template.id,
 	);
 	const isInstalled = !!serverWithTemplate;
 
 	const handleButtonClick = () => {
 		if (isInstalled && serverWithTemplate) {
-			router.push(`/mcp-servers/${serverWithTemplate.id}`);
+			router.push(`/mcp/servers/${serverWithTemplate.id}`);
 		} else {
 			setIsInstallOpen(true);
 		}
@@ -50,12 +47,12 @@ export function MCPTemplateHeader({ templateId }: MCPTemplateHeaderProps) {
 									fill="currentColor"
 									aria-label={`${template.name} icon`}
 								>
-									{Array.isArray(template.metadata.icon) ? (
-										template.metadata.icon.map((p, i) => (
-											<path key={i} d={p.d} />
+									{Array.isArray(template.details?.icon) ? (
+										template.details.icon.map((p: { d: string }) => (
+											<path key={`path-${p.d.substring(0, 8)}`} d={p.d} />
 										))
 									) : (
-										<path d={template.metadata.icon.path} />
+										<path d={template.details?.icon?.path} />
 									)}
 								</svg>
 							</div>
@@ -89,7 +86,7 @@ export function MCPTemplateHeader({ templateId }: MCPTemplateHeaderProps) {
 					<Button
 						onClick={handleButtonClick}
 						className="gap-2"
-						disabled={template.status !== "active" || isLoading}
+						disabled={template.status !== "active"}
 						variant={isInstalled ? "secondary" : "default"}
 					>
 						{isInstalled ? (
@@ -112,28 +109,16 @@ export function MCPTemplateHeader({ templateId }: MCPTemplateHeaderProps) {
 						)}
 						<Badge variant="outline">v{template.version}</Badge>
 					</div>
-					{/* <div className="flex items-center gap-4 text-sm text-muted-foreground">
-						<div className="flex items-center gap-1">
-							<span>Language:</span>
-							<span className="font-medium">{template.metadata.language}</span>
-						</div>
-						<div className="flex items-center gap-1">
-							<span>Provider:</span>
-							<span className="font-medium">{template.metadata.provider}</span>
-						</div>
-						<div className="flex items-center gap-1">
-							<span>Transport:</span>
-							<span className="font-medium">{template.transport}</span>
-						</div>
-					</div> */}
 				</CardContent>
 			</Card>
 
-			<InstallTemplateModal
-				isOpen={isInstallOpen}
-				onOpenChange={setIsInstallOpen}
-				template={template}
-			/>
+			{template && (
+				<InstallTemplateModal
+					isOpen={isInstallOpen}
+					onOpenChange={setIsInstallOpen}
+					template={template}
+				/>
+			)}
 		</>
 	);
 }

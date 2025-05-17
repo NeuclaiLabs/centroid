@@ -24,7 +24,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { MCPServer } from "@/app/(core)/types";
 import Link from "next/link";
-import { getMCPTemplateById, MCPTemplateKind } from "@/lib/mcp-templates/index";
+import { MCPTemplateKind } from "@/app/(core)/types";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -60,10 +60,8 @@ export function MCPServerCard({ server }: MCPServerCardProps) {
 	const router = useRouter();
 	const { changeServerState, deleteServer } = useMCPServers();
 
-	const template = server.templateId
-		? getMCPTemplateById(server.templateId)
-		: undefined;
-	const icon = template?.metadata?.icon;
+	const template = server.template;
+	const icon = template?.details?.icon;
 	const isOfficial = template?.kind === MCPTemplateKind.OFFICIAL;
 
 	const getStateColor = (state: string) => {
@@ -118,7 +116,7 @@ export function MCPServerCard({ server }: MCPServerCardProps) {
 
 	return (
 		<>
-			<Link href={`/mcp-servers/${server.id}`}>
+			<Link href={`/mcp/servers/${server.id}`}>
 				<Card className="hover:bg-muted/50 transition-colors h-full flex flex-col">
 					<CardHeader className="p-6 flex flex-row items-start justify-between space-y-0">
 						<div className="flex flex-col gap-2 flex-1 min-w-0 pr-2">
@@ -132,15 +130,17 @@ export function MCPServerCard({ server }: MCPServerCardProps) {
 											fill="currentColor"
 											aria-label={`${template.name} icon`}
 										>
-											{Array.isArray(template.metadata.icon) ? (
-												template.metadata.icon.map((p, idx) => (
-													<path
-														key={`path-${p.d.substring(0, 8)}-${idx}`}
-														d={p.d}
-													/>
-												))
+											{Array.isArray(template.details?.icon) ? (
+												template.details.icon.map(
+													(p: { d: string }, idx: number) => (
+														<path
+															key={`path-${p.d.substring(0, 8)}-${idx}`}
+															d={p.d}
+														/>
+													),
+												)
 											) : (
-												<path d={template.metadata.icon.path} />
+												<path d={template.details?.icon?.path} />
 											)}
 										</svg>
 									</div>
@@ -205,7 +205,7 @@ export function MCPServerCard({ server }: MCPServerCardProps) {
 									{server.state || "initializing"}
 								</span>
 							</div>
-							{template?.metadata.homepage && (
+							{template?.details?.homepage && (
 								<DropdownMenu>
 									<DropdownMenuTrigger asChild>
 										<Button
@@ -246,7 +246,7 @@ export function MCPServerCard({ server }: MCPServerCardProps) {
 										)}
 										{/* <DropdownMenuItem asChild>
 											<Link
-												href={template.metadata.homepage}
+												href={template.details.homepage}
 												target="_blank"
 												rel="noopener noreferrer"
 												onClick={(e) => e.stopPropagation()}

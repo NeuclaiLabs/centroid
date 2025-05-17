@@ -1,5 +1,5 @@
-import type { MCPTemplate } from "@/lib/mcp-templates/types";
-import { MCPTemplateKind } from "@/lib/mcp-templates/index";
+import type { MCPTemplate } from "@/app/(core)/types";
+import { MCPTemplateKind } from "@/app/(core)/types";
 import {
 	Card,
 	CardContent,
@@ -39,21 +39,19 @@ interface MCPTemplateCardProps {
 	template: MCPTemplate;
 	onInstall: () => void;
 	isInstalled?: boolean;
-	server?: MCPServerWithTemplate;
 }
 
 export function MCPTemplateCard({
 	template,
 	onInstall,
 	isInstalled = false,
-	server,
 }: MCPTemplateCardProps) {
 	const router = useRouter();
-	const icon = template.metadata.icon;
+	const icon = template.details?.icon;
 	const [isInstalling, setIsInstalling] = useState(false);
 
 	const handleCardClick = () => {
-		router.push(`/mcp-templates/${template.id}`);
+		router.push(`/mcp/templates/${template.id}`);
 	};
 
 	return (
@@ -73,15 +71,17 @@ export function MCPTemplateCard({
 									fill="currentColor"
 									aria-label={`${template.name} icon`}
 								>
-									{Array.isArray(template.metadata.icon) ? (
-										template.metadata.icon.map((p, idx) => (
-											<path
-												key={`path-${p.d.substring(0, 8)}-${idx}`}
-												d={p.d}
-											/>
-										))
+									{Array.isArray(template.details?.icon) ? (
+										template.details.icon.map(
+											(p: { d: string }, idx: number) => (
+												<path
+													key={`path-${p.d.substring(0, 8)}-${idx}`}
+													d={p.d}
+												/>
+											),
+										)
 									) : (
-										<path d={template.metadata.icon.path} />
+										<path d={template.details?.icon?.path} />
 									)}
 								</svg>
 							</div>
@@ -125,10 +125,10 @@ export function MCPTemplateCard({
 						e.stopPropagation();
 						if (!isInstalled) {
 							onInstall();
-						} else if (server) {
-							router.push(`/mcp-servers/${server.id}`);
+						} else if (template.servers?.length) {
+							router.push(`/mcp/servers/${template.servers[0].id}`);
 						} else {
-							router.push(`/mcp-servers?template_id=${template.id}`);
+							router.push(`/mcp/servers?template_id=${template.id}`);
 						}
 					}}
 					disabled={template.status !== "active"}
@@ -153,11 +153,11 @@ export function MCPTemplateCard({
 				<div className="flex items-center justify-between w-full text-sm">
 					<div className="flex items-center gap-2 text-muted-foreground">
 						<LayoutGrid className="size-3 text-orange-500" />
-						<span className="text-xs">{template.tools.length} tools</span>
+						<span className="text-xs">{template.tools?.length || 0} tools</span>
 					</div>
-					{template.metadata.homepage && (
+					{template.details?.homepage && (
 						<Link
-							href={template.metadata.homepage}
+							href={template.details.homepage}
 							target="_blank"
 							rel="noopener noreferrer"
 							className="flex items-center gap-1 text-xs text-primary hover:underline"

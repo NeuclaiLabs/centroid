@@ -24,8 +24,8 @@ export async function GET(request: NextRequest) {
     if (templateId) params.append('template_id', templateId);
 
     const endpoint = isTemplatesRequest
-      ? `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mcp-servers/templates`
-      : `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mcp-servers`;
+      ? `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mcp/templates`
+      : `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mcp/servers`;
 
     const response = await fetch(`${endpoint}?${params}`, {
       headers: {
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mcp-servers/`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mcp/servers/`,
       {
         method: 'POST',
         headers: {

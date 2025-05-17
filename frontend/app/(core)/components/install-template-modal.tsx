@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import type { MCPTemplate } from "@/lib/mcp-templates/types";
+import type { MCPTemplate } from "@/app/(core)/types";
 
 interface InstallTemplateModalProps {
 	isOpen: boolean;
@@ -30,14 +30,14 @@ export function InstallTemplateModal({
 	const [isInstalling, setIsInstalling] = useState(false);
 
 	// Extract environment variables that need to be configured
-	const envVars = Object.entries(template.run.env || {}).filter(
+	const envVars = Object.entries(template.run?.env || {}).filter(
 		([_, value]) => value.startsWith("${") && value.endsWith("}"),
 	);
 
 	const handleInstall = async () => {
 		try {
 			setIsInstalling(true);
-			const response = await fetch("/api/mcp-servers", {
+			const response = await fetch("/api/mcp/servers", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -50,7 +50,7 @@ export function InstallTemplateModal({
 					kind: template.kind,
 					templateId: template.id,
 					run: template.run,
-					settings: { metadata: template.metadata },
+					settings: { metadata: template.details },
 					tools: template.tools,
 					secrets,
 				}),
@@ -63,7 +63,7 @@ export function InstallTemplateModal({
 
 			const data = await response.json();
 			toast.success("Template installed successfully");
-			router.push(`/mcp-servers/${data.id}`);
+			router.push(`/mcp/servers/${data.id}`);
 			onOpenChange(false);
 		} catch (error) {
 			toast.error(

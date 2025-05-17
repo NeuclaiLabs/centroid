@@ -15,7 +15,7 @@ export async function POST(
 
     const { id, action } = params;
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mcp-servers/${id}/${action}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mcp/servers/${id}/${action}`,
       {
         method: 'POST',
         headers: {

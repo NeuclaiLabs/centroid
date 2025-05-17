@@ -22,7 +22,6 @@ import {
 	Settings,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getMCPTemplateById } from "@/lib/mcp-templates/index";
 import {
 	Dialog,
 	DialogContent,
@@ -40,10 +39,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { SchemaDialog } from "../../components/schema-dialog";
+import { SchemaDialog } from "../../../components/schema-dialog";
 import { useMCPServers } from "@/app/(core)/hooks/use-mcp-servers";
-import { EnvironmentVariableEditor } from "../../components/environment-variable-editor";
-import { MCPServerHeader } from "../../components/mcp-server-header";
+import { EnvironmentVariableEditor } from "../../../components/environment-variable-editor";
+import { MCPServerHeader } from "../../../components/mcp-server-header";
 
 interface PageProps {
 	params: Promise<{ id: string }>;
@@ -65,7 +64,7 @@ export default function MCPServerPage({ params }: PageProps) {
 		data: server,
 		isLoading,
 		mutate,
-	} = useSWR<MCPServer>(`/api/mcp-servers/${id}`, async (url: string) => {
+	} = useSWR<MCPServer>(`/api/mcp/servers/${id}`, async (url: string) => {
 		const response = await fetch(url);
 		if (!response.ok) {
 			throw new Error("Failed to fetch MCP server");
@@ -85,7 +84,7 @@ export default function MCPServerPage({ params }: PageProps) {
 		try {
 			setIsDeleting(true);
 
-			const response = await fetch(`/api/mcp-servers/${id}`, {
+			const response = await fetch(`/api/mcp/servers/${id}`, {
 				method: "DELETE",
 			});
 
@@ -94,7 +93,7 @@ export default function MCPServerPage({ params }: PageProps) {
 			}
 
 			// Redirect to servers list
-			window.location.href = "/mcp-servers";
+			window.location.href = "/mcp/servers";
 		} catch (error) {
 			console.error("Error:", error);
 			setIsDeleting(false);
@@ -102,7 +101,7 @@ export default function MCPServerPage({ params }: PageProps) {
 	};
 
 	const handleEdit = () => {
-		window.location.href = `/mcp-servers/${id}/edit`;
+		window.location.href = `/mcp/servers/${id}/edit`;
 	};
 
 	const handleOpenSchema = (tool: MCPTool) => {
@@ -186,14 +185,8 @@ export default function MCPServerPage({ params }: PageProps) {
 				{/* Main content skeleton */}
 				<div className="flex-1 px-6 mt-8 min-h-0">
 					<div className="w-full h-full">
-						<Tabs defaultValue="details" className="flex flex-col h-full">
+						<Tabs defaultValue="tools" className="flex flex-col h-full">
 							<TabsList className="inline-flex h-9 items-center text-muted-foreground w-full justify-start rounded-none border-b bg-transparent p-0 flex-shrink-0 mb-4">
-								<TabsTrigger
-									className="inline-flex items-center justify-center whitespace-nowrap py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
-									value="details"
-								>
-									Details
-								</TabsTrigger>
 								<TabsTrigger
 									className="inline-flex items-center justify-center whitespace-nowrap py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
 									value="tools"
@@ -209,22 +202,86 @@ export default function MCPServerPage({ params }: PageProps) {
 							</TabsList>
 
 							<TabsContent
-								value="details"
+								value="tools"
+								className="flex-1 m-0 data-[state=active]:block"
+							>
+								<div className="h-[calc(100vh-350px)]">
+									<div className="space-y-4">
+										{[1, 2, 3, 4].map((i) => (
+											<div
+												key={i}
+												className="rounded-lg border bg-card shadow animate-pulse"
+											>
+												<div className="p-6 pb-4">
+													<div className="flex items-center justify-between">
+														<div>
+															<div className="flex items-center gap-2 mb-3">
+																<div className="size-4 rounded bg-primary/30" />
+																<div className="h-6 w-36 bg-muted rounded" />
+															</div>
+															<div className="h-4 w-64 bg-muted rounded" />
+														</div>
+														<div className="h-9 w-28 bg-muted rounded" />
+													</div>
+												</div>
+											</div>
+										))}
+									</div>
+								</div>
+							</TabsContent>
+							<TabsContent
+								value="settings"
 								className="flex-1 m-0 data-[state=active]:block"
 							>
 								<div className="h-[calc(100vh-350px)]">
 									<div className="space-y-8">
-										<div className="rounded-lg border bg-card shadow animate-pulse">
-											<div className="p-6 space-y-2">
-												<div className="h-6 w-36 bg-muted rounded mb-4" />
-												<div className="space-y-6">
-													{[1, 2, 3, 4, 5, 6].map((i) => (
-														<div key={i} className="flex justify-between">
-															<div className="h-5 w-32 bg-muted rounded" />
-															<div className="h-5 w-40 bg-muted rounded" />
-														</div>
-													))}
+										{/* Run Configuration skeleton */}
+										<div className="space-y-4">
+											<div className="h-6 w-40 bg-muted rounded mb-4" />
+
+											<div className="rounded-lg border bg-card shadow animate-pulse">
+												<div className="p-6 pb-3">
+													<div className="flex items-center gap-2 mb-4">
+														<div className="size-4 rounded bg-primary/30" />
+														<div className="h-5 w-24 bg-muted rounded" />
+													</div>
+													<div className="h-12 w-full bg-muted rounded-md" />
 												</div>
+											</div>
+
+											<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+												{[1, 2, 3, 4].map((i) => (
+													<div
+														key={i}
+														className="flex items-center justify-between p-4 border rounded-lg animate-pulse"
+													>
+														<div className="flex items-center gap-2">
+															<div className="size-4 rounded bg-muted" />
+															<div className="h-5 w-28 bg-muted rounded" />
+														</div>
+														<div className="h-5 w-20 bg-muted rounded" />
+													</div>
+												))}
+											</div>
+										</div>
+
+										{/* Secrets section skeleton */}
+										<div className="space-y-4">
+											<div className="h-6 w-20 bg-muted rounded mb-4" />
+
+											<div className="space-y-4">
+												{[1, 2, 3].map((i) => (
+													<div
+														key={i}
+														className="flex items-center justify-between p-4 border rounded-lg animate-pulse"
+													>
+														<div className="flex items-center gap-2">
+															<div className="size-4 rounded bg-muted" />
+															<div className="h-5 w-36 bg-muted rounded" />
+														</div>
+														<div className="h-5 w-16 bg-muted rounded" />
+													</div>
+												))}
 											</div>
 										</div>
 									</div>
@@ -253,9 +310,7 @@ export default function MCPServerPage({ params }: PageProps) {
 		);
 	}
 
-	const template = server.templateId
-		? getMCPTemplateById(server.templateId)
-		: undefined;
+	const template = server.template;
 
 	return (
 		<div className="flex flex-col">

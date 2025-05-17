@@ -1,4 +1,3 @@
-import { getMCPTemplateById } from "@/lib/mcp-templates/index";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Key, Plus } from "lucide-react";

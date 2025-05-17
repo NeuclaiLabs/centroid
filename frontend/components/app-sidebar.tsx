@@ -62,12 +62,12 @@ export function AppSidebar({ user }: { user: User | undefined }) {
 		navMain: [
 			{
 				title: "Templates",
-				url: "/mcp-templates",
+				url: "/mcp/templates",
 				icon: LayoutDashboardIcon,
 			},
 			{
 				title: "Servers",
-				url: "/mcp-servers",
+				url: "/mcp/servers",
 				icon: ServerIcon,
 			},
 			{

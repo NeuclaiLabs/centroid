@@ -11,7 +11,6 @@ from app.api.routes import (
     llm,
     login,
     logs,
-    mcp_servers,
     messages,
     projects,
     suggestions,
@@ -20,6 +19,7 @@ from app.api.routes import (
     utils,
     votes,
 )
+from app.api.routes.mcp import servers, templates
 from app.core.logger import get_logger
 
 # Initialize analytics service and generate instance ID
@@ -52,5 +52,8 @@ api_router.include_router(logs.router, prefix="/logs", tags=["logs"])
 
 
 api_router.include_router(
-    mcp_servers.router, prefix="/mcp-servers", tags=["mcp-servers"]
+    servers.router, prefix="/mcp/servers", tags=["mcp", "servers"]
+)
+api_router.include_router(
+    templates.router, prefix="/mcp/templates", tags=["mcp", "templates"]
 )
