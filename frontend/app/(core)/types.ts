@@ -221,6 +221,7 @@ export interface MCPTemplate {
   details?: {
     icon?: { path: string } | Array<{ d: string }>;
     homepage?: string;
+    documentation?: string;
     [key: string]: unknown;
   };
   servers?: MCPServer[];

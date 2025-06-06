@@ -64,8 +64,7 @@ export default function MCPTemplatesPage() {
 									<Skeleton className="h-9 w-24 flex-shrink-0" />
 								</CardHeader>
 								<CardContent className="px-6 py-2 space-y-4 flex-grow">
-									<div className="space-y-1.5">
-										<Skeleton className="h-4 w-full" />
+									<div className="space-y-2">
 										<Skeleton className="h-4 w-5/6" />
 										<Skeleton className="h-4 w-4/6" />
 									</div>

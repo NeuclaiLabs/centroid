@@ -43,6 +43,7 @@ import { SchemaDialog } from "../../../components/schema-dialog";
 import { useMCPServers } from "@/app/(core)/hooks/use-mcp-servers";
 import { EnvironmentVariableEditor } from "../../../components/environment-variable-editor";
 import { MCPServerHeader } from "../../../components/mcp-server-header";
+import { cn } from "@/lib/utils";
 
 interface PageProps {
 	params: Promise<{ id: string }>;
@@ -72,8 +73,28 @@ export default function MCPServerPage({ params }: PageProps) {
 		return response.json();
 	});
 
+	const getStateClassNames = (state?: string): string => {
+		const defaultClasses = "capitalize";
+		switch (state) {
+			case "running":
+				return `${defaultClasses} bg-green-100 text-green-700 border-green-200 dark:bg-green-900/50 dark:text-green-300 dark:border-green-700`;
+			case "pending":
+			case "initializing":
+			case "restarting":
+				return `${defaultClasses} bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-300 dark:border-yellow-700`;
+			case "stopping":
+			case "stopped":
+				return `${defaultClasses} bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700/50 dark:text-gray-300 dark:border-gray-600`;
+			case "disconnected":
+			case "error":
+				return `${defaultClasses} bg-red-100 text-red-700 border-red-200 dark:bg-red-900/50 dark:text-red-300 dark:border-red-700`;
+			default:
+				return `${defaultClasses} bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700/50 dark:text-gray-300 dark:border-gray-600`;
+		}
+	};
+
 	const handleStartStop = async () => {
-		const action = server?.status === "active" ? "stop" : "start";
+		const action = server?.state === "running" ? "stop" : "start";
 		const updatedServer = await changeServerState(id, action);
 		if (updatedServer) {
 			mutate();
@@ -173,7 +194,7 @@ export default function MCPServerPage({ params }: PageProps) {
 									</div>
 								</div>
 							</div>
-							<div className="px-6 pb-9 pt-2">
+							<div className="px-6 pb-6 pt-2">
 								<div className="flex gap-2">
 									<div className="h-6 w-20 bg-muted rounded-full" />
 								</div>
@@ -367,18 +388,13 @@ export default function MCPServerPage({ params }: PageProps) {
 													</dt>
 													<dd>
 														<Badge
-															variant={
-																server.status === "active"
-																	? "default"
-																	: "secondary"
-															}
-															className={
-																server.status === "active"
-																	? "bg-green-100 text-green-800"
-																	: ""
-															}
+															variant="outline"
+															className={cn(
+																"px-2 py-0.5 text-xs",
+																getStateClassNames(server.state),
+															)}
 														>
-															{server.status}
+															{server.state || "initializing"}
 														</Badge>
 													</dd>
 												</div>
@@ -536,45 +552,48 @@ export default function MCPServerPage({ params }: PageProps) {
 										</div>
 									)}
 
-									<div className="flex items-center justify-between">
-										<h3 className="text-lg font-medium">
-											Environment Variables
-										</h3>
-										{isUpdatingEnv && (
-											<span className="text-sm text-muted-foreground animate-pulse">
-												Updating...
-											</span>
+									<div className="space-y-4">
+										<div className="flex items-center justify-between">
+											<h3 className="text-lg font-medium">
+												Environment Variables
+											</h3>
+											{isUpdatingEnv && (
+												<span className="text-sm text-muted-foreground animate-pulse">
+													Updating...
+												</span>
+											)}
+										</div>
+
+										{server.secrets ? (
+											<div className="space-y-4">
+												{Object.entries(server.secrets).map(([key, value]) => (
+													<div
+														key={key}
+														className="group p-4 border rounded-lg hover:border-primary/50 transition-colors"
+													>
+														<EnvironmentVariableEditor
+															name={key}
+															value={
+																typeof value === "string"
+																	? value
+																	: typeof value === "undefined" ||
+																			value === null
+																		? ""
+																		: String(value)
+															}
+															onSave={handleUpdateEnvVariable}
+														/>
+													</div>
+												))}
+											</div>
+										) : (
+											<div className="text-center p-4">
+												<p className="text-muted-foreground">
+													No environment variables available for this server.
+												</p>
+											</div>
 										)}
 									</div>
-
-									{server.secrets ? (
-										<div className="space-y-4">
-											{Object.entries(server.secrets).map(([key, value]) => (
-												<div
-													key={key}
-													className="group p-4 border rounded-lg hover:border-primary/50 transition-colors"
-												>
-													<EnvironmentVariableEditor
-														name={key}
-														value={
-															typeof value === "string"
-																? value
-																: typeof value === "undefined" || value === null
-																	? ""
-																	: String(value)
-														}
-														onSave={handleUpdateEnvVariable}
-													/>
-												</div>
-											))}
-										</div>
-									) : (
-										<div className="text-center p-4">
-											<p className="text-muted-foreground">
-												No environment variables available for this server.
-											</p>
-										</div>
-									)}
 								</div>
 							</ScrollArea>
 						</TabsContent>

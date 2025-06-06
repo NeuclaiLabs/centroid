@@ -155,9 +155,9 @@ export function MCPTemplateCard({
 						<LayoutGrid className="size-3 text-orange-500" />
 						<span className="text-xs">{template.tools?.length || 0} tools</span>
 					</div>
-					{template.details?.homepage && (
+					{template.details?.documentation && (
 						<Link
-							href={template.details.homepage}
+							href={template.details.documentation}
 							target="_blank"
 							rel="noopener noreferrer"
 							className="flex items-center gap-1 text-xs text-primary hover:underline"

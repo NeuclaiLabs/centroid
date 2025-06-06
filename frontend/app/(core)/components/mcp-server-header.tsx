@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { SimpleIcon } from "simple-icons";
 import { MCPServerConnectionModal } from "./mcp-server-connection-modal";
+import { cn } from "@/lib/utils";
 
 interface MCPServerHeaderProps {
 	server: MCPServer;
@@ -52,8 +53,27 @@ export function MCPServerHeader({
 	const [isStartingOrStopping, setIsStartingOrStopping] = useState(false);
 
 	const template = server.template;
-
 	const icon = template?.details?.icon as SimpleIcon;
+
+	const getStateClassNames = (state?: string): string => {
+		const defaultClasses = "capitalize";
+		switch (state) {
+			case "running":
+				return `${defaultClasses} bg-green-100 text-green-700 border-green-200 dark:bg-green-900/50 dark:text-green-300 dark:border-green-700`;
+			case "pending":
+			case "initializing":
+			case "restarting":
+				return `${defaultClasses} bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-300 dark:border-yellow-700`;
+			case "stopping":
+			case "stopped":
+				return `${defaultClasses} bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700/50 dark:text-gray-300 dark:border-gray-600`;
+			case "disconnected":
+			case "error":
+				return `${defaultClasses} bg-red-100 text-red-700 border-red-200 dark:bg-red-900/50 dark:text-red-300 dark:border-red-700`;
+			default:
+				return `${defaultClasses} bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700/50 dark:text-gray-300 dark:border-gray-600`;
+		}
+	};
 
 	const handleDeleteConfirm = async () => {
 		try {
@@ -156,14 +176,14 @@ export function MCPServerHeader({
 									onClick={handleStartStop}
 									disabled={isStartingOrStopping}
 									className={
-										server.status === "active"
+										server.state === "running"
 											? "text-destructive focus:text-destructive"
 											: "text-green-600 focus:text-green-600"
 									}
 								>
 									{isStartingOrStopping ? (
 										<>Loading...</>
-									) : server.status === "active" ? (
+									) : server.state === "running" ? (
 										<>
 											<StopCircle className="mr-2 h-4 w-4" />
 											Stop Server
@@ -197,14 +217,13 @@ export function MCPServerHeader({
 								<Badge variant="secondary">{server.kind}</Badge>
 							)}
 							<Badge
-								variant="secondary"
-								className={
-									server.status === "active"
-										? "bg-green-500/15 text-green-600 hover:bg-green-500/20"
-										: ""
-								}
+								variant="outline"
+								className={cn(
+									"px-2 py-0.5 text-xs",
+									getStateClassNames(server.state),
+								)}
 							>
-								{server.status === "active" ? "Running" : "Stopped"}
+								{server.state || "initializing"}
 							</Badge>
 						</div>
 					</div>

@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import logging
 import warnings
 from contextlib import asynccontextmanager
@@ -6,6 +7,7 @@ from contextlib import asynccontextmanager
 import sentry_sdk
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastmcp import FastMCP
 from sqlmodel import Session, select
 
 from app.api.main import api_router
@@ -25,6 +27,26 @@ if settings.SENTRY_DSN:
 logger = logging.getLogger(__name__)
 
 
+def combine_lifespans(*lifespans):
+    """Create a combined lifespan to manage multiple session managers"""
+
+    @contextlib.asynccontextmanager
+    async def combined_lifespan(app):
+        async with contextlib.AsyncExitStack() as stack:
+            for lifespan in lifespans:
+                await stack.enter_async_context(lifespan(app))
+            yield
+
+    return combined_lifespan
+
+
+# Create your FastMCP server as well as any tools, resources, etc.
+mcp = FastMCP("MyServer")
+
+# Create the ASGI app
+mcp_app = mcp.http_app(path="/mcp")
+
+
 # Define the function that will be used for the lifespan
 @asynccontextmanager
 async def lifespan(app: FastAPI):  # noqa: ARG001
@@ -38,7 +60,7 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
         # Get the MCP manager singleton
         manager = MCPManager()
         manager.set_session(session)
-        manager.set_app(app)
+        manager.set_app(mcp)
         logger.info(f"Manager: {manager}")
 
         # Initialize the manager with active servers in the background
@@ -57,12 +79,15 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
     await manager.shutdown()
 
 
+# Combine both lifespans
+combined_lifespan = combine_lifespans(mcp_app.lifespan, lifespan)
 # Update the FastAPI app initialization to use the lifespan
 app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    lifespan=lifespan,
+    lifespan=combine_lifespans(mcp_app.lifespan, lifespan),
 )
+
 
 # Set all CORS enabled origins
 app.add_middleware(
@@ -73,6 +98,5 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Disabled LoggingMiddleware
-# app.add_middleware(LoggingMiddleware)
 app.include_router(api_router, prefix=settings.API_V1_STR)
+app.mount("/mcp-server", mcp_app)

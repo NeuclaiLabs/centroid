@@ -1,7 +1,7 @@
 import asyncio
 import threading
 
-from fastapi import FastAPI
+from fastmcp import FastMCP
 from sqlmodel import Session
 
 from app.core.logger import get_logger
@@ -17,7 +17,7 @@ class MCPManager:
     _lock = threading.Lock()
     _registry: dict[str, MCPProxy] = {}
     _db_session: Session | None = None
-    _app: FastAPI | None = None
+    _app: FastMCP | None = None
 
     def __new__(cls):
         with cls._lock:
@@ -34,7 +34,7 @@ class MCPManager:
                     cls._server = cls()
         return cls._server
 
-    def set_app(self, app: FastAPI) -> None:
+    def set_app(self, app: FastMCP) -> None:
         self._app = app
 
     def set_session(self, session: Session) -> None:

@@ -205,46 +205,45 @@ export function MCPServerCard({ server }: MCPServerCardProps) {
 									{server.state || "initializing"}
 								</span>
 							</div>
-							{template?.details?.homepage && (
-								<DropdownMenu>
-									<DropdownMenuTrigger asChild>
-										<Button
-											variant="ghost"
-											size="icon"
-											className="h-4 w-6"
-											onClick={(e) => e.stopPropagation()}
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button
+										variant="ghost"
+										size="icon"
+										className="h-4 w-6"
+										onClick={(e) => e.stopPropagation()}
+									>
+										<MoreHorizontal className="size-4" />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end">
+									{["running", "stopped"].includes(
+										server.state || "stopped",
+									) && (
+										<DropdownMenuItem
+											onClick={(e) => {
+												e.stopPropagation();
+												handleToggleState(e);
+											}}
+											disabled={isTogglingStatus}
+											className={
+												isServerActive ? "text-destructive" : "text-success"
+											}
 										>
-											<MoreHorizontal className="size-4" />
-										</Button>
-									</DropdownMenuTrigger>
-									<DropdownMenuContent align="end">
-										{["running", "stopped"].includes(
-											server.state || "stopped",
-										) && (
-											<DropdownMenuItem
-												onClick={(e) => {
-													e.stopPropagation();
-													handleToggleState(e);
-												}}
-												disabled={isTogglingStatus}
-												className={
-													isServerActive ? "text-destructive" : "text-success"
-												}
-											>
-												{isServerActive ? (
-													<>
-														<StopCircle className="h-3.5 w-3.5 mr-2" />
-														Stop
-													</>
-												) : (
-													<>
-														<Play className="h-3.5 w-3.5 mr-2" />
-														Start
-													</>
-												)}
-											</DropdownMenuItem>
-										)}
-										{/* <DropdownMenuItem asChild>
+											{isServerActive ? (
+												<>
+													<StopCircle className="h-3.5 w-3.5 mr-2" />
+													Stop
+												</>
+											) : (
+												<>
+													<Play className="h-3.5 w-3.5 mr-2" />
+													Start
+												</>
+											)}
+										</DropdownMenuItem>
+									)}
+									{/* <DropdownMenuItem asChild>
 											<Link
 												href={template.details.homepage}
 												target="_blank"
@@ -255,9 +254,8 @@ export function MCPServerCard({ server }: MCPServerCardProps) {
 												Documentation
 											</Link>
 										</DropdownMenuItem> */}
-									</DropdownMenuContent>
-								</DropdownMenu>
-							)}
+								</DropdownMenuContent>
+							</DropdownMenu>
 						</div>
 					</CardFooter>
 				</Card>

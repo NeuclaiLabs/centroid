@@ -62,6 +62,7 @@ export default function MCPTemplatePage({ params }: PageProps) {
 		return (
 			<div className="flex flex-col">
 				{/* Header skeleton */}
+				{/* Header skeleton */}
 				<div className="flex-shrink-0 px-6 pt-6">
 					<div className="animate-pulse">
 						<div className="rounded-lg border bg-card">
@@ -80,9 +81,9 @@ export default function MCPTemplatePage({ params }: PageProps) {
 									</div>
 								</div>
 							</div>
-							<div className="px-6 pb-5 pt-2">
+							<div className="px-6 pb-6 pt-2">
 								<div className="flex gap-2">
-									<div className="h-5 w-20 bg-muted rounded-full" />
+									<div className="h-6 w-20 bg-muted rounded-full" />
 								</div>
 							</div>
 						</div>

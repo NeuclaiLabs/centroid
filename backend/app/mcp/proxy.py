@@ -2,18 +2,15 @@ from datetime import datetime
 from typing import Any, Literal
 
 import mcp.types
-from fastapi import FastAPI
+from fastmcp import FastMCP
 from fastmcp.client import Client
 from fastmcp.client.transports import StdioTransport
 from fastmcp.server.proxy import FastMCPProxy
 from fastmcp.tools.tool import Tool
-from mcp.server.sse import SseServerTransport
 from mcp.shared.exceptions import McpError
 from mcp.types import (
     METHOD_NOT_FOUND,
 )
-from starlette.requests import Request
-from starlette.responses import Response
 
 from app.core.logger import get_logger
 from app.models.mcp.server import MCPServer
@@ -50,8 +47,6 @@ class MCPProxy(FastMCPProxy):
         **kwargs,
     ):
         self.mcp_server = mcp_server
-        self.transports: dict[str, SseServerTransport] = {}
-        self.log_transports: dict[str, SseServerTransport] = {}
         self.client_initialized = False
 
         # Runtime state variables moved from MCPServer
@@ -157,13 +152,6 @@ class MCPProxy(FastMCPProxy):
             if self.client_initialized:
                 logger.info(f"Shutting down MCP proxy for server {self.mcp_server.id}")
                 try:
-                    # Close any active transports first
-                    transport_count = len(self.transports)
-                    logger.info(
-                        f"Closing {transport_count} active transports for server {self.mcp_server.id}"
-                    )
-                    self.transports.clear()
-                    self.log_transports.clear()
                     # Create a new task in the same event loop
                     await self.client.__aexit__(None, None, None)
                     async with self.client:
@@ -292,69 +280,17 @@ class MCPProxy(FastMCPProxy):
             )
             return []
 
-    def mount(self, app: FastAPI) -> None:
+    def mount(self, app: FastMCP) -> None:
         """
-        Mount this MCP server to the FastAPI app with dynamic path parameters.
+        Mount this MCP server to the main FastMCP app.
 
         Args:
-            app: The FastAPI app to mount to
+            app: The FastMCP app to mount to
         """
         logger.info(
             f"Mounting MCP server {self.mcp_server.id} at path {self.mcp_server.mount_path}"
         )
-
-        # Define MCP connection handler with path parameters
-        @app.get(self.mcp_server.mount_path)
-        async def handle_mcp_connection(
-            request: Request,
-        ):
-            logger.info(
-                f"New connection request for MCP server {self.mcp_server.id} from {request.client}"
-            )
-            transport_key = self.get_transport_key()
-            if transport_key not in self.transports:
-                logger.info(
-                    f"Creating transport and adding to transports for {self.mcp_server.id}"
-                )
-                self.transports[transport_key] = SseServerTransport(
-                    f"{self.mcp_server.mount_path}/messages/"
-                )
-            transport = self.transports[transport_key]
-            logger.info(f"Establishing SSE connection for server {self.mcp_server.id}")
-            async with transport.connect_sse(
-                request.scope, request.receive, request._send
-            ) as streams:
-                logger.info(
-                    f"Running MCP server {self.mcp_server.id} with stream connection"
-                )
-                await self._mcp_server.run(
-                    streams[0],
-                    streams[1],
-                    self._mcp_server.create_initialization_options(
-                        experimental_capabilities={
-                            "tool_filtering": {"name": self.tool_group}
-                        }
-                    ),
-                )
-
-        # Handle POST messages with path parameters
-        @app.post(f"{self.mcp_server.mount_path}/messages/")
-        async def handle_post_message(
-            request: Request,
-        ) -> Response:
-            logger.debug(f"Received POST message for server {self.mcp_server.id}")
-            transport_key = self.get_transport_key()
-            transport = self.transports.get(transport_key)
-            if not transport:
-                logger.warning(f"No active transport found for {self.mcp_server.id}")
-                return Response(
-                    status_code=404,
-                    content=f"No active transport for {self.mcp_server.id}",
-                )
-
-            return await transport.handle_post_message(
-                request.scope, request.receive, request._send
-            )
+        app.mount(self.mcp_server.id, self)
 
     async def refresh_configuration(self, updated_server: MCPServer) -> bool:
         """
