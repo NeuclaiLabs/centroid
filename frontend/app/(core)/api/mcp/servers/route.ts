@@ -9,25 +9,17 @@ export async function GET(request: NextRequest) {
       return new Response('Unauthorized', { status: 401 });
     }
 
-    const searchParams = request.nextUrl.searchParams;
-    const skip = searchParams.get('skip');
-    const limit = searchParams.get('limit');
-    const templateId = searchParams.get('template_id');
     const path = request.nextUrl.pathname;
-
-    // Determine if we're requesting templates endpoint or regular servers
     const isTemplatesRequest = path.endsWith('/templates');
-
-    const params = new URLSearchParams();
-    if (skip) params.append('skip', skip);
-    if (limit) params.append('limit', limit);
-    if (templateId) params.append('template_id', templateId);
-
     const endpoint = isTemplatesRequest
       ? `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mcp/templates`
       : `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mcp/servers`;
 
-    const response = await fetch(`${endpoint}?${params}`, {
+    // Forward all search params as-is
+    const params = request.nextUrl.searchParams.toString();
+    const url = params ? `${endpoint}?${params}` : endpoint;
+
+    const response = await fetch(url, {
       headers: {
         accept: 'application/json',
         // @ts-ignore

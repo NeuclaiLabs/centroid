@@ -9,7 +9,7 @@ interface MCPServersResponse {
 }
 
 interface UseMCPServersOptions {
-  templateId?: string;
+  isAgent?: boolean;
 }
 
 const fetcher = async (url: string) => {
@@ -23,11 +23,11 @@ const fetcher = async (url: string) => {
   return res.json();
 };
 
-export function useMCPServers(options: UseMCPServersOptions = {}) {
-  const { templateId } = options;
+export function useMCPServers(options: UseMCPServersOptions = { isAgent: false }) {
+  const { isAgent } = options;
 
   const { data, error, isLoading, mutate } = useSWR<MCPServersResponse>(
-    '/api/mcp/servers',
+    `/api/mcp/servers?is_agent=${isAgent}`,
     fetcher,
   );
 

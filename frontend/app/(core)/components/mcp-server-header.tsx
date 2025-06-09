@@ -186,12 +186,12 @@ export function MCPServerHeader({
 									) : server.state === "running" ? (
 										<>
 											<StopCircle className="mr-2 h-4 w-4" />
-											Stop Server
+											Stop
 										</>
 									) : (
 										<>
 											<Play className="mr-2 h-4 w-4" />
-											Start Server
+											Start
 										</>
 									)}
 								</DropdownMenuItem>
@@ -201,7 +201,7 @@ export function MCPServerHeader({
 									onClick={() => setIsDeleteDialogOpen(true)}
 								>
 									<Trash2 className="mr-2 h-4 w-4" />
-									<span>Delete Server</span>
+									<span>Delete</span>
 								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>

@@ -14,7 +14,14 @@ from app.models import (
     User,
     UserCreate,
 )
-from app.models.mcp import MCPTemplate, MCPTemplateCreate, MCPTemplateUpdate
+from app.models.mcp import (
+    MCPServer,
+    MCPServerCreate,
+    MCPServerUpdate,
+    MCPTemplate,
+    MCPTemplateCreate,
+    MCPTemplateUpdate,
+)
 
 engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 logger = get_logger(__name__)
@@ -112,3 +119,48 @@ async def init_db(session: Session) -> None:
             logger.info("MCP templates processed successfully")
         except Exception as e:
             logger.error(f"Failed to process MCP templates: {e}")
+
+        # Process MCP agent servers from JSON files
+        try:
+            agents_dir = Path(__file__).parent.parent / "data" / "agents"
+            agent_files = glob.glob(os.path.join(agents_dir, "*.json"))
+
+            logger.info(f"Found {len(agent_files)} agent files in {agents_dir}")
+
+            for file_path in agent_files:
+                try:
+                    with open(file_path) as f:
+                        agent_data = json.load(f)
+
+                    agent_name = agent_data["name"]
+
+                    # Check if server exists by name
+                    existing_server = session.exec(
+                        select(MCPServer).where(MCPServer.name == agent_name)
+                    ).first()
+
+                    if existing_server:
+                        # Update existing server
+                        update_data = MCPServerUpdate(**agent_data)
+                        update_dict = update_data.model_dump(exclude_unset=True)
+
+                        for key, value in update_dict.items():
+                            setattr(existing_server, key, value)
+
+                        logger.info(f"Updated agent server: {agent_name}")
+                    else:
+                        # Create new server
+                        server = MCPServerCreate(
+                            **agent_data, is_agent=True, owner_id=user.id
+                        )
+                        db_server = MCPServer(**server.model_dump())
+                        session.add(db_server)
+                        logger.info(f"Added new agent server: {agent_name}")
+
+                except Exception as e:
+                    logger.error(f"Error processing agent {file_path}: {e}")
+
+            session.commit()
+            logger.info("MCP agent servers processed successfully")
+        except Exception as e:
+            logger.error(f"Failed to process MCP agent servers: {e}")

@@ -66,6 +66,11 @@ export function AppSidebar({ user }: { user: User | undefined }) {
 				icon: LayoutDashboardIcon,
 			},
 			{
+				title: "Agents",
+				url: "/agents",
+				icon: BotIcon,
+			},
+			{
 				title: "Servers",
 				url: "/mcp/servers",
 				icon: ServerIcon,

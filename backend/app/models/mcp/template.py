@@ -60,7 +60,7 @@ class MCPTemplateBase(CamelModel):
 
     name: str = Field(description="Name of the MCP template")
     description: str = Field(description="Description of the MCP template")
-    status: MCPTemplateStatus | None = Field(
+    status: MCPTemplateStatus = Field(
         default=MCPTemplateStatus.ACTIVE, description="Status of the MCP template"
     )
     kind: MCPTemplateKind = Field(

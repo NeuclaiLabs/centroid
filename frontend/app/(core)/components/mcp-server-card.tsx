@@ -149,7 +149,7 @@ export function MCPServerCard({ server }: MCPServerCardProps) {
 									<div className="flex items-start gap-1">
 										<div className="flex gap-1 items-center">
 											<span className="font-semibold text-sm break-words mr-1">
-												{template?.name}
+												{server?.name}
 											</span>
 											{template?.kind === MCPTemplateKind.OFFICIAL && (
 												<div className="relative h-4 w-4 shrink-0 inline-flex">

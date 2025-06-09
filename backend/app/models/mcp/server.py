@@ -4,7 +4,7 @@ import enum
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import JSON, Column, DateTime, String, func
+from sqlalchemy import JSON, Boolean, Column, DateTime, String, func
 from sqlmodel import Field, Relationship, SQLModel
 
 from app.core.logger import get_logger
@@ -84,6 +84,10 @@ class MCPServerBase(CamelModel):
         default=None,
         description="State of the MCP server",
     )
+    is_agent: bool = Field(default=False, description="Whether this server is an agent")
+    instructions: str | None = Field(
+        default=None, description="Instructions for the MCP server"
+    )
 
 
 class MCPServerCreate(MCPServerBase):
@@ -100,6 +104,10 @@ class MCPServerCreate(MCPServerBase):
     )
     # Add fields specific to creation
     secrets: dict[str, Any] | None = None
+    is_agent: bool = Field(default=False, description="Whether this server is an agent")
+    instructions: str | None = Field(
+        default=None, description="Instructions for the MCP server"
+    )
 
 
 class MCPServerUpdate(CamelModel):
@@ -116,6 +124,8 @@ class MCPServerUpdate(CamelModel):
     settings: dict[str, Any] | None = None
     secrets: dict[str, Any] | None = None
     tools: list[MCPTool] | None = None
+    is_agent: bool | None = None
+    instructions: str | None = None
 
 
 class MCPServerOut(MCPServerBase):
@@ -132,6 +142,8 @@ class MCPServerOut(MCPServerBase):
     stats: dict[str, Any] | None = None
     secrets: dict[str, Any] | None = None
     template: MCPTemplate | None = None
+    is_agent: bool
+    instructions: str | None
 
 
 class MCPServersOut(CamelModel):
@@ -186,6 +198,16 @@ class MCPServer(MCPServerBase, SQLModel, table=True):
         default=None,
         sa_column=Column("encrypted_secrets", String),
         description="Encrypted secrets for the MCP server",
+    )
+    is_agent: bool = Field(
+        default=False,
+        sa_type=Boolean,
+        description="Whether this server is an agent",
+    )
+    instructions: str | None = Field(
+        default=None,
+        sa_type=String,
+        description="Instructions for the MCP server",
     )
 
     def __init__(self, **data):
