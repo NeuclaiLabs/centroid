@@ -6,8 +6,8 @@ import { Chat } from '@/components/chat';
 import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
 import { DataStreamHandler } from '@/components/data-stream-handler';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
-import { DBMessage } from '@/lib/db/schema';
-import { Attachment, UIMessage } from 'ai';
+import type { DBMessage } from '@/lib/db/schema';
+import type { Attachment, UIMessage } from 'ai';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -24,7 +24,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   }
 
   if (chat.visibility === 'private') {
-    if (!session || !session.user) {
+    if (!session.user) {
       return notFound();
     }
 
@@ -59,9 +59,11 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         <Chat
           id={chat.id}
           initialMessages={convertToUIMessages(messagesFromDb)}
-          selectedChatModel={DEFAULT_CHAT_MODEL}
-          selectedVisibilityType={chat.visibility}
+          initialChatModel={DEFAULT_CHAT_MODEL}
+          initialVisibilityType={chat.visibility}
           isReadonly={session?.user?.id !== chat.userId}
+          session={session}
+          autoResume={true}
         />
         <DataStreamHandler id={id} />
       </>
@@ -73,9 +75,11 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       <Chat
         id={chat.id}
         initialMessages={convertToUIMessages(messagesFromDb)}
-        selectedChatModel={chatModelFromCookie.value}
-        selectedVisibilityType={chat.visibility}
+        initialChatModel={chatModelFromCookie.value}
+        initialVisibilityType={chat.visibility}
         isReadonly={session?.user?.id !== chat.userId}
+        session={session}
+        autoResume={true}
       />
       <DataStreamHandler id={id} />
     </>

@@ -56,7 +56,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  props: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
@@ -64,7 +64,7 @@ export async function PUT(
       return new Response('Unauthorized', { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await props.params;
     const body = await request.json();
 
     const response = await fetch(
@@ -104,7 +104,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  props: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
@@ -112,7 +112,7 @@ export async function DELETE(
       return new Response('Unauthorized', { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await props.params;
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/v1/mcp/templates/${id}`,
       {

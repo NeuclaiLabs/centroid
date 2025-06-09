@@ -1,13 +1,33 @@
 import { compare } from 'bcrypt-ts';
-import NextAuth, { type User, type Session } from 'next-auth';
+import NextAuth, { type DefaultSession } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
-
-import { getUser } from '@/lib/db/queries';
-
+import { createGuestUser, getUser } from '@/lib/db/queries';
 import { authConfig } from './auth.config';
+import { DUMMY_PASSWORD } from '@/lib/constants';
+import type { DefaultJWT } from 'next-auth/jwt';
 
-interface ExtendedSession extends Session {
-  user: User;
+export type UserType = 'guest' | 'regular';
+
+declare module 'next-auth' {
+  interface Session extends DefaultSession {
+    user: {
+      id: string;
+      type: UserType;
+    } & DefaultSession['user'];
+  }
+
+  interface User {
+    id?: string;
+    email?: string | null;
+    type: UserType;
+  }
+}
+
+declare module 'next-auth/jwt' {
+  interface JWT extends DefaultJWT {
+    id: string;
+    type: UserType;
+  }
 }
 
 export const {
@@ -20,6 +40,7 @@ export const {
   providers: [
     Credentials({
       credentials: {},
+      // @ts-ignore
       async authorize({ email, password }: any) {
         const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/login/access-token`;
 
@@ -71,20 +92,14 @@ export const {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
+        token.id = user.id as string;
         // @ts-ignore
         token.token = user.token;
       }
 
       return token;
     },
-    async session({
-      session,
-      token,
-    }: {
-      session: ExtendedSession;
-      token: any;
-    }) {
+    async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
         // @ts-ignore
