@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 import nanoid
-from sqlalchemy import Column, DateTime, func
+from sqlalchemy import Column, DateTime, ForeignKey, func
 from sqlmodel import JSON, Field, Relationship, SQLModel
 
 from .base import CamelModel
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 class Message(SQLModel, table=True):
     __tablename__ = "messages"
     id: str = Field(primary_key=True, default_factory=nanoid.generate)
-    chat_id: str = Field(foreign_key="chats.id")
+    chat_id: str = Field(sa_column=Column(ForeignKey("chats.id", ondelete="CASCADE")))
     role: str
     parts: list | str | dict | None = Field(sa_column=Column(JSON))
     attachments: list | dict | None = Field(default=None, sa_column=Column(JSON))

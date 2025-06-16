@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 
+from sqlalchemy import event
 from sqlmodel import Session, create_engine, select
 
 from app import crud
@@ -24,6 +25,17 @@ from app.models.mcp import (
 )
 
 engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
+
+
+# Enable foreign key constraints for SQLite
+@event.listens_for(engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):  # noqa: ARG001
+    if "sqlite" in str(settings.SQLALCHEMY_DATABASE_URI):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
+
+
 logger = get_logger(__name__)
 
 

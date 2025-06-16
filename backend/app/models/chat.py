@@ -13,6 +13,7 @@ from .user import User
 
 if TYPE_CHECKING:
     from .message import Message
+    from .stream import Stream
 
 
 class ChatBase(CamelModel):
@@ -47,6 +48,7 @@ class Chat(ChatBase, SQLModel, table=True):
     user: User = Relationship(back_populates="chats")
     project: Project | None = Relationship(back_populates="chats")
     messages: list["Message"] = Relationship(back_populates="chat")
+    streams: list["Stream"] = Relationship(back_populates="chat")
 
 
 class ChatUpdate(CamelModel):

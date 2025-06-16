@@ -2,7 +2,7 @@ import os
 from logging.config import fileConfig
 
 from alembic import context
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import engine_from_config, pool, text
 from pathlib import Path
 
 
@@ -67,6 +67,10 @@ def run_migrations_online():
     )
 
     with connectable.connect() as connection:
+        # Enable foreign key constraints for SQLite
+        if "sqlite" in str(settings.SQLALCHEMY_DATABASE_URI):
+            connection.execute(text("PRAGMA foreign_keys=ON"))
+
         context.configure(
             connection=connection, target_metadata=target_metadata, compare_type=True
         )

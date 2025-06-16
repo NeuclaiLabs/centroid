@@ -2,6 +2,7 @@
 
 import type { User } from "next-auth";
 import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import {
 	BarChartIcon,
 	ClipboardListIcon,
@@ -24,9 +25,9 @@ import {
 	BotIcon,
 	ServerIcon,
 	CircleDot,
+	PlusIcon,
 } from "lucide-react";
 
-import { PlusIcon } from "@/components/icons";
 import { SidebarHistory } from "@/components/sidebar-history";
 import { SidebarUserNav } from "@/components/sidebar-user-nav";
 import { Button } from "@/components/ui/button";
@@ -43,8 +44,19 @@ import {
 	SidebarGroupContent,
 	SidebarGroupLabel,
 } from "@/components/ui/sidebar";
+import {
+	Command,
+	CommandDialog,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+	CommandList,
+} from "@/components/ui/command";
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { getChatsByUserId } from "@/lib/db/queries";
+import useSWR from "swr";
 
 import { NavDocuments } from "@/components/nav-documents";
 import { NavMain } from "@/components/nav-main";
@@ -53,12 +65,46 @@ import { NavSecondary } from "@/components/nav-secondary";
 export function AppSidebar({ user }: { user: User | undefined }) {
 	const router = useRouter();
 	const { setOpenMobile } = useSidebar();
+	const [searchOpen, setSearchOpen] = useState(false);
+	const [searchQuery, setSearchQuery] = useState("");
+
+	// Fetch chats for search
+	const { data: chatsData } = useSWR(
+		user?.id ? `/api/chats/${user.id}` : null,
+		async () => {
+			return { chats: [], hasMore: false };
+			// return getChatsByUserId({
+			// 	id: user.id,
+			// 	limit: 50,
+			// 	startingAfter: null,
+			// 	endingBefore: null,
+			// });
+		}
+	);
+
+	const filteredChats = chatsData?.chats?.filter((chat) =>
+		chat.title.toLowerCase().includes(searchQuery.toLowerCase())
+	) || [];
+
 	const data = {
 		user: {
 			name: "shadcn",
 			email: "m@example.com",
 			avatar: "/avatars/shadcn.jpg",
 		},
+		navQuick: [
+			{
+				title: "New Chat",
+				url: "/",
+				icon: PlusIcon,
+			},
+			{
+				title: "Search Chats",
+				url: "#",
+				icon: SearchIcon,
+				onClick: () => setSearchOpen(true),
+			},
+		],
 		navMain: [
 			{
 				title: "Templates",
@@ -190,65 +236,84 @@ export function AppSidebar({ user }: { user: User | undefined }) {
 		],
 	};
 	return (
-		<Sidebar className="group-data-[side=left]:border-r-0">
-			<SidebarHeader>
-				<SidebarMenu>
-					<div className="flex flex-row justify-between items-center">
-						<Link
-							href="/apps"
-							onClick={() => {
-								setOpenMobile(false);
-							}}
-							className="flex flex-row gap-3 items-center"
-						>
-							<span className="text-lg font-semibold px-2 hover:bg-muted rounded-md cursor-pointer flex items-center gap-1">
-								<CircleDot className="h-5 w-5" />
-								Centroid
-							</span>
-						</Link>
-						{/* <Tooltip>
-							<TooltipTrigger asChild>
-								<Button
-									variant="ghost"
-									type="button"
-									className="p-2 h-fit"
-									onClick={() => {
-										setOpenMobile(false);
-										router.push("/");
-										router.refresh();
+		<>
+			<Sidebar className="group-data-[side=left]:border-r-0">
+				<SidebarHeader>
+					<SidebarMenu>
+						<div className="flex flex-row justify-between items-center">
+							<Link
+								href="/apps"
+								onClick={() => {
+									setOpenMobile(false);
+								}}
+								className="flex flex-row gap-3 items-center"
+							>
+								<span className="text-lg font-semibold px-2 hover:bg-muted rounded-md cursor-pointer flex items-center gap-1">
+									<CircleDot className="h-5 w-5" />
+									Centroid
+								</span>
+							</Link>
+						</div>
+					</SidebarMenu>
+				</SidebarHeader>
+				<SidebarContent>
+					{/* Quick Actions */}
+					<SidebarGroup>
+						<SidebarGroupContent>
+							<NavMain items={data.navQuick} />
+						</SidebarGroupContent>
+					</SidebarGroup>
+
+					{/* Main Navigation */}
+					<SidebarGroup>
+						<SidebarGroupContent>
+							<NavMain items={data.navMain} />
+						</SidebarGroupContent>
+					</SidebarGroup>
+
+					{/* Chat History */}
+					<SidebarGroup>
+						<SidebarGroupLabel className="text-sm font-semibold">Chats</SidebarGroupLabel>
+						<SidebarGroupContent>
+							<SidebarHistory user={user} />
+						</SidebarGroupContent>
+					</SidebarGroup>
+
+					<NavSecondary items={data.navSecondary} className="mt-auto" />
+
+					{/* <NavDocuments items={data.documents} />
+					{/* <SidebarHistory user={user} /> */}
+				</SidebarContent>
+				<SidebarFooter>{user && <SidebarUserNav user={user} />}</SidebarFooter>
+			</Sidebar>
+
+			<CommandDialog open={searchOpen} onOpenChange={setSearchOpen}>
+				<CommandInput
+					placeholder="Search chats..."
+					value={searchQuery}
+					onValueChange={setSearchQuery}
+				/>
+				<CommandList>
+					<CommandEmpty>No chats found.</CommandEmpty>
+					{filteredChats.length > 0 && (
+						<CommandGroup heading="Chats">
+							{filteredChats.slice(0, 8).map((chat) => (
+								<CommandItem
+									key={chat.id}
+									onSelect={() => {
+										setSearchOpen(false);
+										setSearchQuery("");
+										router.push(`/chat/${chat.id}`);
 									}}
 								>
-									<PlusIcon />
-								</Button>
-							</TooltipTrigger>
-							<TooltipContent align="end">New Chat</TooltipContent>
-						</Tooltip> */}
-					</div>
-				</SidebarMenu>
-			</SidebarHeader>
-			<SidebarContent>
-				{/* <SidebarGroup>
-					<SidebarGroupLabel>Platform</SidebarGroupLabel>
-					<SidebarGroupContent>
-						<SidebarMenu>
-							<SidebarMenuItem key="apps">
-								<SidebarMenuButton asChild>
-									<Link href="/apps">
-										<Network className="h-4 w-4" />
-										<span>Apps</span>
-									</Link>
-								</SidebarMenuButton>
-							</SidebarMenuItem>
-						</SidebarMenu>
-					</SidebarGroupContent>
-				</SidebarGroup> */}
-				<NavMain items={data.navMain} />
-				<NavSecondary items={data.navSecondary} className="mt-auto" />
-
-				{/* <NavDocuments items={data.documents} />
-				{/* <SidebarHistory user={user} /> */}
-			</SidebarContent>
-			<SidebarFooter>{user && <SidebarUserNav user={user} />}</SidebarFooter>
-		</Sidebar>
+									<SearchIcon className="mr-2 h-4 w-4" />
+									<span className="truncate">{chat.title}</span>
+								</CommandItem>
+							))}
+						</CommandGroup>
+					)}
+				</CommandList>
+			</CommandDialog>
+		</>
 	);
 }

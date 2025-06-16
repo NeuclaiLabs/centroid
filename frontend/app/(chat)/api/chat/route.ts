@@ -85,14 +85,14 @@ export async function POST(request: Request) {
 
     const userType: UserType = session.user.type;
 
-    const messageCount = await getMessageCountByUserId({
-      id: session.user.id,
-      differenceInHours: 24,
-    });
+    // const messageCount = await getMessageCountByUserId({
+    //   id: session.user.id,
+    //   differenceInHours: 24,
+    // });
 
-    if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
-      return new ChatSDKError('rate_limit:chat').toResponse();
-    }
+    // if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
+    //   return new ChatSDKError('rate_limit:chat').toResponse();
+    // }
 
     const chat = await getChatById({ id });
 
@@ -114,6 +114,7 @@ export async function POST(request: Request) {
     }
 
     const previousMessages = await getMessagesByChatId({ id });
+    console.log(previousMessages);
 
     const messages = appendClientMessage({
       // @ts-expect-error: todo add type conversion from DBMessage[] to UIMessage[]
@@ -122,6 +123,7 @@ export async function POST(request: Request) {
     });
 
     const { longitude, latitude, city, country } = geolocation(request);
+    console.log(longitude, latitude, city, country);
 
     const requestHints: RequestHints = {
       longitude,
@@ -142,15 +144,9 @@ export async function POST(request: Request) {
         },
       ],
     });
-    const client = await experimental_createMCPClient({
-      transport: {
-        type: 'sse',
-        url: 'http://localhost:8000/mcp',
-      },
-    });
 
     const streamId = generateUUID();
-    await createStreamId({ streamId, chatId: id });
+    // await createStreamId({ streamId, chatId: id });
 
     const stream = createDataStream({
       execute: (dataStream) => {
@@ -245,6 +241,9 @@ export async function POST(request: Request) {
     if (error instanceof ChatSDKError) {
       return error.toResponse();
     }
+
+    console.error('Unexpected error in POST /api/chat:', error);
+    return new ChatSDKError('bad_request:api').toResponse();
   }
 }
 

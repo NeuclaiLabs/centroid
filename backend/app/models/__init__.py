@@ -58,6 +58,14 @@ from .secret import (
     SecretWithValueOut,
     TokenAuth,
 )
+from .stream import (
+    Stream,
+    StreamBase,
+    StreamCreate,
+    StreamOut,
+    StreamsOut,
+    StreamUpdate,
+)
 from .suggestion import (
     Suggestion,
     SuggestionBase,
@@ -166,6 +174,12 @@ __all__ = [
     "SuggestionUpdate",
     "SuggestionOut",
     "SuggestionsOut",
+    "Stream",
+    "StreamBase",
+    "StreamCreate",
+    "StreamUpdate",
+    "StreamOut",
+    "StreamsOut",
     "AuthType",
     "AuthConfig",
     "TokenAuth",

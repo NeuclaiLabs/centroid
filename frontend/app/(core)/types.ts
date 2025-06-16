@@ -227,6 +227,8 @@ export interface MCPTemplate {
   servers?: MCPServer[];
   createdAt: string;
   updatedAt: string;
+  isAgent: boolean;
+  instructions: string | null;
 }
 
 export interface MCPTemplateCreate {

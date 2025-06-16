@@ -1,7 +1,7 @@
 from datetime import datetime
 
 import nanoid
-from sqlalchemy import DateTime, func
+from sqlalchemy import Column, DateTime, ForeignKey, func
 from sqlmodel import Field, Relationship, SQLModel
 
 from .base import CamelModel
@@ -26,6 +26,10 @@ class Vote(VoteBase, SQLModel, table=True):
     __tablename__ = "votes"
     id: str = Field(primary_key=True, default_factory=nanoid.generate)
     user_id: str = Field(foreign_key="users.id")
+    chat_id: str = Field(sa_column=Column(ForeignKey("chats.id", ondelete="CASCADE")))
+    message_id: str = Field(
+        sa_column=Column(ForeignKey("messages.id", ondelete="CASCADE"))
+    )
     created_at: datetime | None = Field(
         default=None,
         sa_type=DateTime(timezone=True),

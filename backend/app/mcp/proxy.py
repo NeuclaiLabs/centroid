@@ -13,6 +13,7 @@ from mcp.types import (
 )
 
 from app.core.logger import get_logger
+from app.mcp.queue_manager import queue_manager
 from app.models.mcp.server import MCPServer
 
 logger = get_logger(__name__)
@@ -233,7 +234,7 @@ class MCPProxy(FastMCPProxy):
         return tools
 
     async def _mcp_call_tool(self, key: str, arguments: dict[str, Any]) -> Any:
-        """Call a tool with the given arguments, respecting MCP server tool configuration."""
+        """Call a tool with the given arguments using Redis queue, respecting MCP server tool configuration."""
         try:
             # Check if tool is configured and enabled in MCP server
             server_tools = {tool.name: tool for tool in (self.mcp_server.tools or [])}
@@ -248,9 +249,9 @@ class MCPProxy(FastMCPProxy):
                     )
                 )
 
-            # Execute tool call
+            # Execute tool call via queue
             logger.info(
-                f"Calling tool {key} with arguments {arguments} on server {self.mcp_server.id}"
+                f"Queueing tool {key} with arguments {arguments} on server {self.mcp_server.id}"
             )
             self.stats["requests"] += 1
             start_time = datetime.now()
@@ -261,13 +262,22 @@ class MCPProxy(FastMCPProxy):
                 )
                 return []
 
-            result = await self.client.call_tool(key, arguments)
+            # Enqueue the tool call and wait for result
+            request_id = await queue_manager.enqueue_tool_call(
+                proxy_id=self.mcp_server.id,
+                tool_name=key,
+                arguments=arguments,
+                timeout=300,
+            )
+
+            # Wait for the result from the queue
+            result = await queue_manager.wait_for_result(request_id, timeout=300)
             response_time = (datetime.now() - start_time).total_seconds()
             self.stats["last_response_time"] = response_time
             self.last_ping_time = datetime.now()
 
             logger.info(
-                f"Tool {key} call completed in {response_time:.3f}s on server {self.mcp_server.id}"
+                f"Tool {key} call completed via queue in {response_time:.3f}s on server {self.mcp_server.id}"
             )
             return result
 

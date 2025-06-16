@@ -41,10 +41,11 @@ def combine_lifespans(*lifespans):
 
 
 # Create your FastMCP server as well as any tools, resources, etc.
-mcp = FastMCP("MyServer")
-
+mcp = FastMCP("MCP Servers")
+agent = FastMCP("Agents")
 # Create the ASGI app
 mcp_app = mcp.http_app(path="/mcp")
+agent_app = agent.http_app(path="/agent")
 
 
 # Define the function that will be used for the lifespan
@@ -60,7 +61,8 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
         # Get the MCP manager singleton
         manager = MCPManager()
         manager.set_session(session)
-        manager.set_app(mcp)
+        manager.set_mcp_app(mcp)
+        manager.set_agent_app(agent)
         logger.info(f"Manager: {manager}")
 
         # Initialize the manager with active servers in the background
@@ -80,7 +82,7 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
 
 
 # Combine both lifespans
-combined_lifespan = combine_lifespans(mcp_app.lifespan, lifespan)
+combined_lifespan = combine_lifespans(mcp_app.lifespan, agent_app.lifespan, lifespan)
 # Update the FastAPI app initialization to use the lifespan
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -100,3 +102,4 @@ app.add_middleware(
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
 app.mount("/mcp-server", mcp_app)
+app.mount("/agent", agent_app)

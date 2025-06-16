@@ -4,7 +4,7 @@ import enum
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import JSON, Column, DateTime, func
+from sqlalchemy import JSON, Boolean, Column, DateTime, String, func
 from sqlmodel import Field, Relationship, SQLModel
 
 from app.core.logger import get_logger
@@ -83,6 +83,12 @@ class MCPTemplateBase(CamelModel):
         description="Additional details for the template",
         sa_column=Column(JSON),
     )
+    is_agent: bool = Field(
+        default=False, description="Whether this template is for an agent"
+    )
+    instructions: str | None = Field(
+        default=None, description="Instructions for the MCP template"
+    )
 
 
 class MCPTemplate(MCPTemplateBase, SQLModel, table=True):
@@ -108,6 +114,16 @@ class MCPTemplate(MCPTemplateBase, SQLModel, table=True):
         sa_column_kwargs={"onupdate": func.now(), "server_default": func.now()},
         description="Timestamp when the MCP template was last updated",
     )
+    is_agent: bool = Field(
+        default=False,
+        sa_type=Boolean,
+        description="Whether this template is for an agent",
+    )
+    instructions: str | None = Field(
+        default=None,
+        sa_type=String,
+        description="Instructions for the MCP template",
+    )
     servers: list["MCPServer"] = Relationship(back_populates="template")
 
 
@@ -129,12 +145,16 @@ class MCPTemplateUpdate(CamelModel):
     run: MCPRunConfig | None = None
     tools: list[MCPTool] | None = None
     details: dict[str, Any] | None = None
+    is_agent: bool | None = None
+    instructions: str | None = None
 
 
 class MCPTemplateOut(MCPTemplateBase):
     """Model for MCP template output."""
 
     id: str
+    is_agent: bool
+    instructions: str | None
     servers: list["MCPServer"] | None = Field(default=None)
 
 

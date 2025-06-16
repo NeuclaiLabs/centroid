@@ -6,6 +6,7 @@ from sqlmodel import Session
 
 from app.core.logger import get_logger
 from app.mcp.proxy import MCPProxy
+from app.mcp.queue_manager import queue_manager
 from app.models import MCPServer
 from app.models.mcp.server import MCPServerState
 
@@ -17,7 +18,9 @@ class MCPManager:
     _lock = threading.Lock()
     _registry: dict[str, MCPProxy] = {}
     _db_session: Session | None = None
-    _app: FastMCP | None = None
+    _mcp_app: FastMCP | None = None
+    _agent_app: FastMCP | None = None
+    _queue_worker_task: asyncio.Task | None = None
 
     def __new__(cls):
         with cls._lock:
@@ -34,8 +37,11 @@ class MCPManager:
                     cls._server = cls()
         return cls._server
 
-    def set_app(self, app: FastMCP) -> None:
-        self._app = app
+    def set_mcp_app(self, app: FastMCP) -> None:
+        self._mcp_app = app
+
+    def set_agent_app(self, app: FastMCP) -> None:
+        self._agent_app = app
 
     def set_session(self, session: Session) -> None:
         self._db_session = session
@@ -70,6 +76,9 @@ class MCPManager:
         Args:
             servers: List of active MCP servers to initialize
         """
+        # Initialize the Redis queue manager first
+        await self._initialize_queue_manager()
+
         if not servers:
             logger.info("No active servers to initialize")
             return
@@ -88,6 +97,23 @@ class MCPManager:
         logger.info(
             f"Successfully initialized {started_count}/{len(servers)} MCP servers"
         )
+
+    async def _initialize_queue_manager(self) -> None:
+        """Initialize Redis queue manager and start the worker process"""
+        try:
+            # Connect to Redis
+            await queue_manager.connect()
+            logger.info("Connected to Redis queue manager")
+
+            # Start the queue worker
+            self._queue_worker_task = asyncio.create_task(
+                queue_manager.start_worker(self._registry)
+            )
+            logger.info("Started Redis queue worker")
+
+        except Exception as e:
+            logger.error(f"Failed to initialize queue manager: {e}")
+            raise
 
     async def start_server(self, server: MCPServer) -> bool:
         """
@@ -125,7 +151,10 @@ class MCPManager:
             from app.mcp.proxy import MCPProxy
 
             proxy = MCPProxy(mcp_server=server)
-            proxy.mount(self._app)
+            if proxy.is_agent:
+                proxy.mount(f"{server.id}/agent", self._agent_app)
+            else:
+                proxy.mount(f"{server.id}/mcp", self._mcp_app)
 
             # Initialize the proxy
             success = await proxy.initialize()
@@ -192,6 +221,7 @@ class MCPManager:
                 )
 
             # Shutdown the proxy
+            proxy.unmount(prefix=proxy.mcp_server.id)
             success = await proxy.shutdown()
 
             if success:
@@ -263,36 +293,57 @@ class MCPManager:
 
     async def shutdown(self) -> None:
         """
-        Shut down all active MCP servers in parallel
+        Shut down all active MCP servers in parallel and cleanup queue manager
 
-        This method stops all servers currently in the registry.
+        This method stops all servers currently in the registry and the queue worker.
         """
         server_ids = list(self._registry.keys())
 
-        if not server_ids:
+        if server_ids:
+            logger.info(f"Shutting down {len(server_ids)} MCP servers in parallel")
+
+            # Define a helper function to safely stop a single server
+            async def stop_single_server(server_id: str) -> bool:
+                try:
+                    return await self.stop_server(server_id)
+                except Exception as e:
+                    logger.error(f"Error stopping server {server_id}: {e}")
+                    return False
+
+            # Stop all servers in parallel
+            results = await asyncio.gather(
+                *[stop_single_server(server_id) for server_id in server_ids]
+            )
+
+            # Log the results
+            success_count = sum(1 for result in results if result)
+            logger.info(
+                f"Successfully shut down {success_count}/{len(server_ids)} MCP servers"
+            )
+        else:
             logger.info("No active servers to shut down")
-            return
 
-        logger.info(f"Shutting down {len(server_ids)} MCP servers in parallel")
+        # Shutdown queue manager
+        await self._shutdown_queue_manager()
 
-        # Define a helper function to safely stop a single server
-        async def stop_single_server(server_id: str) -> bool:
-            try:
-                return await self.stop_server(server_id)
-            except Exception as e:
-                logger.error(f"Error stopping server {server_id}: {e}")
-                return False
+    async def _shutdown_queue_manager(self) -> None:
+        """Shutdown the Redis queue manager and worker"""
+        try:
+            # Stop the queue worker
+            if self._queue_worker_task and not self._queue_worker_task.done():
+                self._queue_worker_task.cancel()
+                try:
+                    await self._queue_worker_task
+                except asyncio.CancelledError:
+                    pass
+                logger.info("Stopped Redis queue worker")
 
-        # Stop all servers in parallel
-        results = await asyncio.gather(
-            *[stop_single_server(server_id) for server_id in server_ids]
-        )
+            # Disconnect from Redis
+            await queue_manager.disconnect()
+            logger.info("Disconnected from Redis queue manager")
 
-        # Log the results
-        success_count = sum(1 for result in results if result)
-        logger.info(
-            f"Successfully shut down {success_count}/{len(server_ids)} MCP servers"
-        )
+        except Exception as e:
+            logger.error(f"Error shutting down queue manager: {e}")
 
     async def refresh_server(self, server: MCPServer) -> bool:
         """

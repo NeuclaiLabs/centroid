@@ -46,6 +46,8 @@ dependencies = [
     "cryptography>=41.0.1",
     "psutil>=5.9.4",
     "fastmcp>=2.5.2",
+    "redis>=5.0.0",
+    "setuptools>=80.9.0",
 ]
 
 [tool.uv]
