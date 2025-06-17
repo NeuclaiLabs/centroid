@@ -39,7 +39,8 @@ class Document(DocumentBase, SQLModel, table=True):
 
     # Composite primary key: id + created_at for versioning
     id: str = Field(primary_key=True, index=True)
-    created_at: datetime = Field(
+    created_at: datetime | None = Field(
+        default=None,
         primary_key=True,
         sa_type=DateTime(timezone=True),
         sa_column_kwargs={"server_default": func.now()},

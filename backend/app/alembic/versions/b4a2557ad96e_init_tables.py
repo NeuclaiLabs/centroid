@@ -1,8 +1,8 @@
 """Init tables
 
-Revision ID: fdf9597d4d7e
+Revision ID: b4a2557ad96e
 Revises:
-Create Date: 2025-06-17 12:32:02.780773
+Create Date: 2025-06-17 13:05:37.501259
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ import sqlmodel.sql.sqltypes
 
 
 # revision identifiers, used by Alembic.
-revision = 'fdf9597d4d7e'
+revision = 'b4a2557ad96e'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -230,13 +230,15 @@ def upgrade():
     sa.Column('id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('user_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('document_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('document_created_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
-    sa.ForeignKeyConstraint(['document_id'], ['documents.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['document_id', 'document_created_at'], ['documents.id', 'documents.created_at'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_suggestions_created_at'), 'suggestions', ['created_at'], unique=False)
+    op.create_index(op.f('ix_suggestions_document_created_at'), 'suggestions', ['document_created_at'], unique=False)
     op.create_index(op.f('ix_suggestions_document_id'), 'suggestions', ['document_id'], unique=False)
     op.create_index(op.f('ix_suggestions_is_resolved'), 'suggestions', ['is_resolved'], unique=False)
     op.create_index(op.f('ix_suggestions_updated_at'), 'suggestions', ['updated_at'], unique=False)
@@ -277,6 +279,7 @@ def downgrade():
     op.drop_index(op.f('ix_suggestions_updated_at'), table_name='suggestions')
     op.drop_index(op.f('ix_suggestions_is_resolved'), table_name='suggestions')
     op.drop_index(op.f('ix_suggestions_document_id'), table_name='suggestions')
+    op.drop_index(op.f('ix_suggestions_document_created_at'), table_name='suggestions')
     op.drop_index(op.f('ix_suggestions_created_at'), table_name='suggestions')
     op.drop_table('suggestions')
     op.drop_index(op.f('ix_streams_created_at'), table_name='streams')

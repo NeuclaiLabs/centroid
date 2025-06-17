@@ -306,7 +306,7 @@ export async function getDocumentById({
   id: string;
 }): Promise<Document> {
   try {
-    return await fetchApi<Document>(`/documents/${id}/latest`);
+    return await fetchApi<Document>(`/documents/${id}`);
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',

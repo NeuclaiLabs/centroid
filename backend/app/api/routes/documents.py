@@ -1,6 +1,8 @@
+from datetime import datetime
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
 from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
@@ -14,6 +16,10 @@ from app.models import (
 )
 
 router = APIRouter()
+
+
+class DeleteAfterTimestampRequest(BaseModel):
+    timestamp: datetime
 
 
 @router.get("/", response_model=DocumentsOut)
@@ -37,7 +43,6 @@ def read_documents(
 
     # Add id filter if provided
     if id:
-        print("id", id)
         conditions.append(Document.id == id)
 
     # Get count
@@ -48,7 +53,7 @@ def read_documents(
     statement = (
         select(Document)
         .where(*conditions)
-        .order_by(Document.created_at.desc())
+        .order_by(Document.created_at.asc())
         .offset(skip)
         .limit(limit)
     )
@@ -56,6 +61,7 @@ def read_documents(
 
     # Convert Document instances to DocumentOut
     documents_out = [DocumentOut.model_validate(doc.model_dump()) for doc in documents]
+    print(documents_out)
 
     return DocumentsOut(data=documents_out, count=count)
 
@@ -67,7 +73,10 @@ def read_document(
     """
     Get document by ID.
     """
-    document = session.get(Document, id)
+    statement = (
+        select(Document).where(Document.id == id).order_by(Document.created_at.desc())
+    )
+    document = session.exec(statement).first()
     if not document:
         raise HTTPException(status_code=404, detail="Document not found")
     if not current_user.is_superuser and (document.user_id != current_user.id):
@@ -82,10 +91,12 @@ def create_document(
     """
     Create new document.
     """
-    update_data = {"user_id": current_user.id}
+    now = datetime.now()
+    update_data = {"user_id": current_user.id, "created_at": now, "updated_at": now}
     # If id is provided, use it; otherwise let it auto-generate
     if document_in.id:
         update_data["id"] = document_in.id
+
     document = Document.model_validate(document_in, update=update_data)
     session.add(document)
     session.commit()
@@ -104,7 +115,10 @@ def update_document(
     """
     Update document.
     """
-    document = session.get(Document, id)
+    statement = (
+        select(Document).where(Document.id == id).order_by(Document.created_at.desc())
+    )
+    document = session.exec(statement).first()
     if not document:
         raise HTTPException(status_code=404, detail="Document not found")
     if not current_user.is_superuser and (document.user_id != current_user.id):
@@ -122,7 +136,10 @@ def delete_document(session: SessionDep, current_user: CurrentUser, id: str) -> 
     """
     Delete document.
     """
-    document = session.get(Document, id)
+    statement = (
+        select(Document).where(Document.id == id).order_by(Document.created_at.desc())
+    )
+    document = session.exec(statement).first()
     if not document:
         raise HTTPException(status_code=404, detail="Document not found")
     if not current_user.is_superuser and (document.user_id != current_user.id):
@@ -130,3 +147,34 @@ def delete_document(session: SessionDep, current_user: CurrentUser, id: str) -> 
     session.delete(document)
     session.commit()
     return Message(message="Document deleted successfully")
+
+
+@router.delete("/{id}/after-timestamp")
+def delete_documents_after_timestamp(
+    session: SessionDep,
+    current_user: CurrentUser,
+    id: str,
+    request: DeleteAfterTimestampRequest,
+) -> Message:
+    """
+    Delete all document versions after a specific timestamp.
+    """
+    statement = select(Document).where(
+        Document.id == id,
+        Document.user_id == current_user.id,
+        Document.created_at > request.timestamp,
+    )
+    documents = session.exec(statement).all()
+
+    if not documents:
+        raise HTTPException(
+            status_code=404, detail="No documents found after the specified timestamp"
+        )
+
+    for document in documents:
+        session.delete(document)
+
+    session.commit()
+    return Message(
+        message=f"Deleted {len(documents)} document version(s) after timestamp"
+    )

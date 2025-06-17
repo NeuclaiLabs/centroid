@@ -1,13 +1,10 @@
 from fastapi.testclient import TestClient
-from sqlmodel import Session
 
 from app.core.config import settings
 from app.models import DocumentKind
 
 
-def test_create_suggestion(
-    client: TestClient, superuser_token_headers: dict, _db: Session
-) -> None:
+def test_create_suggestion(client: TestClient, superuser_token_headers: dict) -> None:
     # First create a document
     doc_data = {
         "title": "Test Document for Suggestion",
@@ -43,9 +40,7 @@ def test_create_suggestion(
     assert "userId" in content
 
 
-def test_read_suggestion(
-    client: TestClient, superuser_token_headers: dict, _db: Session
-) -> None:
+def test_read_suggestion(client: TestClient, superuser_token_headers: dict) -> None:
     # First create a document
     doc_data = {
         "title": "Test Document for Reading Suggestion",
@@ -87,9 +82,7 @@ def test_read_suggestion(
     assert content["id"] == suggestion_id
 
 
-def test_read_suggestions(
-    client: TestClient, superuser_token_headers: dict, _db: Session
-) -> None:
+def test_read_suggestions(client: TestClient, superuser_token_headers: dict) -> None:
     # First create a document
     doc_data = {
         "title": "Test Document for Multiple Suggestions",
@@ -129,9 +122,7 @@ def test_read_suggestions(
     assert len(content["data"]) >= 3
 
 
-def test_update_suggestion(
-    client: TestClient, superuser_token_headers: dict, _db: Session
-) -> None:
+def test_update_suggestion(client: TestClient, superuser_token_headers: dict) -> None:
     # First create a document
     doc_data = {
         "title": "Test Document for Updating Suggestion",
@@ -179,9 +170,7 @@ def test_update_suggestion(
     assert content["id"] == suggestion_id
 
 
-def test_delete_suggestion(
-    client: TestClient, superuser_token_headers: dict, _db: Session
-) -> None:
+def test_delete_suggestion(client: TestClient, superuser_token_headers: dict) -> None:
     # First create a document
     doc_data = {
         "title": "Test Document for Deleting Suggestion",
@@ -225,7 +214,7 @@ def test_delete_suggestion(
 
 
 def test_filter_suggestions_by_document(
-    client: TestClient, superuser_token_headers: dict, _db: Session
+    client: TestClient, superuser_token_headers: dict
 ) -> None:
     # Create two documents
     doc_data1 = {

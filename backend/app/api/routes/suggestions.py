@@ -5,6 +5,7 @@ from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
 from app.models import (
+    Document,
     Message,
     Suggestion,
     SuggestionCreate,
@@ -54,6 +55,43 @@ def read_suggestions(
     return SuggestionsOut(data=suggestions_out, count=count)
 
 
+@router.get("/documents/{document_id}/suggestions", response_model=SuggestionsOut)
+def read_document_suggestions(
+    session: SessionDep,
+    current_user: CurrentUser,
+    document_id: str,
+    skip: int = 0,
+    limit: int = 100,
+) -> Any:
+    """
+    Retrieve suggestions for a specific document.
+    """
+    # Base query conditions
+    conditions = [
+        Suggestion.user_id == current_user.id,
+        Suggestion.document_id == document_id,
+    ]
+
+    # Get count
+    statement = select(func.count()).select_from(Suggestion).where(*conditions)
+    count = session.exec(statement).one()
+
+    # Get suggestions
+    statement = (
+        select(Suggestion)
+        .where(*conditions)
+        .order_by(Suggestion.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+    )
+    suggestions = session.exec(statement).all()
+
+    # Convert Suggestion models to SuggestionOut models
+    suggestions_out = [SuggestionOut(**s.model_dump()) for s in suggestions]
+
+    return SuggestionsOut(data=suggestions_out, count=count)
+
+
 @router.get("/{id}", response_model=SuggestionOut)
 def read_suggestion(
     session: SessionDep, current_user: CurrentUser, id: str
@@ -76,8 +114,25 @@ def create_suggestion(
     """
     Create new suggestion.
     """
+    # Get the latest version of the document by document_id
+    document_query = (
+        select(Document)
+        .where(
+            Document.id == suggestion_in.document_id,
+            Document.user_id == current_user.id,
+        )
+        .order_by(Document.created_at.desc())
+        .limit(1)
+    )
+    document = session.exec(document_query).first()
+
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    # Create suggestion with document_created_at from the found document
     suggestion = Suggestion.model_validate(
-        suggestion_in, update={"user_id": current_user.id}
+        suggestion_in,
+        update={"user_id": current_user.id, "document_created_at": document.created_at},
     )
     session.add(suggestion)
     session.commit()
