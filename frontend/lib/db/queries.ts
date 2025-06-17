@@ -290,7 +290,8 @@ export async function getDocumentsById({
   id: string;
 }): Promise<Document[]> {
   try {
-    return await fetchApi<Document[]>(`/documents/${id}`);
+    const response = await fetchApi<{data: Document[], count: number}>(`/documents?id=${id}`);
+    return response.data;
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -452,10 +453,10 @@ export async function createStreamId({
   try {
     return await fetchApi('/streams', {
       method: 'POST',
-      body: JSON.stringify({ 
-        id: streamId, 
-        chatId, 
-        createdAt: new Date().toISOString() 
+      body: JSON.stringify({
+        id: streamId,
+        chatId,
+        createdAt: new Date().toISOString()
       }),
     });
   } catch (error) {

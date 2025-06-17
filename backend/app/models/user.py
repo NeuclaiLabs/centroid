@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 # TODO replace email str with EmailStr when sqlmodel supports it
 class UserBase(SQLModel):
     email: str = Field(unique=True, index=True)
-    is_active: bool = True
+    is_active: bool = Field(default=True, index=True)
     is_superuser: bool = False
     full_name: str | None = None
 
@@ -60,6 +60,7 @@ class UpdatePassword(SQLModel):
 # Database model, database table inferred from class name
 class User(UserBase, table=True):
     __tablename__ = "users"
+
     id: str | None = Field(default_factory=nanoid.generate, primary_key=True)
     hashed_password: str
     created_at: datetime | None = Field(
@@ -68,17 +69,19 @@ class User(UserBase, table=True):
         sa_column_kwargs={
             "server_default": func.now(),
         },
+        index=True,
     )
     updated_at: datetime | None = Field(
         default=None,
         sa_type=DateTime(timezone=True),
         sa_column_kwargs={"onupdate": func.now(), "server_default": func.now()},
+        index=True,
     )
-    items: list["Item"] = Relationship(back_populates="owner")
+    items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
     team_memberships: list["TeamMember"] = Relationship(
         back_populates="user", cascade_delete=True
     )
-    chats: list["Chat"] = Relationship(back_populates="user")
+    chats: list["Chat"] = Relationship(back_populates="user", cascade_delete=True)
     votes: list["Vote"] = Relationship(back_populates="user", cascade_delete=True)
     documents: list["Document"] = Relationship(
         back_populates="user", cascade_delete=True

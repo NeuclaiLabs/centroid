@@ -146,7 +146,7 @@ export async function POST(request: Request) {
     });
 
     const streamId = generateUUID();
-    // await createStreamId({ streamId, chatId: id });
+    await createStreamId({ streamId, chatId: id });
 
     const stream = createDataStream({
       execute: (dataStream) => {

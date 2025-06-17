@@ -1,12 +1,13 @@
 from datetime import datetime
 
-from sqlalchemy import Column, ForeignKey
 from sqlmodel import Field, Relationship, SQLModel
 
+from .base import CamelModel
 from .chat import Chat
 
 
-class StreamBase(SQLModel):
+# Base class for API models with camelCase conversion
+class StreamBase(CamelModel):
     chat_id: str
 
 
@@ -17,17 +18,17 @@ class StreamCreate(StreamBase):
 
 
 # Properties to receive on stream update
-class StreamUpdate(SQLModel):
+class StreamUpdate(CamelModel):
     chat_id: str | None = None
 
 
 # Database model, database table inferred from class name
-class Stream(StreamBase, table=True):
+class Stream(SQLModel, table=True):
     __tablename__ = "streams"
 
     id: str = Field(primary_key=True)
-    chat_id: str = Field(sa_column=Column(ForeignKey("chats.id", ondelete="CASCADE")))
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    chat_id: str = Field(foreign_key="chats.id", ondelete="CASCADE", index=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
 
     # Relationships
     chat: Chat | None = Relationship(back_populates="streams")
@@ -40,6 +41,6 @@ class StreamOut(StreamBase):
     created_at: datetime
 
 
-class StreamsOut(SQLModel):
+class StreamsOut(CamelModel):
     data: list[StreamOut]
     count: int

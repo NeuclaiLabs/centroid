@@ -58,13 +58,15 @@ class MCPTemplateKind(str, enum.Enum):
 class MCPTemplateBase(CamelModel):
     """Base model for MCP templates."""
 
-    name: str = Field(description="Name of the MCP template")
+    name: str = Field(index=True, description="Name of the MCP template")
     description: str = Field(description="Description of the MCP template")
     status: MCPTemplateStatus = Field(
-        default=MCPTemplateStatus.ACTIVE, description="Status of the MCP template"
+        default=MCPTemplateStatus.ACTIVE,
+        description="Status of the MCP template",
+        index=True,
     )
     kind: MCPTemplateKind = Field(
-        default=MCPTemplateKind.OFFICIAL, description="Kind of MCP template"
+        default=MCPTemplateKind.OFFICIAL, description="Kind of MCP template", index=True
     )
     transport: str = Field(description="Transport type for the MCP template")
     version: str = Field(description="Version of the MCP template")
@@ -84,7 +86,7 @@ class MCPTemplateBase(CamelModel):
         sa_column=Column(JSON),
     )
     is_agent: bool = Field(
-        default=False, description="Whether this template is for an agent"
+        default=False, description="Whether this template is for an agent", index=True
     )
     instructions: str | None = Field(
         default=None, description="Instructions for the MCP template"
@@ -124,7 +126,9 @@ class MCPTemplate(MCPTemplateBase, SQLModel, table=True):
         sa_type=String,
         description="Instructions for the MCP template",
     )
-    servers: list["MCPServer"] = Relationship(back_populates="template")
+    servers: list["MCPServer"] = Relationship(
+        back_populates="template", cascade_delete=True
+    )
 
 
 class MCPTemplateCreate(MCPTemplateBase):

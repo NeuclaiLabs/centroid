@@ -47,13 +47,15 @@ class MCPServerState(str, enum.Enum):
 class MCPServerBase(CamelModel):
     """Base model for MCP servers."""
 
-    name: str = Field(description="Name of the MCP server")
+    name: str = Field(index=True, description="Name of the MCP server")
     description: str = Field(description="Description of the MCP server")
     status: MCPServerStatus = Field(
-        default=MCPServerStatus.ACTIVE, description="Status of the MCP server"
+        default=MCPServerStatus.ACTIVE,
+        description="Status of the MCP server",
+        index=True,
     )
     kind: MCPTemplateKind = Field(
-        default=MCPTemplateKind.OFFICIAL, description="Kind of MCP server"
+        default=MCPTemplateKind.OFFICIAL, description="Kind of MCP server", index=True
     )
     transport: str = Field(description="Transport type for the MCP server")
     version: str = Field(description="Version of the MCP server")
@@ -61,6 +63,8 @@ class MCPServerBase(CamelModel):
         default=None,
         description="ID of the template used to create the MCP server",
         foreign_key="mcp_templates.id",
+        ondelete="CASCADE",
+        index=True,
     )
     run: MCPRunConfig | None = Field(
         default=None,
@@ -74,6 +78,8 @@ class MCPServerBase(CamelModel):
         default=None,
         description="ID of the owner of the MCP server",
         foreign_key="users.id",
+        ondelete="CASCADE",
+        index=True,
     )
     tools: list["MCPTool"] | None = Field(
         default=None,
@@ -83,8 +89,11 @@ class MCPServerBase(CamelModel):
     state: MCPServerState | None = Field(
         default=None,
         description="State of the MCP server",
+        index=True,
     )
-    is_agent: bool = Field(default=False, description="Whether this server is an agent")
+    is_agent: bool = Field(
+        default=False, description="Whether this server is an agent", index=True
+    )
     instructions: str | None = Field(
         default=None, description="Instructions for the MCP server"
     )
@@ -104,7 +113,9 @@ class MCPServerCreate(MCPServerBase):
     )
     # Add fields specific to creation
     secrets: dict[str, Any] | None = None
-    is_agent: bool = Field(default=False, description="Whether this server is an agent")
+    is_agent: bool = Field(
+        default=False, description="Whether this server is an agent", index=True
+    )
     instructions: str | None = Field(
         default=None, description="Instructions for the MCP server"
     )

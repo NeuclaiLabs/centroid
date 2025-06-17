@@ -1,17 +1,22 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 import nanoid
-from sqlalchemy import Column, DateTime, ForeignKey, func
+from sqlalchemy import DateTime, UniqueConstraint, func
 from sqlmodel import Field, Relationship, SQLModel
 
 from .base import CamelModel
 from .user import User
 
+if TYPE_CHECKING:
+    from .chat import Chat
+    from .message import Message
+
 
 class VoteBase(CamelModel):
     chat_id: str
     message_id: str
-    is_upvoted: bool
+    is_upvoted: bool = Field(index=True)
 
 
 class VoteCreate(VoteBase):
@@ -24,28 +29,31 @@ class VoteUpdate(VoteBase):
 
 class Vote(VoteBase, SQLModel, table=True):
     __tablename__ = "votes"
-    id: str = Field(primary_key=True, default_factory=nanoid.generate)
-    user_id: str = Field(foreign_key="users.id")
-    chat_id: str = Field(sa_column=Column(ForeignKey("chats.id", ondelete="CASCADE")))
-    message_id: str = Field(
-        sa_column=Column(ForeignKey("messages.id", ondelete="CASCADE"))
+    __table_args__ = (
+        UniqueConstraint("user_id", "message_id", name="uq_user_message_vote"),
     )
+
+    id: str = Field(primary_key=True, default_factory=nanoid.generate)
+    user_id: str = Field(foreign_key="users.id", ondelete="CASCADE", index=True)
+    chat_id: str = Field(foreign_key="chats.id", ondelete="CASCADE", index=True)
+    message_id: str = Field(foreign_key="messages.id", ondelete="CASCADE", index=True)
     created_at: datetime | None = Field(
         default=None,
         sa_type=DateTime(timezone=True),
         sa_column_kwargs={"server_default": func.now()},
+        index=True,
     )
     updated_at: datetime | None = Field(
         default=None,
         sa_type=DateTime(timezone=True),
         sa_column_kwargs={"onupdate": func.now(), "server_default": func.now()},
+        index=True,
     )
 
     # Relationships
     user: User = Relationship(back_populates="votes")
-    # Note: We could add a relationship to Chat and Message here if those models exist
-    # chat: "Chat" = Relationship(back_populates="votes")
-    # message: "Message" = Relationship(back_populates="votes")
+    chat: "Chat" = Relationship(back_populates="votes")
+    message: "Message" = Relationship(back_populates="votes")
 
 
 class VoteOut(VoteBase):

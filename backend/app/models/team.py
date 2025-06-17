@@ -3,6 +3,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, Optional
 
 import nanoid
+from sqlalchemy import UniqueConstraint
 from sqlmodel import DateTime, Field, Relationship, SQLModel, func
 
 from .user import UserOut
@@ -27,7 +28,7 @@ class TeamInvitationStatus(str, Enum):
 
 
 class TeamBase(SQLModel):
-    name: str
+    name: str = Field(index=True)
     description: str | None = None
 
 
@@ -42,6 +43,7 @@ class TeamUpdate(TeamBase):
 
 class Team(TeamBase, table=True):
     __tablename__ = "teams"
+
     id: str = Field(default_factory=nanoid.generate, primary_key=True)
     members: list["TeamMember"] = Relationship(
         back_populates="team", cascade_delete=True
@@ -51,26 +53,38 @@ class Team(TeamBase, table=True):
         default=None,
         sa_type=DateTime(timezone=True),
         sa_column_kwargs={"server_default": func.now()},
+        index=True,
     )
     updated_at: datetime | None = Field(
         default=None,
         sa_type=DateTime(timezone=True),
         sa_column_kwargs={"server_default": func.now(), "onupdate": func.now()},
+        index=True,
     )
 
 
 class TeamMemberBase(SQLModel):
-    email: str | None = None
-    role: TeamRole = Field(default=TeamRole.MEMBER)
+    email: str | None = Field(default=None, index=True)
+    role: TeamRole = Field(default=TeamRole.MEMBER, index=True)
     invitation_status: TeamInvitationStatus = Field(
-        default=TeamInvitationStatus.PENDING
+        default=TeamInvitationStatus.PENDING, index=True
     )
 
 
 class TeamMember(TeamMemberBase, table=True):
     __tablename__ = "team_members"
-    team_id: str = Field(foreign_key="teams.id", primary_key=True)
-    user_id: str | None = Field(foreign_key="users.id", primary_key=True, nullable=True)
+    __table_args__ = (UniqueConstraint("team_id", "email", name="uq_team_email"),)
+
+    team_id: str = Field(
+        foreign_key="teams.id", ondelete="CASCADE", primary_key=True, index=True
+    )
+    user_id: str | None = Field(
+        default=None,
+        foreign_key="users.id",
+        ondelete="CASCADE",
+        primary_key=True,
+        index=True,
+    )
     team: Team = Relationship(back_populates="members")
     user: Optional["User"] = Relationship(back_populates="team_memberships")
 

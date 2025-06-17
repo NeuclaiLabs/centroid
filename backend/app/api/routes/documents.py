@@ -20,6 +20,7 @@ router = APIRouter()
 def read_documents(
     session: SessionDep,
     current_user: CurrentUser,
+    id: str | None = None,
     project_id: str | None = None,
     skip: int = 0,
     limit: int = 100,
@@ -33,6 +34,11 @@ def read_documents(
     # Add project filter if provided
     if project_id:
         conditions.append(Document.project_id == project_id)
+
+    # Add id filter if provided
+    if id:
+        print("id", id)
+        conditions.append(Document.id == id)
 
     # Get count
     statement = select(func.count()).select_from(Document).where(*conditions)
@@ -76,7 +82,11 @@ def create_document(
     """
     Create new document.
     """
-    document = Document.model_validate(document_in, update={"user_id": current_user.id})
+    update_data = {"user_id": current_user.id}
+    # If id is provided, use it; otherwise let it auto-generate
+    if document_in.id:
+        update_data["id"] = document_in.id
+    document = Document.model_validate(document_in, update=update_data)
     session.add(document)
     session.commit()
     session.refresh(document)

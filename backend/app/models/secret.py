@@ -43,14 +43,18 @@ class AuthConfig(CamelModel):
 
 
 class SecretBase(CamelModel, SQLModel):
-    name: str
+    name: str = Field(index=True)
     description: str | None = None
-    owner_id: str | None = Field(default=None, foreign_key="users.id")
-    mcp_server_id: str | None = Field(default=None, foreign_key="mcp_servers.id")
+    owner_id: str | None = Field(
+        default=None, foreign_key="users.id", ondelete="CASCADE", index=True
+    )
+    mcp_server_id: str | None = Field(
+        default=None, foreign_key="mcp_servers.id", ondelete="CASCADE", index=True
+    )
     environment: str = Field(
-        default="development"
+        default="development", index=True
     )  # e.g., development, staging, production
-    kind: str = Field(default="ENV")  # e.g., ENV, API_KEY, etc.
+    kind: str = Field(default="ENV", index=True)  # e.g., ENV, API_KEY, etc.
 
 
 class SecretCreate(SecretBase):
@@ -70,6 +74,7 @@ class SecretSearch(CamelModel):
 
 class Secret(SecretBase, SQLModel, table=True):
     __tablename__ = "secrets"
+
     id: str = Field(default_factory=nanoid.generate, primary_key=True)
     encrypted_value: str | None = Field(
         default=None, sa_column=Column("encrypted_value", String)
@@ -84,11 +89,13 @@ class Secret(SecretBase, SQLModel, table=True):
         sa_column_kwargs={
             "server_default": func.now(),
         },
+        index=True,
     )
     updated_at: datetime | None = Field(
         default=None,
         sa_type=DateTime(timezone=True),
         sa_column_kwargs={"onupdate": func.now(), "server_default": func.now()},
+        index=True,
     )
 
     def __init__(self, **data):

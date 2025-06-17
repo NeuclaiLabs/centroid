@@ -10,11 +10,10 @@ from .user import User
 
 
 class SuggestionBase(CamelModel):
-    document_id: str = Field(foreign_key="documents.id")
     original_text: str
     suggested_text: str
     description: str | None = None
-    is_resolved: bool = False
+    is_resolved: bool = Field(default=False, index=True)
 
 
 class SuggestionCreate(SuggestionBase):
@@ -29,17 +28,21 @@ class SuggestionUpdate(CamelModel):
 
 class Suggestion(SuggestionBase, SQLModel, table=True):
     __tablename__ = "suggestions"
+
     id: str = Field(primary_key=True, default_factory=nanoid.generate)
-    user_id: str = Field(foreign_key="users.id")
+    user_id: str = Field(foreign_key="users.id", ondelete="CASCADE", index=True)
+    document_id: str = Field(foreign_key="documents.id", ondelete="CASCADE", index=True)
     created_at: datetime | None = Field(
         default=None,
         sa_type=DateTime(timezone=True),
         sa_column_kwargs={"server_default": func.now()},
+        index=True,
     )
     updated_at: datetime | None = Field(
         default=None,
         sa_type=DateTime(timezone=True),
         sa_column_kwargs={"onupdate": func.now(), "server_default": func.now()},
+        index=True,
     )
 
     # Relationships

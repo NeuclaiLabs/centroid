@@ -116,7 +116,7 @@ def create_stream(
     chat = session.get(Chat, stream_in.chat_id)
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
-    if not current_user.is_superuser and chat.user_id != current_user.id:
+    if chat.user_id != current_user.id:
         raise HTTPException(status_code=400, detail="Not enough permissions")
 
     # Create stream with provided ID or generate one
