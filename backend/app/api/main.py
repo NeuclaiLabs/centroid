@@ -13,6 +13,7 @@ from app.api.routes import (
     logs,
     messages,
     projects,
+    secrets,
     streams,
     suggestions,
     teams,
@@ -50,6 +51,7 @@ api_router.include_router(projects.router, prefix="/projects", tags=["projects"]
 api_router.include_router(files.router, prefix="/files", tags=["files"])
 api_router.include_router(llm.router, prefix="/llm", tags=["llm"])
 api_router.include_router(logs.router, prefix="/logs", tags=["logs"])
+api_router.include_router(secrets.router, prefix="/secrets", tags=["secrets"])
 api_router.include_router(streams.router, prefix="/streams", tags=["streams"])
 
 

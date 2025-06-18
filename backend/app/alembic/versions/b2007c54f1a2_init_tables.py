@@ -1,8 +1,8 @@
 """Init tables
 
-Revision ID: b4a2557ad96e
+Revision ID: b2007c54f1a2
 Revises:
-Create Date: 2025-06-17 13:05:37.501259
+Create Date: 2025-06-18 21:52:39.261023
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ import sqlmodel.sql.sqltypes
 
 
 # revision identifiers, used by Alembic.
-revision = 'b4a2557ad96e'
+revision = 'b2007c54f1a2'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -122,6 +122,20 @@ def upgrade():
     op.create_index(op.f('ix_projects_team_id'), 'projects', ['team_id'], unique=False)
     op.create_index(op.f('ix_projects_title'), 'projects', ['title'], unique=False)
     op.create_index(op.f('ix_projects_updated_at'), 'projects', ['updated_at'], unique=False)
+    op.create_table('secrets',
+    sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('description', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('kind', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('encrypted_value', sa.String(), nullable=True),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+    sa.Column('owner_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.ForeignKeyConstraint(['owner_id'], ['users.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_secrets_name'), 'secrets', ['name'], unique=False)
+    op.create_index(op.f('ix_secrets_owner_id'), 'secrets', ['owner_id'], unique=False)
     op.create_table('team_members',
     sa.Column('email', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('role', sa.Enum('OWNER', 'ADMIN', 'MEMBER', 'VIEWER', name='teamrole'), nullable=False),
@@ -178,28 +192,6 @@ def upgrade():
     op.create_index(op.f('ix_documents_title'), 'documents', ['title'], unique=False)
     op.create_index(op.f('ix_documents_updated_at'), 'documents', ['updated_at'], unique=False)
     op.create_index(op.f('ix_documents_user_id'), 'documents', ['user_id'], unique=False)
-    op.create_table('secrets',
-    sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('description', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-    sa.Column('owner_id', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-    sa.Column('mcp_server_id', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-    sa.Column('environment', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('kind', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('encrypted_value', sa.String(), nullable=True),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
-    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
-    sa.ForeignKeyConstraint(['mcp_server_id'], ['mcp_servers.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['owner_id'], ['users.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_index(op.f('ix_secrets_created_at'), 'secrets', ['created_at'], unique=False)
-    op.create_index(op.f('ix_secrets_environment'), 'secrets', ['environment'], unique=False)
-    op.create_index(op.f('ix_secrets_kind'), 'secrets', ['kind'], unique=False)
-    op.create_index(op.f('ix_secrets_mcp_server_id'), 'secrets', ['mcp_server_id'], unique=False)
-    op.create_index(op.f('ix_secrets_name'), 'secrets', ['name'], unique=False)
-    op.create_index(op.f('ix_secrets_owner_id'), 'secrets', ['owner_id'], unique=False)
-    op.create_index(op.f('ix_secrets_updated_at'), 'secrets', ['updated_at'], unique=False)
     op.create_table('messages',
     sa.Column('id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('chat_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -289,14 +281,6 @@ def downgrade():
     op.drop_index(op.f('ix_messages_created_at'), table_name='messages')
     op.drop_index(op.f('ix_messages_chat_id'), table_name='messages')
     op.drop_table('messages')
-    op.drop_index(op.f('ix_secrets_updated_at'), table_name='secrets')
-    op.drop_index(op.f('ix_secrets_owner_id'), table_name='secrets')
-    op.drop_index(op.f('ix_secrets_name'), table_name='secrets')
-    op.drop_index(op.f('ix_secrets_mcp_server_id'), table_name='secrets')
-    op.drop_index(op.f('ix_secrets_kind'), table_name='secrets')
-    op.drop_index(op.f('ix_secrets_environment'), table_name='secrets')
-    op.drop_index(op.f('ix_secrets_created_at'), table_name='secrets')
-    op.drop_table('secrets')
     op.drop_index(op.f('ix_documents_user_id'), table_name='documents')
     op.drop_index(op.f('ix_documents_updated_at'), table_name='documents')
     op.drop_index(op.f('ix_documents_title'), table_name='documents')
@@ -319,6 +303,9 @@ def downgrade():
     op.drop_index(op.f('ix_team_members_invitation_status'), table_name='team_members')
     op.drop_index(op.f('ix_team_members_email'), table_name='team_members')
     op.drop_table('team_members')
+    op.drop_index(op.f('ix_secrets_owner_id'), table_name='secrets')
+    op.drop_index(op.f('ix_secrets_name'), table_name='secrets')
+    op.drop_table('secrets')
     op.drop_index(op.f('ix_projects_updated_at'), table_name='projects')
     op.drop_index(op.f('ix_projects_title'), table_name='projects')
     op.drop_index(op.f('ix_projects_team_id'), table_name='projects')

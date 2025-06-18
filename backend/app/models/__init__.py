@@ -44,19 +44,12 @@ from .project import (
     ProjectUpdate,
 )
 from .secret import (
-    ApiKeyAuth,
-    AuthConfig,
-    AuthType,
-    BasicAuth,
     Secret,
     SecretBase,
     SecretCreate,
     SecretOut,
-    SecretSearch,
     SecretsOut,
     SecretUpdate,
-    SecretWithValueOut,
-    TokenAuth,
 )
 from .stream import (
     Stream,
@@ -209,6 +202,4 @@ __all__ = [
     "SecretUpdate",
     "SecretOut",
     "SecretsOut",
-    "SecretSearch",
-    "SecretWithValueOut",
 ]

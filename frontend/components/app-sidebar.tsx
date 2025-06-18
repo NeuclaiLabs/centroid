@@ -26,6 +26,7 @@ import {
 	ServerIcon,
 	CircleDot,
 	PlusIcon,
+	KeyIcon,
 } from "lucide-react";
 
 import { SidebarHistory } from "@/components/sidebar-history";
@@ -120,6 +121,11 @@ export function AppSidebar({ user }: { user: User | undefined }) {
 				title: "Servers",
 				url: "/mcp/servers",
 				icon: ServerIcon,
+			},
+			{
+				title: "Secrets",
+				url: "/secrets",
+				icon: KeyIcon,
 			},
 			{
 				title: "Logs",

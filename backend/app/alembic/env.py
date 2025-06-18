@@ -70,13 +70,20 @@ def run_migrations_online():
         # Enable foreign key constraints for SQLite
         if "sqlite" in str(settings.SQLALCHEMY_DATABASE_URI):
             connection.execute(text("PRAGMA foreign_keys=ON"))
+            # Set autocommit for SQLite to ensure version tracking works
+            connection.execute(text("PRAGMA journal_mode=WAL"))
 
         context.configure(
-            connection=connection, target_metadata=target_metadata, compare_type=True
+            connection=connection,
+            target_metadata=target_metadata,
+            compare_type=True
         )
 
         with context.begin_transaction():
             context.run_migrations()
+            # Explicit commit for SQLite version tracking
+            if "sqlite" in str(settings.SQLALCHEMY_DATABASE_URI):
+                connection.commit()
 
 
 if context.is_offline_mode():
