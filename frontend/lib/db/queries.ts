@@ -1,12 +1,12 @@
 import 'server-only';
 
-import {
-  type User,
-  type Document,
-  type Suggestion,
+import type {
+  User,
+  Document,
+  Suggestion,
   Vote,
-  type DBMessage,
-  type Chat,
+  DBMessage,
+  Chat,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';

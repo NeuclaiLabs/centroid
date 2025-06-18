@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import {
 	Play,
 	StopCircle,
-	Pencil,
 	Trash2,
 	AlertCircle,
 	MoreVertical,

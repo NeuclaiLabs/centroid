@@ -1,9 +1,7 @@
 "use client";
 
-import { MailIcon, PlusCircleIcon, type LucideIcon } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
-
-import { Button } from "@/components/ui/button";
 import {
 	SidebarMenu,
 	SidebarMenuButton,

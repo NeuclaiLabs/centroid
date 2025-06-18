@@ -165,7 +165,7 @@ export interface MCPServer {
   settings?: {
     metadata?: MCPServerMetadata;
   };
-  secrets?: Record<string, string | number | boolean | null>;
+  secrets?: Record<string, SecretInput>;
   tools?: MCPTool[];
   ownerId: string;
   createdAt: string;
@@ -186,7 +186,7 @@ export interface MCPServerCreate {
   settings?: {
     metadata?: MCPServerMetadata;
   };
-  secrets?: Record<string, string | number | boolean | null>;
+  secrets?: Record<string, SecretInput>;
 }
 
 export interface MCPServerUpdate {
@@ -200,7 +200,7 @@ export interface MCPServerUpdate {
   settings?: {
     metadata?: MCPServerMetadata;
   };
-  secrets?: Record<string, string | number | boolean | null>;
+  secrets?: Record<string, SecretInput>;
 }
 
 export interface MCPServersResponse {
@@ -260,3 +260,44 @@ export interface MCPTemplatesResponse {
   data: MCPTemplate[];
   count: number;
 }
+
+// Secret types
+export interface Secret {
+  id: string;
+  name: string;
+  description?: string;
+  ownerId: string;
+  createdAt: string;
+  updatedAt: string;
+  value?: string;
+}
+
+export interface SecretCreate {
+  id?: string;
+  name?: string;
+  value: string;
+}
+
+export interface SecretUpdate {
+  name?: string;
+  description?: string;
+  value?: string;
+}
+
+export interface SecretsResponse {
+  data: Secret[];
+  count: number;
+}
+
+// Secret input types for MCP server creation
+export interface SecretReference {
+  type: 'reference';
+  secretId: string;
+}
+
+export interface SecretValue {
+  type: 'value';
+  value: string;
+}
+
+export type SecretInput = SecretReference | SecretValue;

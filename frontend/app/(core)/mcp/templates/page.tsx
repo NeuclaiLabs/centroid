@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { MCPTemplate, MCPServer } from "@/app/(core)/types";
+import type { MCPTemplate, } from "@/app/(core)/types";
 import { MCPTemplateCard } from "@/app/(core)/components/mcp-template-card";
 import { InstallTemplateModal } from "@/app/(core)/components/install-template-modal";
 import { useMCPTemplates } from "@/app/(core)/hooks/use-mcp-templates";

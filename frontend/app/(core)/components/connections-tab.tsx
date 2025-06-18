@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useConnections, deleteConnection } from "../hooks/use-connections";
 import { Button } from "@/components/ui/button";
-import { Edit, Search, Plus, Pencil, Trash2 } from "lucide-react";
+import { Search, Plus, Pencil, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
 	Card,
@@ -11,7 +11,6 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { ErrorState, LoadingState } from "./states";
-import type { Connection } from "@/app/(core)/types";
 import { toast } from "sonner";
 
 interface ConnectionsTabProps {

@@ -4,7 +4,7 @@ import { auth } from '@/app/(auth)/auth';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -12,8 +12,9 @@ export async function GET(
       return new Response('Unauthorized', { status: 401 });
     }
 
+    const resolvedParams = await params;
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/secrets/${params.id}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/secrets/${resolvedParams.id}`,
       {
         headers: {
           accept: 'application/json',
@@ -46,7 +47,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -54,9 +55,10 @@ export async function PUT(
       return new Response('Unauthorized', { status: 401 });
     }
 
+    const resolvedParams = await params;
     const body = await request.json();
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/secrets/${params.id}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/secrets/${resolvedParams.id}`,
       {
         method: 'PUT',
         headers: {
@@ -90,7 +92,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -98,8 +100,9 @@ export async function DELETE(
       return new Response('Unauthorized', { status: 401 });
     }
 
+    const resolvedParams = await params;
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/secrets/${params.id}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/secrets/${resolvedParams.id}`,
       {
         method: 'DELETE',
         headers: {

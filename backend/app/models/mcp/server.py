@@ -2,20 +2,76 @@
 
 import enum
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from sqlalchemy import JSON, Boolean, Column, DateTime, String, func
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship, Session, SQLModel
 
 from app.core.logger import get_logger
 from app.core.security import decrypt_dict, encrypt_dict
 
 from ..base import CamelModel
+from ..secret import Secret
 from ..user import User
 from ..utils import generate_docker_style_name
 from .template import MCPRunConfig, MCPTemplate, MCPTemplateKind, MCPTool
 
 logger = get_logger(__name__, service="mcp_server")
+
+
+class SecretReference(CamelModel):
+    """Reference to a stored secret."""
+
+    type: Literal["reference"] = "reference"
+    secret_id: str = Field(description="ID of the referenced secret")
+
+
+class SecretValue(CamelModel):
+    """Direct secret value."""
+
+    type: Literal["value"] = "value"
+    value: str = Field(description="Direct secret value")
+
+
+SecretInput = SecretReference | SecretValue
+
+
+def resolve_secrets(
+    secrets: dict[str, SecretInput] | None, session: "Session", user_id: str
+) -> dict[str, Any] | None:
+    """Resolve secret references to actual values."""
+    if not secrets:
+        return None
+
+    resolved = {}
+    for key, secret_input in secrets.items():
+        if secret_input.type == "value":
+            # Direct value
+            resolved[key] = secret_input.value
+        elif secret_input.type == "reference":
+            # Reference to stored secret
+            db_secret = session.get(Secret, secret_input.secret_id)
+            if not db_secret:
+                logger.error(f"Secret with ID {secret_input.secret_id} not found")
+                raise ValueError(f"Secret with ID {secret_input.secret_id} not found")
+
+            if db_secret.owner_id != user_id:
+                logger.error(
+                    f"User {user_id} does not have access to secret {secret_input.secret_id}"
+                )
+                raise ValueError(f"Access denied to secret {secret_input.secret_id}")
+
+            # Get the decrypted value
+            secret_value = db_secret.value
+            if secret_value is None:
+                logger.error(f"Secret {secret_input.secret_id} has no value")
+                raise ValueError(f"Secret {secret_input.secret_id} has no value")
+            resolved[key] = secret_value
+            logger.info(
+                f"Resolved secret reference {secret_input.secret_id} for key {key}"
+            )
+
+    return resolved
 
 
 class MCPServerStatus(str, enum.Enum):
@@ -111,8 +167,8 @@ class MCPServerCreate(MCPServerBase):
     settings: dict[str, Any] | None = Field(
         default=None, description="Settings for the MCP server"
     )
-    # Add fields specific to creation
-    secrets: dict[str, Any] | None = None
+    # Add fields specific to creation - supports both direct values and secret references
+    secrets: dict[str, SecretInput] | None = None
     is_agent: bool = Field(
         default=False, description="Whether this server is an agent", index=True
     )
@@ -133,7 +189,7 @@ class MCPServerUpdate(CamelModel):
     url: str | None = None
     run: MCPRunConfig | None = None
     settings: dict[str, Any] | None = None
-    secrets: dict[str, Any] | None = None
+    secrets: dict[str, SecretInput] | None = None
     tools: list[MCPTool] | None = None
     is_agent: bool | None = None
     instructions: str | None = None

@@ -42,6 +42,7 @@ class SecretBase(CamelModel):
     description: str | None = Field(
         default=None, description="Description of the secret"
     )
+    kind: str = Field(description="Kind/type of the secret")
 
 
 class Secret(SecretBase, SQLModel, table=True):
@@ -103,6 +104,7 @@ class SecretCreate(SecretBase):
     id: str | None = Field(default=None, description="Optional ID for the secret")
     name: str | None = Field(default=None, description="Name of the secret")
     value: str = Field(description="Value of the secret")
+    kind: str | None = Field(default=None, description="Kind/type of the secret")
 
 
 class SecretUpdate(CamelModel):
@@ -111,6 +113,7 @@ class SecretUpdate(CamelModel):
     name: str | None = None
     description: str | None = None
     value: str | None = None
+    kind: str | None = None
 
 
 class SecretOut(SecretBase):

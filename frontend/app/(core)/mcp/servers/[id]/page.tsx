@@ -1,25 +1,16 @@
 "use client";
 
 import useSWR from "swr";
-import { useParams } from "next/navigation";
 import { use, useState } from "react";
 import type { MCPServer, MCPTool } from "@/app/(core)/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-	Play,
-	StopCircle,
 	Code2,
 	FileText,
-	Key,
-	Plus,
-	Pencil,
-	Trash2,
 	AlertCircle,
-	MoreVertical,
 	Terminal,
-	Settings,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -30,13 +21,6 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SchemaDialog } from "../../../components/schema-dialog";

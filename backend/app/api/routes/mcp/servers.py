@@ -123,10 +123,21 @@ async def create_mcp_server(
     """
     Create new MCP server.
     """
+    # Resolve secrets first
+    from app.models.mcp.server import resolve_secrets
+
+    server_data = mcp_server_in.model_dump(exclude_unset=True)
+    resolved_secrets = None
+
+    if mcp_server_in.secrets:
+        resolved_secrets = resolve_secrets(
+            mcp_server_in.secrets, session, current_user.id
+        )
+        # Replace the secrets in server_data with resolved values
+        server_data["secrets"] = resolved_secrets
+
     # Create the server instance
-    db_mcp_server_orm = MCPServer(
-        **mcp_server_in.model_dump(exclude_unset=True), owner_id=current_user.id
-    )
+    db_mcp_server_orm = MCPServer(**server_data, owner_id=current_user.id)
 
     # Add to database
     session.add(db_mcp_server_orm)
@@ -172,9 +183,18 @@ async def update_mcp_server(
     update_dict = mcp_server_in.model_dump(exclude_unset=True)
 
     # Handle secrets separately since it's a property with custom getter/setter
-    if "secrets" in update_dict:
+    if mcp_server_in.secrets is not None:
+        # Resolve secrets first
+        from app.models.mcp.server import resolve_secrets
+
+        resolved_secrets = resolve_secrets(
+            mcp_server_in.secrets, session, current_user.id
+        )
         # This will use the property setter which handles encryption
-        db_mcp_server_orm.secrets = update_dict.pop("secrets")
+        db_mcp_server_orm.secrets = resolved_secrets
+
+        # Remove secrets from update_dict since we handled it separately
+        update_dict.pop("secrets", None)
 
     # Update the remaining fields
     if update_dict:

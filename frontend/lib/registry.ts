@@ -8,8 +8,6 @@ import {
   siDropbox,
   siGooglecalendar,
   siMetabase,
-  siIcloud,
-  siCalendly,
 } from 'simple-icons';
 
 export interface AppMetadata {

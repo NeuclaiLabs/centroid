@@ -2,26 +2,19 @@
 
 import type { User } from "next-auth";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, } from "react";
 import {
-	BarChartIcon,
 	ClipboardListIcon,
 	FileCodeIcon,
 	FileIcon,
 	FileTextIcon,
 	HelpCircleIcon,
 	LayoutDashboardIcon,
-	ListIcon,
-	Network,
 	SearchIcon,
-	SettingsIcon,
-	UsersIcon,
-	FolderIcon,
 	CameraIcon,
 	DatabaseIcon,
 	SendIcon,
 	ScrollTextIcon,
-	WrenchIcon,
 	BotIcon,
 	ServerIcon,
 	CircleDot,
@@ -31,22 +24,18 @@ import {
 
 import { SidebarHistory } from "@/components/sidebar-history";
 import { SidebarUserNav } from "@/components/sidebar-user-nav";
-import { Button } from "@/components/ui/button";
 import {
 	Sidebar,
 	SidebarContent,
 	SidebarFooter,
 	SidebarHeader,
 	SidebarMenu,
-	SidebarMenuItem,
-	SidebarMenuButton,
 	useSidebar,
 	SidebarGroup,
 	SidebarGroupContent,
 	SidebarGroupLabel,
 } from "@/components/ui/sidebar";
 import {
-	Command,
 	CommandDialog,
 	CommandEmpty,
 	CommandGroup,
@@ -55,11 +44,7 @@ import {
 	CommandList,
 } from "@/components/ui/command";
 import Link from "next/link";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { getChatsByUserId } from "@/lib/db/queries";
 import useSWR from "swr";
-
-import { NavDocuments } from "@/components/nav-documents";
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
 

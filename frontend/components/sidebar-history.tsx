@@ -17,8 +17,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
-  SidebarGroup,
-  SidebarGroupContent,
   SidebarMenu,
   useSidebar,
 } from '@/components/ui/sidebar';

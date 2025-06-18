@@ -2,26 +2,15 @@ import {
 	Card,
 	CardContent,
 	CardHeader,
-	CardTitle,
 	CardFooter,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Play,
 	StopCircle,
 	Plus,
-	LayoutGrid,
-	ExternalLink,
 	MoreHorizontal,
 } from "lucide-react";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { MCPServer } from "@/app/(core)/types";
 import Link from "next/link";
 import { MCPTemplateKind } from "@/app/(core)/types";
@@ -38,7 +27,6 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { toast } from "sonner";
 import { useMCPServers } from "@/app/(core)/hooks/use-mcp-servers";
 import { MCPServerConnectionModal } from "./mcp-server-connection-modal";
 import {

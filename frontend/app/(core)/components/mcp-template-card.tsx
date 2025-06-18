@@ -3,32 +3,19 @@ import { MCPTemplateKind } from "@/app/(core)/types";
 import {
 	Card,
 	CardContent,
-	CardDescription,
 	CardHeader,
-	CardTitle,
 	CardFooter,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import type { SimpleIcon } from "simple-icons";
-import { cn } from "@/lib/utils";
 import {
 	ExternalLink,
 	LayoutGrid,
-	MoreVertical,
 	Download,
 	Check,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { toast } from "sonner";
 
 interface MCPServerWithTemplate {
 	id: string;

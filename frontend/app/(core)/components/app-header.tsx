@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Pencil } from "lucide-react";
+import { ArrowRight, } from "lucide-react";
 import { appRegistry } from "@/lib/registry";
 import { useConnections } from "../hooks/use-connections";
 

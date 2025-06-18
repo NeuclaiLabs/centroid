@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
 	Dialog,
@@ -11,13 +11,107 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import type { MCPTemplate } from "@/app/(core)/types";
+import type { MCPTemplate, Secret, SecretInput, SecretsResponse } from "@/app/(core)/types";
 
 interface InstallTemplateModalProps {
 	isOpen: boolean;
 	onOpenChange: (open: boolean) => void;
 	template: MCPTemplate;
+}
+
+interface SecretInputFieldProps {
+	envKey: string;
+	secretInput?: SecretInput;
+	availableSecrets: Secret[];
+	onChange: (secretInput: SecretInput) => void;
+	isLoadingSecrets: boolean;
+}
+
+function SecretInputField({
+	envKey,
+	secretInput,
+	availableSecrets,
+	onChange,
+	isLoadingSecrets,
+}: SecretInputFieldProps) {
+	const [inputMode, setInputMode] = useState<'manual' | 'reference'>('manual');
+
+	// Initialize input mode based on existing secretInput
+	useEffect(() => {
+		if (secretInput) {
+			setInputMode(secretInput.type === 'reference' ? 'reference' : 'manual');
+		}
+	}, [secretInput]);
+
+	const handleModeChange = (newMode: 'manual' | 'reference') => {
+		setInputMode(newMode);
+		// Reset the secret input when mode changes
+		if (newMode === 'manual') {
+			onChange({ type: 'value', value: '' });
+		} else {
+			onChange({ type: 'reference', secretId: '' });
+		}
+	};
+
+	const handleValueChange = (value: string) => {
+		if (inputMode === 'manual') {
+			onChange({ type: 'value', value });
+		} else {
+			onChange({ type: 'reference', secretId: value });
+		}
+	};
+
+
+	return (
+		<div className="space-y-3">
+			<Label htmlFor={envKey} className="text-sm font-semibold">
+				{envKey}
+			</Label>
+
+			{/* Mode selector */}
+			<Select value={inputMode} onValueChange={handleModeChange}>
+				<SelectTrigger className="w-full">
+					<SelectValue />
+				</SelectTrigger>
+				<SelectContent>
+					<SelectItem value="manual">Enter value manually</SelectItem>
+					<SelectItem value="reference" disabled={isLoadingSecrets || availableSecrets.length === 0}>
+						Use existing secret {isLoadingSecrets ? "(loading...)" : availableSecrets.length === 0 ? "(none available)" : ""}
+					</SelectItem>
+				</SelectContent>
+			</Select>
+
+			{/* Input field based on mode */}
+			{inputMode === 'manual' ? (
+				<Input
+					id={envKey}
+					type="password"
+					className="font-mono"
+					value={secretInput?.type === 'value' ? secretInput.value : ''}
+					onChange={(e) => handleValueChange(e.target.value)}
+					placeholder={`Enter ${envKey.toLowerCase()}`}
+				/>
+			) : (
+				<Select
+					value={secretInput?.type === 'reference' ? secretInput.secretId : ''}
+					onValueChange={handleValueChange}
+				>
+					<SelectTrigger className="w-full">
+						<SelectValue placeholder="Select a secret" />
+					</SelectTrigger>
+					<SelectContent>
+						{availableSecrets.map((secret) => (
+							<SelectItem key={secret.id} value={secret.id}>
+								{secret.name} {secret.description && `- ${secret.description}`}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+			)}
+		</div>
+	);
 }
 
 export function InstallTemplateModal({
@@ -26,13 +120,37 @@ export function InstallTemplateModal({
 	template,
 }: InstallTemplateModalProps) {
 	const router = useRouter();
-	const [secrets, setSecrets] = useState<Record<string, string>>({});
+	const [secrets, setSecrets] = useState<Record<string, SecretInput>>({});
 	const [isInstalling, setIsInstalling] = useState(false);
+	const [availableSecrets, setAvailableSecrets] = useState<Secret[]>([]);
+	const [isLoadingSecrets, setIsLoadingSecrets] = useState(false);
 
 	// Extract environment variables that need to be configured
 	const envVars = Object.entries(template.run?.env || {}).filter(
 		([_, value]) => value.startsWith("${") && value.endsWith("}"),
 	);
+
+	// Fetch available secrets when modal opens
+	useEffect(() => {
+		if (isOpen) {
+			fetchSecrets();
+		}
+	}, [isOpen]);
+
+	const fetchSecrets = async () => {
+		try {
+			setIsLoadingSecrets(true);
+			const response = await fetch("/api/secrets");
+			if (response.ok) {
+				const data: SecretsResponse = await response.json();
+				setAvailableSecrets(data.data);
+			}
+		} catch (error) {
+			console.error("Failed to fetch secrets:", error);
+		} finally {
+			setIsLoadingSecrets(false);
+		}
+	};
 
 	const handleInstall = async () => {
 		try {
@@ -75,11 +193,17 @@ export function InstallTemplateModal({
 		}
 	};
 
-	const handleSecretChange = (key: string, value: string) => {
-		setSecrets((prev) => ({ ...prev, [key]: value }));
+	const handleSecretChange = (key: string, secretInput: SecretInput) => {
+		setSecrets((prev) => ({ ...prev, [key]: secretInput }));
 	};
 
-	const isValid = envVars.every(([key]) => secrets[key]?.trim());
+	const isValid = envVars.every(([key]) => {
+		const secret = secrets[key];
+		if (!secret) return false;
+		if (secret.type === "value") return secret.value.trim() !== "";
+		if (secret.type === "reference") return secret.secretId.trim() !== "";
+		return false;
+	});
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -92,19 +216,14 @@ export function InstallTemplateModal({
 				</DialogHeader>
 				<div className="space-y-5 py-4">
 					{envVars.map(([key]) => (
-						<div key={key} className="space-y-2">
-							<Label htmlFor={key} className="text-sm font-semibold">
-								{key}
-							</Label>
-							<Input
-								id={key}
-								type="password"
-								className="font-mono"
-								value={secrets[key] || ""}
-								onChange={(e) => handleSecretChange(key, e.target.value)}
-								placeholder={`Enter ${key.toLowerCase()}`}
-							/>
-						</div>
+						<SecretInputField
+							key={key}
+							envKey={key}
+							secretInput={secrets[key]}
+							availableSecrets={availableSecrets}
+							onChange={(secretInput) => handleSecretChange(key, secretInput)}
+							isLoadingSecrets={isLoadingSecrets}
+						/>
 					))}
 				</div>
 				<DialogFooter>
