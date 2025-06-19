@@ -2,34 +2,23 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { nanoid } from "nanoid";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { KeyIcon, EyeIcon, EyeOffIcon, CheckIcon, AlertCircleIcon, LoaderIcon, InfoIcon } from "lucide-react";
+import { EnvironmentVariableEditor } from "@/app/(core)/components/environment-variable-editor";
+import { KeyIcon, CheckIcon, AlertCircleIcon, LoaderIcon } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-
-interface Secret {
-	id: string;
-	name: string;
-	description: string | null;
-	ownerId: string;
-	createdAt: string;
-	updatedAt: string;
-	value: string | null;
-}
+import type { SecretInput, Secret, SecretsResponse } from "@/app/(core)/types";
 
 const PREDEFINED_SECRETS = [
 	{
 		name: "Anthropic API Key",
 		description: "API key for Anthropic Claude models",
+		provider: "anthropic",
 	},
 	{
 		name: "GitHub Token",
 		description: "Personal access token for GitHub integration",
+		provider: "github",
 	},
 ];
 
@@ -42,6 +31,9 @@ export default function SecretsPage() {
 	const [error, setError] = useState<string | null>(null);
 	const [showValues, setShowValues] = useState<Record<string, boolean>>({});
 	const [saveTimeouts, setSaveTimeouts] = useState<Record<string, NodeJS.Timeout>>({});
+	const [secretInputs, setSecretInputs] = useState<Record<string, SecretInput>>({});
+	const [availableSecrets, setAvailableSecrets] = useState<Secret[]>([]);
+	const [isLoadingSecrets, setIsLoadingSecrets] = useState(false);
 
 
 	useEffect(() => {
@@ -60,6 +52,7 @@ export default function SecretsPage() {
 	const fetchSecrets = async () => {
 		try {
 			setIsLoading(true);
+			setIsLoadingSecrets(true);
 			const response = await fetch("/api/secrets", {
 				headers: {
 					"Content-Type": "application/json",
@@ -70,8 +63,11 @@ export default function SecretsPage() {
 				throw new Error("Failed to fetch secrets");
 			}
 
-			const data = await response.json();
+			const data: SecretsResponse = await response.json();
 			const existingSecrets = data.data || [];
+
+			// Set available secrets for referencing (only existing secrets with values)
+			setAvailableSecrets(existingSecrets.filter((secret: Secret) => secret.value));
 
 			// Create a map of existing secrets by name
 			const existingSecretsMap = new Map(
@@ -79,24 +75,50 @@ export default function SecretsPage() {
 			);
 
 			// Merge predefined secrets with existing ones
-			const mergedSecrets = PREDEFINED_SECRETS.map((predefined) => {
+			const mergedSecrets: Secret[] = PREDEFINED_SECRETS.map((predefined) => {
 				const existing = existingSecretsMap.get(predefined.name);
 				return existing ? existing : {
 					id: nanoid(), // Generate unique ID for new secrets
-					...predefined,
+					name: predefined.name,
+					description: predefined.description,
+					provider: predefined.provider,
 					ownerId: user?.id || "",
 					createdAt: "",
 					updatedAt: "",
-					value: null,
+					value: undefined,
 				};
 			});
 
 			setSecrets(mergedSecrets);
 
+			// Initialize secret inputs for existing secrets
+			const inputs: Record<string, SecretInput> = {};
+			mergedSecrets.forEach((secret) => {
+				if (secret.value) {
+					// Check if the value is a reference pattern (starts with @)
+					if (secret.value.startsWith('@')) {
+						// This is a reference to another secret by name
+						const referencedSecretName = secret.value.substring(1); // Remove the @
+						const referencedSecret = existingSecrets.find(s => s.name === referencedSecretName);
+						if (referencedSecret) {
+							inputs[secret.id] = { type: 'reference', secretId: referencedSecret.id };
+						} else {
+							// If referenced secret not found, treat as direct value
+							inputs[secret.id] = { type: 'value', value: secret.value };
+						}
+					} else {
+						// Direct value
+						inputs[secret.id] = { type: 'value', value: secret.value };
+					}
+				}
+			});
+			setSecretInputs(inputs);
+
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Failed to fetch secrets");
 		} finally {
 			setIsLoading(false);
+			setIsLoadingSecrets(false);
 		}
 	};
 
@@ -107,15 +129,29 @@ export default function SecretsPage() {
 		}));
 	};
 
-	const autoSave = useCallback(async (secretId: string, value: string) => {
-		if (!value.trim()) {
-			// Clear any existing save status if value is empty
-			setSaveStatus(prev => ({ ...prev, [secretId]: null }));
-			return;
-		}
-
+	const autoSave = useCallback(async (secretId: string, secretInput: SecretInput) => {
 		const secret = secrets.find((s) => s.id === secretId);
 		if (!secret) return;
+
+		// Determine the value to save based on input type
+		let valueToSave: string;
+		if (secretInput.type === 'reference') {
+			// For references, find the referenced secret name and save as @SecretName
+			const referencedSecret = availableSecrets.find(s => s.id === secretInput.secretId);
+			if (!referencedSecret) {
+				setError("Referenced secret not found");
+				return;
+			}
+			valueToSave = `@${referencedSecret.name}`;
+		} else {
+			// For direct values, save the value directly
+			if (!secretInput.value.trim()) {
+				// Clear any existing save status if value is empty
+				setSaveStatus(prev => ({ ...prev, [secretId]: null }));
+				return;
+			}
+			valueToSave = secretInput.value;
+		}
 
 		try {
 			setIsSaving(prev => ({ ...prev, [secretId]: true }));
@@ -132,7 +168,8 @@ export default function SecretsPage() {
 					id: secretId, // Include the generated ID
 					name: secret.name,
 					description: secret.description,
-					value: value,
+					provider: secret.provider,
+					value: valueToSave,
 				}),
 			});
 
@@ -142,6 +179,23 @@ export default function SecretsPage() {
 			}
 
 			// Backend handles both create and update automatically
+			// Update the secret's value in local state
+			setSecrets(prev => prev.map(s =>
+				s.id === secretId ? { ...s, value: valueToSave } : s
+			));
+
+			// Update available secrets for future references (only if it's a direct value)
+			if (secretInput.type === 'value') {
+				const updatedSecret = { ...secret, value: valueToSave };
+				setAvailableSecrets(prev => {
+					const exists = prev.find(s => s.id === secretId);
+					if (exists) {
+						return prev.map(s => s.id === secretId ? updatedSecret : s);
+					} else {
+						return [...prev, updatedSecret];
+					}
+				});
+			}
 
 			setSaveStatus(prev => ({ ...prev, [secretId]: 'saved' }));
 
@@ -156,26 +210,38 @@ export default function SecretsPage() {
 		} finally {
 			setIsSaving(prev => ({ ...prev, [secretId]: false }));
 		}
-	}, [secrets]);
+	}, [secrets, availableSecrets]);
 
-	const handleValueChange = (secretId: string, value: string) => {
-		setSecrets((prev) =>
-			prev.map((secret) =>
-				secret.id === secretId ? { ...secret, value } : secret
-			)
-		);
+	const handleSecretInputChange = (secretId: string, secretInput: SecretInput) => {
+		// Update the secret input state
+		setSecretInputs(prev => ({ ...prev, [secretId]: secretInput }));
 
 		// Clear any existing timeout for this secret
 		if (saveTimeouts[secretId]) {
 			clearTimeout(saveTimeouts[secretId]);
 		}
 
-		// Set a new timeout to auto-save after 1 second of no typing
-		const timeoutId = setTimeout(() => {
-			autoSave(secretId, value);
-		}, 1000);
+		// Set a new timeout to auto-save after 1 second of no typing (for both direct values and references)
+		if (secretInput.type === 'value' || secretInput.type === 'reference') {
+			const timeoutId = setTimeout(() => {
+				autoSave(secretId, secretInput);
+			}, 1000);
 
-		setSaveTimeouts(prev => ({ ...prev, [secretId]: timeoutId }));
+			setSaveTimeouts(prev => ({ ...prev, [secretId]: timeoutId }));
+		}
+	};
+
+	const handleDirectValueChange = (secretId: string, value: string) => {
+		// Update the secret value directly in the secrets state for display purposes
+		setSecrets((prev) =>
+			prev.map((secret) =>
+				secret.id === secretId ? { ...secret, value } : secret
+			)
+		);
+
+		// Also update the secret input
+		const secretInput: SecretInput = { type: 'value', value };
+		handleSecretInputChange(secretId, secretInput);
 	};
 
 	if (isLoading) {
@@ -190,35 +256,57 @@ export default function SecretsPage() {
 
 				<div className="space-y-4">
 					{PREDEFINED_SECRETS.map((predefined, index) => (
-						<Card key={index}>
-							<CardHeader>
-								<CardTitle className="flex items-center gap-2">
-									<Skeleton className="h-5 w-5" />
-									<Skeleton className="h-6 w-32" />
-								</CardTitle>
-								<Skeleton className="h-4 w-64" />
-							</CardHeader>
-							<CardContent className="space-y-4">
-								<div>
-									<div className="flex items-center justify-between mb-2">
-										<div className="flex items-center gap-2">
-											<Skeleton className="h-4 w-10" />
-											<Skeleton className="h-3 w-3" />
-										</div>
+						<div key={index} className="space-y-3">
+							<div className="flex items-center gap-2">
+								<Skeleton className="h-5 w-5" />
+								<Skeleton className="h-6 w-32" />
+							</div>
+							<Skeleton className="h-4 w-64" />
+							<div className="group p-4 border rounded-lg hover:border-primary/50 transition-colors">
+								<div className="flex items-center justify-between">
+									<div className="flex items-center gap-2">
+										<Skeleton className="h-4 w-4" />
+										<span className="text-sm font-medium">Value</span>
 									</div>
-									<div className="flex gap-2">
-										<div className="relative flex-1">
-											<Skeleton className="h-10 w-full" />
-										</div>
+									<div className="flex items-center gap-2">
+										<Skeleton className="h-4 w-32" />
+										<Skeleton className="h-8 w-8" />
 									</div>
 								</div>
-							</CardContent>
-						</Card>
+							</div>
+						</div>
 					))}
 				</div>
 			</div>
 		);
 	}
+
+	const handleSecretSave = async (secretId: string, value: string) => {
+		const secret = secrets.find((s) => s.id === secretId);
+		if (!secret) return;
+
+		// Convert the value to a SecretInput format for the autosave logic
+		let secretInput: SecretInput;
+		if (value.startsWith("@")) {
+			// This is a reference - find the secret by name
+			const referencedSecretName = value.substring(1);
+			const referencedSecret = availableSecrets.find((s) => s.name === referencedSecretName);
+			if (referencedSecret) {
+				secretInput = { type: "reference", secretId: referencedSecret.id };
+			} else {
+				// Fallback to direct value if reference not found
+				secretInput = { type: "value", value };
+			}
+		} else {
+			secretInput = { type: "value", value };
+		}
+
+		// Update the secret input state
+		setSecretInputs((prev) => ({ ...prev, [secretId]: secretInput }));
+
+		// Use the existing autosave logic
+		await autoSave(secretId, secretInput);
+	};
 
 	return (
 		<div className="flex-1 py-6">
@@ -236,86 +324,28 @@ export default function SecretsPage() {
 				</Alert>
 			)}
 
-			<div className="space-y-4">
-				{secrets.map((secret) => (
-					<Card key={secret.id}>
-						<CardHeader>
-							<CardTitle className="flex items-center gap-2">
-								<KeyIcon className="h-5 w-5" />
-								{secret.name}
-							</CardTitle>
-							{secret.description && (
-								<p className="text-sm text-muted-foreground">
-									{secret.description}
-								</p>
-							)}
-						</CardHeader>
-						<CardContent className="space-y-4">
-							<div>
-								<div className="flex items-center justify-between mb-2">
-									<div className="flex items-center gap-2">
-										<Label htmlFor={`secret-${secret.id}`} className="text-sm font-medium">
-											Value
-										</Label>
-										<Tooltip>
-											<TooltipTrigger asChild>
-												<InfoIcon className="h-3 w-3 text-muted-foreground cursor-help" />
-											</TooltipTrigger>
-											<TooltipContent>
-												<p>Changes are saved automatically after you stop typing</p>
-											</TooltipContent>
-										</Tooltip>
-									</div>
-									<div className="flex items-center gap-2">
-										{isSaving[secret.id] && (
-											<div className="flex items-center gap-1 text-sm text-muted-foreground">
-												<LoaderIcon className="h-3 w-3 animate-spin" />
-												Saving...
-											</div>
-										)}
-										{saveStatus[secret.id] === 'saved' && (
-											<div className="flex items-center gap-1 text-sm text-green-600 dark:text-green-400">
-												<CheckIcon className="h-3 w-3" />
-												Saved
-											</div>
-										)}
-										{saveStatus[secret.id] === 'error' && (
-											<div className="flex items-center gap-1 text-sm text-destructive">
-												<AlertCircleIcon className="h-3 w-3" />
-												Error
-											</div>
-										)}
-									</div>
-								</div>
-								<div className="flex gap-2">
-									<div className="relative flex-1">
-										<Input
-											id={`secret-${secret.id}`}
-											type={showValues[secret.id] ? "text" : "password"}
-											value={secret.value || ""}
-											onChange={(e) => handleValueChange(secret.id, e.target.value)}
-											placeholder="Enter your API key or token"
-											className="pr-10"
-										/>
-										<Button
-											variant="ghost"
-											size="sm"
-											className="absolute right-0 top-0 h-full px-3"
-											onClick={() => handleToggleVisibility(secret.id)}
-										>
-											{showValues[secret.id] ? (
-												<EyeOffIcon className="h-4 w-4" />
-											) : (
-												<EyeIcon className="h-4 w-4" />
-											)}
-										</Button>
-									</div>
-								</div>
-							</div>
-						</CardContent>
-					</Card>
-				))}
-			</div>
+			{secrets.length > 0 ? (
+				<div className="space-y-4">
+					{secrets.map((secret) => (
+						<div
+							key={secret.id}
+							className="group p-4 border rounded-lg hover:border-primary/50 transition-colors"
+						>
+							<EnvironmentVariableEditor
+								name={secret.name}
+								value={secret.value || ""}
+								onSave={(_, value) => handleSecretSave(secret.id, value)}
+							/>
+						</div>
+					))}
+				</div>
+			) : (
+				<div className="text-center p-4">
+					<p className="text-muted-foreground">
+						No secrets available.
+					</p>
+				</div>
+			)}
 		</div>
 	);
 }

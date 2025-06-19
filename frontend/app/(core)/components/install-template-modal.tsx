@@ -9,9 +9,7 @@ import {
 	DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SecretInputField } from "@/components/ui/secret-input";
 import { toast } from "sonner";
 import type { MCPTemplate, Secret, SecretInput, SecretsResponse } from "@/app/(core)/types";
 
@@ -21,98 +19,6 @@ interface InstallTemplateModalProps {
 	template: MCPTemplate;
 }
 
-interface SecretInputFieldProps {
-	envKey: string;
-	secretInput?: SecretInput;
-	availableSecrets: Secret[];
-	onChange: (secretInput: SecretInput) => void;
-	isLoadingSecrets: boolean;
-}
-
-function SecretInputField({
-	envKey,
-	secretInput,
-	availableSecrets,
-	onChange,
-	isLoadingSecrets,
-}: SecretInputFieldProps) {
-	const [inputMode, setInputMode] = useState<'manual' | 'reference'>('manual');
-
-	// Initialize input mode based on existing secretInput
-	useEffect(() => {
-		if (secretInput) {
-			setInputMode(secretInput.type === 'reference' ? 'reference' : 'manual');
-		}
-	}, [secretInput]);
-
-	const handleModeChange = (newMode: 'manual' | 'reference') => {
-		setInputMode(newMode);
-		// Reset the secret input when mode changes
-		if (newMode === 'manual') {
-			onChange({ type: 'value', value: '' });
-		} else {
-			onChange({ type: 'reference', secretId: '' });
-		}
-	};
-
-	const handleValueChange = (value: string) => {
-		if (inputMode === 'manual') {
-			onChange({ type: 'value', value });
-		} else {
-			onChange({ type: 'reference', secretId: value });
-		}
-	};
-
-
-	return (
-		<div className="space-y-3">
-			<Label htmlFor={envKey} className="text-sm font-semibold">
-				{envKey}
-			</Label>
-
-			{/* Mode selector */}
-			<Select value={inputMode} onValueChange={handleModeChange}>
-				<SelectTrigger className="w-full">
-					<SelectValue />
-				</SelectTrigger>
-				<SelectContent>
-					<SelectItem value="manual">Enter value manually</SelectItem>
-					<SelectItem value="reference" disabled={isLoadingSecrets || availableSecrets.length === 0}>
-						Use existing secret {isLoadingSecrets ? "(loading...)" : availableSecrets.length === 0 ? "(none available)" : ""}
-					</SelectItem>
-				</SelectContent>
-			</Select>
-
-			{/* Input field based on mode */}
-			{inputMode === 'manual' ? (
-				<Input
-					id={envKey}
-					type="password"
-					className="font-mono"
-					value={secretInput?.type === 'value' ? secretInput.value : ''}
-					onChange={(e) => handleValueChange(e.target.value)}
-					placeholder={`Enter ${envKey.toLowerCase()}`}
-				/>
-			) : (
-				<Select
-					value={secretInput?.type === 'reference' ? secretInput.secretId : ''}
-					onValueChange={handleValueChange}
-				>
-					<SelectTrigger className="w-full">
-						<SelectValue placeholder="Select a secret" />
-					</SelectTrigger>
-					<SelectContent>
-						{availableSecrets.map((secret) => (
-							<SelectItem key={secret.id} value={secret.id}>
-								{secret.name} {secret.description && `- ${secret.description}`}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-			)}
-		</div>
-	);
-}
 
 export function InstallTemplateModal({
 	isOpen,
@@ -218,11 +124,15 @@ export function InstallTemplateModal({
 					{envVars.map(([key]) => (
 						<SecretInputField
 							key={key}
-							envKey={key}
+							label={key}
 							secretInput={secrets[key]}
 							availableSecrets={availableSecrets}
 							onChange={(secretInput) => handleSecretChange(key, secretInput)}
 							isLoadingSecrets={isLoadingSecrets}
+							showVisibilityToggle={false}
+							allowReferences={true}
+							required={true}
+							id={key}
 						/>
 					))}
 				</div>

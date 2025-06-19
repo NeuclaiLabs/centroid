@@ -266,6 +266,7 @@ export interface Secret {
   id: string;
   name: string;
   description?: string;
+  provider: string;
   ownerId: string;
   createdAt: string;
   updatedAt: string;
@@ -275,12 +276,14 @@ export interface Secret {
 export interface SecretCreate {
   id?: string;
   name?: string;
+  provider?: string;
   value: string;
 }
 
 export interface SecretUpdate {
   name?: string;
   description?: string;
+  provider?: string;
   value?: string;
 }
 

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Key, Check, X, Pencil, Eye, EyeOff } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Key, Check, X, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SecretInputField } from "@/components/ui/secret-input";
 import { cn } from "@/lib/utils";
+import type { Secret, SecretInput, SecretsResponse } from "@/app/(core)/types";
 
 interface EnvironmentVariableEditorProps {
 	name: string;
@@ -22,25 +23,49 @@ export function EnvironmentVariableEditor({
 	className,
 }: EnvironmentVariableEditorProps) {
 	const [isEditing, setIsEditing] = useState(false);
-	const [editedValue, setEditedValue] = useState(value);
+	const [secretInput, setSecretInput] = useState<SecretInput>({ type: "value", value });
 	const [isSaving, setIsSaving] = useState(false);
-	const [isValueVisible, setIsValueVisible] = useState(false);
+	const [availableSecrets, setAvailableSecrets] = useState<Secret[]>([]);
+	const [isLoadingSecrets, setIsLoadingSecrets] = useState(false);
+
+	// Fetch available secrets when editing starts
+	useEffect(() => {
+		if (isEditing) {
+			fetchSecrets();
+		}
+	}, [isEditing]);
+
+	const fetchSecrets = async () => {
+		try {
+			setIsLoadingSecrets(true);
+			const response = await fetch("/api/secrets");
+			if (response.ok) {
+				const data: SecretsResponse = await response.json();
+				setAvailableSecrets(data.data);
+			}
+		} catch (error) {
+			console.error("Failed to fetch secrets:", error);
+		} finally {
+			setIsLoadingSecrets(false);
+		}
+	};
 
 	const handleEdit = () => {
-		setEditedValue(value);
+		setSecretInput({ type: "value", value });
 		setIsEditing(true);
 	};
 
 	const handleCancel = () => {
 		setIsEditing(false);
-		setEditedValue(value);
+		setSecretInput({ type: "value", value });
 		onCancel?.();
 	};
 
 	const handleSave = async () => {
 		try {
 			setIsSaving(true);
-			await onSave(name, editedValue);
+			const finalValue = secretInput.type === "value" ? secretInput.value : `\${${secretInput.secretId}}`;
+			await onSave(name, finalValue);
 			setIsEditing(false);
 		} catch (error) {
 			console.error("Failed to save environment variable:", error);
@@ -49,8 +74,8 @@ export function EnvironmentVariableEditor({
 		}
 	};
 
-	const toggleValueVisibility = () => {
-		setIsValueVisible(!isValueVisible);
+	const handleSecretInputChange = (newSecretInput: SecretInput) => {
+		setSecretInput(newSecretInput);
 	};
 
 	const getMaskedValue = (val: string) => {
@@ -61,13 +86,19 @@ export function EnvironmentVariableEditor({
 			return "Not configured";
 		}
 
-		// If visible, show the actual value
-		if (isValueVisible) {
+		// If it's a reference to another secret (starts with @), show it unmasked
+		if (val.startsWith("@")) {
 			return val;
 		}
 
 		// Mask all characters with bullet points
 		return "•".repeat(Math.min(10, Math.max(4, Math.floor(val.length * 0.7))));
+	};
+
+	const isValid = () => {
+		if (secretInput.type === "value") return secretInput.value.trim() !== "";
+		if (secretInput.type === "reference") return secretInput.secretId.trim() !== "";
+		return false;
 	};
 
 	if (isEditing) {
@@ -78,26 +109,20 @@ export function EnvironmentVariableEditor({
 					<span className="font-medium">{name}</span>
 				</div>
 				<div className="flex items-center gap-2">
-					<Input
-						value={editedValue}
-						onChange={(e) => setEditedValue(e.target.value)}
-						className="h-8 w-60"
-						type={isValueVisible ? "text" : "password"}
-						autoFocus
+					<SecretInputField
+						label=""
+						secretInput={secretInput}
+						availableSecrets={availableSecrets}
+						onChange={handleSecretInputChange}
+						isLoadingSecrets={isLoadingSecrets}
+						showVisibilityToggle={true}
+						allowReferences={true}
+						required={false}
+						variant="inline"
+						className="w-60"
+						inputClassName="h-8"
+						placeholder="Enter value or type @ for secrets"
 					/>
-					<Button
-						variant="ghost"
-						size="icon"
-						onClick={toggleValueVisibility}
-						className="h-8 w-8 transition-opacity"
-						type="button"
-					>
-						{isValueVisible ? (
-							<EyeOff className="size-4" />
-						) : (
-							<Eye className="size-4" />
-						)}
-					</Button>
 					<Button
 						variant="ghost"
 						size="icon"
@@ -112,7 +137,7 @@ export function EnvironmentVariableEditor({
 						size="icon"
 						onClick={handleSave}
 						className="h-8 w-8"
-						disabled={isSaving}
+						disabled={isSaving || !isValid()}
 						type="button"
 					>
 						<Check className="size-4" />
@@ -132,19 +157,6 @@ export function EnvironmentVariableEditor({
 				<span className="text-sm text-muted-foreground font-mono">
 					{getMaskedValue(value)}
 				</span>
-				<Button
-					variant="ghost"
-					size="icon"
-					onClick={toggleValueVisibility}
-					className="h-8 w-8 transition-opacity"
-					type="button"
-				>
-					{isValueVisible ? (
-						<EyeOff className="size-4" />
-					) : (
-						<Eye className="size-4" />
-					)}
-				</Button>
 				<Button
 					variant="ghost"
 					size="icon"
