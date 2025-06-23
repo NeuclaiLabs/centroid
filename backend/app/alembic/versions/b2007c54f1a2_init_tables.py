@@ -32,7 +32,6 @@ def upgrade():
     sa.Column('id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
-    sa.Column('is_agent', sa.Boolean(), nullable=False),
     sa.Column('instructions', sa.String(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
@@ -92,7 +91,6 @@ def upgrade():
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.Column('encrypted_secrets', sa.String(), nullable=True),
-    sa.Column('is_agent', sa.Boolean(), nullable=False),
     sa.Column('instructions', sa.String(), nullable=True),
     sa.ForeignKeyConstraint(['owner_id'], ['users.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['template_id'], ['mcp_templates.id'], ondelete='CASCADE'),

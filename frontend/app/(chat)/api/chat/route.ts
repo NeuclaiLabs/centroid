@@ -23,6 +23,7 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
+import { developer } from '@/lib/ai/tools/developer';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
@@ -111,7 +112,6 @@ export async function POST(request: Request) {
     }
 
     const previousMessages = await getMessagesByChatId({ id });
-    console.log(previousMessages);
 
     const messages = appendClientMessage({
       // @ts-expect-error: todo add type conversion from DBMessage[] to UIMessage[]
@@ -120,7 +120,6 @@ export async function POST(request: Request) {
     });
 
     const { longitude, latitude, city, country } = geolocation(request);
-    console.log(longitude, latitude, city, country);
 
     const requestHints: RequestHints = {
       longitude,
@@ -160,6 +159,7 @@ export async function POST(request: Request) {
                   'createDocument',
                   'updateDocument',
                   'requestSuggestions',
+                  'developer',
                 ],
           experimental_transform: smoothStream({ chunking: 'word' }),
           experimental_generateMessageId: generateUUID,
@@ -171,6 +171,7 @@ export async function POST(request: Request) {
               session,
               dataStream,
             }),
+            developer,
           },
           onFinish: async ({ response }) => {
             if (session.user?.id) {

@@ -35,7 +35,6 @@ def read_mcp_servers(
     skip: int = 0,
     limit: int = 100,
     template_id: str | None = None,
-    is_agent: bool = False,
 ) -> Any:
     """
     Retrieve MCP servers.
@@ -47,8 +46,6 @@ def read_mcp_servers(
     # Add template_id filter if provided
     if template_id:
         query = query.where(MCPServer.template_id == template_id)
-
-    query = query.where(MCPServer.is_agent == is_agent)
 
     # Get total count
     count_query = select(func.count()).select_from(query.subquery())

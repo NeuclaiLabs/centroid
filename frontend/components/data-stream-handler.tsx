@@ -4,6 +4,14 @@ import { useChat } from '@ai-sdk/react';
 import { useEffect, useRef } from 'react';
 import { artifactDefinitions, type ArtifactKind } from './artifact';
 import type { Suggestion } from '@/lib/db/schema';
+
+interface LogEntry {
+  id: string;
+  timestamp: string;
+  type: 'user' | 'assistant' | 'tool' | 'system';
+  content: string;
+  duration?: number;
+}
 import { initialArtifactData, useArtifact } from '@/hooks/use-artifact';
 
 export type DataStreamDelta = {
@@ -12,13 +20,14 @@ export type DataStreamDelta = {
     | 'code-delta'
     | 'sheet-delta'
     | 'image-delta'
+    | 'log-entry'
     | 'title'
     | 'id'
     | 'suggestion'
     | 'clear'
     | 'finish'
     | 'kind';
-  content: string | Suggestion;
+  content: string | Suggestion | LogEntry;
 };
 
 export function DataStreamHandler({ id }: { id: string }) {

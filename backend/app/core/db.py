@@ -162,9 +162,7 @@ async def init_db(session: Session) -> None:
                         logger.info(f"Updated agent server: {agent_name}")
                     else:
                         # Create new server
-                        server = MCPServerCreate(
-                            **agent_data, is_agent=True, owner_id=user.id
-                        )
+                        server = MCPServerCreate(**agent_data, owner_id=user.id)
                         db_server = MCPServer(**server.model_dump())
                         session.add(db_server)
                         logger.info(f"Added new agent server: {agent_name}")

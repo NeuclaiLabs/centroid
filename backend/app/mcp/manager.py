@@ -151,10 +151,7 @@ class MCPManager:
             from app.mcp.proxy import MCPProxy
 
             proxy = MCPProxy(mcp_server=server)
-            if proxy.is_agent:
-                proxy.mount(f"{server.id}/agent", self._agent_app)
-            else:
-                proxy.mount(f"{server.id}/mcp", self._mcp_app)
+            proxy.mount(f"{server.id}/mcp", self._mcp_app)
 
             # Initialize the proxy
             success = await proxy.initialize()

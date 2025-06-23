@@ -24,9 +24,9 @@ function PureSuggestedActions({
       action: 'What are the advantages of using Next.js?',
     },
     {
-      title: 'Write code to',
-      label: `demonstrate djikstra's algorithm`,
-      action: `Write code to demonstrate djikstra's algorithm`,
+      title: 'Create a React component',
+      label: 'for a todo list',
+      action: 'Create a React component for a todo list with add, delete, and toggle functionality',
     },
     {
       title: 'Help me write an essay',

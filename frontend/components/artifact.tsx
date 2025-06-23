@@ -10,7 +10,8 @@ import {
   useState,
 } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
-import { useDebounceCallback, useWindowSize } from 'usehooks-ts';
+import { useDebounceCallback, useWindowSize, useLocalStorage } from 'usehooks-ts';
+import { ResizablePanels } from './ui/resizable-panels';
 import type { Document, Vote } from '@/lib/db/schema';
 import { fetcher } from '@/lib/utils';
 import { MultimodalInput } from './multimodal-input';
@@ -25,6 +26,7 @@ import { imageArtifact } from '@/artifacts/image/client';
 import { codeArtifact } from '@/artifacts/code/client';
 import { sheetArtifact } from '@/artifacts/sheet/client';
 import { textArtifact } from '@/artifacts/text/client';
+import { developerArtifact } from '@/artifacts/developer/client';
 import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { VisibilityType } from './visibility-selector';
@@ -34,6 +36,7 @@ export const artifactDefinitions = [
   codeArtifact,
   imageArtifact,
   sheetArtifact,
+  developerArtifact,
 ];
 export type ArtifactKind = (typeof artifactDefinitions)[number]['kind'];
 
@@ -235,6 +238,9 @@ function PureArtifact({
   const { width: windowWidth, height: windowHeight } = useWindowSize();
   const isMobile = windowWidth ? windowWidth < 768 : false;
 
+  // Persist chat panel width in localStorage
+  const [chatPanelWidth, setChatPanelWidth] = useLocalStorage('chat-panel-width', 400);
+
   const artifactDefinition = artifactDefinitions.find(
     (definition) => definition.kind === artifact.kind,
   );
@@ -254,57 +260,128 @@ function PureArtifact({
     }
   }, [artifact.documentId, artifactDefinition, setMetadata]);
 
+  // Mobile: show full-screen artifact overlay (keep existing behavior)
+  if (isMobile) {
+    return (
+      <AnimatePresence>
+        {artifact.isVisible && (
+          <motion.div
+            data-testid="artifact"
+            className="fixed top-0 left-0 w-full h-full z-50 bg-background"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="h-full flex flex-col">
+              <div className="p-2 flex flex-row justify-between items-start border-b">
+                <div className="flex flex-row gap-4 items-start">
+                  <ArtifactCloseButton />
+                  <div className="flex flex-col">
+                    <div className="font-medium">{artifact.title}</div>
+                    {isContentDirty ? (
+                      <div className="text-sm text-muted-foreground">
+                        Saving changes...
+                      </div>
+                    ) : document ? (
+                      <div className="text-sm text-muted-foreground">
+                        {`Updated ${formatDistance(
+                          new Date(document.createdAt),
+                          new Date(),
+                          { addSuffix: true }
+                        )}`}
+                      </div>
+                    ) : (
+                      <div className="w-32 h-3 mt-2 bg-muted-foreground/20 rounded-md animate-pulse" />
+                    )}
+                  </div>
+                </div>
+                <ArtifactActions
+                  artifact={artifact}
+                  currentVersionIndex={currentVersionIndex}
+                  handleVersionChange={handleVersionChange}
+                  isCurrentVersion={isCurrentVersion}
+                  mode={mode}
+                  metadata={metadata}
+                  setMetadata={setMetadata}
+                />
+              </div>
+
+              <div className="flex-1 overflow-auto">
+                <artifactDefinition.content
+                  title={artifact.title}
+                  content={
+                    isCurrentVersion
+                      ? artifact.content
+                      : getDocumentContentById(currentVersionIndex)
+                  }
+                  mode={mode}
+                  status={artifact.status}
+                  currentVersionIndex={currentVersionIndex}
+                  suggestions={[]}
+                  onSaveContent={saveContent}
+                  isInline={false}
+                  isCurrentVersion={isCurrentVersion}
+                  getDocumentContentById={getDocumentContentById}
+                  isLoading={isDocumentsFetching && !artifact.content}
+                  metadata={metadata}
+                  setMetadata={setMetadata}
+                />
+              </div>
+
+              <AnimatePresence>
+                {isCurrentVersion && (
+                  <Toolbar
+                    isToolbarVisible={isToolbarVisible}
+                    setIsToolbarVisible={setIsToolbarVisible}
+                    append={append}
+                    status={status}
+                    stop={stop}
+                    setMessages={setMessages}
+                    artifactKind={artifact.kind}
+                  />
+                )}
+              </AnimatePresence>
+
+              <AnimatePresence>
+                {!isCurrentVersion && (
+                  <VersionFooter
+                    currentVersionIndex={currentVersionIndex}
+                    documents={documents}
+                    handleVersionChange={handleVersionChange}
+                  />
+                )}
+              </AnimatePresence>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    );
+  }
+
+  // Desktop: show resizable split-pane layout
   return (
     <AnimatePresence>
       {artifact.isVisible && (
         <motion.div
           data-testid="artifact"
-          className="flex flex-row h-dvh w-dvw fixed top-0 left-0 z-50 bg-transparent"
-          initial={{ opacity: 1 }}
+          className="fixed top-0 left-0 w-full h-full z-50 bg-background"
+          initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0, transition: { delay: 0.4 } }}
+          exit={{ opacity: 0 }}
         >
-          {!isMobile && (
-            <motion.div
-              className="fixed bg-background h-dvh"
-              initial={{
-                width: isSidebarOpen ? windowWidth - 256 : windowWidth,
-                right: 0,
-              }}
-              animate={{ width: windowWidth, right: 0 }}
-              exit={{
-                width: isSidebarOpen ? windowWidth - 256 : windowWidth,
-                right: 0,
-              }}
-            />
-          )}
-
-          {!isMobile && (
-            <motion.div
-              className="relative w-[400px] bg-muted dark:bg-background h-dvh shrink-0"
-              initial={{ opacity: 0, x: 10, scale: 1 }}
-              animate={{
-                opacity: 1,
-                x: 0,
-                scale: 1,
-                transition: {
-                  delay: 0.2,
-                  type: 'spring',
-                  stiffness: 200,
-                  damping: 30,
-                },
-              }}
-              exit={{
-                opacity: 0,
-                x: 0,
-                scale: 1,
-                transition: { duration: 0 },
-              }}
-            >
+          <ResizablePanels
+            defaultLeftWidth={chatPanelWidth}
+            minLeftWidth={300}
+            maxLeftWidth={800}
+            onResize={setChatPanelWidth}
+            className="h-full"
+          >
+            {/* Chat Panel */}
+            <div className="relative bg-muted dark:bg-background h-full">
               <AnimatePresence>
                 {!isCurrentVersion && (
                   <motion.div
-                    className="left-0 absolute h-dvh w-[400px] top-0 bg-zinc-900/50 z-50"
+                    className="absolute inset-0 bg-zinc-900/50 z-50"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -312,7 +389,7 @@ function PureArtifact({
                 )}
               </AnimatePresence>
 
-              <div className="flex flex-col h-full justify-between items-center">
+              <div className="flex flex-col h-full justify-between">
                 <ArtifactMessages
                   chatId={chatId}
                   status={status}
@@ -324,7 +401,7 @@ function PureArtifact({
                   artifactStatus={artifact.status}
                 />
 
-                <form className="flex flex-row gap-2 relative items-end w-full px-4 pb-4">
+                <form className="flex mx-auto px-4 bg-background pb-4 gap-2 w-full">
                   <MultimodalInput
                     chatId={chatId}
                     input={input}
@@ -342,134 +419,65 @@ function PureArtifact({
                   />
                 </form>
               </div>
-            </motion.div>
-          )}
-
-          <motion.div
-            className="fixed dark:bg-muted bg-background h-dvh flex flex-col overflow-y-scroll md:border-l dark:border-zinc-700 border-zinc-200"
-            initial={
-              isMobile
-                ? {
-                    opacity: 1,
-                    x: artifact.boundingBox.left,
-                    y: artifact.boundingBox.top,
-                    height: artifact.boundingBox.height,
-                    width: artifact.boundingBox.width,
-                    borderRadius: 50,
-                  }
-                : {
-                    opacity: 1,
-                    x: artifact.boundingBox.left,
-                    y: artifact.boundingBox.top,
-                    height: artifact.boundingBox.height,
-                    width: artifact.boundingBox.width,
-                    borderRadius: 50,
-                  }
-            }
-            animate={
-              isMobile
-                ? {
-                    opacity: 1,
-                    x: 0,
-                    y: 0,
-                    height: windowHeight,
-                    width: windowWidth ? windowWidth : 'calc(100dvw)',
-                    borderRadius: 0,
-                    transition: {
-                      delay: 0,
-                      type: 'spring',
-                      stiffness: 200,
-                      damping: 30,
-                      duration: 5000,
-                    },
-                  }
-                : {
-                    opacity: 1,
-                    x: 400,
-                    y: 0,
-                    height: windowHeight,
-                    width: windowWidth
-                      ? windowWidth - 400
-                      : 'calc(100dvw-400px)',
-                    borderRadius: 0,
-                    transition: {
-                      delay: 0,
-                      type: 'spring',
-                      stiffness: 200,
-                      damping: 30,
-                      duration: 5000,
-                    },
-                  }
-            }
-            exit={{
-              opacity: 0,
-              scale: 0.5,
-              transition: {
-                delay: 0.1,
-                type: 'spring',
-                stiffness: 600,
-                damping: 30,
-              },
-            }}
-          >
-            <div className="p-2 flex flex-row justify-between items-start">
-              <div className="flex flex-row gap-4 items-start">
-                <ArtifactCloseButton />
-
-                <div className="flex flex-col">
-                  <div className="font-medium">{artifact.title}</div>
-
-                  {isContentDirty ? (
-                    <div className="text-sm text-muted-foreground">
-                      Saving changes...
-                    </div>
-                  ) : document ? (
-                    <div className="text-sm text-muted-foreground">
-                      {`Updated ${formatDistance(
-                        new Date(document.createdAt),
-                        new Date(),
-                        {
-                          addSuffix: true,
-                        },
-                      )}`}
-                    </div>
-                  ) : (
-                    <div className="w-32 h-3 mt-2 bg-muted-foreground/20 rounded-md animate-pulse" />
-                  )}
-                </div>
-              </div>
-
-              <ArtifactActions
-                artifact={artifact}
-                currentVersionIndex={currentVersionIndex}
-                handleVersionChange={handleVersionChange}
-                isCurrentVersion={isCurrentVersion}
-                mode={mode}
-                metadata={metadata}
-                setMetadata={setMetadata}
-              />
             </div>
 
-            <div className="dark:bg-muted bg-background h-full overflow-y-scroll !max-w-full items-center">
-              <artifactDefinition.content
-                title={artifact.title}
-                content={
-                  isCurrentVersion
-                    ? artifact.content
-                    : getDocumentContentById(currentVersionIndex)
-                }
-                mode={mode}
-                status={artifact.status}
-                currentVersionIndex={currentVersionIndex}
-                suggestions={[]}
-                onSaveContent={saveContent}
-                isInline={false}
-                isCurrentVersion={isCurrentVersion}
-                getDocumentContentById={getDocumentContentById}
-                isLoading={isDocumentsFetching && !artifact.content}
-                metadata={metadata}
-                setMetadata={setMetadata}
-              />
+            {/* Artifact Panel */}
+            <div className="h-full flex flex-col overflow-hidden bg-background">
+              <div className="p-2 flex flex-row justify-between items-start border-b">
+                <div className="flex flex-row gap-4 items-start">
+                  <ArtifactCloseButton />
+                  <div className="flex flex-col">
+                    <div className="font-medium">{artifact.title}</div>
+                    {isContentDirty ? (
+                      <div className="text-sm text-muted-foreground">
+                        Saving changes...
+                      </div>
+                    ) : document ? (
+                      <div className="text-sm text-muted-foreground">
+                        {`Updated ${formatDistance(
+                          new Date(document.createdAt),
+                          new Date(),
+                          { addSuffix: true }
+                        )}`}
+                      </div>
+                    ) : (
+                      <div className="w-32 h-3 mt-2 bg-muted-foreground/20 rounded-md animate-pulse" />
+                    )}
+                  </div>
+                </div>
+
+                <ArtifactActions
+                  artifact={artifact}
+                  currentVersionIndex={currentVersionIndex}
+                  handleVersionChange={handleVersionChange}
+                  isCurrentVersion={isCurrentVersion}
+                  mode={mode}
+                  metadata={metadata}
+                  setMetadata={setMetadata}
+                />
+              </div>
+
+              <div className="flex-1 overflow-auto">
+                <artifactDefinition.content
+                  title={artifact.title}
+                  content={
+                    isCurrentVersion
+                      ? artifact.content
+                      : getDocumentContentById(currentVersionIndex)
+                  }
+                  mode={mode}
+                  status={artifact.status}
+                  currentVersionIndex={currentVersionIndex}
+                  suggestions={[]}
+                  onSaveContent={saveContent}
+                  isInline={false}
+                  isCurrentVersion={isCurrentVersion}
+                  getDocumentContentById={getDocumentContentById}
+                  isLoading={isDocumentsFetching && !artifact.content}
+                  metadata={metadata}
+                  setMetadata={setMetadata}
+                />
+              </div>
 
               <AnimatePresence>
                 {isCurrentVersion && (
@@ -484,18 +492,18 @@ function PureArtifact({
                   />
                 )}
               </AnimatePresence>
-            </div>
 
-            <AnimatePresence>
-              {!isCurrentVersion && (
-                <VersionFooter
-                  currentVersionIndex={currentVersionIndex}
-                  documents={documents}
-                  handleVersionChange={handleVersionChange}
-                />
-              )}
-            </AnimatePresence>
-          </motion.div>
+              <AnimatePresence>
+                {!isCurrentVersion && (
+                  <VersionFooter
+                    currentVersionIndex={currentVersionIndex}
+                    documents={documents}
+                    handleVersionChange={handleVersionChange}
+                  />
+                )}
+              </AnimatePresence>
+            </div>
+          </ResizablePanels>
         </motion.div>
       )}
     </AnimatePresence>

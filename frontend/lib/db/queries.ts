@@ -279,7 +279,9 @@ export async function saveDocument({
         createdAt: new Date().toISOString(),
       }),
     });
+    console.log("document saved successfully")
   } catch (error) {
+    console.log(error)
     throw new ChatSDKError('bad_request:database', 'Failed to save document');
   }
 }

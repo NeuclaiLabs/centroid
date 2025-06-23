@@ -35,6 +35,14 @@ Do not update document right after creating it. Wait for user feedback or reques
 export const regularPrompt =
   'You are a friendly assistant! Keep your responses concise and helpful.';
 
+export const developerToolPrompt = `
+When using the developer tool:
+- The generated code and git diff will be displayed in a rich UI component
+- Do NOT repeat, summarize, or describe the diff content in your response
+- Simply acknowledge that the code has been generated
+- Keep your response brief and focused on next steps or asking for feedback
+`;
+
 export interface RequestHints {
   latitude: Geo['latitude'];
   longitude: Geo['longitude'];
@@ -62,7 +70,7 @@ export const systemPrompt = ({
   if (selectedChatModel === 'chat-model-reasoning') {
     return `${regularPrompt}\n\n${requestPrompt}`;
   } else {
-    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
+    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}\n\n${developerToolPrompt}`;
   }
 };
 

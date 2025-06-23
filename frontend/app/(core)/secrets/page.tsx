@@ -5,7 +5,7 @@ import { nanoid } from "nanoid";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EnvironmentVariableEditor } from "@/app/(core)/components/environment-variable-editor";
-import { KeyIcon, CheckIcon, AlertCircleIcon, LoaderIcon } from "lucide-react";
+import { AlertCircleIcon } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import type { SecretInput, Secret, SecretsResponse } from "@/app/(core)/types";
 

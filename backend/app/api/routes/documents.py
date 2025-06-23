@@ -61,7 +61,6 @@ def read_documents(
 
     # Convert Document instances to DocumentOut
     documents_out = [DocumentOut.model_validate(doc.model_dump()) for doc in documents]
-    print(documents_out)
 
     return DocumentsOut(data=documents_out, count=count)
 
@@ -93,7 +92,7 @@ def create_document(
     """
     now = datetime.now()
     update_data = {"user_id": current_user.id, "created_at": now, "updated_at": now}
-    # If id is provided, use it; otherwise let it auto-generate
+    # If id is provided, use it; otherwise generate a new one
     if document_in.id:
         update_data["id"] = document_in.id
 
