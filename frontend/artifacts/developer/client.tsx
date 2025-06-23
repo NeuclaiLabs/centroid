@@ -5,86 +5,20 @@ import {
   DownloadIcon,
   FileIcon as FileTextIcon,
   CrossIcon as RefreshIcon,
-  PlusIcon as Plus,
-  EyeIcon as Minus,
+  TerminalIcon as Terminal,
+  CheckCircleFillIcon as CheckCircle2,
+  BotIcon,
+  UserIcon,
 } from '@/components/icons';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import type { DeveloperResult } from '@/lib/ai/tools/developer';
+import type { DeveloperResult } from '@/lib/ai/tools/sdlc/types';
+import { SDLCChatMessages } from '@/components/sdlc-chat-messages';
 
 interface DeveloperArtifactMetadata {
   result: DeveloperResult | null;
 }
 
-function DiffLine({ line, type }: { line: string; type: 'addition' | 'deletion' | 'context' | 'header' }) {
-  const getLineStyles = () => {
-    switch (type) {
-      case 'addition':
-        return 'bg-green-50 text-green-800 border-l-2 border-green-400';
-      case 'deletion':
-        return 'bg-red-50 text-red-800 border-l-2 border-red-400';
-      case 'header':
-        return 'bg-blue-50 text-blue-800 font-semibold';
-      case 'context':
-      default:
-        return 'bg-gray-50 text-gray-800';
-    }
-  };
-
-  const getIcon = () => {
-    switch (type) {
-      case 'addition':
-        return <div className="w-3 h-3 text-green-600 mr-2 flex-shrink-0"><Plus size={12} /></div>;
-      case 'deletion':
-        return <div className="w-3 h-3 text-red-600 mr-2 flex-shrink-0"><Minus size={12} /></div>;
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className={cn('px-3 py-1 flex items-start font-mono text-sm', getLineStyles())}>
-      {getIcon()}
-      <span className="whitespace-pre overflow-x-auto">{line}</span>
-    </div>
-  );
-}
-
-function DiffView({ diff }: { diff: string }) {
-  const lines = diff.split('\n');
-
-  const parsedLines = lines.map((line, index) => {
-    if (line.startsWith('diff --git') || line.startsWith('index') || line.startsWith('+++') || line.startsWith('---')) {
-      return { type: 'header' as const, content: line };
-    } else if (line.startsWith('+')) {
-      return { type: 'addition' as const, content: line.substring(1) };
-    } else if (line.startsWith('-')) {
-      return { type: 'deletion' as const, content: line.substring(1) };
-    } else if (line.startsWith('@@')) {
-      return { type: 'header' as const, content: line };
-    } else {
-      return { type: 'context' as const, content: line };
-    }
-  });
-
-  return (
-    <div className="border rounded-lg overflow-hidden bg-white">
-      <div className="bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 border-b">
-        Git Diff
-      </div>
-      <div className="max-h-[calc(100vh-300px)] overflow-y-auto">
-        {parsedLines.map((line, index) => (
-          <DiffLine
-            key={index}
-            line={line.content}
-            type={line.type}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
 
 export const developerArtifact = new Artifact<'developer', DeveloperArtifactMetadata>({
   kind: 'developer',
@@ -114,66 +48,77 @@ export const developerArtifact = new Artifact<'developer', DeveloperArtifactMeta
 
     const result = metadata.result;
 
+    // Extract task from first user message
+    const firstUserMessage = result.find(msg => msg.role === 'user');
+    const taskText = firstUserMessage?.content;
+    const task = typeof taskText === 'string' ? taskText :
+      Array.isArray(taskText) ? taskText.find(c => c.type === 'text')?.text || 'Development Task' :
+      'Development Task';
+
     return (
-      <div className="flex flex-col h-full p-6">
-        {/* Header with stats */}
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-3">{result.task}</h2>
-
-          {result.success && (
-            <div className="flex gap-2 mb-4">
-              {result.filesChanged && result.filesChanged.length > 0 && (
-                <Badge variant="outline" className="text-sm">
-                  <FileTextIcon size={16} />
-                  {result.filesChanged.length} file{result.filesChanged.length !== 1 ? 's' : ''}
-                </Badge>
-              )}
-
-              {result.additions !== undefined && result.additions > 0 && (
-                <Badge variant="outline" className="text-sm text-green-700">
-                  <Plus size={16} />
-                  +{result.additions}
-                </Badge>
-              )}
-
-              {result.deletions !== undefined && result.deletions > 0 && (
-                <Badge variant="outline" className="text-sm text-red-700">
-                  <Minus size={16} />
-                  -{result.deletions}
-                </Badge>
-              )}
-            </div>
-          )}
-
-          {/* Files Changed */}
-          {result.success && result.filesChanged && result.filesChanged.length > 0 && (
-            <div className="mb-4">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">Files Modified:</h4>
-              <div className="flex flex-wrap gap-1">
-                {result.filesChanged.map((file, index) => (
-                  <Badge key={index} variant="secondary" className="text-xs">
-                    {file}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
+      <div className="flex flex-col h-full bg-black font-mono">
+        {/* Terminal Header */}
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800 bg-zinc-900/50">
+          <Terminal className="w-4 h-4 text-emerald-400" />
+          <span className="text-zinc-300 text-sm">claude-code</span>
+          <div className="flex-1" />
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-3 rounded-full bg-red-500/80" />
+            <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+            <div className="w-3 h-3 rounded-full bg-green-500/80" />
+          </div>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-auto">
-          {result.error ? (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-800 font-medium">Error occurred:</p>
-              <p className="text-red-700 text-sm mt-1">{result.error}</p>
-            </div>
-          ) : result.diff ? (
-            <DiffView diff={result.diff} />
-          ) : (
-            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-yellow-800">Task completed but no changes were made.</p>
-            </div>
-          )}
+        {/* Terminal Content */}
+        <div className="flex-1 p-4 bg-black overflow-hidden">
+          {/* Status Line */}
+          <div className="flex items-center gap-2 mb-4">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <span className="text-zinc-300 text-sm">
+              ✓ {task}
+            </span>
+          </div>
+
+          {/* Messages */}
+          <div className="h-full overflow-y-auto space-y-4">
+            {result.map((message, index) => {
+              const isUser = message.role === 'user';
+              const content = typeof message.content === 'string'
+                ? message.content
+                : Array.isArray(message.content)
+                ? message.content
+                    .filter(block => block.type === 'text')
+                    .map(block => block.text || '')
+                    .join('')
+                : '';
+
+              return (
+                <div key={message.id || `message-${index}`} className="space-y-1">
+                  {/* Message Line */}
+                  <div className="flex items-start gap-2">
+                    {isUser ? (
+                      <UserIcon className="w-4 h-4 text-zinc-400 shrink-0 mt-0.5" />
+                    ) : (
+                      <BotIcon className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <pre className="text-zinc-300 text-sm whitespace-pre-wrap break-words overflow-hidden m-0">{content}</pre>
+
+                      {message.usage && (
+                        <div className="mt-2 text-zinc-500 text-xs">
+                          tokens: {message.usage.input_tokens + message.usage.output_tokens}
+                        </div>
+                      )}
+
+                      {message.model && !isUser && (
+                        <div className="mt-1 text-zinc-500 text-xs">({message.model})</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     );
@@ -181,45 +126,71 @@ export const developerArtifact = new Artifact<'developer', DeveloperArtifactMeta
   actions: [
     {
       icon: <CopyIcon size={18} />,
-      description: 'Copy git diff to clipboard',
+      description: 'Copy output to clipboard',
       onClick: ({ metadata }) => {
-        if (metadata?.result?.diff) {
-          navigator.clipboard.writeText(metadata.result.diff);
-          toast.success('Git diff copied to clipboard!');
+        if (metadata?.result) {
+          const assistantMessages = metadata.result.filter(msg => msg.role === 'assistant');
+          const finalMessage = assistantMessages[assistantMessages.length - 1];
+          const finalContent = typeof finalMessage?.content === 'string' ? finalMessage.content :
+            Array.isArray(finalMessage?.content) ? finalMessage.content.find(c => c.type === 'text')?.text || '' :
+            '';
+
+          if (finalContent) {
+            navigator.clipboard.writeText(finalContent);
+            toast.success('Output copied to clipboard!');
+          }
         }
       },
-      isDisabled: ({ metadata }) => !metadata?.result?.diff,
+      isDisabled: ({ metadata }) => {
+        if (!metadata?.result) return true;
+        const assistantMessages = metadata.result.filter(msg => msg.role === 'assistant');
+        const finalMessage = assistantMessages[assistantMessages.length - 1];
+        const finalContent = typeof finalMessage?.content === 'string' ? finalMessage.content :
+          Array.isArray(finalMessage?.content) ? finalMessage.content.find(c => c.type === 'text')?.text || '' :
+          '';
+        return !finalContent;
+      },
     },
     {
       icon: <DownloadIcon size={18} />,
-      description: 'Download as patch file',
+      description: 'Download output as text file',
       onClick: ({ metadata }) => {
-        if (metadata?.result?.diff) {
-          const blob = new Blob([metadata.result.diff], { type: 'text/plain' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `${metadata.result.task.replace(/[^a-zA-Z0-9]/g, '_')}.patch`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-          toast.success('Patch file downloaded!');
+        if (metadata?.result) {
+          const assistantMessages = metadata.result.filter(msg => msg.role === 'assistant');
+          const finalMessage = assistantMessages[assistantMessages.length - 1];
+          const finalContent = typeof finalMessage?.content === 'string' ? finalMessage.content :
+            Array.isArray(finalMessage?.content) ? finalMessage.content.find(c => c.type === 'text')?.text || '' :
+            '';
+
+          const firstUserMessage = metadata.result.find(msg => msg.role === 'user');
+          const taskText = firstUserMessage?.content;
+          const task = typeof taskText === 'string' ? taskText :
+            Array.isArray(taskText) ? taskText.find(c => c.type === 'text')?.text || 'Development Task' :
+            'Development Task';
+
+          if (finalContent) {
+            const blob = new Blob([finalContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${task.replace(/[^a-zA-Z0-9]/g, '_')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            toast.success('Output file downloaded!');
+          }
         }
       },
-      isDisabled: ({ metadata }) => !metadata?.result?.diff,
-    },
-    {
-      icon: <FileTextIcon size={18} />,
-      description: 'View file list',
-      onClick: ({ metadata }) => {
-        if (metadata?.result?.filesChanged) {
-          const fileList = metadata.result.filesChanged.join('\n');
-          navigator.clipboard.writeText(fileList);
-          toast.success('File list copied to clipboard!');
-        }
+      isDisabled: ({ metadata }) => {
+        if (!metadata?.result) return true;
+        const assistantMessages = metadata.result.filter(msg => msg.role === 'assistant');
+        const finalMessage = assistantMessages[assistantMessages.length - 1];
+        const finalContent = typeof finalMessage?.content === 'string' ? finalMessage.content :
+          Array.isArray(finalMessage?.content) ? finalMessage.content.find(c => c.type === 'text')?.text || '' :
+          '';
+        return !finalContent;
       },
-      isDisabled: ({ metadata }) => !metadata?.result?.filesChanged?.length,
     },
   ],
   toolbar: [

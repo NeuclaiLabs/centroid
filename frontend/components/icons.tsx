@@ -1172,3 +1172,23 @@ export const WarningIcon = ({ size = 16 }: { size?: number }) => {
     </svg>
   );
 };
+
+export const CircleIcon = ({ size = 16, className }: { size?: number; className?: string }) => {
+  return (
+    <svg
+      height={size}
+      strokeLinejoin="round"
+      viewBox="0 0 16 16"
+      width={size}
+      style={{ color: 'currentcolor' }}
+      className={className}
+    >
+      <circle
+        cx="8"
+        cy="8"
+        r="8"
+        fill="currentColor"
+      />
+    </svg>
+  );
+};

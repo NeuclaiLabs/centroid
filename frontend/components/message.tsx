@@ -49,7 +49,7 @@ const PurePreviewMessage = ({
       <motion.div
         data-testid={`message-${message.role}`}
         className={cn(
-          "w-full mx-auto px-4 group/message",
+          "w-full mx-auto px-4 group/message min-w-0",
           {
             "max-w-3xl": !isCompact,
           }
@@ -60,7 +60,7 @@ const PurePreviewMessage = ({
       >
         <div
           className={cn(
-            'flex gap-4 w-full group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl',
+            'flex gap-4 w-full group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl min-w-0',
             {
               'w-full': mode === 'edit',
               'group-data-[role=user]/message:w-fit': mode !== 'edit',
@@ -76,7 +76,7 @@ const PurePreviewMessage = ({
           )}
 
           <div
-            className={cn('flex flex-col gap-4 w-full', {
+            className={cn('flex flex-col gap-4 w-full min-w-0', {
               'min-h-96': message.role === 'assistant' && requiresScrollPadding,
             })}
           >

@@ -14,6 +14,7 @@ class DocumentKind(str, Enum):
     CODE = "code"
     IMAGE = "image"
     SHEET = "sheet"
+    SDLC_TASK = "sdlc_task"
 
 
 class DocumentBase(CamelModel):

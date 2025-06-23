@@ -146,7 +146,8 @@ TELEMETRY_ENABLED=false
 - The MCP system requires Redis for queue management in production
 - File uploads are stored in `~/.centroid/uploads` by default
 - Database files stored in `~/.centroid/app.db` for SQLite
-- Frontend uses camelCase for API communication; backend uses snake_case
+- Backend uses CamelModel to automatically convert snake_case to camelCase in API responses
+- Frontend TypeScript interfaces should use camelCase to match converted API responses
 - All API routes are prefixed with `/api/v1`
 - Authentication tokens expire after 8 days by default
 - The system supports multi-tenant architecture via teams/projects

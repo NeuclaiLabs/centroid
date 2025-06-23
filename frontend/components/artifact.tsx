@@ -11,7 +11,7 @@ import {
 } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { useDebounceCallback, useWindowSize, useLocalStorage } from 'usehooks-ts';
-import { ResizablePanels } from './ui/resizable-panels';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from './ui/resizable';
 import type { Document, Vote } from '@/lib/db/schema';
 import { fetcher } from '@/lib/utils';
 import { MultimodalInput } from './multimodal-input';
@@ -352,6 +352,9 @@ function PureArtifact({
                 )}
               </AnimatePresence>
             </div>
+<<<<<<< HEAD
+          </ResizablePanels>
+=======
           </motion.div>
         )}
       </AnimatePresence>
@@ -369,15 +372,15 @@ function PureArtifact({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          <ResizablePanels
-            defaultLeftWidth={chatPanelWidth}
-            minLeftWidth={300}
-            maxLeftWidth={800}
-            onResize={setChatPanelWidth}
-            className="h-full"
-          >
+          <ResizablePanelGroup direction="horizontal" className="h-full">
             {/* Chat Panel */}
-            <div className="relative bg-muted dark:bg-background h-full">
+            <ResizablePanel
+              defaultSize={chatPanelWidth / 10}
+              minSize={30}
+              maxSize={80}
+              onResize={(size) => setChatPanelWidth(size * 10)}
+            >
+              <div className="relative bg-muted dark:bg-background h-full overflow-hidden">
               <AnimatePresence>
                 {!isCurrentVersion && (
                   <motion.div
@@ -389,40 +392,48 @@ function PureArtifact({
                 )}
               </AnimatePresence>
 
-              <div className="flex flex-col h-full justify-between">
-                <ArtifactMessages
-                  chatId={chatId}
-                  status={status}
-                  votes={votes}
-                  messages={messages}
-                  setMessages={setMessages}
-                  reload={reload}
-                  isReadonly={isReadonly}
-                  artifactStatus={artifact.status}
-                />
-
-                <form className="flex mx-auto px-4 bg-background pb-4 gap-2 w-full">
-                  <MultimodalInput
+              <div className="flex flex-col h-full">
+                <div className="flex-1 min-h-0">
+                  <ArtifactMessages
                     chatId={chatId}
-                    input={input}
-                    setInput={setInput}
-                    handleSubmit={handleSubmit}
                     status={status}
-                    stop={stop}
-                    attachments={attachments}
-                    setAttachments={setAttachments}
+                    votes={votes}
                     messages={messages}
-                    append={append}
-                    className="bg-background dark:bg-muted"
                     setMessages={setMessages}
-                    selectedVisibilityType={selectedVisibilityType}
+                    reload={reload}
+                    isReadonly={isReadonly}
+                    artifactStatus={artifact.status}
                   />
-                </form>
+                </div>
+
+                <div className="flex-shrink-0">
+                  <form className="flex mx-auto px-4 bg-background pb-4 gap-2 w-full">
+                    <MultimodalInput
+                      chatId={chatId}
+                      input={input}
+                      setInput={setInput}
+                      handleSubmit={handleSubmit}
+                      status={status}
+                      stop={stop}
+                      attachments={attachments}
+                      setAttachments={setAttachments}
+                      messages={messages}
+                      append={append}
+                      className="bg-background dark:bg-muted"
+                      setMessages={setMessages}
+                      selectedVisibilityType={selectedVisibilityType}
+                    />
+                  </form>
+                </div>
               </div>
-            </div>
+              </div>
+            </ResizablePanel>
+
+            <ResizableHandle />
 
             {/* Artifact Panel */}
-            <div className="h-full flex flex-col overflow-hidden bg-background">
+            <ResizablePanel defaultSize={100 - (chatPanelWidth / 10)}>
+              <div className="h-full flex flex-col overflow-hidden bg-background">
               <div className="p-2 flex flex-row justify-between items-start border-b">
                 <div className="flex flex-row gap-4 items-start">
                   <ArtifactCloseButton />
@@ -502,8 +513,10 @@ function PureArtifact({
                   />
                 )}
               </AnimatePresence>
-            </div>
-          </ResizablePanels>
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+>>>>>>> 5d211899 (refactor: remove is_agent field from MCP models and add developer tool)
         </motion.div>
       )}
     </AnimatePresence>
