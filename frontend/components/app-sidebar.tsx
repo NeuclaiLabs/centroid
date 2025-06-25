@@ -47,6 +47,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
+import { Chat } from "@/lib/db/schema";
 
 export function AppSidebar({ user }: { user: User | undefined }) {
 	const router = useRouter();
@@ -68,7 +69,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
 		}
 	);
 
-	const filteredChats = chatsData?.chats?.filter((chat) =>
+	const filteredChats = chatsData?.chats?.filter((chat: Chat) =>
 		chat.title.toLowerCase().includes(searchQuery.toLowerCase())
 	) || [];
 
@@ -288,7 +289,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
 					<CommandEmpty>No chats found.</CommandEmpty>
 					{filteredChats.length > 0 && (
 						<CommandGroup heading="Chats">
-							{filteredChats.slice(0, 8).map((chat) => (
+							{filteredChats.slice(0, 8).map((chat: Chat) => (
 								<CommandItem
 									key={chat.id}
 									onSelect={() => {

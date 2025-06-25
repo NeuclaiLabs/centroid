@@ -15,7 +15,7 @@ export const reviewer = tool({
     try {
       // Create the SDLC task
       const taskResponse = await createSDLCTask({
-        tool_type: 'reviewer',
+        toolType: 'reviewer',
         task: `Review code files: ${codeFiles.join(', ')}`,
         context: {
           codeFiles,
@@ -26,7 +26,7 @@ export const reviewer = tool({
       });
 
       // Poll for completion
-      const document = await pollForTaskCompletion(taskResponse.task_id);
+      const document = await pollForTaskCompletion(taskResponse.taskId);
 
       // Parse the task data
       const taskData = parseTaskData(document.content);
@@ -36,47 +36,22 @@ export const reviewer = tool({
       }
 
       if (taskData.status === 'ERROR') {
-        return {
-          success: false,
-          error: taskData.error || 'Unknown error occurred',
-          review: {
-            overallScore: 0,
-            summary: '',
-            issues: [],
-            strengths: [],
-            metrics: {
-              complexity: 'Unknown',
-              maintainability: 'Unknown',
-              testCoverage: 'Unknown',
-            },
-          },
-        };
+        return [{
+          role: 'assistant',
+          content: `Error in code review: ${taskData.error || 'Unknown error occurred'}`,
+          id: `error-${Date.now()}`,
+        }];
       }
 
-      const result = taskData.result;
-
-      return {
-        success: result.success,
-        review: result.review,
-        error: result.error,
-      };
+      // Return the messages array from the task data
+      return taskData.result || taskData.messages || [];
 
     } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred',
-        review: {
-          overallScore: 0,
-          summary: '',
-          issues: [],
-          strengths: [],
-          metrics: {
-            complexity: 'Unknown',
-            maintainability: 'Unknown',
-            testCoverage: 'Unknown',
-          },
-        },
-      };
+      return [{
+        role: 'assistant',
+        content: `Error in code review: ${error instanceof Error ? error.message : 'Unknown error occurred'}`,
+        id: `error-${Date.now()}`,
+      }];
     }
   },
 });

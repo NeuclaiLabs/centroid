@@ -16,7 +16,7 @@ export const documenter = tool({
     try {
       // Create the SDLC task
       const taskResponse = await createSDLCTask({
-        tool_type: 'documenter',
+        toolType: 'documenter',
         task: `Generate documentation for: ${subject}`,
         context: {
           subject,
@@ -28,7 +28,7 @@ export const documenter = tool({
       });
 
       // Poll for completion
-      const document = await pollForTaskCompletion(taskResponse.task_id);
+      const document = await pollForTaskCompletion(taskResponse.taskId);
 
       // Parse the task data
       const taskData = parseTaskData(document.content);
@@ -38,37 +38,22 @@ export const documenter = tool({
       }
 
       if (taskData.status === 'ERROR') {
-        return {
-          success: false,
-          error: taskData.error || 'Unknown error occurred',
-          documentation: {
-            title: '',
-            sections: [],
-            examples: [],
-            changelog: [],
-          },
-        };
+        return [{
+          role: 'assistant',
+          content: `Error in documentation generation: ${taskData.error || 'Unknown error occurred'}`,
+          id: `error-${Date.now()}`,
+        }];
       }
 
-      const result = taskData.result;
-
-      return {
-        success: result.success,
-        documentation: result.documentation,
-        error: result.error,
-      };
+      // Return the messages array from the task data
+      return taskData.result || taskData.messages || [];
 
     } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred',
-        documentation: {
-          title: '',
-          sections: [],
-          examples: [],
-          changelog: [],
-        },
-      };
+      return [{
+        role: 'assistant',
+        content: `Error in documentation generation: ${error instanceof Error ? error.message : 'Unknown error occurred'}`,
+        id: `error-${Date.now()}`,
+      }];
     }
   },
 });

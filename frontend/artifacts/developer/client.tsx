@@ -1,5 +1,4 @@
 import { Artifact } from '@/components/create-artifact';
-import { DocumentSkeleton } from '@/components/document-skeleton';
 import {
   CopyIcon,
   DownloadIcon,
@@ -43,7 +42,29 @@ export const developerArtifact = new Artifact<'developer', DeveloperArtifactMeta
     metadata,
   }) => {
     if (isLoading || !metadata?.result) {
-      return <DocumentSkeleton artifactKind="developer" />;
+      return (
+        <div className="flex flex-col h-full bg-black font-mono">
+          <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800 bg-zinc-900/50">
+            <div className="size-4 text-emerald-400">
+              <Terminal size={16} />
+            </div>
+            <span className="text-zinc-300 text-sm">claude-code</span>
+            <div className="flex-1" />
+            <div className="flex items-center gap-1">
+              <div className="size-3 rounded-full bg-red-500/80" />
+              <div className="size-3 rounded-full bg-yellow-500/80" />
+              <div className="size-3 rounded-full bg-green-500/80" />
+            </div>
+          </div>
+          <div className="flex-1 p-4 bg-black">
+            <div className="space-y-3">
+              <div className="h-4 bg-zinc-800 rounded animate-pulse" />
+              <div className="h-4 bg-zinc-800/60 rounded animate-pulse w-3/4" />
+              <div className="h-4 bg-zinc-800/40 rounded animate-pulse w-1/2" />
+            </div>
+          </div>
+        </div>
+      );
     }
 
     const result = metadata.result;
@@ -59,13 +80,15 @@ export const developerArtifact = new Artifact<'developer', DeveloperArtifactMeta
       <div className="flex flex-col h-full bg-black font-mono">
         {/* Terminal Header */}
         <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800 bg-zinc-900/50">
-          <Terminal className="w-4 h-4 text-emerald-400" />
+          <div className="size-4 text-emerald-400">
+            <Terminal size={16} />
+          </div>
           <span className="text-zinc-300 text-sm">claude-code</span>
           <div className="flex-1" />
           <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full bg-red-500/80" />
-            <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-            <div className="w-3 h-3 rounded-full bg-green-500/80" />
+            <div className="size-3 rounded-full bg-red-500/80" />
+            <div className="size-3 rounded-full bg-yellow-500/80" />
+            <div className="size-3 rounded-full bg-green-500/80" />
           </div>
         </div>
 
@@ -73,7 +96,9 @@ export const developerArtifact = new Artifact<'developer', DeveloperArtifactMeta
         <div className="flex-1 p-4 bg-black overflow-hidden">
           {/* Status Line */}
           <div className="flex items-center gap-2 mb-4">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <div className="size-4 text-emerald-400">
+              <CheckCircle2 size={16} />
+            </div>
             <span className="text-zinc-300 text-sm">
               ✓ {task}
             </span>
@@ -97,9 +122,13 @@ export const developerArtifact = new Artifact<'developer', DeveloperArtifactMeta
                   {/* Message Line */}
                   <div className="flex items-start gap-2">
                     {isUser ? (
-                      <UserIcon className="w-4 h-4 text-zinc-400 shrink-0 mt-0.5" />
+                      <div className="size-4 text-zinc-400 shrink-0 mt-0.5">
+                        <UserIcon />
+                      </div>
                     ) : (
-                      <BotIcon className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                      <div className="size-4 text-emerald-400 shrink-0 mt-0.5">
+                        <BotIcon />
+                      </div>
                     )}
                     <div className="flex-1 min-w-0">
                       <pre className="text-zinc-300 text-sm whitespace-pre-wrap break-words overflow-hidden m-0">{content}</pre>

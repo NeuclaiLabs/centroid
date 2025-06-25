@@ -16,7 +16,7 @@ export const planner = tool({
     try {
       // Create the SDLC task
       const taskResponse = await createSDLCTask({
-        tool_type: 'planner',
+        toolType: 'planner',
         task,
         context: {
           scope,
@@ -27,7 +27,7 @@ export const planner = tool({
       });
 
       // Poll for completion
-      const document = await pollForTaskCompletion(taskResponse.task_id);
+      const document = await pollForTaskCompletion(taskResponse.taskId);
 
       // Parse the task data
       const taskData = parseTaskData(document.content);
@@ -37,39 +37,22 @@ export const planner = tool({
       }
 
       if (taskData.status === 'ERROR') {
-        return {
-          success: false,
-          error: taskData.error || 'Unknown error occurred',
-          plan: {
-            title: '',
-            phases: [],
-            dependencies: [],
-            risks: [],
-            estimatedTime: '',
-          },
-        };
+        return [{
+          role: 'assistant',
+          content: `Error in project planning: ${taskData.error || 'Unknown error occurred'}`,
+          id: `error-${Date.now()}`,
+        }];
       }
 
-      const result = taskData.result;
-
-      return {
-        success: result.success,
-        plan: result.plan,
-        error: result.error,
-      };
+      // Return the messages array from the task data
+      return taskData.result || taskData.messages || [];
 
     } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred',
-        plan: {
-          title: '',
-          phases: [],
-          dependencies: [],
-          risks: [],
-          estimatedTime: '',
-        },
-      };
+      return [{
+        role: 'assistant',
+        content: `Error in project planning: ${error instanceof Error ? error.message : 'Unknown error occurred'}`,
+        id: `error-${Date.now()}`,
+      }];
     }
   },
 });

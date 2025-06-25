@@ -93,7 +93,7 @@ export const DeveloperResult = memo(function DeveloperResult({ result }: Develop
                 ...artifact,
                 title: `Code: ${task}`,
                 documentId: newDocumentId,
-                kind: 'developer' as const,
+                kind: 'code' as const,
                 content: finalContent,
                 isVisible: true,
                 status: 'idle' as const,
@@ -145,9 +145,13 @@ export const DeveloperResult = memo(function DeveloperResult({ result }: Develop
                 {/* Message Line */}
                 <div className="flex items-start gap-2">
                   {isUser ? (
-                    <UserIcon className="w-4 h-4 text-zinc-400 shrink-0 mt-0.5" />
+                    <div className="w-4 h-4 text-zinc-400 shrink-0 mt-0.5">
+                      <UserIcon />
+                    </div>
                   ) : (
-                    <BotIcon className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <div className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5">
+                      <BotIcon />
+                    </div>
                   )}
                   <div className="flex-1 min-w-0">
                     <pre className="text-zinc-300 text-sm whitespace-pre-wrap break-words overflow-hidden m-0">{content}</pre>

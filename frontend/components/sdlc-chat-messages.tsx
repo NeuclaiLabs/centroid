@@ -84,7 +84,7 @@ const SDLCChatMessage = memo(function SDLCChatMessage({ message, index }: SDLCCh
 
         {isUser && (
           <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border bg-background">
-            <UserIcon size={14} />
+            <UserIcon />
           </div>
         )}
       </div>

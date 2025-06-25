@@ -10,8 +10,8 @@ interface PlannerResultProps {
 }
 
 export const PlannerResult = memo(function PlannerResult({ result }: PlannerResultProps) {
-  // Loading state
-  if (!result) {
+  // Loading state or invalid data
+  if (!result || !Array.isArray(result) || result.length === 0) {
     return (
       <Card className="w-full">
         <CardHeader>
@@ -30,52 +30,24 @@ export const PlannerResult = memo(function PlannerResult({ result }: PlannerResu
     );
   }
 
-  if (!result.success) {
-    return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <XCircle className="w-5 h-5 text-red-600" />
-            Planning Failed
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-800 font-medium">Error occurred:</p>
-            <p className="text-red-700 text-sm mt-1">{result.error}</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  // Extract task from first user message
+  const firstUserMessage = result.find(msg => msg.role === 'user');
+  const taskText = firstUserMessage?.content;
+  const task = typeof taskText === 'string' ? taskText :
+    Array.isArray(taskText) ? taskText.find(c => c.type === 'text')?.text || 'Planning Task' :
+    'Planning Task';
 
   return (
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <CheckCircle className="w-5 h-5 text-green-600" />
-          {result.plan.title}
+          Project Plan: {task}
         </CardTitle>
-        <div className="flex flex-wrap gap-2 mt-2">
-          <Badge variant="outline" className="text-xs">
-            <Clock className="w-3 h-3 mr-1" />
-            {result.plan.estimatedTime}
-          </Badge>
-          <Badge variant="outline" className="text-xs">
-            <Users className="w-3 h-3 mr-1" />
-            {result.plan.phases.length} phases
-          </Badge>
-        </div>
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {result.messages && result.messages.length > 0 ? (
-          <SDLCChatMessages messages={result.messages} />
-        ) : (
-          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-yellow-800">No planning session messages available.</p>
-          </div>
-        )}
+        <SDLCChatMessages messages={result} />
       </CardContent>
     </Card>
   );

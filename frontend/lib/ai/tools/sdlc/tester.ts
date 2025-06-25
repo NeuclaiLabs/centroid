@@ -16,7 +16,7 @@ export const tester = tool({
     try {
       // Create the SDLC task
       const taskResponse = await createSDLCTask({
-        tool_type: 'tester',
+        toolType: 'tester',
         task: `Create test plan for: ${feature}`,
         context: {
           feature,
@@ -28,7 +28,7 @@ export const tester = tool({
       });
 
       // Poll for completion
-      const document = await pollForTaskCompletion(taskResponse.task_id);
+      const document = await pollForTaskCompletion(taskResponse.taskId);
 
       // Parse the task data
       const taskData = parseTaskData(document.content);
@@ -38,39 +38,22 @@ export const tester = tool({
       }
 
       if (taskData.status === 'ERROR') {
-        return {
-          success: false,
-          error: taskData.error || 'Unknown error occurred',
-          testPlan: {
-            title: '',
-            testTypes: [],
-            testStrategy: '',
-            automationLevel: '',
-            riskAreas: [],
-          },
-        };
+        return [{
+          role: 'assistant',
+          content: `Error in test planning: ${taskData.error || 'Unknown error occurred'}`,
+          id: `error-${Date.now()}`,
+        }];
       }
 
-      const result = taskData.result;
-
-      return {
-        success: result.success,
-        testPlan: result.testPlan,
-        error: result.error,
-      };
+      // Return the messages array from the task data
+      return taskData.result || taskData.messages || [];
 
     } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred',
-        testPlan: {
-          title: '',
-          testTypes: [],
-          testStrategy: '',
-          automationLevel: '',
-          riskAreas: [],
-        },
-      };
+      return [{
+        role: 'assistant',
+        content: `Error in test planning: ${error instanceof Error ? error.message : 'Unknown error occurred'}`,
+        id: `error-${Date.now()}`,
+      }];
     }
   },
 });

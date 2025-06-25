@@ -16,7 +16,7 @@ export const architect = tool({
     try {
       // Create the SDLC task
       const taskResponse = await createSDLCTask({
-        tool_type: 'architect',
+        toolType: 'architect',
         task: `Design architecture for: ${requirements}`,
         context: {
           requirements,
@@ -28,7 +28,7 @@ export const architect = tool({
       });
 
       // Poll for completion
-      const document = await pollForTaskCompletion(taskResponse.task_id);
+      const document = await pollForTaskCompletion(taskResponse.taskId);
 
       // Parse the task data
       const taskData = parseTaskData(document.content);
@@ -38,49 +38,22 @@ export const architect = tool({
       }
 
       if (taskData.status === 'ERROR') {
-        return {
-          success: false,
-          error: taskData.error || 'Unknown error occurred',
-          architecture: {
-            systemOverview: '',
-            components: [],
-            patterns: [],
-            tradeoffs: [],
-            scalability: {
-              currentLoad: '',
-              projectedLoad: '',
-              bottlenecks: [],
-              recommendations: [],
-            },
-          },
-        };
+        return [{
+          role: 'assistant',
+          content: `Error in architecture design: ${taskData.error || 'Unknown error occurred'}`,
+          id: `error-${Date.now()}`,
+        }];
       }
 
-      const result = taskData.result;
-
-      return {
-        success: result.success,
-        architecture: result.architecture,
-        error: result.error,
-      };
+      // Return the messages array from the task data
+      return taskData.result || taskData.messages || [];
 
     } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred',
-        architecture: {
-          systemOverview: '',
-          components: [],
-          patterns: [],
-          tradeoffs: [],
-          scalability: {
-            currentLoad: '',
-            projectedLoad: '',
-            bottlenecks: [],
-            recommendations: [],
-          },
-        },
-      };
+      return [{
+        role: 'assistant',
+        content: `Error in architecture design: ${error instanceof Error ? error.message : 'Unknown error occurred'}`,
+        id: `error-${Date.now()}`,
+      }];
     }
   },
 });
