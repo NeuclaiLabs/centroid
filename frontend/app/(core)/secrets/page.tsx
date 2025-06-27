@@ -254,23 +254,23 @@ export default function SecretsPage() {
 					</p>
 				</div>
 
-				<div className="space-y-4">
+				<div className="space-y-6">
 					{PREDEFINED_SECRETS.map((predefined) => (
 						<div key={predefined.provider} className="space-y-3">
 							<div className="flex items-center gap-2">
-								<Skeleton className="h-5 w-5" />
-								<Skeleton className="h-6 w-32" />
+								<Skeleton className="h-5 w-5 rounded-full" />
+								<Skeleton className="h-6 w-40" />
 							</div>
 							<Skeleton className="h-4 w-64" />
-							<div className="group p-4 border rounded-lg hover:border-primary/50 transition-colors">
+							<div className="group p-4 border rounded-lg animate-pulse">
 								<div className="flex items-center justify-between">
 									<div className="flex items-center gap-2">
-										<Skeleton className="h-4 w-4" />
-										<span className="text-sm font-medium">Value</span>
+										<Skeleton className="h-4 w-4 rounded" />
+										<Skeleton className="h-4 w-16" />
 									</div>
 									<div className="flex items-center gap-2">
 										<Skeleton className="h-4 w-32" />
-										<Skeleton className="h-8 w-8" />
+										<Skeleton className="h-8 w-8 rounded" />
 									</div>
 								</div>
 							</div>
@@ -325,11 +325,11 @@ export default function SecretsPage() {
 			)}
 
 			{secrets.length > 0 ? (
-				<div className="space-y-4">
+				<div className="space-y-6">
 					{secrets.map((secret) => (
 						<div
 							key={secret.id}
-							className="group p-4 border rounded-lg hover:border-primary/50 transition-colors"
+							className="group p-4 border rounded-lg hover:border-primary/50 focus-within:border-primary/70 transition-colors"
 						>
 							<EnvironmentVariableEditor
 								name={secret.name}
@@ -340,7 +340,7 @@ export default function SecretsPage() {
 					))}
 				</div>
 			) : (
-				<div className="text-center p-4">
+				<div className="text-center p-8">
 					<p className="text-muted-foreground">
 						No secrets available.
 					</p>

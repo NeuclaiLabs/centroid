@@ -148,7 +148,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
 
   if (!user) {
     return (
-      <div className="px-2 text-zinc-500 w-full flex flex-row justify-center items-center text-sm gap-2">
+      <div className="px-2 text-sidebar-foreground/60 w-full flex flex-row justify-center items-center text-sm gap-2 py-4">
         Login to save and revisit previous chats!
       </div>
     );
@@ -156,14 +156,14 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col">
+      <div className="flex flex-col gap-2 px-2">
         {[44, 32, 28, 64, 52].map((item) => (
           <div
             key={item}
-            className="rounded-md h-8 flex gap-2 items-center"
+            className="rounded-md h-8 flex gap-2 items-center animate-pulse"
           >
             <div
-              className="h-4 rounded-md flex-1 max-w-[--skeleton-width] bg-sidebar-accent-foreground/10"
+              className="h-4 rounded-md flex-1 max-w-[--skeleton-width] bg-sidebar-accent-foreground/20"
               style={
                 {
                   '--skeleton-width': `${item}%`,
@@ -178,7 +178,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
 
   if (hasEmptyChatHistory) {
     return (
-      <div className="px-2 text-zinc-500 w-full flex flex-row justify-center items-center text-sm gap-2">
+      <div className="px-2 text-sidebar-foreground/60 w-full flex flex-row justify-center items-center text-sm gap-2 py-4">
         Your conversations will appear here once you start chatting!
       </div>
     );
@@ -227,15 +227,15 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
       />
 
       {hasReachedEnd ? (
-        <div className="px-2 text-zinc-500 w-full flex flex-row justify-center items-center text-sm gap-2 mt-8">
+        <div className="px-2 text-sidebar-foreground/50 w-full flex flex-row justify-center items-center text-xs gap-2 mt-6">
           You have reached the end of your chat history.
         </div>
       ) : (
-        <div className="p-2 text-zinc-500 dark:text-zinc-400 flex flex-row gap-2 items-center mt-8">
+        <div className="p-2 text-sidebar-foreground/60 flex flex-row gap-2 items-center justify-center mt-6">
           <div className="animate-spin">
             <LoaderIcon />
           </div>
-          <div>Loading Chats...</div>
+          <div className="text-xs">Loading Chats...</div>
         </div>
       )}
 

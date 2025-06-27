@@ -27,7 +27,7 @@ export function AuthForm({
         <Input
           id="email"
           name="email"
-          className="bg-muted text-md md:text-sm"
+          className="bg-muted"
           type="email"
           placeholder="user@acme.com"
           autoComplete="email"
@@ -48,7 +48,7 @@ export function AuthForm({
         <Input
           id="password"
           name="password"
-          className="bg-muted text-md md:text-sm"
+          className="bg-muted"
           type="password"
           required
         />

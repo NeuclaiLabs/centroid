@@ -12,6 +12,15 @@ import {
 	CardFooter,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogDescription,
+	DialogFooter,
+} from "@/components/ui/dialog";
+import { useState } from "react";
 
 // Predefined skeleton keys
 const SKELETON_KEYS = [
@@ -25,14 +34,21 @@ const SKELETON_KEYS = [
 
 export default function MCPServersPage() {
 	const { servers, count, isLoading } = useMCPServers({ isAgent: true });
+	const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
 	return (
 		<div className="flex-1 py-6">
-			<div className="mb-8">
-				<h1 className="text-2xl font-bold tracking-tight">Agents</h1>
-				<p className="text-muted-foreground">
-					Manage and monitor your running Agents
-				</p>
+			<div className="mb-8 flex items-center justify-between">
+				<div>
+					<h1 className="text-2xl font-bold tracking-tight">Agents</h1>
+					<p className="text-muted-foreground">
+						Manage and monitor your running Agents
+					</p>
+				</div>
+				<Button onClick={() => setIsCreateModalOpen(true)} className="flex items-center gap-2">
+					<Plus className="size-4" />
+					Create Agent
+				</Button>
 			</div>
 
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -104,6 +120,30 @@ export default function MCPServersPage() {
 					</>
 				)}
 			</div>
+
+			<Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+				<DialogContent className="sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle>Create New Agent</DialogTitle>
+						<DialogDescription>
+							Set up a new agent to help automate your workflows.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="space-y-4">
+						<div className="text-sm text-muted-foreground">
+							Agent creation form will be implemented here.
+						</div>
+					</div>
+					<DialogFooter>
+						<Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
+							Cancel
+						</Button>
+						<Button onClick={() => setIsCreateModalOpen(false)}>
+							Create Agent
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

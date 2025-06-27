@@ -436,7 +436,7 @@ function PureArtifact({
               </div>
             </ResizablePanel>
 
-            <ResizableHandle />
+            <ResizableHandle withHandle/>
 
             {/* Artifact Panel */}
             <ResizablePanel defaultSize={100 - (chatPanelWidth / 10)}>

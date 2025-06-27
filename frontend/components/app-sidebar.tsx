@@ -4,15 +4,9 @@ import type { User } from "next-auth";
 import { useRouter } from "next/navigation";
 import { useState, } from "react";
 import {
-	ClipboardListIcon,
-	FileCodeIcon,
-	FileIcon,
-	FileTextIcon,
 	HelpCircleIcon,
 	LayoutDashboardIcon,
 	SearchIcon,
-	CameraIcon,
-	DatabaseIcon,
 	SendIcon,
 	ScrollTextIcon,
 	BotIcon,
@@ -93,21 +87,21 @@ export function AppSidebar({ user }: { user: User | undefined }) {
 			},
 		],
 		navMain: [
-			{
-				title: "Templates",
-				url: "/mcp/templates",
-				icon: LayoutDashboardIcon,
-			},
+			// {
+			// 	title: "Templates",
+			// 	url: "/mcp/templates",
+			// 	icon: LayoutDashboardIcon,
+			// },
 			{
 				title: "Agents",
 				url: "/agents",
 				icon: BotIcon,
 			},
-			{
-				title: "Servers",
-				url: "/mcp/servers",
-				icon: ServerIcon,
-			},
+			// {
+			// 	title: "Servers",
+			// 	url: "/mcp/servers",
+			// 	icon: ServerIcon,
+			// },
 			{
 				title: "Secrets",
 				url: "/secrets",
@@ -139,54 +133,6 @@ export function AppSidebar({ user }: { user: User | undefined }) {
 			// 	icon: UsersIcon,
 			// },
 		],
-		navClouds: [
-			{
-				title: "Capture",
-				icon: CameraIcon,
-				isActive: true,
-				url: "#",
-				items: [
-					{
-						title: "Active Proposals",
-						url: "#",
-					},
-					{
-						title: "Archived",
-						url: "#",
-					},
-				],
-			},
-			{
-				title: "Proposal",
-				icon: FileTextIcon,
-				url: "#",
-				items: [
-					{
-						title: "Active Proposals",
-						url: "#",
-					},
-					{
-						title: "Archived",
-						url: "#",
-					},
-				],
-			},
-			{
-				title: "Prompts",
-				icon: FileCodeIcon,
-				url: "#",
-				items: [
-					{
-						title: "Active Proposals",
-						url: "#",
-					},
-					{
-						title: "Archived",
-						url: "#",
-					},
-				],
-			},
-		],
 		navSecondary: [
 			// {
 			// 	title: "Settings",
@@ -209,72 +155,54 @@ export function AppSidebar({ user }: { user: User | undefined }) {
 			// 	icon: SearchIcon,
 			// },
 		],
-		documents: [
-			{
-				name: "Data Library",
-				url: "#",
-				icon: DatabaseIcon,
-			},
-			{
-				name: "Reports",
-				url: "#",
-				icon: ClipboardListIcon,
-			},
-			{
-				name: "Word Assistant",
-				url: "#",
-				icon: FileIcon,
-			},
-		],
 	};
 	return (
 		<>
 			<Sidebar className="group-data-[side=left]:border-r-0">
-				<SidebarHeader>
+				<SidebarHeader className="border-sidebar-border">
 					<SidebarMenu>
 						<div className="flex flex-row justify-between items-center">
 							<Link
-								href="/apps"
+								href="/"
 								onClick={() => {
 									setOpenMobile(false);
 								}}
-								className="flex flex-row gap-3 items-center"
+								className="flex flex-row gap-3 items-center group"
 							>
-								<span className="text-lg font-semibold px-2 hover:bg-muted rounded-md cursor-pointer flex items-center gap-1">
-									<CircleDot className="h-5 w-5" />
-									Centroid
+								<span className="text-lg font-semibold px-2 py-1 hover:bg-sidebar-accent rounded-md cursor-pointer flex items-center gap-2 transition-colors group-focus-visible:ring-2 group-focus-visible:ring-ring group-focus-visible:ring-offset-2">
+									<CircleDot className="h-5 w-5 text-sidebar-primary" />
+									<span className="text-sidebar-foreground">Centroid</span>
 								</span>
 							</Link>
 						</div>
 					</SidebarMenu>
 				</SidebarHeader>
-				<SidebarContent>
+				<SidebarContent className="gap-0">
 					{/* Quick Actions */}
-					<SidebarGroup>
+					<SidebarGroup className="py-2">
 						<SidebarGroupContent>
 							<NavMain items={data.navQuick} />
 						</SidebarGroupContent>
 					</SidebarGroup>
 
 					{/* Main Navigation */}
-					<SidebarGroup>
+					<SidebarGroup className="py-2">
 						<SidebarGroupContent>
 							<NavMain items={data.navMain} />
 						</SidebarGroupContent>
 					</SidebarGroup>
 
 					{/* Chat History */}
-					<SidebarGroup>
-						<SidebarGroupLabel className="text-sm font-semibold">Chats</SidebarGroupLabel>
-						<SidebarGroupContent>
+					<SidebarGroup className="py-2 flex-1 min-h-0">
+						<SidebarGroupLabel className="text-sm font-semibold text-sidebar-foreground/70">
+							Chats
+						</SidebarGroupLabel>
+						<SidebarGroupContent className="flex-1 overflow-auto">
 							<SidebarHistory user={user} />
 						</SidebarGroupContent>
 					</SidebarGroup>
 
-					<NavSecondary items={data.navSecondary} className="mt-auto" />
-
-					{/* <NavDocuments items={data.documents} />
-					{/* <SidebarHistory user={user} /> */}
+					<NavSecondary items={data.navSecondary} className="py-2 border-t border-sidebar-border" />
 				</SidebarContent>
 				<SidebarFooter>{user && <SidebarUserNav user={user} />}</SidebarFooter>
 			</Sidebar>
