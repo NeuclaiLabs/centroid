@@ -1,8 +1,9 @@
 import { memo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, Search, AlertTriangle, CheckSquare, BarChart3 } from 'lucide-react';
-import type { ReviewerResult as ReviewerResultType } from '@/lib/ai/tools/sdlc/types';
+import { CheckCircle, Search, } from 'lucide-react';
+import type { ChatMessage } from '../sdlc-chat-messages';
+
+type ReviewerResultType = ChatMessage[];
 import { SDLCChatMessages } from '../sdlc-chat-messages';
 
 interface ReviewerResultProps {

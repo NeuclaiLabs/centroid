@@ -2,6 +2,12 @@ import { codeDocumentHandler } from '@/artifacts/code/server';
 import { imageDocumentHandler } from '@/artifacts/image/server';
 import { sheetDocumentHandler } from '@/artifacts/sheet/server';
 import { textDocumentHandler } from '@/artifacts/text/server';
+import { developerDocumentHandler } from '@/artifacts/developer/server';
+import { plannerDocumentHandler } from '@/artifacts/planner/server';
+import { architectDocumentHandler } from '@/artifacts/architect/server';
+import { testerDocumentHandler } from '@/artifacts/tester/server';
+import { reviewerDocumentHandler } from '@/artifacts/reviewer/server';
+import { documenterDocumentHandler } from '@/artifacts/documenter/server';
 import type { ArtifactKind } from '@/components/artifact';
 import type { DataStreamWriter } from 'ai';
 import type { Document } from '../db/schema';
@@ -94,6 +100,12 @@ export const documentHandlersByArtifactKind: Array<DocumentHandler> = [
   codeDocumentHandler,
   imageDocumentHandler,
   sheetDocumentHandler,
+  developerDocumentHandler,
+  plannerDocumentHandler,
+  architectDocumentHandler,
+  testerDocumentHandler,
+  reviewerDocumentHandler,
+  documenterDocumentHandler,
 ];
 
-export const artifactKinds = ['text', 'code', 'image', 'sheet'] as const;
+export const artifactKinds = ['text', 'code', 'image', 'sheet', 'developer', 'planner', 'architect', 'tester', 'reviewer', 'documenter'] as const;

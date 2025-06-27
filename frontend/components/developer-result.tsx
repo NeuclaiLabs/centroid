@@ -2,7 +2,9 @@ import { memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, Terminal, Maximize2, Copy, PlayCircle } from 'lucide-react';
 import { BotIcon, UserIcon } from '@/components/icons';
-import type { DeveloperResult as DeveloperResultType } from '@/lib/ai/tools/sdlc/types';
+import type { ChatMessage } from './sdlc-chat-messages';
+
+type DeveloperResultType = ChatMessage[];
 import { useArtifact } from '@/hooks/use-artifact';
 import { generateUUID } from '@/lib/utils';
 
@@ -93,7 +95,7 @@ export const DeveloperResult = memo(function DeveloperResult({ result }: Develop
                 ...artifact,
                 title: `Code: ${task}`,
                 documentId: newDocumentId,
-                kind: 'code' as const,
+                kind: 'developer' as const,
                 content: finalContent,
                 isVisible: true,
                 status: 'idle' as const,

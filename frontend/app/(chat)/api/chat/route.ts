@@ -23,14 +23,6 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
-import {
-  developer,
-  planner,
-  reviewer,
-  architect,
-  tester,
-  documenter
-} from '@/lib/ai/tools/sdlc';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
@@ -166,12 +158,6 @@ export async function POST(request: Request) {
                   'createDocument',
                   'updateDocument',
                   'requestSuggestions',
-                  'developer',
-                  'planner',
-                  'reviewer',
-                  'architect',
-                  'tester',
-                  'documenter',
                 ],
           experimental_transform: smoothStream({ chunking: 'word' }),
           experimental_generateMessageId: generateUUID,
@@ -183,12 +169,6 @@ export async function POST(request: Request) {
               session,
               dataStream,
             }),
-            developer,
-            planner,
-            reviewer,
-            architect,
-            tester,
-            documenter,
           },
           onFinish: async ({ response }) => {
             if (session.user?.id) {

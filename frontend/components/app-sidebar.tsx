@@ -47,7 +47,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
-import { Chat } from "@/lib/db/schema";
+import type { Chat } from "@/lib/db/schema";
 
 export function AppSidebar({ user }: { user: User | undefined }) {
 	const router = useRouter();

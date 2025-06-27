@@ -26,6 +26,12 @@ import { imageArtifact } from '@/artifacts/image/client';
 import { codeArtifact } from '@/artifacts/code/client';
 import { sheetArtifact } from '@/artifacts/sheet/client';
 import { textArtifact } from '@/artifacts/text/client';
+import { developerArtifact } from '@/artifacts/developer/client';
+import { plannerArtifact } from '@/artifacts/planner/client';
+import { architectArtifact } from '@/artifacts/architect/client';
+import { testerArtifact } from '@/artifacts/tester/client';
+import { reviewerArtifact } from '@/artifacts/reviewer/client';
+import { documenterArtifact } from '@/artifacts/documenter/client';
 import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { VisibilityType } from './visibility-selector';
@@ -35,6 +41,12 @@ export const artifactDefinitions = [
   codeArtifact,
   imageArtifact,
   sheetArtifact,
+  developerArtifact,
+  plannerArtifact,
+  architectArtifact,
+  testerArtifact,
+  reviewerArtifact,
+  documenterArtifact,
 ];
 export type ArtifactKind = (typeof artifactDefinitions)[number]['kind'];
 

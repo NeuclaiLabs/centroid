@@ -26,8 +26,11 @@ export type DataStreamDelta = {
     | 'suggestion'
     | 'clear'
     | 'finish'
-    | 'kind';
-  content: string | Suggestion | LogEntry;
+    | 'kind'
+    | 'sdlc-status'
+    | 'sdlc-result'
+    | 'sdlc-error';
+  content: string | Suggestion | LogEntry | any;
 };
 
 export function DataStreamHandler({ id }: { id: string }) {

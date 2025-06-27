@@ -15,6 +15,12 @@ class DocumentKind(str, Enum):
     IMAGE = "image"
     SHEET = "sheet"
     SDLC_TASK = "sdlc_task"
+    DEVELOPER = "developer"
+    PLANNER = "planner"
+    ARCHITECT = "architect"
+    TESTER = "tester"
+    REVIEWER = "reviewer"
+    DOCUMENTER = "documenter"
 
 
 class DocumentBase(CamelModel):

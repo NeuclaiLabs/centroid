@@ -25,6 +25,7 @@ export function NavMain({
 					<SidebarMenuButton asChild tooltip={item.title}>
 						{item.onClick ? (
 							<button
+								type="button"
 								onClick={item.onClick}
 								className="flex items-center gap-2 w-full"
 							>

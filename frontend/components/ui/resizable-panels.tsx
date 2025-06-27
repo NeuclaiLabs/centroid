@@ -128,9 +128,9 @@ export function ResizablePanels({
               : 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex-row space-x-1'
           )}
         >
-          {[...Array(3)].map((_, i) => (
+          {['dot-1', 'dot-2', 'dot-3'].map((key) => (
             <div
-              key={i}
+              key={key}
               className="w-1 h-1 bg-muted-foreground rounded-full opacity-0 group-hover:opacity-60 transition-opacity"
             />
           ))}

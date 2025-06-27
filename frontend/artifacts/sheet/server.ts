@@ -43,7 +43,7 @@ export const sheetDocumentHandler = createDocumentHandler<'sheet'>({
 
     return draftContent;
   },
-  onUpdateDocument: async ({ document, description, dataStream }) => {
+  onUpdateDocument: async ({ document, description, dataStream, session }) => {
     let draftContent = '';
 
     const { fullStream } = streamObject({

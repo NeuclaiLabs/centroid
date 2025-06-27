@@ -32,16 +32,15 @@ export interface ChatMessage {
   };
 }
 
-export type DeveloperResult = ChatMessage[];
+export type PlannerResult = ChatMessage[];
 
-interface DeveloperArtifactMetadata {
-  result: DeveloperResult | null;
+interface PlannerArtifactMetadata {
+  result: PlannerResult | null;
 }
 
-
-export const developerArtifact = new Artifact<'developer', DeveloperArtifactMetadata>({
-  kind: 'developer',
-  description: 'Display git diff and code generation results in a maximized view.',
+export const plannerArtifact = new Artifact<'planner', PlannerArtifactMetadata>({
+  kind: 'planner',
+  description: 'Display project planning results with comprehensive plans, phases, and recommendations.',
   initialize: async ({ setMetadata }) => {
     setMetadata({
       result: null,
@@ -70,10 +69,10 @@ export const developerArtifact = new Artifact<'developer', DeveloperArtifactMeta
       return (
         <div className="flex flex-col h-full bg-black font-mono">
           <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800 bg-zinc-900/50">
-            <div className="size-4 text-emerald-400">
+            <div className="size-4 text-blue-400">
               <Terminal size={16} />
             </div>
-            <span className="text-zinc-300 text-sm">claude-code</span>
+            <span className="text-zinc-300 text-sm">claude-planner</span>
             <div className="flex-1" />
             <div className="flex items-center gap-1">
               <div className="size-3 rounded-full bg-red-500/80" />
@@ -98,17 +97,17 @@ export const developerArtifact = new Artifact<'developer', DeveloperArtifactMeta
     const firstUserMessage = result.find(msg => msg.role === 'user');
     const taskText = firstUserMessage?.content;
     const task = typeof taskText === 'string' ? taskText :
-      Array.isArray(taskText) ? taskText.find(c => c.type === 'text')?.text || 'Development Task' :
-      'Development Task';
+      Array.isArray(taskText) ? taskText.find(c => c.type === 'text')?.text || 'Project Planning' :
+      'Project Planning';
 
     return (
       <div className="flex flex-col h-full bg-black font-mono">
         {/* Terminal Header */}
         <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800 bg-zinc-900/50">
-          <div className="size-4 text-emerald-400">
+          <div className="size-4 text-blue-400">
             <Terminal size={16} />
           </div>
-          <span className="text-zinc-300 text-sm">claude-code</span>
+          <span className="text-zinc-300 text-sm">claude-planner</span>
           <div className="flex-1" />
           <div className="flex items-center gap-1">
             <div className="size-3 rounded-full bg-red-500/80" />
@@ -121,7 +120,7 @@ export const developerArtifact = new Artifact<'developer', DeveloperArtifactMeta
         <div className="flex-1 p-4 bg-black overflow-hidden">
           {/* Status Line */}
           <div className="flex items-center gap-2 mb-4">
-            <div className="size-4 text-emerald-400">
+            <div className="size-4 text-blue-400">
               <CheckCircle2 size={16} />
             </div>
             <span className="text-zinc-300 text-sm">
@@ -151,7 +150,7 @@ export const developerArtifact = new Artifact<'developer', DeveloperArtifactMeta
                         <UserIcon />
                       </div>
                     ) : (
-                      <div className="size-4 text-emerald-400 shrink-0 mt-0.5">
+                      <div className="size-4 text-blue-400 shrink-0 mt-0.5">
                         <BotIcon />
                       </div>
                     )}
@@ -180,7 +179,7 @@ export const developerArtifact = new Artifact<'developer', DeveloperArtifactMeta
   actions: [
     {
       icon: <CopyIcon size={18} />,
-      description: 'Copy output to clipboard',
+      description: 'Copy plan to clipboard',
       onClick: ({ metadata }) => {
         if (metadata?.result) {
           const assistantMessages = metadata.result.filter(msg => msg.role === 'assistant');
@@ -191,7 +190,7 @@ export const developerArtifact = new Artifact<'developer', DeveloperArtifactMeta
 
           if (finalContent) {
             navigator.clipboard.writeText(finalContent);
-            toast.success('Output copied to clipboard!');
+            toast.success('Plan copied to clipboard!');
           }
         }
       },
@@ -207,7 +206,7 @@ export const developerArtifact = new Artifact<'developer', DeveloperArtifactMeta
     },
     {
       icon: <DownloadIcon size={18} />,
-      description: 'Download output as text file',
+      description: 'Download plan as text file',
       onClick: ({ metadata }) => {
         if (metadata?.result) {
           const assistantMessages = metadata.result.filter(msg => msg.role === 'assistant');
@@ -219,20 +218,20 @@ export const developerArtifact = new Artifact<'developer', DeveloperArtifactMeta
           const firstUserMessage = metadata.result.find(msg => msg.role === 'user');
           const taskText = firstUserMessage?.content;
           const task = typeof taskText === 'string' ? taskText :
-            Array.isArray(taskText) ? taskText.find(c => c.type === 'text')?.text || 'Development Task' :
-            'Development Task';
+            Array.isArray(taskText) ? taskText.find(c => c.type === 'text')?.text || 'Project Planning' :
+            'Project Planning';
 
           if (finalContent) {
             const blob = new Blob([finalContent], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${task.replace(/[^a-zA-Z0-9]/g, '_')}.txt`;
+            a.download = `${task.replace(/[^a-zA-Z0-9]/g, '_')}_plan.txt`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            toast.success('Output file downloaded!');
+            toast.success('Plan file downloaded!');
           }
         }
       },
@@ -250,21 +249,21 @@ export const developerArtifact = new Artifact<'developer', DeveloperArtifactMeta
   toolbar: [
     {
       icon: <RefreshIcon />,
-      description: 'Regenerate code',
+      description: 'Regenerate plan',
       onClick: ({ appendMessage }) => {
         appendMessage({
           role: 'user',
-          content: 'Please regenerate the code with improvements or modifications.',
+          content: 'Please regenerate the plan with additional detail or improvements.',
         });
       },
     },
     {
       icon: <FileTextIcon />,
-      description: 'Create documentation',
+      description: 'Create implementation guide',
       onClick: ({ appendMessage }) => {
         appendMessage({
           role: 'user',
-          content: 'Please create documentation for the generated code explaining how to use it.',
+          content: 'Please create a detailed implementation guide based on this plan.',
         });
       },
     },
